@@ -1,0 +1,2331 @@
+==== 2026-02-02 11:14:26 ====
+POST: Array
+(
+    [tenant_id] => 1
+    [ruc] => 1792261104001
+    [razon_social] => DigiSports Administracion
+    [nombre_comercial] => DigiSports Admin
+    [email] => fbpinzon@gmail.com
+    [telefono] => 0993120984
+    [representante_legal] => 
+    [direccion] => 
+    [modulos] => Array
+        (
+            [0] => 18
+            [1] => 5
+            [2] => 16
+            [3] => 4
+            [4] => 6
+            [5] => 7
+            [6] => 2
+            [7] => 3
+            [8] => 1
+        )
+
+    [plan_id] => 4
+    [usuarios_permitidos] => 5
+    [fecha_inicio] => 2026-01-24
+    [fecha_vencimiento] => 2028-01-24
+    [estado] => A
+    [codigo_tenant] => 
+)
+
+==== 2026-02-02 11:40:13 ====
+POST: Array
+(
+    [tenant_id] => 1
+    [ruc] => 1792261104001
+    [razon_social] => DigiSports Administracion
+    [nombre_comercial] => DigiSports Admin
+    [email] => fbpinzon@gmail.com
+    [telefono] => 0993120984
+    [representante_legal] => 
+    [direccion] => 
+    [modulos] => Array
+        (
+            [0] => 18
+            [1] => 5
+            [2] => 16
+            [3] => 20
+            [4] => 4
+            [5] => 6
+            [6] => 7
+            [7] => 2
+            [8] => 3
+            [9] => 1
+        )
+
+    [plan_id] => 4
+    [usuarios_permitidos] => 5
+    [fecha_inicio] => 2026-01-24
+    [fecha_vencimiento] => 2028-01-24
+    [estado] => A
+    [codigo_tenant] => 
+)
+
+==== 2026-02-02 11:44:12 ====
+POST: Array
+(
+    [tenant_id] => 1
+    [ruc] => 1792261104001
+    [razon_social] => DigiSports Administracion
+    [nombre_comercial] => DigiSports Admin
+    [email] => fbpinzon@gmail.com
+    [telefono] => 0993120984
+    [representante_legal] => 
+    [direccion] => 
+    [modulos] => Array
+        (
+            [0] => 18
+            [1] => 5
+            [2] => 19
+            [3] => 16
+            [4] => 4
+            [5] => 6
+            [6] => 7
+            [7] => 2
+            [8] => 3
+            [9] => 1
+        )
+
+    [plan_id] => 4
+    [usuarios_permitidos] => 5
+    [fecha_inicio] => 2026-01-24
+    [fecha_vencimiento] => 2028-01-24
+    [estado] => A
+    [codigo_tenant] => 
+)
+
+==== 2026-02-02 11:54:38 ====
+POST: Array
+(
+    [tenant_id] => 1
+    [ruc] => 1792261104001
+    [razon_social] => DigiSports Administracion
+    [nombre_comercial] => DigiSports Admin
+    [email] => fbpinzon@gmail.com
+    [telefono] => 0993120984
+    [representante_legal] => 
+    [direccion] => 
+    [modulos] => Array
+        (
+            [0] => 18
+            [1] => 5
+            [2] => 16
+            [3] => 4
+            [4] => 6
+            [5] => 7
+            [6] => 2
+            [7] => 3
+            [8] => 1
+        )
+
+    [plan_id] => 4
+    [usuarios_permitidos] => 5
+    [fecha_inicio] => 2026-01-24
+    [fecha_vencimiento] => 2028-01-24
+    [estado] => A
+    [codigo_tenant] => 
+)
+
+==== 2026-02-02 11:54:39 ====
+modulosAsignados: Array
+(
+    [0] => 5
+    [1] => 15
+    [2] => 4
+    [3] => 6
+    [4] => 7
+    [5] => 2
+    [6] => 3
+    [7] => 1
+)
+
+==== 2026-02-02 12:02:47 ====
+modulosAsignados: Array
+(
+    [0] => 5
+    [1] => 15
+    [2] => 4
+    [3] => 6
+    [4] => 7
+    [5] => 2
+    [6] => 3
+    [7] => 1
+)
+
+==== 2026-02-02 12:03:02 ====
+POST: Array
+(
+    [tenant_id] => 1
+    [ruc] => 1792261104001
+    [razon_social] => DigiSports Administracion
+    [nombre_comercial] => DigiSports Admin
+    [email] => fbpinzon@gmail.com
+    [telefono] => 0993120984
+    [representante_legal] => 
+    [direccion] => 
+    [modulos] => Array
+        (
+            [0] => 18
+            [1] => 5
+            [2] => 16
+            [3] => 4
+            [4] => 6
+            [5] => 7
+            [6] => 2
+            [7] => 3
+            [8] => 1
+        )
+
+    [plan_id] => 4
+    [usuarios_permitidos] => 5
+    [fecha_inicio] => 2026-01-24
+    [fecha_vencimiento] => 2028-01-24
+    [estado] => A
+    [codigo_tenant] => 
+)
+
+==== 2026-02-02 12:03:02 ====
+modulosAsignados: Array
+(
+    [0] => 5
+    [1] => 15
+    [2] => 4
+    [3] => 6
+    [4] => 7
+    [5] => 2
+    [6] => 3
+    [7] => 1
+)
+
+==== 2026-02-02 12:15:23 ====
+POST: Array
+(
+    [tenant_id] => 1
+    [ruc] => 1792261104001
+    [razon_social] => DigiSports Administracion
+    [nombre_comercial] => DigiSports Admin
+    [email] => fbpinzon@gmail.com
+    [telefono] => 0993120984
+    [representante_legal] => 
+    [direccion] => 
+    [modulos] => Array
+        (
+            [0] => 18
+            [1] => 5
+            [2] => 16
+            [3] => 4
+            [4] => 6
+            [5] => 7
+            [6] => 2
+            [7] => 3
+            [8] => 1
+        )
+
+    [plan_id] => 4
+    [usuarios_permitidos] => 5
+    [fecha_inicio] => 2026-01-24
+    [fecha_vencimiento] => 2028-01-24
+    [estado] => A
+    [codigo_tenant] => 
+)
+
+==== 2026-02-02 12:15:24 ====
+modulosAsignados: Array
+(
+    [0] => 5
+    [1] => 15
+    [2] => 4
+    [3] => 6
+    [4] => 7
+    [5] => 2
+    [6] => 3
+    [7] => 1
+)
+
+==== 2026-02-02 12:15:35 ====
+POST: Array
+(
+    [tenant_id] => 1
+    [ruc] => 1792261104001
+    [razon_social] => DigiSports Administracion
+    [nombre_comercial] => DigiSports Admin
+    [email] => fbpinzon@gmail.com
+    [telefono] => 0993120984
+    [representante_legal] => 
+    [direccion] => 
+    [modulos] => Array
+        (
+            [0] => 18
+            [1] => 5
+            [2] => 19
+            [3] => 16
+            [4] => 4
+            [5] => 6
+            [6] => 7
+            [7] => 2
+            [8] => 3
+            [9] => 1
+        )
+
+    [plan_id] => 4
+    [usuarios_permitidos] => 5
+    [fecha_inicio] => 2026-01-24
+    [fecha_vencimiento] => 2028-01-24
+    [estado] => A
+    [codigo_tenant] => 
+)
+
+==== 2026-02-02 12:15:36 ====
+modulosAsignados: Array
+(
+    [0] => 5
+    [1] => 15
+    [2] => 4
+    [3] => 6
+    [4] => 7
+    [5] => 2
+    [6] => 3
+    [7] => 1
+)
+
+==== 2026-02-02 12:19:57 ====
+modulosAsignados: Array
+(
+    [0] => 5
+    [1] => 15
+    [2] => 4
+    [3] => 6
+    [4] => 7
+    [5] => 2
+    [6] => 3
+    [7] => 1
+)
+
+==== 2026-02-02 12:20:05 ====
+POST: Array
+(
+    [tenant_id] => 1
+    [ruc] => 1792261104001
+    [razon_social] => DigiSports Administracion
+    [nombre_comercial] => DigiSports Admin
+    [email] => fbpinzon@gmail.com
+    [telefono] => 0993120984
+    [representante_legal] => 
+    [direccion] => 
+    [modulos] => Array
+        (
+            [0] => 18
+            [1] => 5
+            [2] => 19
+            [3] => 16
+            [4] => 4
+            [5] => 6
+            [6] => 7
+            [7] => 2
+            [8] => 3
+            [9] => 1
+        )
+
+    [plan_id] => 4
+    [usuarios_permitidos] => 5
+    [fecha_inicio] => 2026-01-24
+    [fecha_vencimiento] => 2028-01-24
+    [estado] => A
+    [codigo_tenant] => 
+)
+
+==== 2026-02-02 12:20:06 ====
+modulosAsignados: Array
+(
+    [0] => 5
+    [1] => 15
+    [2] => 4
+    [3] => 6
+    [4] => 7
+    [5] => 2
+    [6] => 3
+    [7] => 1
+)
+
+==== 2026-02-02 12:20:59 ====
+POST: Array
+(
+    [tenant_id] => 1
+    [ruc] => 1792261104001
+    [razon_social] => DigiSports Administracion
+    [nombre_comercial] => DigiSports Admin
+    [email] => fbpinzon@gmail.com
+    [telefono] => 0993120984
+    [representante_legal] => 
+    [direccion] => 
+    [modulos] => Array
+        (
+            [0] => 18
+            [1] => 5
+            [2] => 19
+            [3] => 16
+            [4] => 23
+            [5] => 20
+            [6] => 17
+            [7] => 21
+            [8] => 4
+            [9] => 7
+            [10] => 2
+            [11] => 22
+            [12] => 3
+            [13] => 1
+        )
+
+    [plan_id] => 4
+    [usuarios_permitidos] => 5
+    [fecha_inicio] => 2026-01-24
+    [fecha_vencimiento] => 2028-01-24
+    [estado] => A
+    [codigo_tenant] => 
+)
+
+==== 2026-02-02 12:20:59 ====
+modulosAsignados: Array
+(
+    [0] => 5
+    [1] => 15
+    [2] => 4
+    [3] => 6
+    [4] => 7
+    [5] => 2
+    [6] => 3
+    [7] => 1
+)
+
+==== 2026-02-02 12:24:59 ====
+modulosAsignados: Array
+(
+    [0] => 5
+    [1] => 15
+    [2] => 4
+    [3] => 6
+    [4] => 7
+    [5] => 2
+    [6] => 3
+    [7] => 1
+)
+
+==== 2026-02-02 12:25:12 ====
+POST: Array
+(
+    [tenant_id] => 1
+    [ruc] => 1792261104001
+    [razon_social] => DigiSports Administracion
+    [nombre_comercial] => DigiSports Admin
+    [email] => fbpinzon@gmail.com
+    [telefono] => 0993120984
+    [representante_legal] => 
+    [direccion] => 
+    [modulos] => Array
+        (
+            [0] => 18
+            [1] => 5
+            [2] => 19
+            [3] => 16
+            [4] => 23
+            [5] => 20
+            [6] => 17
+            [7] => 21
+            [8] => 4
+            [9] => 6
+            [10] => 7
+            [11] => 2
+            [12] => 22
+            [13] => 3
+            [14] => 1
+        )
+
+    [plan_id] => 4
+    [usuarios_permitidos] => 5
+    [fecha_inicio] => 2026-01-24
+    [fecha_vencimiento] => 2028-01-24
+    [estado] => A
+    [codigo_tenant] => 
+)
+
+==== 2026-02-02 12:25:13 ====
+modulosAsignados: Array
+(
+    [0] => 5
+    [1] => 15
+    [2] => 4
+    [3] => 6
+    [4] => 7
+    [5] => 2
+    [6] => 3
+    [7] => 1
+)
+
+==== 2026-02-02 12:27:46 ====
+POST: Array
+(
+    [tenant_id] => 1
+    [ruc] => 1792261104001
+    [razon_social] => DigiSports Administracion
+    [nombre_comercial] => DigiSports Admin
+    [email] => fbpinzon@gmail.com
+    [telefono] => 0993120984
+    [representante_legal] => 
+    [direccion] => 
+    [modulos] => Array
+        (
+            [0] => 18
+            [1] => 5
+            [2] => 19
+            [3] => 16
+            [4] => 23
+            [5] => 20
+            [6] => 17
+            [7] => 21
+            [8] => 4
+            [9] => 6
+            [10] => 7
+            [11] => 2
+            [12] => 22
+            [13] => 3
+            [14] => 1
+        )
+
+    [plan_id] => 4
+    [usuarios_permitidos] => 5
+    [fecha_inicio] => 2026-01-24
+    [fecha_vencimiento] => 2028-01-24
+    [estado] => A
+    [codigo_tenant] => 
+)
+
+Intentando insertar: tenant_id=1, modulo_id=1, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=1 insertado.
+Intentando insertar: tenant_id=1, modulo_id=2, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=2 insertado.
+Intentando insertar: tenant_id=1, modulo_id=3, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=3 insertado.
+Intentando insertar: tenant_id=1, modulo_id=4, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=4 insertado.
+Intentando insertar: tenant_id=1, modulo_id=5, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=5 insertado.
+Intentando insertar: tenant_id=1, modulo_id=6, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=6 insertado.
+Intentando insertar: tenant_id=1, modulo_id=7, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=7 insertado.
+Intentando insertar: tenant_id=1, modulo_id=15, activo=N, fecha_inicio=2026-02-02
+OK: modulo_id=15 insertado.
+Intentando insertar: tenant_id=1, modulo_id=16, activo=S, fecha_inicio=2026-02-02
+ERROR: modulo_id=16 - SQLSTATE[23000]: Integrity constraint violation: 1452 Cannot add or update a child row: a foreign key constraint fails (`digisports_core`.`tenant_modulos`, CONSTRAINT `tenant_modulos_ibfk_1` FOREIGN KEY (`modulo_id`) REFERENCES `modulos` (`id`) ON DELETE CASCADE)
+Intentando insertar: tenant_id=1, modulo_id=17, activo=S, fecha_inicio=2026-02-02
+ERROR: modulo_id=17 - SQLSTATE[23000]: Integrity constraint violation: 1452 Cannot add or update a child row: a foreign key constraint fails (`digisports_core`.`tenant_modulos`, CONSTRAINT `tenant_modulos_ibfk_1` FOREIGN KEY (`modulo_id`) REFERENCES `modulos` (`id`) ON DELETE CASCADE)
+Intentando insertar: tenant_id=1, modulo_id=18, activo=S, fecha_inicio=2026-02-02
+ERROR: modulo_id=18 - SQLSTATE[23000]: Integrity constraint violation: 1452 Cannot add or update a child row: a foreign key constraint fails (`digisports_core`.`tenant_modulos`, CONSTRAINT `tenant_modulos_ibfk_1` FOREIGN KEY (`modulo_id`) REFERENCES `modulos` (`id`) ON DELETE CASCADE)
+Intentando insertar: tenant_id=1, modulo_id=19, activo=S, fecha_inicio=2026-02-02
+ERROR: modulo_id=19 - SQLSTATE[23000]: Integrity constraint violation: 1452 Cannot add or update a child row: a foreign key constraint fails (`digisports_core`.`tenant_modulos`, CONSTRAINT `tenant_modulos_ibfk_1` FOREIGN KEY (`modulo_id`) REFERENCES `modulos` (`id`) ON DELETE CASCADE)
+Intentando insertar: tenant_id=1, modulo_id=20, activo=S, fecha_inicio=2026-02-02
+ERROR: modulo_id=20 - SQLSTATE[23000]: Integrity constraint violation: 1452 Cannot add or update a child row: a foreign key constraint fails (`digisports_core`.`tenant_modulos`, CONSTRAINT `tenant_modulos_ibfk_1` FOREIGN KEY (`modulo_id`) REFERENCES `modulos` (`id`) ON DELETE CASCADE)
+Intentando insertar: tenant_id=1, modulo_id=21, activo=S, fecha_inicio=2026-02-02
+ERROR: modulo_id=21 - SQLSTATE[23000]: Integrity constraint violation: 1452 Cannot add or update a child row: a foreign key constraint fails (`digisports_core`.`tenant_modulos`, CONSTRAINT `tenant_modulos_ibfk_1` FOREIGN KEY (`modulo_id`) REFERENCES `modulos` (`id`) ON DELETE CASCADE)
+Intentando insertar: tenant_id=1, modulo_id=22, activo=S, fecha_inicio=2026-02-02
+ERROR: modulo_id=22 - SQLSTATE[23000]: Integrity constraint violation: 1452 Cannot add or update a child row: a foreign key constraint fails (`digisports_core`.`tenant_modulos`, CONSTRAINT `tenant_modulos_ibfk_1` FOREIGN KEY (`modulo_id`) REFERENCES `modulos` (`id`) ON DELETE CASCADE)
+Intentando insertar: tenant_id=1, modulo_id=23, activo=S, fecha_inicio=2026-02-02
+ERROR: modulo_id=23 - SQLSTATE[23000]: Integrity constraint violation: 1452 Cannot add or update a child row: a foreign key constraint fails (`digisports_core`.`tenant_modulos`, CONSTRAINT `tenant_modulos_ibfk_1` FOREIGN KEY (`modulo_id`) REFERENCES `modulos` (`id`) ON DELETE CASCADE)
+==== 2026-02-02 12:27:50 ====
+modulosAsignados: Array
+(
+    [0] => 5
+    [1] => 4
+    [2] => 6
+    [3] => 7
+    [4] => 2
+    [5] => 3
+    [6] => 1
+)
+
+==== 2026-02-02 12:30:18 ====
+modulosAsignados: Array
+(
+    [0] => 5
+    [1] => 4
+    [2] => 6
+    [3] => 7
+    [4] => 2
+    [5] => 3
+    [6] => 1
+)
+
+==== 2026-02-02 12:30:30 ====
+POST: Array
+(
+    [tenant_id] => 1
+    [ruc] => 1792261104001
+    [razon_social] => DigiSports Administracion
+    [nombre_comercial] => DigiSports Admin
+    [email] => fbpinzon@gmail.com
+    [telefono] => 0993120984
+    [representante_legal] => 
+    [direccion] => 
+    [modulos] => Array
+        (
+            [0] => 18
+            [1] => 5
+            [2] => 19
+            [3] => 16
+            [4] => 15
+            [5] => 23
+            [6] => 20
+            [7] => 17
+            [8] => 21
+            [9] => 4
+            [10] => 6
+            [11] => 7
+            [12] => 2
+            [13] => 22
+            [14] => 3
+            [15] => 1
+        )
+
+    [plan_id] => 4
+    [usuarios_permitidos] => 5
+    [fecha_inicio] => 2026-01-24
+    [fecha_vencimiento] => 2028-01-24
+    [estado] => A
+    [codigo_tenant] => 
+)
+
+Intentando insertar: tenant_id=1, modulo_id=1, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=1 insertado.
+Intentando insertar: tenant_id=1, modulo_id=2, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=2 insertado.
+Intentando insertar: tenant_id=1, modulo_id=3, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=3 insertado.
+Intentando insertar: tenant_id=1, modulo_id=4, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=4 insertado.
+Intentando insertar: tenant_id=1, modulo_id=5, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=5 insertado.
+Intentando insertar: tenant_id=1, modulo_id=6, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=6 insertado.
+Intentando insertar: tenant_id=1, modulo_id=7, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=7 insertado.
+Intentando insertar: tenant_id=1, modulo_id=15, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=15 insertado.
+Intentando insertar: tenant_id=1, modulo_id=16, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=16 insertado.
+Intentando insertar: tenant_id=1, modulo_id=17, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=17 insertado.
+Intentando insertar: tenant_id=1, modulo_id=18, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=18 insertado.
+Intentando insertar: tenant_id=1, modulo_id=19, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=19 insertado.
+Intentando insertar: tenant_id=1, modulo_id=20, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=20 insertado.
+Intentando insertar: tenant_id=1, modulo_id=21, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=21 insertado.
+Intentando insertar: tenant_id=1, modulo_id=22, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=22 insertado.
+Intentando insertar: tenant_id=1, modulo_id=23, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=23 insertado.
+==== 2026-02-02 12:30:34 ====
+modulosAsignados: Array
+(
+    [0] => 18
+    [1] => 5
+    [2] => 19
+    [3] => 16
+    [4] => 15
+    [5] => 23
+    [6] => 20
+    [7] => 17
+    [8] => 21
+    [9] => 4
+    [10] => 6
+    [11] => 7
+    [12] => 2
+    [13] => 22
+    [14] => 3
+    [15] => 1
+)
+
+==== 2026-02-02 12:30:39 ====
+POST: Array
+(
+    [tenant_id] => 1
+    [ruc] => 1792261104001
+    [razon_social] => DigiSports Administracion
+    [nombre_comercial] => DigiSports Admin
+    [email] => fbpinzon@gmail.com
+    [telefono] => 0993120984
+    [representante_legal] => 
+    [direccion] => 
+    [modulos] => Array
+        (
+            [0] => 5
+            [1] => 19
+            [2] => 16
+            [3] => 15
+            [4] => 23
+            [5] => 20
+            [6] => 17
+            [7] => 21
+            [8] => 4
+            [9] => 6
+            [10] => 7
+            [11] => 2
+            [12] => 22
+            [13] => 3
+            [14] => 1
+        )
+
+    [plan_id] => 4
+    [usuarios_permitidos] => 5
+    [fecha_inicio] => 2026-01-24
+    [fecha_vencimiento] => 2028-01-24
+    [estado] => A
+    [codigo_tenant] => 
+)
+
+Intentando insertar: tenant_id=1, modulo_id=1, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=1 insertado.
+Intentando insertar: tenant_id=1, modulo_id=2, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=2 insertado.
+Intentando insertar: tenant_id=1, modulo_id=3, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=3 insertado.
+Intentando insertar: tenant_id=1, modulo_id=4, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=4 insertado.
+Intentando insertar: tenant_id=1, modulo_id=5, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=5 insertado.
+Intentando insertar: tenant_id=1, modulo_id=6, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=6 insertado.
+Intentando insertar: tenant_id=1, modulo_id=7, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=7 insertado.
+Intentando insertar: tenant_id=1, modulo_id=15, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=15 insertado.
+Intentando insertar: tenant_id=1, modulo_id=16, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=16 insertado.
+Intentando insertar: tenant_id=1, modulo_id=17, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=17 insertado.
+Intentando insertar: tenant_id=1, modulo_id=18, activo=N, fecha_inicio=2026-02-02
+OK: modulo_id=18 insertado.
+Intentando insertar: tenant_id=1, modulo_id=19, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=19 insertado.
+Intentando insertar: tenant_id=1, modulo_id=20, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=20 insertado.
+Intentando insertar: tenant_id=1, modulo_id=21, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=21 insertado.
+Intentando insertar: tenant_id=1, modulo_id=22, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=22 insertado.
+Intentando insertar: tenant_id=1, modulo_id=23, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=23 insertado.
+==== 2026-02-02 12:30:42 ====
+modulosAsignados: Array
+(
+    [0] => 5
+    [1] => 19
+    [2] => 16
+    [3] => 15
+    [4] => 23
+    [5] => 20
+    [6] => 17
+    [7] => 21
+    [8] => 4
+    [9] => 6
+    [10] => 7
+    [11] => 2
+    [12] => 22
+    [13] => 3
+    [14] => 1
+)
+
+==== 2026-02-02 12:31:17 ====
+POST: Array
+(
+    [tenant_id] => 1
+    [ruc] => 1792261104001
+    [razon_social] => DigiSports Administracion
+    [nombre_comercial] => DigiSports Admin
+    [email] => fbpinzon@gmail.com
+    [telefono] => 0993120984
+    [representante_legal] => 
+    [direccion] => Rey david y los Olivos
+    [modulos] => Array
+        (
+            [0] => 18
+            [1] => 5
+            [2] => 19
+            [3] => 16
+            [4] => 15
+            [5] => 23
+            [6] => 20
+            [7] => 17
+            [8] => 21
+            [9] => 4
+            [10] => 6
+            [11] => 7
+            [12] => 2
+            [13] => 22
+            [14] => 3
+            [15] => 1
+        )
+
+    [plan_id] => 4
+    [usuarios_permitidos] => 5
+    [fecha_inicio] => 2026-01-24
+    [fecha_vencimiento] => 2028-01-24
+    [estado] => A
+    [codigo_tenant] => 
+)
+
+Intentando insertar: tenant_id=1, modulo_id=1, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=1 insertado.
+Intentando insertar: tenant_id=1, modulo_id=2, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=2 insertado.
+Intentando insertar: tenant_id=1, modulo_id=3, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=3 insertado.
+Intentando insertar: tenant_id=1, modulo_id=4, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=4 insertado.
+Intentando insertar: tenant_id=1, modulo_id=5, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=5 insertado.
+Intentando insertar: tenant_id=1, modulo_id=6, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=6 insertado.
+Intentando insertar: tenant_id=1, modulo_id=7, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=7 insertado.
+Intentando insertar: tenant_id=1, modulo_id=15, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=15 insertado.
+Intentando insertar: tenant_id=1, modulo_id=16, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=16 insertado.
+Intentando insertar: tenant_id=1, modulo_id=17, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=17 insertado.
+Intentando insertar: tenant_id=1, modulo_id=18, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=18 insertado.
+Intentando insertar: tenant_id=1, modulo_id=19, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=19 insertado.
+Intentando insertar: tenant_id=1, modulo_id=20, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=20 insertado.
+Intentando insertar: tenant_id=1, modulo_id=21, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=21 insertado.
+Intentando insertar: tenant_id=1, modulo_id=22, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=22 insertado.
+Intentando insertar: tenant_id=1, modulo_id=23, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=23 insertado.
+==== 2026-02-02 12:31:20 ====
+modulosAsignados: Array
+(
+    [0] => 18
+    [1] => 5
+    [2] => 19
+    [3] => 16
+    [4] => 15
+    [5] => 23
+    [6] => 20
+    [7] => 17
+    [8] => 21
+    [9] => 4
+    [10] => 6
+    [11] => 7
+    [12] => 2
+    [13] => 22
+    [14] => 3
+    [15] => 1
+)
+
+==== 2026-02-02 12:31:40 ====
+modulosAsignados: Array
+(
+)
+
+==== 2026-02-02 12:31:51 ====
+POST: Array
+(
+    [tenant_id] => 2
+    [ruc] => 1104015282001
+    [razon_social] => Champions
+    [nombre_comercial] => Champios CF 2013
+    [email] => fbpinzon@gmail.com
+    [telefono] => 0993120984
+    [representante_legal] => 
+    [direccion] => 
+    [modulos] => Array
+        (
+            [0] => 16
+            [1] => 15
+        )
+
+    [plan_id] => 2
+    [usuarios_permitidos] => 5
+    [fecha_inicio] => 2026-01-27
+    [fecha_vencimiento] => 2029-03-27
+    [estado] => A
+    [codigo_tenant] => 
+)
+
+Intentando insertar: tenant_id=2, modulo_id=1, activo=N, fecha_inicio=2026-02-02
+OK: modulo_id=1 insertado.
+Intentando insertar: tenant_id=2, modulo_id=2, activo=N, fecha_inicio=2026-02-02
+OK: modulo_id=2 insertado.
+Intentando insertar: tenant_id=2, modulo_id=3, activo=N, fecha_inicio=2026-02-02
+OK: modulo_id=3 insertado.
+Intentando insertar: tenant_id=2, modulo_id=4, activo=N, fecha_inicio=2026-02-02
+OK: modulo_id=4 insertado.
+Intentando insertar: tenant_id=2, modulo_id=5, activo=N, fecha_inicio=2026-02-02
+OK: modulo_id=5 insertado.
+Intentando insertar: tenant_id=2, modulo_id=6, activo=N, fecha_inicio=2026-02-02
+OK: modulo_id=6 insertado.
+Intentando insertar: tenant_id=2, modulo_id=7, activo=N, fecha_inicio=2026-02-02
+OK: modulo_id=7 insertado.
+Intentando insertar: tenant_id=2, modulo_id=15, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=15 insertado.
+Intentando insertar: tenant_id=2, modulo_id=16, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=16 insertado.
+Intentando insertar: tenant_id=2, modulo_id=17, activo=N, fecha_inicio=2026-02-02
+OK: modulo_id=17 insertado.
+Intentando insertar: tenant_id=2, modulo_id=18, activo=N, fecha_inicio=2026-02-02
+OK: modulo_id=18 insertado.
+Intentando insertar: tenant_id=2, modulo_id=19, activo=N, fecha_inicio=2026-02-02
+OK: modulo_id=19 insertado.
+Intentando insertar: tenant_id=2, modulo_id=20, activo=N, fecha_inicio=2026-02-02
+OK: modulo_id=20 insertado.
+Intentando insertar: tenant_id=2, modulo_id=21, activo=N, fecha_inicio=2026-02-02
+OK: modulo_id=21 insertado.
+Intentando insertar: tenant_id=2, modulo_id=22, activo=N, fecha_inicio=2026-02-02
+OK: modulo_id=22 insertado.
+Intentando insertar: tenant_id=2, modulo_id=23, activo=N, fecha_inicio=2026-02-02
+OK: modulo_id=23 insertado.
+==== 2026-02-02 12:31:54 ====
+modulosAsignados: Array
+(
+    [0] => 16
+    [1] => 15
+)
+
+==== 2026-02-02 12:32:45 ====
+modulosAsignados: Array
+(
+    [0] => 18
+    [1] => 5
+    [2] => 19
+    [3] => 16
+    [4] => 15
+    [5] => 23
+    [6] => 20
+    [7] => 17
+    [8] => 21
+    [9] => 4
+    [10] => 6
+    [11] => 7
+    [12] => 2
+    [13] => 22
+    [14] => 3
+    [15] => 1
+)
+
+==== 2026-02-02 12:34:01 ====
+modulosAsignados: Array
+(
+    [0] => 18
+    [1] => 5
+    [2] => 19
+    [3] => 16
+    [4] => 15
+    [5] => 23
+    [6] => 20
+    [7] => 17
+    [8] => 21
+    [9] => 4
+    [10] => 6
+    [11] => 7
+    [12] => 2
+    [13] => 22
+    [14] => 3
+    [15] => 1
+)
+
+==== 2026-02-02 12:34:08 ====
+POST: Array
+(
+    [tenant_id] => 1
+    [ruc] => 1792261104001
+    [razon_social] => DigiSports Administracion
+    [nombre_comercial] => DigiSports Admin
+    [email] => fbpinzon@gmail.com
+    [telefono] => 0993120984
+    [representante_legal] => 
+    [direccion] => Rey david y los Olivos
+    [modulos] => Array
+        (
+            [0] => 18
+            [1] => 5
+            [2] => 19
+            [3] => 16
+            [4] => 15
+            [5] => 23
+            [6] => 20
+            [7] => 17
+            [8] => 21
+            [9] => 4
+            [10] => 6
+            [11] => 7
+            [12] => 2
+            [13] => 22
+            [14] => 3
+            [15] => 1
+        )
+
+    [plan_id] => 4
+    [usuarios_permitidos] => 5
+    [fecha_inicio] => 2026-01-24
+    [fecha_vencimiento] => 2028-01-24
+    [estado] => A
+    [codigo_tenant] => 
+)
+
+Intentando insertar: tenant_id=1, modulo_id=1, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=1 insertado.
+Intentando insertar: tenant_id=1, modulo_id=2, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=2 insertado.
+Intentando insertar: tenant_id=1, modulo_id=3, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=3 insertado.
+Intentando insertar: tenant_id=1, modulo_id=4, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=4 insertado.
+Intentando insertar: tenant_id=1, modulo_id=5, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=5 insertado.
+Intentando insertar: tenant_id=1, modulo_id=6, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=6 insertado.
+Intentando insertar: tenant_id=1, modulo_id=7, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=7 insertado.
+Intentando insertar: tenant_id=1, modulo_id=15, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=15 insertado.
+Intentando insertar: tenant_id=1, modulo_id=16, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=16 insertado.
+Intentando insertar: tenant_id=1, modulo_id=17, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=17 insertado.
+Intentando insertar: tenant_id=1, modulo_id=18, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=18 insertado.
+Intentando insertar: tenant_id=1, modulo_id=19, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=19 insertado.
+Intentando insertar: tenant_id=1, modulo_id=20, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=20 insertado.
+Intentando insertar: tenant_id=1, modulo_id=21, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=21 insertado.
+Intentando insertar: tenant_id=1, modulo_id=22, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=22 insertado.
+Intentando insertar: tenant_id=1, modulo_id=23, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=23 insertado.
+==== 2026-02-02 12:34:12 ====
+modulosAsignados: Array
+(
+    [0] => 18
+    [1] => 5
+    [2] => 19
+    [3] => 16
+    [4] => 15
+    [5] => 23
+    [6] => 20
+    [7] => 17
+    [8] => 21
+    [9] => 4
+    [10] => 6
+    [11] => 7
+    [12] => 2
+    [13] => 22
+    [14] => 3
+    [15] => 1
+)
+
+==== 2026-02-02 12:45:24 ====
+modulosAsignados: Array
+(
+    [0] => 18
+    [1] => 5
+    [2] => 19
+    [3] => 16
+    [4] => 15
+    [5] => 23
+    [6] => 20
+    [7] => 17
+    [8] => 21
+    [9] => 4
+    [10] => 6
+    [11] => 7
+    [12] => 2
+    [13] => 22
+    [14] => 3
+    [15] => 1
+)
+
+==== 2026-02-02 12:45:39 ====
+POST: Array
+(
+    [tenant_id] => 1
+    [ruc] => 1792261104001
+    [razon_social] => DigiSports Administracion
+    [nombre_comercial] => DigiSports Admin
+    [email] => fbpinzon@gmail.com
+    [telefono] => 0993120984
+    [representante_legal] => 
+    [direccion] => Rey david y los Olivos
+    [modulos] => Array
+        (
+            [0] => 18
+            [1] => 5
+            [2] => 16
+            [3] => 15
+            [4] => 23
+            [5] => 20
+            [6] => 17
+            [7] => 21
+            [8] => 4
+            [9] => 6
+            [10] => 7
+            [11] => 2
+            [12] => 22
+            [13] => 3
+            [14] => 1
+        )
+
+    [plan_id] => 4
+    [usuarios_permitidos] => 5
+    [fecha_inicio] => 2026-01-24
+    [fecha_vencimiento] => 2028-01-24
+    [estado] => A
+    [codigo_tenant] => 
+)
+
+Intentando insertar: tenant_id=1, modulo_id=1, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=1 insertado.
+Intentando insertar: tenant_id=1, modulo_id=2, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=2 insertado.
+Intentando insertar: tenant_id=1, modulo_id=3, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=3 insertado.
+Intentando insertar: tenant_id=1, modulo_id=4, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=4 insertado.
+Intentando insertar: tenant_id=1, modulo_id=5, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=5 insertado.
+Intentando insertar: tenant_id=1, modulo_id=6, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=6 insertado.
+Intentando insertar: tenant_id=1, modulo_id=7, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=7 insertado.
+Intentando insertar: tenant_id=1, modulo_id=15, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=15 insertado.
+Intentando insertar: tenant_id=1, modulo_id=16, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=16 insertado.
+Intentando insertar: tenant_id=1, modulo_id=17, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=17 insertado.
+Intentando insertar: tenant_id=1, modulo_id=18, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=18 insertado.
+Intentando insertar: tenant_id=1, modulo_id=19, activo=N, fecha_inicio=2026-02-02
+OK: modulo_id=19 insertado.
+Intentando insertar: tenant_id=1, modulo_id=20, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=20 insertado.
+Intentando insertar: tenant_id=1, modulo_id=21, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=21 insertado.
+Intentando insertar: tenant_id=1, modulo_id=22, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=22 insertado.
+Intentando insertar: tenant_id=1, modulo_id=23, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=23 insertado.
+==== 2026-02-02 12:45:49 ====
+modulosAsignados: Array
+(
+    [0] => 18
+    [1] => 5
+    [2] => 16
+    [3] => 15
+    [4] => 23
+    [5] => 20
+    [6] => 17
+    [7] => 21
+    [8] => 4
+    [9] => 6
+    [10] => 7
+    [11] => 2
+    [12] => 22
+    [13] => 3
+    [14] => 1
+)
+
+==== 2026-02-02 12:46:00 ====
+POST: Array
+(
+    [tenant_id] => 1
+    [ruc] => 1792261104001
+    [razon_social] => DigiSports Administracion
+    [nombre_comercial] => DigiSports Admin
+    [email] => fbpinzon@gmail.com
+    [telefono] => 0993120984
+    [representante_legal] => 
+    [direccion] => Rey david y los Olivos
+    [modulos] => Array
+        (
+            [0] => 18
+            [1] => 5
+            [2] => 19
+            [3] => 16
+            [4] => 15
+            [5] => 23
+            [6] => 20
+            [7] => 17
+            [8] => 21
+            [9] => 4
+            [10] => 6
+            [11] => 7
+            [12] => 2
+            [13] => 22
+            [14] => 3
+            [15] => 1
+        )
+
+    [plan_id] => 4
+    [usuarios_permitidos] => 5
+    [fecha_inicio] => 2026-01-24
+    [fecha_vencimiento] => 2028-01-24
+    [estado] => A
+    [codigo_tenant] => 
+)
+
+Intentando insertar: tenant_id=1, modulo_id=1, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=1 insertado.
+Intentando insertar: tenant_id=1, modulo_id=2, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=2 insertado.
+Intentando insertar: tenant_id=1, modulo_id=3, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=3 insertado.
+Intentando insertar: tenant_id=1, modulo_id=4, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=4 insertado.
+Intentando insertar: tenant_id=1, modulo_id=5, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=5 insertado.
+Intentando insertar: tenant_id=1, modulo_id=6, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=6 insertado.
+Intentando insertar: tenant_id=1, modulo_id=7, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=7 insertado.
+Intentando insertar: tenant_id=1, modulo_id=15, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=15 insertado.
+Intentando insertar: tenant_id=1, modulo_id=16, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=16 insertado.
+Intentando insertar: tenant_id=1, modulo_id=17, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=17 insertado.
+Intentando insertar: tenant_id=1, modulo_id=18, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=18 insertado.
+Intentando insertar: tenant_id=1, modulo_id=19, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=19 insertado.
+Intentando insertar: tenant_id=1, modulo_id=20, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=20 insertado.
+Intentando insertar: tenant_id=1, modulo_id=21, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=21 insertado.
+Intentando insertar: tenant_id=1, modulo_id=22, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=22 insertado.
+Intentando insertar: tenant_id=1, modulo_id=23, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=23 insertado.
+==== 2026-02-02 12:46:13 ====
+POST: Array
+(
+    [tenant_id] => 1
+    [ruc] => 1792261104001
+    [razon_social] => DigiSports Administracion
+    [nombre_comercial] => DigiSports Admin
+    [email] => fbpinzon@gmail.com
+    [telefono] => 0993120984
+    [representante_legal] => 
+    [direccion] => Rey david y los Olivos
+    [modulos] => Array
+        (
+            [0] => 18
+            [1] => 5
+            [2] => 16
+            [3] => 15
+            [4] => 23
+            [5] => 20
+            [6] => 17
+            [7] => 21
+            [8] => 4
+            [9] => 6
+            [10] => 7
+            [11] => 2
+            [12] => 22
+            [13] => 3
+            [14] => 1
+        )
+
+    [plan_id] => 4
+    [usuarios_permitidos] => 5
+    [fecha_inicio] => 2026-01-24
+    [fecha_vencimiento] => 2028-01-24
+    [estado] => A
+    [codigo_tenant] => 
+)
+
+Intentando insertar: tenant_id=1, modulo_id=1, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=1 insertado.
+Intentando insertar: tenant_id=1, modulo_id=2, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=2 insertado.
+Intentando insertar: tenant_id=1, modulo_id=3, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=3 insertado.
+Intentando insertar: tenant_id=1, modulo_id=4, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=4 insertado.
+Intentando insertar: tenant_id=1, modulo_id=5, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=5 insertado.
+Intentando insertar: tenant_id=1, modulo_id=6, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=6 insertado.
+Intentando insertar: tenant_id=1, modulo_id=7, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=7 insertado.
+Intentando insertar: tenant_id=1, modulo_id=15, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=15 insertado.
+Intentando insertar: tenant_id=1, modulo_id=16, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=16 insertado.
+Intentando insertar: tenant_id=1, modulo_id=17, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=17 insertado.
+Intentando insertar: tenant_id=1, modulo_id=18, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=18 insertado.
+Intentando insertar: tenant_id=1, modulo_id=19, activo=N, fecha_inicio=2026-02-02
+OK: modulo_id=19 insertado.
+Intentando insertar: tenant_id=1, modulo_id=20, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=20 insertado.
+Intentando insertar: tenant_id=1, modulo_id=21, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=21 insertado.
+Intentando insertar: tenant_id=1, modulo_id=22, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=22 insertado.
+Intentando insertar: tenant_id=1, modulo_id=23, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=23 insertado.
+==== 2026-02-02 12:46:22 ====
+POST: Array
+(
+    [tenant_id] => 1
+    [ruc] => 1792261104001
+    [razon_social] => DigiSports Administracion
+    [nombre_comercial] => DigiSports Admin
+    [email] => fbpinzon@gmail.com
+    [telefono] => 0993120984
+    [representante_legal] => 
+    [direccion] => Rey david y los Olivos
+    [modulos] => Array
+        (
+            [0] => 18
+            [1] => 5
+            [2] => 19
+            [3] => 16
+            [4] => 15
+            [5] => 23
+            [6] => 20
+            [7] => 17
+            [8] => 21
+            [9] => 4
+            [10] => 6
+            [11] => 7
+            [12] => 2
+            [13] => 22
+            [14] => 3
+            [15] => 1
+        )
+
+    [plan_id] => 4
+    [usuarios_permitidos] => 5
+    [fecha_inicio] => 2026-01-24
+    [fecha_vencimiento] => 2028-01-24
+    [estado] => A
+    [codigo_tenant] => 
+)
+
+Intentando insertar: tenant_id=1, modulo_id=1, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=1 insertado.
+Intentando insertar: tenant_id=1, modulo_id=2, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=2 insertado.
+Intentando insertar: tenant_id=1, modulo_id=3, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=3 insertado.
+Intentando insertar: tenant_id=1, modulo_id=4, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=4 insertado.
+Intentando insertar: tenant_id=1, modulo_id=5, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=5 insertado.
+Intentando insertar: tenant_id=1, modulo_id=6, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=6 insertado.
+Intentando insertar: tenant_id=1, modulo_id=7, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=7 insertado.
+Intentando insertar: tenant_id=1, modulo_id=15, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=15 insertado.
+Intentando insertar: tenant_id=1, modulo_id=16, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=16 insertado.
+Intentando insertar: tenant_id=1, modulo_id=17, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=17 insertado.
+Intentando insertar: tenant_id=1, modulo_id=18, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=18 insertado.
+Intentando insertar: tenant_id=1, modulo_id=19, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=19 insertado.
+Intentando insertar: tenant_id=1, modulo_id=20, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=20 insertado.
+Intentando insertar: tenant_id=1, modulo_id=21, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=21 insertado.
+Intentando insertar: tenant_id=1, modulo_id=22, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=22 insertado.
+Intentando insertar: tenant_id=1, modulo_id=23, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=23 insertado.
+==== 2026-02-02 12:46:49 ====
+modulosAsignados: Array
+(
+    [0] => 18
+    [1] => 5
+    [2] => 19
+    [3] => 16
+    [4] => 15
+    [5] => 23
+    [6] => 20
+    [7] => 17
+    [8] => 21
+    [9] => 4
+    [10] => 6
+    [11] => 7
+    [12] => 2
+    [13] => 22
+    [14] => 3
+    [15] => 1
+)
+
+==== 2026-02-02 12:46:55 ====
+POST: Array
+(
+    [tenant_id] => 1
+    [ruc] => 1792261104001
+    [razon_social] => DigiSports Administracion
+    [nombre_comercial] => DigiSports Admin
+    [email] => fbpinzon@gmail.com
+    [telefono] => 0993120984
+    [representante_legal] => 
+    [direccion] => Rey david y los Olivos
+    [modulos] => Array
+        (
+            [0] => 18
+            [1] => 5
+            [2] => 16
+            [3] => 15
+            [4] => 23
+            [5] => 20
+            [6] => 17
+            [7] => 21
+            [8] => 4
+            [9] => 6
+            [10] => 7
+            [11] => 2
+            [12] => 22
+            [13] => 3
+            [14] => 1
+        )
+
+    [plan_id] => 4
+    [usuarios_permitidos] => 5
+    [fecha_inicio] => 2026-01-24
+    [fecha_vencimiento] => 2028-01-24
+    [estado] => A
+    [codigo_tenant] => 
+)
+
+Intentando insertar: tenant_id=1, modulo_id=1, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=1 insertado.
+Intentando insertar: tenant_id=1, modulo_id=2, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=2 insertado.
+Intentando insertar: tenant_id=1, modulo_id=3, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=3 insertado.
+Intentando insertar: tenant_id=1, modulo_id=4, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=4 insertado.
+Intentando insertar: tenant_id=1, modulo_id=5, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=5 insertado.
+Intentando insertar: tenant_id=1, modulo_id=6, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=6 insertado.
+Intentando insertar: tenant_id=1, modulo_id=7, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=7 insertado.
+Intentando insertar: tenant_id=1, modulo_id=15, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=15 insertado.
+Intentando insertar: tenant_id=1, modulo_id=16, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=16 insertado.
+Intentando insertar: tenant_id=1, modulo_id=17, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=17 insertado.
+Intentando insertar: tenant_id=1, modulo_id=18, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=18 insertado.
+Intentando insertar: tenant_id=1, modulo_id=19, activo=N, fecha_inicio=2026-02-02
+OK: modulo_id=19 insertado.
+Intentando insertar: tenant_id=1, modulo_id=20, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=20 insertado.
+Intentando insertar: tenant_id=1, modulo_id=21, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=21 insertado.
+Intentando insertar: tenant_id=1, modulo_id=22, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=22 insertado.
+Intentando insertar: tenant_id=1, modulo_id=23, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=23 insertado.
+==== 2026-02-02 12:47:03 ====
+modulosAsignados: Array
+(
+    [0] => 18
+    [1] => 5
+    [2] => 16
+    [3] => 15
+    [4] => 23
+    [5] => 20
+    [6] => 17
+    [7] => 21
+    [8] => 4
+    [9] => 6
+    [10] => 7
+    [11] => 2
+    [12] => 22
+    [13] => 3
+    [14] => 1
+)
+
+==== 2026-02-02 12:48:07 ====
+POST: Array
+(
+    [tenant_id] => 1
+    [ruc] => 1792261104001
+    [razon_social] => DigiSports Administracion
+    [nombre_comercial] => DigiSports Admin
+    [email] => fbpinzon@gmail.com
+    [telefono] => 0993120984
+    [representante_legal] => 
+    [direccion] => Rey david y los Olivos
+    [modulos] => Array
+        (
+            [0] => 18
+            [1] => 5
+            [2] => 16
+            [3] => 15
+            [4] => 23
+            [5] => 20
+            [6] => 17
+            [7] => 21
+            [8] => 4
+            [9] => 6
+            [10] => 7
+            [11] => 2
+            [12] => 22
+            [13] => 3
+            [14] => 1
+        )
+
+    [plan_id] => 4
+    [usuarios_permitidos] => 5
+    [fecha_inicio] => 2026-01-24
+    [fecha_vencimiento] => 2028-01-24
+    [estado] => A
+    [codigo_tenant] => 
+)
+
+Intentando insertar: tenant_id=1, modulo_id=1, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=1 insertado.
+Intentando insertar: tenant_id=1, modulo_id=2, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=2 insertado.
+Intentando insertar: tenant_id=1, modulo_id=3, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=3 insertado.
+Intentando insertar: tenant_id=1, modulo_id=4, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=4 insertado.
+Intentando insertar: tenant_id=1, modulo_id=5, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=5 insertado.
+Intentando insertar: tenant_id=1, modulo_id=6, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=6 insertado.
+Intentando insertar: tenant_id=1, modulo_id=7, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=7 insertado.
+Intentando insertar: tenant_id=1, modulo_id=15, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=15 insertado.
+Intentando insertar: tenant_id=1, modulo_id=16, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=16 insertado.
+Intentando insertar: tenant_id=1, modulo_id=17, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=17 insertado.
+Intentando insertar: tenant_id=1, modulo_id=18, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=18 insertado.
+Intentando insertar: tenant_id=1, modulo_id=19, activo=N, fecha_inicio=2026-02-02
+OK: modulo_id=19 insertado.
+Intentando insertar: tenant_id=1, modulo_id=20, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=20 insertado.
+Intentando insertar: tenant_id=1, modulo_id=21, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=21 insertado.
+Intentando insertar: tenant_id=1, modulo_id=22, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=22 insertado.
+Intentando insertar: tenant_id=1, modulo_id=23, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=23 insertado.
+==== 2026-02-02 12:56:08 ====
+POST: Array
+(
+    [tenant_id] => 1
+    [ruc] => 1792261104001
+    [razon_social] => DigiSports Administracion
+    [nombre_comercial] => DigiSports Admin
+    [email] => fbpinzon@gmail.com
+    [telefono] => 0993120984
+    [representante_legal] => 
+    [direccion] => Rey david y los Olivos
+    [modulos] => Array
+        (
+            [0] => 18
+            [1] => 5
+            [2] => 16
+            [3] => 15
+            [4] => 23
+            [5] => 20
+            [6] => 17
+            [7] => 21
+            [8] => 4
+            [9] => 6
+            [10] => 7
+            [11] => 2
+            [12] => 22
+            [13] => 3
+            [14] => 1
+        )
+
+    [plan_id] => 4
+    [usuarios_permitidos] => 5
+    [fecha_inicio] => 2026-01-24
+    [fecha_vencimiento] => 2028-01-24
+    [estado] => A
+    [codigo_tenant] => 
+)
+
+Intentando insertar: tenant_id=1, modulo_id=1, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=1 insertado.
+Intentando insertar: tenant_id=1, modulo_id=2, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=2 insertado.
+Intentando insertar: tenant_id=1, modulo_id=3, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=3 insertado.
+Intentando insertar: tenant_id=1, modulo_id=4, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=4 insertado.
+Intentando insertar: tenant_id=1, modulo_id=5, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=5 insertado.
+Intentando insertar: tenant_id=1, modulo_id=6, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=6 insertado.
+Intentando insertar: tenant_id=1, modulo_id=7, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=7 insertado.
+Intentando insertar: tenant_id=1, modulo_id=15, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=15 insertado.
+Intentando insertar: tenant_id=1, modulo_id=16, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=16 insertado.
+Intentando insertar: tenant_id=1, modulo_id=17, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=17 insertado.
+Intentando insertar: tenant_id=1, modulo_id=18, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=18 insertado.
+Intentando insertar: tenant_id=1, modulo_id=19, activo=N, fecha_inicio=2026-02-02
+OK: modulo_id=19 insertado.
+Intentando insertar: tenant_id=1, modulo_id=20, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=20 insertado.
+Intentando insertar: tenant_id=1, modulo_id=21, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=21 insertado.
+Intentando insertar: tenant_id=1, modulo_id=22, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=22 insertado.
+Intentando insertar: tenant_id=1, modulo_id=23, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=23 insertado.
+==== 2026-02-02 12:56:22 ====
+POST: Array
+(
+    [tenant_id] => 1
+    [ruc] => 1792261104001
+    [razon_social] => DigiSports Administracion
+    [nombre_comercial] => DigiSports Admin
+    [email] => fbpinzon@gmail.com
+    [telefono] => 0993120984
+    [representante_legal] => 
+    [direccion] => Rey david y los Olivos
+    [modulos] => Array
+        (
+            [0] => 18
+            [1] => 5
+            [2] => 19
+            [3] => 16
+            [4] => 15
+            [5] => 23
+            [6] => 20
+            [7] => 17
+            [8] => 21
+            [9] => 4
+            [10] => 6
+            [11] => 7
+            [12] => 2
+            [13] => 22
+            [14] => 3
+            [15] => 1
+        )
+
+    [plan_id] => 4
+    [usuarios_permitidos] => 5
+    [fecha_inicio] => 2026-01-24
+    [fecha_vencimiento] => 2028-01-24
+    [estado] => A
+    [codigo_tenant] => 
+)
+
+Intentando insertar: tenant_id=1, modulo_id=1, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=1 insertado.
+Intentando insertar: tenant_id=1, modulo_id=2, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=2 insertado.
+Intentando insertar: tenant_id=1, modulo_id=3, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=3 insertado.
+Intentando insertar: tenant_id=1, modulo_id=4, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=4 insertado.
+Intentando insertar: tenant_id=1, modulo_id=5, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=5 insertado.
+Intentando insertar: tenant_id=1, modulo_id=6, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=6 insertado.
+Intentando insertar: tenant_id=1, modulo_id=7, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=7 insertado.
+Intentando insertar: tenant_id=1, modulo_id=15, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=15 insertado.
+Intentando insertar: tenant_id=1, modulo_id=16, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=16 insertado.
+Intentando insertar: tenant_id=1, modulo_id=17, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=17 insertado.
+Intentando insertar: tenant_id=1, modulo_id=18, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=18 insertado.
+Intentando insertar: tenant_id=1, modulo_id=19, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=19 insertado.
+Intentando insertar: tenant_id=1, modulo_id=20, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=20 insertado.
+Intentando insertar: tenant_id=1, modulo_id=21, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=21 insertado.
+Intentando insertar: tenant_id=1, modulo_id=22, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=22 insertado.
+Intentando insertar: tenant_id=1, modulo_id=23, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=23 insertado.
+==== 2026-02-02 12:56:28 ====
+POST: Array
+(
+    [tenant_id] => 1
+    [ruc] => 1792261104001
+    [razon_social] => DigiSports Administracion
+    [nombre_comercial] => DigiSports Admin
+    [email] => fbpinzon@gmail.com
+    [telefono] => 0993120984
+    [representante_legal] => 
+    [direccion] => Rey david y los Olivos
+    [modulos] => Array
+        (
+            [0] => 18
+            [1] => 5
+            [2] => 19
+            [3] => 16
+            [4] => 15
+            [5] => 23
+            [6] => 20
+            [7] => 17
+            [8] => 21
+            [9] => 4
+            [10] => 6
+            [11] => 7
+            [12] => 2
+            [13] => 22
+            [14] => 3
+            [15] => 1
+        )
+
+    [plan_id] => 4
+    [usuarios_permitidos] => 5
+    [fecha_inicio] => 2026-01-24
+    [fecha_vencimiento] => 2028-01-24
+    [estado] => A
+    [codigo_tenant] => 
+)
+
+Intentando insertar: tenant_id=1, modulo_id=1, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=1 insertado.
+Intentando insertar: tenant_id=1, modulo_id=2, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=2 insertado.
+Intentando insertar: tenant_id=1, modulo_id=3, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=3 insertado.
+Intentando insertar: tenant_id=1, modulo_id=4, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=4 insertado.
+Intentando insertar: tenant_id=1, modulo_id=5, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=5 insertado.
+Intentando insertar: tenant_id=1, modulo_id=6, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=6 insertado.
+Intentando insertar: tenant_id=1, modulo_id=7, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=7 insertado.
+Intentando insertar: tenant_id=1, modulo_id=15, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=15 insertado.
+Intentando insertar: tenant_id=1, modulo_id=16, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=16 insertado.
+Intentando insertar: tenant_id=1, modulo_id=17, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=17 insertado.
+Intentando insertar: tenant_id=1, modulo_id=18, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=18 insertado.
+Intentando insertar: tenant_id=1, modulo_id=19, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=19 insertado.
+Intentando insertar: tenant_id=1, modulo_id=20, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=20 insertado.
+Intentando insertar: tenant_id=1, modulo_id=21, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=21 insertado.
+Intentando insertar: tenant_id=1, modulo_id=22, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=22 insertado.
+Intentando insertar: tenant_id=1, modulo_id=23, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=23 insertado.
+==== 2026-02-02 15:57:43 ====
+modulosAsignados: Array
+(
+    [0] => 5
+    [1] => 15
+    [2] => 4
+    [3] => 6
+    [4] => 7
+    [5] => 2
+    [6] => 22
+    [7] => 3
+    [8] => 1
+)
+
+==== 2026-02-02 15:59:11 ====
+POST: Array
+(
+    [tenant_id] => 1
+    [ruc] => 1792261104001
+    [razon_social] => DigiSports Administracion
+    [nombre_comercial] => DigiSports Admin
+    [email] => fbpinzon@gmail.com
+    [telefono] => 0993120984
+    [representante_legal] => 
+    [direccion] => Rey david y los Olivos
+    [modulos] => Array
+        (
+            [0] => 5
+            [1] => 16
+            [2] => 15
+            [3] => 4
+            [4] => 6
+            [5] => 7
+            [6] => 2
+            [7] => 22
+            [8] => 3
+            [9] => 1
+        )
+
+    [plan_id] => 4
+    [usuarios_permitidos] => 5
+    [fecha_inicio] => 2026-01-24
+    [fecha_vencimiento] => 2028-01-24
+    [estado] => A
+    [codigo_tenant] => 
+)
+
+Intentando insertar: tenant_id=1, modulo_id=1, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=1 insertado.
+Intentando insertar: tenant_id=1, modulo_id=2, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=2 insertado.
+Intentando insertar: tenant_id=1, modulo_id=3, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=3 insertado.
+Intentando insertar: tenant_id=1, modulo_id=4, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=4 insertado.
+Intentando insertar: tenant_id=1, modulo_id=5, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=5 insertado.
+Intentando insertar: tenant_id=1, modulo_id=6, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=6 insertado.
+Intentando insertar: tenant_id=1, modulo_id=7, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=7 insertado.
+Intentando insertar: tenant_id=1, modulo_id=15, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=15 insertado.
+Intentando insertar: tenant_id=1, modulo_id=16, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=16 insertado.
+Intentando insertar: tenant_id=1, modulo_id=17, activo=N, fecha_inicio=2026-02-02
+OK: modulo_id=17 insertado.
+Intentando insertar: tenant_id=1, modulo_id=18, activo=N, fecha_inicio=2026-02-02
+OK: modulo_id=18 insertado.
+Intentando insertar: tenant_id=1, modulo_id=19, activo=N, fecha_inicio=2026-02-02
+OK: modulo_id=19 insertado.
+Intentando insertar: tenant_id=1, modulo_id=20, activo=N, fecha_inicio=2026-02-02
+OK: modulo_id=20 insertado.
+Intentando insertar: tenant_id=1, modulo_id=21, activo=N, fecha_inicio=2026-02-02
+OK: modulo_id=21 insertado.
+Intentando insertar: tenant_id=1, modulo_id=22, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=22 insertado.
+Intentando insertar: tenant_id=1, modulo_id=23, activo=N, fecha_inicio=2026-02-02
+OK: modulo_id=23 insertado.
+==== 2026-02-02 17:53:55 ====
+modulosAsignados: Array
+(
+    [0] => 5
+    [1] => 16
+    [2] => 15
+    [3] => 4
+    [4] => 6
+    [5] => 7
+    [6] => 2
+    [7] => 22
+    [8] => 3
+    [9] => 1
+)
+
+==== 2026-02-02 20:14:18 ====
+modulosAsignados: Array
+(
+    [0] => 5
+    [1] => 16
+    [2] => 15
+    [3] => 4
+    [4] => 6
+    [5] => 7
+    [6] => 2
+    [7] => 22
+    [8] => 3
+    [9] => 1
+)
+
+==== 2026-02-02 20:14:26 ====
+POST: Array
+(
+    [tenant_id] => 1
+    [ruc] => 1792261104001
+    [razon_social] => DigiSports Administracion
+    [nombre_comercial] => DigiSports Admin
+    [email] => fbpinzon@gmail.com
+    [telefono] => 0993120984
+    [representante_legal] => 
+    [direccion] => Rey david y los Olivos
+    [modulos] => Array
+        (
+            [0] => 5
+            [1] => 16
+            [2] => 15
+            [3] => 17
+            [4] => 4
+            [5] => 6
+            [6] => 7
+            [7] => 2
+            [8] => 22
+            [9] => 3
+            [10] => 1
+        )
+
+    [plan_id] => 4
+    [usuarios_permitidos] => 5
+    [fecha_inicio] => 2026-01-24
+    [fecha_vencimiento] => 2028-01-24
+    [estado] => A
+    [codigo_tenant] => 
+)
+
+Intentando insertar: tenant_id=1, modulo_id=1, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=1 insertado.
+Intentando insertar: tenant_id=1, modulo_id=2, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=2 insertado.
+Intentando insertar: tenant_id=1, modulo_id=3, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=3 insertado.
+Intentando insertar: tenant_id=1, modulo_id=4, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=4 insertado.
+Intentando insertar: tenant_id=1, modulo_id=5, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=5 insertado.
+Intentando insertar: tenant_id=1, modulo_id=6, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=6 insertado.
+Intentando insertar: tenant_id=1, modulo_id=7, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=7 insertado.
+Intentando insertar: tenant_id=1, modulo_id=15, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=15 insertado.
+Intentando insertar: tenant_id=1, modulo_id=16, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=16 insertado.
+Intentando insertar: tenant_id=1, modulo_id=17, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=17 insertado.
+Intentando insertar: tenant_id=1, modulo_id=18, activo=N, fecha_inicio=2026-02-02
+OK: modulo_id=18 insertado.
+Intentando insertar: tenant_id=1, modulo_id=19, activo=N, fecha_inicio=2026-02-02
+OK: modulo_id=19 insertado.
+Intentando insertar: tenant_id=1, modulo_id=20, activo=N, fecha_inicio=2026-02-02
+OK: modulo_id=20 insertado.
+Intentando insertar: tenant_id=1, modulo_id=21, activo=N, fecha_inicio=2026-02-02
+OK: modulo_id=21 insertado.
+Intentando insertar: tenant_id=1, modulo_id=22, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=22 insertado.
+Intentando insertar: tenant_id=1, modulo_id=23, activo=N, fecha_inicio=2026-02-02
+OK: modulo_id=23 insertado.
+==== 2026-02-02 20:20:56 ====
+modulosAsignados: Array
+(
+    [0] => 5
+    [1] => 16
+    [2] => 15
+    [3] => 17
+    [4] => 4
+    [5] => 6
+    [6] => 7
+    [7] => 2
+    [8] => 22
+    [9] => 3
+    [10] => 1
+)
+
+==== 2026-02-02 20:21:00 ====
+POST: Array
+(
+    [tenant_id] => 1
+    [ruc] => 1792261104001
+    [razon_social] => DigiSports Administracion
+    [nombre_comercial] => DigiSports Admin
+    [email] => fbpinzon@gmail.com
+    [telefono] => 0993120984
+    [representante_legal] => 
+    [direccion] => Rey david y los Olivos
+    [modulos] => Array
+        (
+            [0] => 5
+            [1] => 16
+            [2] => 15
+            [3] => 17
+            [4] => 4
+            [5] => 6
+            [6] => 7
+            [7] => 2
+            [8] => 22
+            [9] => 3
+            [10] => 1
+        )
+
+    [plan_id] => 4
+    [usuarios_permitidos] => 5
+    [fecha_inicio] => 2026-01-24
+    [fecha_vencimiento] => 2028-01-24
+    [estado] => A
+    [codigo_tenant] => 
+)
+
+Intentando insertar: tenant_id=1, modulo_id=1, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=1 insertado.
+Intentando insertar: tenant_id=1, modulo_id=2, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=2 insertado.
+Intentando insertar: tenant_id=1, modulo_id=3, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=3 insertado.
+Intentando insertar: tenant_id=1, modulo_id=4, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=4 insertado.
+Intentando insertar: tenant_id=1, modulo_id=5, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=5 insertado.
+Intentando insertar: tenant_id=1, modulo_id=6, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=6 insertado.
+Intentando insertar: tenant_id=1, modulo_id=7, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=7 insertado.
+Intentando insertar: tenant_id=1, modulo_id=15, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=15 insertado.
+Intentando insertar: tenant_id=1, modulo_id=16, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=16 insertado.
+Intentando insertar: tenant_id=1, modulo_id=17, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=17 insertado.
+Intentando insertar: tenant_id=1, modulo_id=18, activo=N, fecha_inicio=2026-02-02
+OK: modulo_id=18 insertado.
+Intentando insertar: tenant_id=1, modulo_id=19, activo=N, fecha_inicio=2026-02-02
+OK: modulo_id=19 insertado.
+Intentando insertar: tenant_id=1, modulo_id=20, activo=N, fecha_inicio=2026-02-02
+OK: modulo_id=20 insertado.
+Intentando insertar: tenant_id=1, modulo_id=21, activo=N, fecha_inicio=2026-02-02
+OK: modulo_id=21 insertado.
+Intentando insertar: tenant_id=1, modulo_id=22, activo=S, fecha_inicio=2026-02-02
+OK: modulo_id=22 insertado.
+Intentando insertar: tenant_id=1, modulo_id=23, activo=N, fecha_inicio=2026-02-02
+OK: modulo_id=23 insertado.
+==== 2026-02-02 20:35:57 ====
+modulosAsignados: Array
+(
+    [0] => 5
+    [1] => 16
+    [2] => 15
+    [3] => 17
+    [4] => 4
+    [5] => 6
+    [6] => 7
+    [7] => 2
+    [8] => 22
+    [9] => 3
+    [10] => 1
+)
+
+==== 2026-02-02 20:39:42 ====
+modulosAsignados: Array
+(
+    [0] => 5
+    [1] => 16
+    [2] => 15
+    [3] => 17
+    [4] => 4
+    [5] => 6
+    [6] => 7
+    [7] => 2
+    [8] => 22
+    [9] => 3
+    [10] => 1
+)
+
+==== 2026-02-02 20:53:05 ====
+modulosAsignados: Array
+(
+    [0] => 0
+    [1] => 0
+    [2] => 0
+    [3] => 0
+    [4] => 0
+    [5] => 0
+    [6] => 0
+    [7] => 0
+    [8] => 0
+    [9] => 0
+)
+
+==== 2026-02-02 20:56:13 ====
+modulosAsignados: Array
+(
+    [0] => 7
+    [1] => 6
+    [2] => 16
+    [3] => 15
+    [4] => 5
+    [5] => 3
+    [6] => 1
+    [7] => 4
+    [8] => 2
+    [9] => 22
+)
+
+==== 2026-02-02 20:57:15 ====
+modulosAsignados: Array
+(
+    [0] => 7
+    [1] => 6
+    [2] => 16
+    [3] => 15
+    [4] => 5
+    [5] => 3
+    [6] => 1
+    [7] => 4
+    [8] => 2
+    [9] => 22
+)
+
+==== 2026-02-02 21:04:22 ====
+modulosAsignados: Array
+(
+    [0] => 7
+    [1] => 6
+    [2] => 16
+    [3] => 15
+    [4] => 5
+    [5] => 3
+    [6] => 1
+    [7] => 4
+    [8] => 2
+    [9] => 22
+)
+
+==== 2026-02-02 21:13:57 ====
+modulosAsignados: Array
+(
+    [0] => 7
+    [1] => 6
+    [2] => 16
+    [3] => 15
+    [4] => 5
+    [5] => 3
+    [6] => 1
+    [7] => 4
+    [8] => 2
+    [9] => 22
+)
+
+==== 2026-02-02 21:15:07 ====
+modulosAsignados: Array
+(
+    [0] => 7
+    [1] => 6
+    [2] => 16
+    [3] => 15
+    [4] => 5
+    [5] => 3
+    [6] => 1
+    [7] => 4
+    [8] => 2
+    [9] => 22
+)
+
+==== 2026-02-02 21:15:32 ====
+modulosAsignados: Array
+(
+    [0] => 7
+    [1] => 6
+    [2] => 16
+    [3] => 15
+    [4] => 5
+    [5] => 3
+    [6] => 1
+    [7] => 4
+    [8] => 2
+    [9] => 22
+)
+
+==== 2026-02-02 21:16:21 ====
+modulosAsignados: Array
+(
+    [0] => 7
+    [1] => 6
+    [2] => 16
+    [3] => 15
+    [4] => 5
+    [5] => 3
+    [6] => 1
+    [7] => 4
+    [8] => 2
+    [9] => 22
+)
+
+==== 2026-02-03 00:19:39 ====
+modulosAsignados: Array
+(
+    [0] => 7
+    [1] => 6
+    [2] => 16
+    [3] => 15
+    [4] => 5
+    [5] => 3
+    [6] => 1
+    [7] => 4
+    [8] => 2
+    [9] => 22
+)
+
+==== 2026-02-03 00:25:11 ====
+modulosAsignados: Array
+(
+    [0] => 7
+    [1] => 6
+    [2] => 16
+    [3] => 15
+    [4] => 5
+    [5] => 3
+    [6] => 1
+    [7] => 4
+    [8] => 2
+    [9] => 22
+)
+
+==== 2026-02-03 00:25:18 ====
+POST: Array
+(
+    [tenant_id] => 1
+    [ruc] => 1792261104001
+    [razon_social] => DigiSports Administracion
+    [nombre_comercial] => DigiSports Admin
+    [email] => fbpinzon@gmail.com
+    [telefono] => 0993120984
+    [representante_legal] => 
+    [direccion] => Rey david y los Olivos
+    [modulos] => Array
+        (
+            [0] => 7
+            [1] => 6
+            [2] => 16
+            [3] => 15
+            [4] => 5
+            [5] => 3
+            [6] => 1
+            [7] => 4
+            [8] => 22
+        )
+
+    [plan_id] => 4
+    [usuarios_permitidos] => 5
+    [fecha_inicio] => 2026-01-24
+    [fecha_vencimiento] => 2028-01-24
+    [estado] => A
+    [codigo_tenant] => 
+)
+
+Intentando insertar: tenant_id=1, modulo_id=1, activo=S, fecha_inicio=2026-02-03
+OK: modulo_id=1 insertado.
+Intentando insertar: tenant_id=1, modulo_id=2, activo=N, fecha_inicio=2026-02-03
+OK: modulo_id=2 insertado.
+Intentando insertar: tenant_id=1, modulo_id=3, activo=S, fecha_inicio=2026-02-03
+OK: modulo_id=3 insertado.
+Intentando insertar: tenant_id=1, modulo_id=4, activo=S, fecha_inicio=2026-02-03
+OK: modulo_id=4 insertado.
+Intentando insertar: tenant_id=1, modulo_id=5, activo=S, fecha_inicio=2026-02-03
+OK: modulo_id=5 insertado.
+Intentando insertar: tenant_id=1, modulo_id=6, activo=S, fecha_inicio=2026-02-03
+OK: modulo_id=6 insertado.
+Intentando insertar: tenant_id=1, modulo_id=7, activo=S, fecha_inicio=2026-02-03
+OK: modulo_id=7 insertado.
+Intentando insertar: tenant_id=1, modulo_id=15, activo=S, fecha_inicio=2026-02-03
+OK: modulo_id=15 insertado.
+Intentando insertar: tenant_id=1, modulo_id=16, activo=S, fecha_inicio=2026-02-03
+OK: modulo_id=16 insertado.
+Intentando insertar: tenant_id=1, modulo_id=17, activo=N, fecha_inicio=2026-02-03
+OK: modulo_id=17 insertado.
+Intentando insertar: tenant_id=1, modulo_id=18, activo=N, fecha_inicio=2026-02-03
+OK: modulo_id=18 insertado.
+Intentando insertar: tenant_id=1, modulo_id=19, activo=N, fecha_inicio=2026-02-03
+OK: modulo_id=19 insertado.
+Intentando insertar: tenant_id=1, modulo_id=20, activo=N, fecha_inicio=2026-02-03
+OK: modulo_id=20 insertado.
+Intentando insertar: tenant_id=1, modulo_id=21, activo=N, fecha_inicio=2026-02-03
+OK: modulo_id=21 insertado.
+Intentando insertar: tenant_id=1, modulo_id=22, activo=S, fecha_inicio=2026-02-03
+OK: modulo_id=22 insertado.
+Intentando insertar: tenant_id=1, modulo_id=23, activo=N, fecha_inicio=2026-02-03
+OK: modulo_id=23 insertado.
+==== 2026-02-03 00:25:27 ====
+POST: Array
+(
+    [tenant_id] => 1
+    [ruc] => 1792261104001
+    [razon_social] => DigiSports Administracion
+    [nombre_comercial] => DigiSports Admin
+    [email] => fbpinzon@gmail.com
+    [telefono] => 0993120984
+    [representante_legal] => 
+    [direccion] => Rey david y los Olivos
+    [modulos] => Array
+        (
+            [0] => 7
+            [1] => 6
+            [2] => 16
+            [3] => 15
+            [4] => 5
+            [5] => 1
+            [6] => 4
+            [7] => 22
+        )
+
+    [plan_id] => 4
+    [usuarios_permitidos] => 5
+    [fecha_inicio] => 2026-01-24
+    [fecha_vencimiento] => 2028-01-24
+    [estado] => A
+    [codigo_tenant] => 
+)
+
+Intentando insertar: tenant_id=1, modulo_id=1, activo=S, fecha_inicio=2026-02-03
+OK: modulo_id=1 insertado.
+Intentando insertar: tenant_id=1, modulo_id=2, activo=N, fecha_inicio=2026-02-03
+OK: modulo_id=2 insertado.
+Intentando insertar: tenant_id=1, modulo_id=3, activo=N, fecha_inicio=2026-02-03
+OK: modulo_id=3 insertado.
+Intentando insertar: tenant_id=1, modulo_id=4, activo=S, fecha_inicio=2026-02-03
+OK: modulo_id=4 insertado.
+Intentando insertar: tenant_id=1, modulo_id=5, activo=S, fecha_inicio=2026-02-03
+OK: modulo_id=5 insertado.
+Intentando insertar: tenant_id=1, modulo_id=6, activo=S, fecha_inicio=2026-02-03
+OK: modulo_id=6 insertado.
+Intentando insertar: tenant_id=1, modulo_id=7, activo=S, fecha_inicio=2026-02-03
+OK: modulo_id=7 insertado.
+Intentando insertar: tenant_id=1, modulo_id=15, activo=S, fecha_inicio=2026-02-03
+OK: modulo_id=15 insertado.
+Intentando insertar: tenant_id=1, modulo_id=16, activo=S, fecha_inicio=2026-02-03
+OK: modulo_id=16 insertado.
+Intentando insertar: tenant_id=1, modulo_id=17, activo=N, fecha_inicio=2026-02-03
+OK: modulo_id=17 insertado.
+Intentando insertar: tenant_id=1, modulo_id=18, activo=N, fecha_inicio=2026-02-03
+OK: modulo_id=18 insertado.
+Intentando insertar: tenant_id=1, modulo_id=19, activo=N, fecha_inicio=2026-02-03
+OK: modulo_id=19 insertado.
+Intentando insertar: tenant_id=1, modulo_id=20, activo=N, fecha_inicio=2026-02-03
+OK: modulo_id=20 insertado.
+Intentando insertar: tenant_id=1, modulo_id=21, activo=N, fecha_inicio=2026-02-03
+OK: modulo_id=21 insertado.
+Intentando insertar: tenant_id=1, modulo_id=22, activo=S, fecha_inicio=2026-02-03
+OK: modulo_id=22 insertado.
+Intentando insertar: tenant_id=1, modulo_id=23, activo=N, fecha_inicio=2026-02-03
+OK: modulo_id=23 insertado.
+==== 2026-02-03 16:32:39 ====
+modulosAsignados: Array
+(
+    [0] => 7
+    [1] => 6
+    [2] => 16
+    [3] => 15
+    [4] => 5
+    [5] => 1
+    [6] => 4
+    [7] => 22
+)
+

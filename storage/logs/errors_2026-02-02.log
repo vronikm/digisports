@@ -1,0 +1,60 @@
+[2026-02-02 15:52:47] ERROR - Controlador no encontrado: dashboard in C:\wamp64\www\digisports\config\Router.php:146
+Stack trace:
+#0 C:\wamp64\www\digisports\public\index.php(68): Router->dispatch()
+#1 {main}
+
+[2026-02-02 15:55:39] ERROR - Controlador no encontrado: dashboard in C:\wamp64\www\digisports\config\Router.php:146
+Stack trace:
+#0 C:\wamp64\www\digisports\public\index.php(68): Router->dispatch()
+#1 {main}
+
+[2026-02-02 16:19:13] ERROR - Controlador no encontrado: futbol/DashboardController in C:\wamp64\www\digisports\config\Router.php:146
+Stack trace:
+#0 C:\wamp64\www\digisports\public\index.php(68): Router->dispatch()
+#1 {main}
+
+[2026-02-02 16:20:42] ERROR - Controlador no encontrado: futbol/DashboardController in C:\wamp64\www\digisports\config\Router.php:146
+Stack trace:
+#0 C:\wamp64\www\digisports\public\index.php(68): Router->dispatch()
+#1 {main}
+
+[2026-02-02 16:30:32] ERROR - Controlador no encontrado: basket/DashboardController in C:\wamp64\www\digisports\config\Router.php:146
+Stack trace:
+#0 C:\wamp64\www\digisports\public\index.php(68): Router->dispatch()
+#1 {main}
+
+[2026-02-02 16:33:05] ERROR - Controlador no encontrado: basket/DashboardController in C:\wamp64\www\digisports\config\Router.php:146
+Stack trace:
+#0 C:\wamp64\www\digisports\public\index.php(68): Router->dispatch()
+#1 {main}
+
+[2026-02-02 16:33:55] ERROR - Controlador no encontrado: basket/DashboardController in C:\wamp64\www\digisports\config\Router.php:146
+Stack trace:
+#0 C:\wamp64\www\digisports\public\index.php(68): Router->dispatch()
+#1 {main}
+
+[2026-02-02 16:35:46] ERROR - Controlador no encontrado: basket/DashboardController in C:\wamp64\www\digisports\config\Router.php:146
+Stack trace:
+#0 C:\wamp64\www\digisports\public\index.php(68): Router->dispatch()
+#1 {main}
+
+[2026-02-02 16:37:26] ERROR - Controlador no encontrado: basket/DashboardController in C:\wamp64\www\digisports\config\Router.php:146
+Stack trace:
+#0 C:\wamp64\www\digisports\public\index.php(68): Router->dispatch()
+#1 {main}
+
+[2026-02-02 16:37:41] ERROR - Controlador no encontrado: DashboardController in C:\wamp64\www\digisports\config\Router.php:146
+Stack trace:
+#0 C:\wamp64\www\digisports\public\index.php(68): Router->dispatch()
+#1 {main}
+
+[2026-02-02 23:38:51] ERROR - Controlador no encontrado: calendario in C:\wamp64\www\digisports\config\Router.php:146
+Stack trace:
+#0 C:\wamp64\www\digisports\public\index.php(68): Router->dispatch()
+#1 {main}
+
+[2026-02-02 23:57:20] ERROR - Controlador no encontrado: cancha in C:\wamp64\www\digisports\config\Router.php:146
+Stack trace:
+#0 C:\wamp64\www\digisports\public\index.php(68): Router->dispatch()
+#1 {main}
+

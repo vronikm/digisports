@@ -1,0 +1,15 @@
+[2026-01-30 17:46:22] ERROR - Controlador no encontrado: escuela in C:\wamp64\www\digisports\config\Router.php:146
+Stack trace:
+#0 C:\wamp64\www\digisports\public\index.php(68): Router->dispatch()
+#1 {main}
+
+[2026-01-30 17:46:29] ERROR - Clase del controlador no encontrada: App\Controllers\Reservas\AbonController in C:\wamp64\www\digisports\config\Router.php:155
+Stack trace:
+#0 C:\wamp64\www\digisports\public\index.php(68): Router->dispatch()
+#1 {main}
+
+[2026-01-30 21:14:32] ERROR - Controlador no encontrado: disciplina in C:\wamp64\www\digisports\config\Router.php:146
+Stack trace:
+#0 C:\wamp64\www\digisports\public\index.php(68): Router->dispatch()
+#1 {main}
+

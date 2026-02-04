@@ -1,0 +1,9 @@
+[2026-02-03 08:29:08] LOGIN_FAILED - IP: ::1 - User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 - Details: Usuario: superadmin - Contraseña incorrecta
+[2026-02-03 08:29:19] LOGIN_SUCCESS - IP: ::1 - User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 - Details: Usuario: superadmin, Tenant: 1
+[2026-02-03 10:26:06] LOGOUT - IP: ::1 - User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 - Details: Usuario: superadmin
+[2026-02-03 10:56:42] LOGIN_SUCCESS - IP: ::1 - User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 - Details: Usuario: superadmin, Tenant: 1
+[2026-02-03 15:33:35] LOGIN_FAILED - IP: ::1 - User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 - Details: Usuario: superadmin - Contraseña incorrecta
+[2026-02-03 15:33:46] LOGIN_SUCCESS - IP: ::1 - User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 - Details: Usuario: superadmin, Tenant: 1
+[2026-02-03 20:55:27] LOGIN_SUCCESS - IP: ::1 - User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 - Details: Usuario: superadmin, Tenant: 1
+[2026-02-03 22:53:00] INVALID_URL - IP: ::1 - User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 - Details: URL inválida o expirada
+[2026-02-03 22:54:07] INVALID_URL - IP: ::1 - User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 - Details: URL inválida o expirada

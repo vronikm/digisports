@@ -1,0 +1,37 @@
+{
+    "iconos": {
+        "Sistema": {
+            "fa-store": "Tienda",
+            "fa-shield-alt": "Seguridad"
+        },
+        "Deportes": {
+            "fa-futbol": "Fútbol",
+            "fa-basketball-ball": "Basket",
+            "fa-swimmer": "Natación",
+            "fa-chess-knight": "Ajedrez",
+            "fa-dumbbell": "Gimnasio",
+            "fa-running": "Atletismo",
+            "fa-table-tennis": "Tenis de Mesa",
+            "fa-volleyball-ball": "Voleibol",
+            "fa-baseball-ball": "Béisbol",
+            "fa-bowling-ball": "Bowling",
+            "fa-hockey-puck": "Hockey",
+            "fa-skiing": "Ski",
+            "fa-biking": "Ciclismo",
+            "fa-medal": "Medalla",
+            "fa-trophy": "Trofeo",
+            "fa-users": "Equipo",
+            "fa-boxing-glove": "Box",
+            "fa-user-ninja": "Artes Marciales"
+        }
+    },
+    "colores": {
+        "#22C55E": "Verde",
+        "#3B82F6": "Azul",
+        "#F59E42": "Naranja",
+        "#EF4444": "Rojo",
+        "#A855F7": "Morado",
+        "#FACC15": "Amarillo",
+        "#64748B": "Gris"
+    }
+}

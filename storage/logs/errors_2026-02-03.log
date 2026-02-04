@@ -1,0 +1,30 @@
+[2026-02-03 00:24:01] ERROR - Método no encontrado: configuracion in C:\wamp64\www\digisports\config\Router.php:162
+Stack trace:
+#0 C:\wamp64\www\digisports\public\index.php(68): Router->dispatch()
+#1 {main}
+
+[2026-02-03 16:06:15] ERROR - Método no encontrado: configuracion in C:\wamp64\www\digisports\config\Router.php:162
+Stack trace:
+#0 C:\wamp64\www\digisports\public\index.php(68): Router->dispatch()
+#1 {main}
+
+[2026-02-03 16:30:06] ERROR - Método no encontrado: configuracion in C:\wamp64\www\digisports\config\Router.php:162
+Stack trace:
+#0 C:\wamp64\www\digisports\public\index.php(68): Router->dispatch()
+#1 {main}
+
+[2026-02-03 16:32:24] ERROR - Método no encontrado: configuracion in C:\wamp64\www\digisports\config\Router.php:162
+Stack trace:
+#0 C:\wamp64\www\digisports\public\index.php(68): Router->dispatch()
+#1 {main}
+
+[2026-02-03 16:51:06] ERROR - Método no encontrado: configuracion in C:\wamp64\www\digisports\config\Router.php:162
+Stack trace:
+#0 C:\wamp64\www\digisports\public\index.php(68): Router->dispatch()
+#1 {main}
+
+[2026-02-03 21:51:49] ERROR - Clase del controlador no encontrada: App\Controllers\Seguridad\ModuloController in C:\wamp64\www\digisports\config\Router.php:155
+Stack trace:
+#0 C:\wamp64\www\digisports\public\index.php(68): Router->dispatch()
+#1 {main}
+

@@ -1,0 +1,120 @@
+[2026-01-29 15:04:26] ERROR - Método no encontrado: actualizar in C:\wamp64\www\digisports\config\Router.php:162
+Stack trace:
+#0 C:\wamp64\www\digisports\public\index.php(68): Router->dispatch()
+#1 {main}
+
+[2026-01-29 16:23:23] ERROR - Controlador no encontrado: escuela in C:\wamp64\www\digisports\config\Router.php:146
+Stack trace:
+#0 C:\wamp64\www\digisports\public\index.php(68): Router->dispatch()
+#1 {main}
+
+[2026-01-29 16:23:58] ERROR - Controlador no encontrado: horario in C:\wamp64\www\digisports\config\Router.php:146
+Stack trace:
+#0 C:\wamp64\www\digisports\public\index.php(68): Router->dispatch()
+#1 {main}
+
+[2026-01-29 16:24:03] ERROR - Controlador no encontrado: reserva in C:\wamp64\www\digisports\config\Router.php:146
+Stack trace:
+#0 C:\wamp64\www\digisports\public\index.php(68): Router->dispatch()
+#1 {main}
+
+[2026-01-29 16:24:07] ERROR - Controlador no encontrado: escuela in C:\wamp64\www\digisports\config\Router.php:146
+Stack trace:
+#0 C:\wamp64\www\digisports\public\index.php(68): Router->dispatch()
+#1 {main}
+
+[2026-01-29 16:31:34] ERROR - Controlador no encontrado: config in C:\wamp64\www\digisports\config\Router.php:146
+Stack trace:
+#0 C:\wamp64\www\digisports\public\index.php(68): Router->dispatch()
+#1 {main}
+
+[2026-01-29 16:33:40] ERROR - Controlador no encontrado: config in C:\wamp64\www\digisports\config\Router.php:146
+Stack trace:
+#0 C:\wamp64\www\digisports\public\index.php(68): Router->dispatch()
+#1 {main}
+
+[2026-01-29 16:34:46] ERROR - Controlador no encontrado: config in C:\wamp64\www\digisports\config\Router.php:146
+Stack trace:
+#0 C:\wamp64\www\digisports\public\index.php(68): Router->dispatch()
+#1 {main}
+
+[2026-01-29 16:34:48] ERROR - Controlador no encontrado: config in C:\wamp64\www\digisports\config\Router.php:146
+Stack trace:
+#0 C:\wamp64\www\digisports\public\index.php(68): Router->dispatch()
+#1 {main}
+
+[2026-01-29 16:37:51] ERROR - Controlador no encontrado: config in C:\wamp64\www\digisports\config\Router.php:146
+Stack trace:
+#0 C:\wamp64\www\digisports\public\index.php(68): Router->dispatch()
+#1 {main}
+
+[2026-01-29 16:41:59] ERROR - Método no encontrado: configuracion in C:\wamp64\www\digisports\config\Router.php:162
+Stack trace:
+#0 C:\wamp64\www\digisports\public\index.php(68): Router->dispatch()
+#1 {main}
+
+[2026-01-29 16:42:42] ERROR - Método no encontrado: configuracion in C:\wamp64\www\digisports\config\Router.php:162
+Stack trace:
+#0 C:\wamp64\www\digisports\public\index.php(68): Router->dispatch()
+#1 {main}
+
+[2026-01-29 16:48:43] ERROR - Método no encontrado: configuracion in C:\wamp64\www\digisports\config\Router.php:162
+Stack trace:
+#0 C:\wamp64\www\digisports\public\index.php(68): Router->dispatch()
+#1 {main}
+
+[2026-01-29 17:24:00] ERROR - Método no encontrado: configuracion in C:\wamp64\www\digisports\config\Router.php:162
+Stack trace:
+#0 C:\wamp64\www\digisports\public\index.php(68): Router->dispatch()
+#1 {main}
+
+[2026-01-29 20:35:20] ERROR - Método no encontrado: configuracion in C:\wamp64\www\digisports\config\Router.php:162
+Stack trace:
+#0 C:\wamp64\www\digisports\public\index.php(68): Router->dispatch()
+#1 {main}
+
+[2026-01-29 22:43:37] ERROR - Método no encontrado: configuracion in C:\wamp64\www\digisports\config\Router.php:162
+Stack trace:
+#0 C:\wamp64\www\digisports\public\index.php(68): Router->dispatch()
+#1 {main}
+
+[2026-01-29 23:16:08] ERROR - Controlador no encontrado: calendario in C:\wamp64\www\digisports\config\Router.php:146
+Stack trace:
+#0 C:\wamp64\www\digisports\public\index.php(68): Router->dispatch()
+#1 {main}
+
+[2026-01-29 23:16:53] ERROR - Controlador no encontrado: disciplina in C:\wamp64\www\digisports\config\Router.php:146
+Stack trace:
+#0 C:\wamp64\www\digisports\public\index.php(68): Router->dispatch()
+#1 {main}
+
+[2026-01-29 23:17:02] ERROR - Controlador no encontrado: kata in C:\wamp64\www\digisports\config\Router.php:146
+Stack trace:
+#0 C:\wamp64\www\digisports\public\index.php(68): Router->dispatch()
+#1 {main}
+
+[2026-01-29 23:17:16] ERROR - Controlador no encontrado: horario in C:\wamp64\www\digisports\config\Router.php:146
+Stack trace:
+#0 C:\wamp64\www\digisports\public\index.php(68): Router->dispatch()
+#1 {main}
+
+[2026-01-29 23:18:25] ERROR - Controlador no encontrado: pos in C:\wamp64\www\digisports\config\Router.php:146
+Stack trace:
+#0 C:\wamp64\www\digisports\public\index.php(68): Router->dispatch()
+#1 {main}
+
+[2026-01-29 23:18:30] ERROR - Controlador no encontrado: producto in C:\wamp64\www\digisports\config\Router.php:146
+Stack trace:
+#0 C:\wamp64\www\digisports\public\index.php(68): Router->dispatch()
+#1 {main}
+
+[2026-01-29 23:19:50] ERROR - Clase del controlador no encontrada: App\Controllers\Reservas\AbonController in C:\wamp64\www\digisports\config\Router.php:155
+Stack trace:
+#0 C:\wamp64\www\digisports\public\index.php(68): Router->dispatch()
+#1 {main}
+
+[2026-01-29 23:19:54] ERROR - Controlador no encontrado: escuela in C:\wamp64\www\digisports\config\Router.php:146
+Stack trace:
+#0 C:\wamp64\www\digisports\public\index.php(68): Router->dispatch()
+#1 {main}
+

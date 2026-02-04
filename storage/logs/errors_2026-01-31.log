@@ -1,0 +1,5 @@
+[2026-01-31 20:58:18] ERROR - Controlador no encontrado: pos in C:\wamp64\www\digisports\config\Router.php:146
+Stack trace:
+#0 C:\wamp64\www\digisports\public\index.php(68): Router->dispatch()
+#1 {main}
+
