@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1:3306
--- Tiempo de generación: 04-02-2026 a las 04:42:44
+-- Tiempo de generación: 06-02-2026 a las 13:32:00
 -- Versión del servidor: 8.2.0
 -- Versión de PHP: 8.2.13
 
@@ -24,63 +24,751 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `abonos`
+-- Estructura de tabla para la tabla `clientes`
 --
 
-DROP TABLE IF EXISTS `abonos`;
-CREATE TABLE IF NOT EXISTS `abonos` (
-  `abono_id` int NOT NULL AUTO_INCREMENT,
-  `tenant_id` int NOT NULL,
-  `cliente_id` int NOT NULL,
-  `monto_total` decimal(10,2) NOT NULL,
-  `monto_utilizado` decimal(10,2) DEFAULT '0.00',
-  `saldo_disponible` decimal(10,2) NOT NULL,
-  `fecha_compra` date NOT NULL,
-  `fecha_vencimiento` date NOT NULL,
-  `forma_pago` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `estado` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT 'ACTIVO',
-  `fecha_registro` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`abono_id`),
-  KEY `tenant_id` (`tenant_id`),
-  KEY `idx_cliente` (`cliente_id`),
-  KEY `idx_vencimiento` (`fecha_vencimiento`)
+DROP TABLE IF EXISTS `clientes`;
+CREATE TABLE IF NOT EXISTS `clientes` (
+  `cli_cliente_id` int NOT NULL AUTO_INCREMENT,
+  `cli_tenant_id` int NOT NULL,
+  `cli_tipo_identificacion` varchar(3) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `cli_identificacion` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `cli_nombres` varchar(150) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `cli_apellidos` varchar(150) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `cli_email` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `cli_telefono` varchar(15) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `cli_celular` varchar(15) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `cli_direccion` varchar(400) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `cli_fecha_nacimiento` date DEFAULT NULL,
+  `cli_tipo_cliente` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT 'PUBLICO',
+  `cli_saldo_abono` decimal(10,2) DEFAULT '0.00',
+  `cli_estado` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'A',
+  `cli_fecha_registro` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`cli_cliente_id`),
+  UNIQUE KEY `uk_tenant_identificacion` (`cli_tenant_id`,`cli_identificacion`),
+  KEY `idx_email` (`cli_email`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `clientes`
+--
+
+INSERT INTO `clientes` (`cli_cliente_id`, `cli_tenant_id`, `cli_tipo_identificacion`, `cli_identificacion`, `cli_nombres`, `cli_apellidos`, `cli_email`, `cli_telefono`, `cli_celular`, `cli_direccion`, `cli_fecha_nacimiento`, `cli_tipo_cliente`, `cli_saldo_abono`, `cli_estado`, `cli_fecha_registro`) VALUES
+(1, 1, 'PAS', 'TMP1769387779', 'Freddy', 'Bolivar Pinzon Olmedo', 'fbpinzon@gmail.com', '0993120984', NULL, NULL, NULL, 'PUBLICO', 0.00, 'A', '2026-01-26 00:36:19');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `facturas_electronicas`
+--
+
+DROP TABLE IF EXISTS `facturas_electronicas`;
+CREATE TABLE IF NOT EXISTS `facturas_electronicas` (
+  `fac_id` int NOT NULL AUTO_INCREMENT,
+  `fac_tenant_id` int NOT NULL,
+  `fac_factura_id` int DEFAULT NULL,
+  `fac_clave_acceso` varchar(49) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `fac_tipo_comprobante` char(2) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '01' COMMENT '01=Factura, 04=Nota Crédito, 05=Nota Débito, 06=Guía Remisión, 07=Retención',
+  `fac_establecimiento` char(3) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `fac_punto_emision` char(3) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `fac_secuencial` char(9) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `fac_fecha_emision` date NOT NULL,
+  `fac_cliente_id` int DEFAULT NULL,
+  `fac_cliente_tipo_identificacion` char(2) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '04=RUC, 05=Cédula, 06=Pasaporte, 07=Cons.Final',
+  `fac_cliente_identificacion` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `fac_cliente_razon_social` varchar(300) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `fac_cliente_direccion` varchar(300) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `fac_cliente_email` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `fac_cliente_telefono` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `fac_subtotal_iva` decimal(14,2) NOT NULL DEFAULT '0.00' COMMENT 'Subtotal con IVA',
+  `fac_subtotal_0` decimal(14,2) NOT NULL DEFAULT '0.00' COMMENT 'Subtotal 0%',
+  `fac_subtotal_no_objeto` decimal(14,2) NOT NULL DEFAULT '0.00' COMMENT 'Subtotal no objeto de IVA',
+  `fac_subtotal_exento` decimal(14,2) NOT NULL DEFAULT '0.00' COMMENT 'Subtotal exento',
+  `fac_subtotal` decimal(14,2) NOT NULL DEFAULT '0.00',
+  `fac_descuento` decimal(14,2) NOT NULL DEFAULT '0.00',
+  `fac_iva` decimal(14,2) NOT NULL DEFAULT '0.00',
+  `fac_ice` decimal(14,2) NOT NULL DEFAULT '0.00',
+  `fac_irbpnr` decimal(14,2) NOT NULL DEFAULT '0.00',
+  `fac_propina` decimal(14,2) NOT NULL DEFAULT '0.00',
+  `fac_total` decimal(14,2) NOT NULL DEFAULT '0.00',
+  `fac_estado_sri` enum('PENDIENTE','GENERADA','FIRMADA','ENVIADA','RECIBIDA','DEVUELTA','AUTORIZADO','NO_AUTORIZADO','ERROR','ANULADA') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'PENDIENTE',
+  `fac_ambiente` char(1) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '1' COMMENT '1=Pruebas, 2=Producción',
+  `fac_tipo_emision` char(1) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '1' COMMENT '1=Normal, 2=Contingencia',
+  `fac_xml_generado` text COLLATE utf8mb4_unicode_ci COMMENT 'Ruta al archivo XML generado',
+  `fac_xml_firmado` text COLLATE utf8mb4_unicode_ci COMMENT 'Ruta al archivo XML firmado',
+  `fac_xml_autorizado` text COLLATE utf8mb4_unicode_ci COMMENT 'Ruta al archivo XML autorizado',
+  `fac_numero_autorizacion` varchar(49) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `fac_fecha_autorizacion` datetime DEFAULT NULL,
+  `fac_mensaje_error` text COLLATE utf8mb4_unicode_ci,
+  `fac_intentos_envio` int NOT NULL DEFAULT '0',
+  `fac_ultimo_intento` datetime DEFAULT NULL,
+  `fac_observaciones` text COLLATE utf8mb4_unicode_ci,
+  `fac_created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `fac_updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `created_by` int DEFAULT NULL COMMENT 'Referencia a usuarios.usuario_id',
+  PRIMARY KEY (`fac_id`),
+  UNIQUE KEY `clave_acceso` (`fac_clave_acceso`),
+  KEY `idx_tenant` (`fac_tenant_id`),
+  KEY `idx_factura` (`fac_factura_id`),
+  KEY `idx_clave_acceso` (`fac_clave_acceso`),
+  KEY `idx_fecha` (`fac_fecha_emision`),
+  KEY `idx_estado` (`fac_estado_sri`),
+  KEY `idx_cliente_identificacion` (`fac_cliente_identificacion`),
+  KEY `idx_numero_completo` (`fac_establecimiento`,`fac_punto_emision`,`fac_secuencial`),
+  KEY `idx_autorizacion` (`fac_numero_autorizacion`),
+  KEY `idx_created_by` (`created_by`),
+  KEY `idx_fe_tenant_fecha` (`fac_tenant_id`,`fac_fecha_emision`),
+  KEY `idx_fe_tenant_estado_fecha` (`fac_tenant_id`,`fac_estado_sri`,`fac_fecha_emision`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Facturas electrónicas emitidas al SRI';
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `facturas_electronicas_detalle`
+--
+
+DROP TABLE IF EXISTS `facturas_electronicas_detalle`;
+CREATE TABLE IF NOT EXISTS `facturas_electronicas_detalle` (
+  `det_id` int NOT NULL AUTO_INCREMENT,
+  `det_factura_electronica_id` int NOT NULL,
+  `det_codigo_principal` varchar(25) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Código interno',
+  `det_codigo_auxiliar` varchar(25) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Código barras, etc.',
+  `det_descripcion` varchar(300) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `det_cantidad` decimal(14,6) NOT NULL,
+  `det_precio_unitario` decimal(14,6) NOT NULL,
+  `det_descuento` decimal(14,2) NOT NULL DEFAULT '0.00',
+  `det_precio_total_sin_impuesto` decimal(14,2) NOT NULL,
+  `det_producto_id` int DEFAULT NULL,
+  `det_servicio_id` int DEFAULT NULL,
+  `det_instalacion_id` int DEFAULT NULL,
+  `det_reserva_id` int DEFAULT NULL,
+  `det_created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`det_id`),
+  KEY `idx_factura` (`det_factura_electronica_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Detalles de facturas electrónicas';
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `facturas_electronicas_detalle_impuestos`
+--
+
+DROP TABLE IF EXISTS `facturas_electronicas_detalle_impuestos`;
+CREATE TABLE IF NOT EXISTS `facturas_electronicas_detalle_impuestos` (
+  `imp_id` int NOT NULL AUTO_INCREMENT,
+  `imp_detalle_id` int NOT NULL,
+  `imp_codigo` char(1) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '2=IVA, 3=ICE, 5=IRBPNR',
+  `imp_codigo_porcentaje` char(4) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Código tarifa: 0, 2, 3, 4, 6, 7, 8',
+  `imp_tarifa` decimal(5,2) NOT NULL COMMENT 'Porcentaje: 0, 12, 14, 15, etc.',
+  `imp_base_imponible` decimal(14,2) NOT NULL,
+  `imp_valor` decimal(14,2) NOT NULL,
+  PRIMARY KEY (`imp_id`),
+  KEY `idx_detalle` (`imp_detalle_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Impuestos por detalle de factura electrónica';
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `facturas_electronicas_info_adicional`
+--
+
+DROP TABLE IF EXISTS `facturas_electronicas_info_adicional`;
+CREATE TABLE IF NOT EXISTS `facturas_electronicas_info_adicional` (
+  `adi_id` int NOT NULL AUTO_INCREMENT,
+  `adi_factura_electronica_id` int NOT NULL,
+  `adi_nombre` varchar(300) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `adi_valor` varchar(300) COLLATE utf8mb4_unicode_ci NOT NULL,
+  PRIMARY KEY (`adi_id`),
+  KEY `idx_factura` (`adi_factura_electronica_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Información adicional de facturas electrónicas';
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `facturas_electronicas_log`
+--
+
+DROP TABLE IF EXISTS `facturas_electronicas_log`;
+CREATE TABLE IF NOT EXISTS `facturas_electronicas_log` (
+  `log_id` int NOT NULL AUTO_INCREMENT,
+  `log_factura_electronica_id` int DEFAULT NULL,
+  `log_clave_acceso` varchar(49) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `log_accion` enum('GENERAR','FIRMAR','ENVIAR','CONSULTAR','REENVIAR','ANULAR') COLLATE utf8mb4_unicode_ci NOT NULL,
+  `log_endpoint` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `log_request_data` longtext COLLATE utf8mb4_unicode_ci,
+  `log_response_data` longtext COLLATE utf8mb4_unicode_ci,
+  `log_estado_respuesta` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `log_codigo_error` varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `log_mensaje_error` text COLLATE utf8mb4_unicode_ci,
+  `log_duracion_ms` int DEFAULT NULL COMMENT 'Tiempo de respuesta en milisegundos',
+  `log_ip_origen` varchar(45) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `log_created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `log_created_by` int DEFAULT NULL COMMENT 'Referencia a usuarios.usuario_id',
+  PRIMARY KEY (`log_id`),
+  KEY `idx_factura` (`log_factura_electronica_id`),
+  KEY `idx_clave_acceso` (`log_clave_acceso`),
+  KEY `idx_accion` (`log_accion`),
+  KEY `idx_fecha` (`log_created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Log de comunicaciones con SRI';
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `facturas_electronicas_pagos`
+--
+
+DROP TABLE IF EXISTS `facturas_electronicas_pagos`;
+CREATE TABLE IF NOT EXISTS `facturas_electronicas_pagos` (
+  `pag_id` int NOT NULL AUTO_INCREMENT,
+  `pag_factura_electronica_id` int NOT NULL,
+  `pag_forma_pago` char(2) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '01=Efectivo, 16=Tarjeta Débito, etc.',
+  `pag_total` decimal(14,2) NOT NULL,
+  `pag_plazo` int DEFAULT NULL COMMENT 'Plazo en días/meses',
+  `pag_unidad_tiempo` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT 'dias',
+  PRIMARY KEY (`pag_id`),
+  KEY `idx_factura` (`pag_factura_electronica_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Formas de pago de facturas electrónicas';
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `facturas_electronicas_secuenciales`
+--
+
+DROP TABLE IF EXISTS `facturas_electronicas_secuenciales`;
+CREATE TABLE IF NOT EXISTS `facturas_electronicas_secuenciales` (
+  `sec_id` int NOT NULL AUTO_INCREMENT,
+  `sec_tenant_id` int NOT NULL,
+  `sec_tipo_comprobante` char(2) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '01',
+  `sec_establecimiento` char(3) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `sec_punto_emision` char(3) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `sec_secuencial_actual` int NOT NULL DEFAULT '0',
+  `sec_created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `sec_updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`sec_id`),
+  UNIQUE KEY `uk_secuencial` (`sec_tenant_id`,`sec_tipo_comprobante`,`sec_establecimiento`,`sec_punto_emision`),
+  KEY `idx_tenant` (`sec_tenant_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Control de secuenciales por establecimiento';
+
+--
+-- Volcado de datos para la tabla `facturas_electronicas_secuenciales`
+--
+
+INSERT INTO `facturas_electronicas_secuenciales` (`sec_id`, `sec_tenant_id`, `sec_tipo_comprobante`, `sec_establecimiento`, `sec_punto_emision`, `sec_secuencial_actual`, `sec_created_at`, `sec_updated_at`) VALUES
+(1, 1, '01', '001', '001', 0, '2026-01-26 03:47:23', '2026-01-26 03:47:23');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `facturas_suscripcion`
+--
+
+DROP TABLE IF EXISTS `facturas_suscripcion`;
+CREATE TABLE IF NOT EXISTS `facturas_suscripcion` (
+  `sus_factura_id` int NOT NULL AUTO_INCREMENT,
+  `sus_tenant_id` int NOT NULL,
+  `sus_periodo` varchar(7) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `sus_tipo_factura` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT 'MENSUAL',
+  `sus_subtotal` decimal(10,2) NOT NULL,
+  `sus_descuento` decimal(10,2) DEFAULT '0.00',
+  `sus_iva` decimal(10,2) NOT NULL,
+  `sus_total` decimal(10,2) NOT NULL,
+  `sus_plan_nombre` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `sus_usuarios_cobrados` int DEFAULT NULL,
+  `sus_sedes_cobradas` int DEFAULT NULL,
+  `sus_modulos_adicionales` json DEFAULT NULL,
+  `sus_fecha_emision` date NOT NULL,
+  `sus_fecha_vencimiento` date NOT NULL,
+  `sus_fecha_pago` date DEFAULT NULL,
+  `sus_metodo_pago` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `sus_referencia_pago` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `sus_comprobante_pago` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `sus_numero_autorizacion` varchar(49) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `sus_clave_acceso` varchar(49) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `sus_xml_firmado` text COLLATE utf8mb4_unicode_ci,
+  `sus_estado` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT 'PENDIENTE',
+  `sus_fecha_registro` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`sus_factura_id`),
+  KEY `idx_tenant_periodo` (`sus_tenant_id`,`sus_periodo`),
+  KEY `idx_estado` (`sus_estado`),
+  KEY `idx_vencimiento` (`sus_fecha_vencimiento`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `auditoria`
+-- Estructura de tabla para la tabla `instalaciones`
 --
 
-DROP TABLE IF EXISTS `auditoria`;
-CREATE TABLE IF NOT EXISTS `auditoria` (
-  `auditoria_id` bigint NOT NULL AUTO_INCREMENT,
-  `tenant_id` int DEFAULT NULL,
-  `usuario_id` int DEFAULT NULL,
-  `modulo` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `tabla` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `registro_id` int DEFAULT NULL,
-  `operacion` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `valores_anteriores` json DEFAULT NULL,
-  `valores_nuevos` json DEFAULT NULL,
-  `ip` varchar(45) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `user_agent` text COLLATE utf8mb4_unicode_ci,
-  `url` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `metodo` varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `fecha_operacion` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`auditoria_id`),
-  KEY `idx_tenant` (`tenant_id`),
-  KEY `idx_usuario` (`usuario_id`),
-  KEY `idx_tabla` (`tabla`),
-  KEY `idx_fecha` (`fecha_operacion`),
-  KEY `idx_operacion` (`operacion`)
-) ENGINE=InnoDB AUTO_INCREMENT=164 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+DROP TABLE IF EXISTS `instalaciones`;
+CREATE TABLE IF NOT EXISTS `instalaciones` (
+  `ins_instalacion_id` int NOT NULL AUTO_INCREMENT,
+  `ins_tenant_id` int NOT NULL,
+  `ins_sede_id` int NOT NULL,
+  `ins_tipo_instalacion_id` int NOT NULL,
+  `ins_codigo` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `ins_nombre` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `ins_descripcion` text COLLATE utf8mb4_unicode_ci,
+  `ins_superficie` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `ins_dimensiones` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `ins_capacidad_personas` int DEFAULT NULL,
+  `ins_tiene_iluminacion` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'S',
+  `ins_tiene_graderias` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'N',
+  `ins_tiene_vestuarios` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'N',
+  `ins_tiene_duchas` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'N',
+  `ins_duracion_minima_minutos` int DEFAULT '60',
+  `ins_duracion_maxima_minutos` int DEFAULT '120',
+  `ins_tiempo_anticipacion_dias` int DEFAULT '30',
+  `ins_permite_reserva_recurrente` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'S',
+  `ins_foto_principal` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `ins_galeria_fotos` json DEFAULT NULL,
+  `ins_estado` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT 'ACTIVO',
+  `ins_motivo_inactivacion` text COLLATE utf8mb4_unicode_ci,
+  `ins_fecha_inicio_inactivacion` datetime DEFAULT NULL,
+  `ins_fecha_fin_inactivacion` datetime DEFAULT NULL,
+  `ins_orden_visualizacion` int DEFAULT '0',
+  `ins_fecha_registro` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `ins_fecha_actualizacion` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `ins_usuario_registro` int DEFAULT NULL,
+  PRIMARY KEY (`ins_instalacion_id`),
+  UNIQUE KEY `uk_tenant_codigo` (`ins_tenant_id`,`ins_codigo`),
+  KEY `sede_id` (`ins_sede_id`),
+  KEY `tipo_instalacion_id` (`ins_tipo_instalacion_id`),
+  KEY `idx_tenant_sede` (`ins_tenant_id`,`ins_sede_id`),
+  KEY `idx_estado` (`ins_estado`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Volcado de datos para la tabla `auditoria`
+-- Volcado de datos para la tabla `instalaciones`
 --
 
-INSERT INTO `auditoria` (`auditoria_id`, `tenant_id`, `usuario_id`, `modulo`, `tabla`, `registro_id`, `operacion`, `valores_anteriores`, `valores_nuevos`, `ip`, `user_agent`, `url`, `metodo`, `fecha_operacion`) VALUES
+INSERT INTO `instalaciones` (`ins_instalacion_id`, `ins_tenant_id`, `ins_sede_id`, `ins_tipo_instalacion_id`, `ins_codigo`, `ins_nombre`, `ins_descripcion`, `ins_superficie`, `ins_dimensiones`, `ins_capacidad_personas`, `ins_tiene_iluminacion`, `ins_tiene_graderias`, `ins_tiene_vestuarios`, `ins_tiene_duchas`, `ins_duracion_minima_minutos`, `ins_duracion_maxima_minutos`, `ins_tiempo_anticipacion_dias`, `ins_permite_reserva_recurrente`, `ins_foto_principal`, `ins_galeria_fotos`, `ins_estado`, `ins_motivo_inactivacion`, `ins_fecha_inicio_inactivacion`, `ins_fecha_fin_inactivacion`, `ins_orden_visualizacion`, `ins_fecha_registro`, `ins_fecha_actualizacion`, `ins_usuario_registro`) VALUES
+(2, 1, 1, 2, 'INS001', 'Complejo Norte', 'Complejo deportivo zona norte', 'Césped sintético', '100x60', 200, 'S', 'S', 'S', 'S', 60, 180, 7, 'S', NULL, NULL, 'ACTIVO', NULL, NULL, NULL, 0, '2026-01-25 23:07:00', '2026-01-25 23:07:00', 1),
+(3, 1, 1, 2, 'INS002', 'Complejo Sur', 'Complejo deportivo zona sur', 'Césped natural', '90x50', 150, 'S', 'S', 'S', 'S', 60, 180, 7, 'S', NULL, NULL, 'ACTIVO', NULL, NULL, NULL, 0, '2026-01-25 23:07:00', '2026-01-25 23:07:00', 1),
+(4, 1, 1, 2, 'INS003', 'Cancha Central', 'Cancha principal techada', 'Indoor', '40x20', 100, 'S', 'S', 'S', 'S', 60, 180, 7, 'S', NULL, NULL, 'ACTIVO', NULL, NULL, NULL, 0, '2026-01-25 23:07:00', '2026-01-25 23:07:00', 1);
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `instalaciones_abonos`
+--
+
+DROP TABLE IF EXISTS `instalaciones_abonos`;
+CREATE TABLE IF NOT EXISTS `instalaciones_abonos` (
+  `abo_abono_id` int NOT NULL AUTO_INCREMENT,
+  `abo_tenant_id` int NOT NULL,
+  `abo_cliente_id` int NOT NULL,
+  `abo_monto_total` decimal(10,2) NOT NULL,
+  `abo_monto_utilizado` decimal(10,2) DEFAULT '0.00',
+  `abo_saldo_disponible` decimal(10,2) NOT NULL,
+  `abo_fecha_compra` date NOT NULL,
+  `abo_fecha_vencimiento` date NOT NULL,
+  `abo_forma_pago` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `abo_estado` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT 'ACTIVO',
+  `abo_fecha_registro` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`abo_abono_id`),
+  KEY `tenant_id` (`abo_tenant_id`),
+  KEY `idx_cliente` (`abo_cliente_id`),
+  KEY `idx_vencimiento` (`abo_fecha_vencimiento`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `instalaciones_canchas`
+--
+
+DROP TABLE IF EXISTS `instalaciones_canchas`;
+CREATE TABLE IF NOT EXISTS `instalaciones_canchas` (
+  `can_cancha_id` int NOT NULL AUTO_INCREMENT,
+  `can_tenant_id` int NOT NULL,
+  `can_instalacion_id` int NOT NULL,
+  `can_nombre` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `can_tipo` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'futbol, tenis, padel, voleibol, basquetbol, piscina, gimnasio, otro',
+  `can_descripcion` text COLLATE utf8mb4_unicode_ci,
+  `can_capacidad_maxima` int NOT NULL DEFAULT '0',
+  `can_ancho` decimal(8,2) DEFAULT NULL COMMENT 'Ancho en metros',
+  `can_largo` decimal(8,2) DEFAULT NULL COMMENT 'Largo en metros',
+  `can_estado` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT 'ACTIVO' COMMENT 'ACTIVO, INACTIVO, ELIMINADA',
+  `can_fecha_creacion` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `can_fecha_actualizacion` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `can_usuario_creacion` int DEFAULT NULL,
+  `can_usuario_actualizacion` int DEFAULT NULL,
+  PRIMARY KEY (`can_cancha_id`),
+  UNIQUE KEY `uk_tenant_nombre` (`can_tenant_id`,`can_nombre`),
+  KEY `idx_tenant` (`can_tenant_id`),
+  KEY `idx_instalacion` (`can_instalacion_id`),
+  KEY `idx_tipo` (`can_tipo`),
+  KEY `idx_estado` (`can_estado`)
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Canchas/espacios deportivos especÃ­ficos dentro de una instalaciÃ³n';
+
+--
+-- Volcado de datos para la tabla `instalaciones_canchas`
+--
+
+INSERT INTO `instalaciones_canchas` (`can_cancha_id`, `can_tenant_id`, `can_instalacion_id`, `can_nombre`, `can_tipo`, `can_descripcion`, `can_capacidad_maxima`, `can_ancho`, `can_largo`, `can_estado`, `can_fecha_creacion`, `can_fecha_actualizacion`, `can_usuario_creacion`, `can_usuario_actualizacion`) VALUES
+(1, 1, 2, 'Cancha Fútbol 1 - Complejo Norte', 'futbol', 'Cancha de fútbol profesional', 22, 25.00, 50.00, 'ACTIVO', '2026-01-25 23:07:00', '2026-01-26 00:26:29', 1, NULL),
+(2, 1, 2, 'Cancha Básquet - Complejo Norte', 'BASQUET', 'Cancha de baloncesto', 10, 25.00, 50.00, 'ACTIVO', '2026-01-25 23:07:00', '2026-01-25 23:07:00', 1, NULL),
+(3, 1, 2, 'Cancha Tenis - Complejo Norte', 'TENIS', 'Cancha de tenis individual', 4, 25.00, 50.00, 'ACTIVO', '2026-01-25 23:07:00', '2026-01-25 23:07:00', 1, NULL),
+(4, 1, 3, 'Cancha Fútbol 1 - Complejo Sur', 'FUTBOL', 'Cancha de fútbol profesional', 22, 25.00, 50.00, 'ACTIVO', '2026-01-25 23:07:00', '2026-01-25 23:07:00', 1, NULL),
+(5, 1, 3, 'Cancha Básquet - Complejo Sur', 'basquetbol', 'Cancha de baloncesto', 10, 25.00, 50.00, 'ACTIVO', '2026-01-25 23:07:00', '2026-01-26 00:26:12', 1, NULL),
+(6, 1, 3, 'Cancha Tenis - Complejo Sur', 'TENIS', 'Cancha de tenis individual', 4, 25.00, 50.00, 'ACTIVO', '2026-01-25 23:07:00', '2026-01-25 23:07:00', 1, NULL),
+(7, 1, 4, 'Cancha Fútbol 1 - Cancha Central', 'FUTBOL', 'Cancha de fútbol profesional', 22, 25.00, 50.00, 'ACTIVO', '2026-01-25 23:07:00', '2026-01-25 23:07:00', 1, NULL),
+(8, 1, 4, 'Cancha de Básquet - Coliseo Ciudad de Loja', 'basquetbol', 'Cancha de baloncesto', 10, 25.00, 50.00, 'ACTIVO', '2026-01-25 23:07:00', '2026-01-25 23:56:42', 1, NULL),
+(9, 1, 4, 'Cancha Tenis - Cancha Central', 'TENIS', 'Cancha de tenis individual', 4, 25.00, 50.00, 'ACTIVO', '2026-01-25 23:07:00', '2026-01-25 23:07:00', 1, NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `instalaciones_disponibilidad_canchas`
+--
+
+DROP TABLE IF EXISTS `instalaciones_disponibilidad_canchas`;
+CREATE TABLE IF NOT EXISTS `instalaciones_disponibilidad_canchas` (
+  `dis_disponibilidad_id` int NOT NULL AUTO_INCREMENT,
+  `dis_cancha_id` int NOT NULL,
+  `dis_fecha` date NOT NULL,
+  `dis_hora_inicio` time NOT NULL,
+  `dis_hora_fin` time NOT NULL,
+  `dis_disponible` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'S' COMMENT 'S=Disponible, N=No disponible',
+  `dis_motivo` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Mantenimiento, Reservada, Evento, etc',
+  `dis_fecha_creacion` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`dis_disponibilidad_id`),
+  UNIQUE KEY `uk_disp_unica` (`dis_cancha_id`,`dis_fecha`,`dis_hora_inicio`,`dis_hora_fin`),
+  KEY `idx_cancha_fecha` (`dis_cancha_id`,`dis_fecha`),
+  KEY `idx_disponible` (`dis_disponible`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Cache de disponibilidad para bÃºsquedas rÃ¡pidas';
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `instalaciones_eventos_canchas`
+--
+
+DROP TABLE IF EXISTS `instalaciones_eventos_canchas`;
+CREATE TABLE IF NOT EXISTS `instalaciones_eventos_canchas` (
+  `eve_evento_id` int NOT NULL AUTO_INCREMENT,
+  `eve_cancha_id` int NOT NULL,
+  `eve_tipo_evento` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'MANTENIMIENTO, RESERVA, EVENTO, BLOQUEO, ESTADO_CAMBIO',
+  `eve_descripcion` text COLLATE utf8mb4_unicode_ci,
+  `eve_referencia_id` int DEFAULT NULL COMMENT 'ID de mantenimiento, reserva, etc',
+  `eve_usuario_id` int DEFAULT NULL,
+  `eve_fecha_evento` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`eve_evento_id`),
+  KEY `fk_evento_usuario` (`eve_usuario_id`),
+  KEY `idx_cancha` (`eve_cancha_id`),
+  KEY `idx_tipo_evento` (`eve_tipo_evento`),
+  KEY `idx_fecha_evento` (`eve_fecha_evento`),
+  KEY `idx_referencia` (`eve_referencia_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Registro de auditorÃ­a de eventos en canchas';
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `instalaciones_instalacion_bloqueos`
+--
+
+DROP TABLE IF EXISTS `instalaciones_instalacion_bloqueos`;
+CREATE TABLE IF NOT EXISTS `instalaciones_instalacion_bloqueos` (
+  `blo_bloqueo_id` int NOT NULL AUTO_INCREMENT,
+  `blo_instalacion_id` int NOT NULL,
+  `blo_tipo_bloqueo` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `blo_fecha_inicio` datetime NOT NULL,
+  `blo_fecha_fin` datetime NOT NULL,
+  `blo_motivo` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `blo_es_recurrente` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'N',
+  `blo_recurrencia_config` json DEFAULT NULL,
+  `blo_usuario_registro` int DEFAULT NULL,
+  `blo_fecha_registro` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`blo_bloqueo_id`),
+  KEY `instalacion_id` (`blo_instalacion_id`),
+  KEY `idx_fechas` (`blo_fecha_inicio`,`blo_fecha_fin`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `instalaciones_instalacion_horarios`
+--
+
+DROP TABLE IF EXISTS `instalaciones_instalacion_horarios`;
+CREATE TABLE IF NOT EXISTS `instalaciones_instalacion_horarios` (
+  `hor_horario_id` int NOT NULL AUTO_INCREMENT,
+  `hor_instalacion_id` int NOT NULL,
+  `hor_dia_semana` tinyint NOT NULL,
+  `hor_hora_apertura` time NOT NULL,
+  `hor_hora_cierre` time NOT NULL,
+  `hor_estado` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'A',
+  PRIMARY KEY (`hor_horario_id`),
+  UNIQUE KEY `uk_instalacion_dia` (`hor_instalacion_id`,`hor_dia_semana`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `instalaciones_instalacion_tarifas`
+--
+
+DROP TABLE IF EXISTS `instalaciones_instalacion_tarifas`;
+CREATE TABLE IF NOT EXISTS `instalaciones_instalacion_tarifas` (
+  `tar_tarifa_id` int NOT NULL AUTO_INCREMENT,
+  `tar_instalacion_id` int NOT NULL,
+  `tar_nombre_tarifa` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `tar_tipo_cliente` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `tar_aplica_dia` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `tar_hora_inicio` time DEFAULT NULL,
+  `tar_hora_fin` time DEFAULT NULL,
+  `tar_precio_por_hora` decimal(10,2) NOT NULL,
+  `tar_precio_minimo` decimal(10,2) DEFAULT NULL,
+  `tar_descuento_porcentaje` decimal(5,2) DEFAULT '0.00',
+  `tar_fecha_inicio_vigencia` date NOT NULL,
+  `tar_fecha_fin_vigencia` date DEFAULT NULL,
+  `tar_prioridad` int DEFAULT '0',
+  `tar_estado` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'A',
+  `tar_fecha_registro` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`tar_tarifa_id`),
+  KEY `instalacion_id` (`tar_instalacion_id`),
+  KEY `idx_vigencia` (`tar_fecha_inicio_vigencia`,`tar_fecha_fin_vigencia`)
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `instalaciones_instalacion_tarifas`
+--
+
+INSERT INTO `instalaciones_instalacion_tarifas` (`tar_tarifa_id`, `tar_instalacion_id`, `tar_nombre_tarifa`, `tar_tipo_cliente`, `tar_aplica_dia`, `tar_hora_inicio`, `tar_hora_fin`, `tar_precio_por_hora`, `tar_precio_minimo`, `tar_descuento_porcentaje`, `tar_fecha_inicio_vigencia`, `tar_fecha_fin_vigencia`, `tar_prioridad`, `tar_estado`, `tar_fecha_registro`) VALUES
+(1, 2, 'Tarifa Normal', 'PUBLICO', 'LUNES-VIERNES', '06:00:00', '18:00:00', 25.00, NULL, 0.00, '2026-01-25', NULL, 0, 'A', '2026-01-25 23:07:00'),
+(2, 2, 'Tarifa Nocturna', 'PUBLICO', 'LUNES-VIERNES', '18:00:00', '22:00:00', 35.00, NULL, 0.00, '2026-01-25', NULL, 0, 'A', '2026-01-25 23:07:00'),
+(3, 2, 'Tarifa Fin Semana', 'PUBLICO', 'SABADO-DOMINGO', '06:00:00', '22:00:00', 40.00, NULL, 0.00, '2026-01-25', NULL, 0, 'A', '2026-01-25 23:07:00'),
+(4, 3, 'Tarifa Normal', 'PUBLICO', 'LUNES-VIERNES', '06:00:00', '18:00:00', 25.00, NULL, 0.00, '2026-01-25', NULL, 0, 'A', '2026-01-25 23:07:00'),
+(5, 3, 'Tarifa Nocturna', 'PUBLICO', 'LUNES-VIERNES', '18:00:00', '22:00:00', 35.00, NULL, 0.00, '2026-01-25', NULL, 0, 'A', '2026-01-25 23:07:00'),
+(6, 3, 'Tarifa Fin Semana', 'PUBLICO', 'SABADO-DOMINGO', '06:00:00', '22:00:00', 40.00, NULL, 0.00, '2026-01-25', NULL, 0, 'A', '2026-01-25 23:07:00'),
+(7, 4, 'Tarifa Normal', 'PUBLICO', 'LUNES-VIERNES', '06:00:00', '18:00:00', 25.00, NULL, 0.00, '2026-01-25', NULL, 0, 'A', '2026-01-25 23:07:00'),
+(8, 4, 'Tarifa Nocturna', 'PUBLICO', 'LUNES-VIERNES', '18:00:00', '22:00:00', 35.00, NULL, 0.00, '2026-01-25', NULL, 0, 'A', '2026-01-25 23:07:00'),
+(9, 4, 'Tarifa Fin Semana', 'PUBLICO', 'SABADO-DOMINGO', '06:00:00', '22:00:00', 40.00, NULL, 0.00, '2026-01-25', NULL, 0, 'A', '2026-01-25 23:07:00');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `instalaciones_mantenimientos`
+--
+
+DROP TABLE IF EXISTS `instalaciones_mantenimientos`;
+CREATE TABLE IF NOT EXISTS `instalaciones_mantenimientos` (
+  `man_mantenimiento_id` int NOT NULL AUTO_INCREMENT,
+  `man_tenant_id` int NOT NULL,
+  `man_cancha_id` int NOT NULL,
+  `man_tipo` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'preventivo, correctivo, limpieza, reparacion, inspeccion, otra',
+  `man_descripcion` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `man_notas` text COLLATE utf8mb4_unicode_ci,
+  `man_fecha_inicio` datetime NOT NULL,
+  `man_fecha_fin` datetime NOT NULL,
+  `man_responsable_id` int DEFAULT NULL,
+  `man_recurrir` varchar(2) COLLATE utf8mb4_unicode_ci DEFAULT 'NO' COMMENT 'SI o NO',
+  `man_cadencia_recurrencia` int DEFAULT NULL COMMENT 'Cada cuÃ¡ntos dÃ­as repetir',
+  `man_estado` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT 'PROGRAMADO' COMMENT 'PROGRAMADO, EN_PROGRESO, COMPLETADO, CANCELADO',
+  `man_fecha_creacion` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `man_fecha_actualizacion` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `man_usuario_creacion` int DEFAULT NULL,
+  `man_usuario_actualizacion` int DEFAULT NULL,
+  PRIMARY KEY (`man_mantenimiento_id`),
+  KEY `idx_tenant` (`man_tenant_id`),
+  KEY `idx_cancha` (`man_cancha_id`),
+  KEY `idx_fechas` (`man_fecha_inicio`,`man_fecha_fin`),
+  KEY `idx_estado` (`man_estado`),
+  KEY `idx_tipo` (`man_tipo`),
+  KEY `idx_responsable` (`man_responsable_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='ProgramaciÃ³n de mantenimiento preventivo y correctivo de canchas';
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `instalaciones_reservas`
+--
+
+DROP TABLE IF EXISTS `instalaciones_reservas`;
+CREATE TABLE IF NOT EXISTS `instalaciones_reservas` (
+  `res_reserva_id` int NOT NULL AUTO_INCREMENT,
+  `res_tenant_id` int NOT NULL,
+  `res_instalacion_id` int NOT NULL,
+  `res_cliente_id` int NOT NULL,
+  `res_fecha_reserva` date NOT NULL,
+  `res_hora_inicio` time NOT NULL,
+  `res_hora_fin` time NOT NULL,
+  `res_duracion_minutos` int NOT NULL,
+  `res_es_recurrente` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'N',
+  `res_reserva_padre_id` int DEFAULT NULL,
+  `res_recurrencia_config` json DEFAULT NULL,
+  `res_tarifa_aplicada_id` int DEFAULT NULL,
+  `res_precio_base` decimal(10,2) NOT NULL,
+  `res_descuento_monto` decimal(10,2) DEFAULT '0.00',
+  `res_precio_total` decimal(10,2) NOT NULL,
+  `res_abono_utilizado` decimal(10,2) DEFAULT '0.00',
+  `res_estado` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT 'PENDIENTE',
+  `res_requiere_confirmacion` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'S',
+  `res_fecha_confirmacion` datetime DEFAULT NULL,
+  `res_observaciones` text COLLATE utf8mb4_unicode_ci,
+  `res_fecha_registro` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `res_usuario_registro` int DEFAULT NULL,
+  PRIMARY KEY (`res_reserva_id`),
+  KEY `instalacion_id` (`res_instalacion_id`),
+  KEY `cliente_id` (`res_cliente_id`),
+  KEY `reserva_padre_id` (`res_reserva_padre_id`),
+  KEY `idx_tenant_instalacion` (`res_tenant_id`,`res_instalacion_id`),
+  KEY `idx_fecha_reserva` (`res_fecha_reserva`),
+  KEY `idx_estado` (`res_estado`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `instalaciones_reservas`
+--
+
+INSERT INTO `instalaciones_reservas` (`res_reserva_id`, `res_tenant_id`, `res_instalacion_id`, `res_cliente_id`, `res_fecha_reserva`, `res_hora_inicio`, `res_hora_fin`, `res_duracion_minutos`, `res_es_recurrente`, `res_reserva_padre_id`, `res_recurrencia_config`, `res_tarifa_aplicada_id`, `res_precio_base`, `res_descuento_monto`, `res_precio_total`, `res_abono_utilizado`, `res_estado`, `res_requiere_confirmacion`, `res_fecha_confirmacion`, `res_observaciones`, `res_fecha_registro`, `res_usuario_registro`) VALUES
+(1, 1, 4, 1, '2026-01-26', '06:00:00', '07:00:00', 60, 'N', NULL, NULL, 3, 15.00, 0.00, 15.00, 0.00, 'PENDIENTE', 'S', NULL, '', '2026-01-26 00:36:19', 1),
+(2, 1, 4, 1, '2026-01-26', '12:00:00', '13:00:00', 60, 'N', NULL, NULL, 4, 16.00, 0.00, 16.00, 0.00, 'PENDIENTE', 'S', NULL, 'ok', '2026-01-26 00:40:15', 1),
+(3, 1, 4, 1, '2026-01-26', '07:00:00', '08:00:00', 60, 'N', NULL, NULL, 3, 15.00, 0.00, 15.00, 0.00, 'PENDIENTE', 'S', NULL, 'ok', '2026-01-26 03:23:02', 1);
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `instalaciones_reserva_pagos`
+--
+
+DROP TABLE IF EXISTS `instalaciones_reserva_pagos`;
+CREATE TABLE IF NOT EXISTS `instalaciones_reserva_pagos` (
+  `pag_pago_id` int NOT NULL AUTO_INCREMENT,
+  `pag_tenant_id` int NOT NULL,
+  `pag_reserva_id` int NOT NULL,
+  `pag_monto` decimal(10,2) NOT NULL,
+  `pag_tipo_pago` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `pag_forma_pago` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `pag_referencia` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `pag_pasarela` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `pag_transaction_id` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `pag_estado` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT 'COMPLETADO',
+  `pag_fecha_pago` datetime DEFAULT CURRENT_TIMESTAMP,
+  `pag_usuario_registro` int DEFAULT NULL,
+  PRIMARY KEY (`pag_pago_id`),
+  KEY `tenant_id` (`pag_tenant_id`),
+  KEY `idx_reserva` (`pag_reserva_id`),
+  KEY `idx_fecha` (`pag_fecha_pago`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `instalaciones_sedes`
+--
+
+DROP TABLE IF EXISTS `instalaciones_sedes`;
+CREATE TABLE IF NOT EXISTS `instalaciones_sedes` (
+  `sed_sede_id` int NOT NULL AUTO_INCREMENT,
+  `sed_tenant_id` int NOT NULL,
+  `sed_codigo` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `sed_nombre` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `sed_descripcion` text COLLATE utf8mb4_unicode_ci,
+  `sed_direccion` varchar(400) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `sed_ciudad` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `sed_provincia` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `sed_pais` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT 'Ecuador',
+  `sed_latitud` decimal(10,8) DEFAULT NULL,
+  `sed_longitud` decimal(11,8) DEFAULT NULL,
+  `sed_telefono` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `sed_email` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `sed_horario_apertura` time DEFAULT NULL,
+  `sed_horario_cierre` time DEFAULT NULL,
+  `sed_dias_atencion` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT 'LUNES-DOMINGO',
+  `sed_superficie_total` decimal(10,2) DEFAULT NULL,
+  `sed_capacidad_total` int DEFAULT NULL,
+  `sed_estacionamiento` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'S',
+  `sed_cafeteria` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'N',
+  `sed_tienda` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'N',
+  `sed_foto_principal` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `sed_galeria` json DEFAULT NULL,
+  `sed_es_principal` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'N',
+  `sed_estado` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'A',
+  `sed_fecha_registro` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `sed_fecha_actualizacion` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`sed_sede_id`),
+  UNIQUE KEY `uk_tenant_codigo` (`sed_tenant_id`,`sed_codigo`),
+  KEY `idx_tenant` (`sed_tenant_id`),
+  KEY `idx_ciudad` (`sed_ciudad`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `instalaciones_sedes`
+--
+
+INSERT INTO `instalaciones_sedes` (`sed_sede_id`, `sed_tenant_id`, `sed_codigo`, `sed_nombre`, `sed_descripcion`, `sed_direccion`, `sed_ciudad`, `sed_provincia`, `sed_pais`, `sed_latitud`, `sed_longitud`, `sed_telefono`, `sed_email`, `sed_horario_apertura`, `sed_horario_cierre`, `sed_dias_atencion`, `sed_superficie_total`, `sed_capacidad_total`, `sed_estacionamiento`, `sed_cafeteria`, `sed_tienda`, `sed_foto_principal`, `sed_galeria`, `sed_es_principal`, `sed_estado`, `sed_fecha_registro`, `sed_fecha_actualizacion`) VALUES
+(1, 1, 'CENTRAL', 'Sede Central', NULL, 'Av. Principal 123', 'Quito', 'Pichincha', 'Ecuador', NULL, NULL, NULL, NULL, NULL, NULL, 'LUNES-DOMINGO', NULL, NULL, 'S', 'N', 'N', NULL, NULL, 'S', 'A', '2026-01-25 00:35:10', '2026-01-25 00:35:10');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `instalaciones_tipos_instalacion`
+--
+
+DROP TABLE IF EXISTS `instalaciones_tipos_instalacion`;
+CREATE TABLE IF NOT EXISTS `instalaciones_tipos_instalacion` (
+  `tip_tipo_id` int NOT NULL AUTO_INCREMENT,
+  `tip_tenant_id` int NOT NULL,
+  `tip_codigo` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `tip_nombre` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `tip_descripcion` text COLLATE utf8mb4_unicode_ci,
+  `tip_icono` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT 'fa-futbol',
+  `tip_color` varchar(7) COLLATE utf8mb4_unicode_ci DEFAULT '#28a745',
+  `tip_requiere_equipamiento` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'N',
+  `tip_permite_reserva_online` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'S',
+  `tip_estado` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'A',
+  `tip_fecha_registro` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`tip_tipo_id`),
+  UNIQUE KEY `uk_tenant_codigo` (`tip_tenant_id`,`tip_codigo`),
+  KEY `idx_estado` (`tip_estado`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `instalaciones_tipos_instalacion`
+--
+
+INSERT INTO `instalaciones_tipos_instalacion` (`tip_tipo_id`, `tip_tenant_id`, `tip_codigo`, `tip_nombre`, `tip_descripcion`, `tip_icono`, `tip_color`, `tip_requiere_equipamiento`, `tip_permite_reserva_online`, `tip_estado`, `tip_fecha_registro`) VALUES
+(1, 1, 'FUTBOL', 'Cancha de Fútbol', 'Canchas para fútbol', 'fa-futbol', '#28a745', 'N', 'S', 'A', '2026-01-25 23:07:00'),
+(2, 1, 'BASQUET', 'Cancha de Básquet', 'Canchas para baloncesto', 'fa-basketball-ball', '#fd7e14', 'N', 'S', 'A', '2026-01-25 23:07:00'),
+(3, 1, 'TENIS', 'Cancha de Tenis', 'Canchas para tenis', 'fa-table-tennis', '#17a2b8', 'N', 'S', 'A', '2026-01-25 23:07:00');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `seguridad_auditoria`
+--
+
+DROP TABLE IF EXISTS `seguridad_auditoria`;
+CREATE TABLE IF NOT EXISTS `seguridad_auditoria` (
+  `aud_auditoria_id` bigint NOT NULL AUTO_INCREMENT,
+  `aud_tenant_id` int DEFAULT NULL,
+  `aud_usuario_id` int DEFAULT NULL,
+  `aud_modulo` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `aud_tabla` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `aud_registro_id` int DEFAULT NULL,
+  `aud_operacion` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `aud_valores_anteriores` json DEFAULT NULL,
+  `aud_valores_nuevos` json DEFAULT NULL,
+  `aud_ip` varchar(45) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `aud_user_agent` text COLLATE utf8mb4_unicode_ci,
+  `aud_url` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `aud_metodo` varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `aud_fecha_operacion` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`aud_auditoria_id`),
+  KEY `idx_tenant` (`aud_tenant_id`),
+  KEY `idx_usuario` (`aud_usuario_id`),
+  KEY `idx_tabla` (`aud_tabla`),
+  KEY `idx_fecha` (`aud_fecha_operacion`),
+  KEY `idx_operacion` (`aud_operacion`)
+) ENGINE=InnoDB AUTO_INCREMENT=166 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `seguridad_auditoria`
+--
+
+INSERT INTO `seguridad_auditoria` (`aud_auditoria_id`, `aud_tenant_id`, `aud_usuario_id`, `aud_modulo`, `aud_tabla`, `aud_registro_id`, `aud_operacion`, `aud_valores_anteriores`, `aud_valores_nuevos`, `aud_ip`, `aud_user_agent`, `aud_url`, `aud_metodo`, `aud_fecha_operacion`) VALUES
 (1, NULL, NULL, 'Core', 'usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '/digisports/public/index.php?r=hfQleOU5GNG8muNZbKE-GAJElCCUR_03r8t9NA6sHdO4N7OGxctcFa3wpQAmSBNNPOPU-VJI3UlBqi_ts3qQDQXZI_BKY29Jp-yxdzwFUOxMyQ1yPF8DYYbOybFWp5kS', 'POST', '2026-01-25 01:14:51'),
 (2, 1, 1, 'Core', 'usuarios', 1, 'LOGOUT', '[]', '[]', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '/digiSports/public/auth/logout', 'GET', '2026-01-25 01:25:07'),
 (3, NULL, NULL, 'Core', 'usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '/digisports/public/index.php?r=8T3pysIhVovxP0AF46qCQ-RntDa0F2TlxCF0FcTC8_MlU_7pDhIXIR7rpcQiIAM0aFgNyUUvVe0Acr7KosgnPAqbT_UzH-kddx7RsqeKcyTrh2ruZtM9NWPp7fkpYnxT', 'POST', '2026-01-25 01:26:07'),
@@ -180,7 +868,7 @@ INSERT INTO `auditoria` (`auditoria_id`, `tenant_id`, `usuario_id`, `modulo`, `t
 (97, NULL, NULL, 'Core', 'usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '/digisports/public/index.php?r=hKVP0a4hi7INZdClOzyRlIXj3W0ovWHp0LEd_u5EY_dETASeoafNObrdYphC4aqLj_3gIfbNV7fcg3v7Q6C9t6YOh0X5GQWLh4khrybLyWtqzxay7xHBd_IkwvXQHmlN', 'POST', '2026-01-27 20:42:41'),
 (98, NULL, NULL, 'Core', 'usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '/digisports/public/index.php?r=N-LWVEMj2z8CyhDK-nst85fDeiZWe4oVRZlddFhN5AD8w1z--YhaTLDC2Bbwv0nRaQwi2RJc56FdE2ChCzY2NA2ORauTlbuSajkJtmGp-1I92BUI0ON_p9N17lfcMLGV', 'POST', '2026-01-27 21:53:03'),
 (99, 1, 1, 'Core', 'usuarios', 1, 'LOGOUT', '[]', '[]', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '/digisports/public/index.php?r=gMwfaLQa0TUdMlOz_JWbMTRB8eme7OK2bSaQBOuHcA_7ur06QNsEEMWPmL-UCl1CEQyu8BGsOp3LVeKEEeHfG1-xTdSRAkpX9E23b7Ria-avMho7GlPeWEvM', 'GET', '2026-01-27 22:37:11');
-INSERT INTO `auditoria` (`auditoria_id`, `tenant_id`, `usuario_id`, `modulo`, `tabla`, `registro_id`, `operacion`, `valores_anteriores`, `valores_nuevos`, `ip`, `user_agent`, `url`, `metodo`, `fecha_operacion`) VALUES
+INSERT INTO `seguridad_auditoria` (`aud_auditoria_id`, `aud_tenant_id`, `aud_usuario_id`, `aud_modulo`, `aud_tabla`, `aud_registro_id`, `aud_operacion`, `aud_valores_anteriores`, `aud_valores_nuevos`, `aud_ip`, `aud_user_agent`, `aud_url`, `aud_metodo`, `aud_fecha_operacion`) VALUES
 (100, NULL, NULL, 'Core', 'usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '/digisports/public/index.php?r=zGpwS3MbRV1iB6YsnqMj3_LDgy6TKMhyXXbKEXQxID7JTm-VxnNis1kRJEKR_WrLKeR5wUKEJJ9UbORICiWbjc85_qSSmWH2QFZof8CgnRWcOgj0Bq0E0T06Hjc53HoT', 'POST', '2026-01-27 22:39:13'),
 (101, NULL, NULL, 'Core', 'usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '/digisports/public/index.php?r=pcGUBer9VCArkzHFnP-nQvGpfWzdgqGTICfPeH_3rt-wVi5ChgoFuD6VLcLQdoJFNEULE-KGs7zAXfVXAErd5NHCwJk3H4zLR-Pbm9zsu-Sk0IA_3K8F4REy0xL3Ke8l', 'POST', '2026-01-28 00:57:27'),
 (102, NULL, NULL, 'Core', 'usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '/digisports/public/index.php?r=MW6zeugEIGw1QllO_WkHTq_ISheId6M-dK---ShAaTBiYWQi_IR8IGmqnGbD4HOhWztSlBMDVXUZzWOErI30FdlwNJXbIhZoD94Y9yonNrrqk6dObRrDCUO3t0Qus3h2', 'POST', '2026-01-28 01:43:00'),
@@ -244,141 +932,63 @@ INSERT INTO `auditoria` (`auditoria_id`, `tenant_id`, `usuario_id`, `modulo`, `t
 (160, 1, 1, 'Core', 'usuarios', 1, 'LOGOUT', '[]', '[]', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '/digisports/public/index.php?r=0w-kj93msUclLr2unb7KLJ0V2UMom5Y9W6u8r6Ht4KVMvGciaVicw60-aDbCW6khUnLbmDxnK3RZqvls1UhFSSEVeljQxYztlqUytw4tzmzx-TifUs7TTG_N', 'GET', '2026-02-03 15:26:06'),
 (161, NULL, NULL, 'Core', 'usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '/digisports/public/index.php?r=D8CDQDcU8J3JwtP7C6F2Jgcf65WQfKYbD8_wD8Zv-Jhdg-SHEnrJaWxxGUiKSGVhLnWFulIWO2fIQeL9nNQSjBXRFzTJ1cI-zB2_ITl54R-1QlPH4d6IWjfTP5O5YH_G', 'POST', '2026-02-03 15:56:42'),
 (162, NULL, NULL, 'Core', 'usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '/digisports/public/index.php?r=A8qx0Uqro1YPSER5TdaEDInAngYigH8PG7ex3tO-FU6vuypPM3XZpvGIesZznAfHx9QF8uNhrsIR9c0sZFByctJUPwJzFWWk5P0GmTa6k3xbE6sxYw9IEOlpXv8TsTyl', 'POST', '2026-02-03 20:33:46'),
-(163, NULL, NULL, 'Core', 'usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '/digisports/public/index.php?r=I5gJPMpT-qC0Bz-U-VnDWuVch2ldaKK1T6p0A9xUwBG9Vz9vQM1eBLXVfzyGhOlcNLtYmK4dmEFk-_LLZgRzCRhBF5VISoMDkEbuEncXrHwlu9v5r5LBSjza-bw7FiQH', 'POST', '2026-02-04 01:55:27');
+(163, NULL, NULL, 'Core', 'usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '/digisports/public/index.php?r=I5gJPMpT-qC0Bz-U-VnDWuVch2ldaKK1T6p0A9xUwBG9Vz9vQM1eBLXVfzyGhOlcNLtYmK4dmEFk-_LLZgRzCRhBF5VISoMDkEbuEncXrHwlu9v5r5LBSjza-bw7FiQH', 'POST', '2026-02-04 01:55:27'),
+(164, NULL, NULL, 'Core', 'usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '/digisports/public/index.php?r=d1OQ4TeMaFKQ_i_ErxmYOpSx3MF0lOmpH15CY8rDDP4BHpcjaKTGCitg0RGoLPZaX_bOw6YvfxPWBnhrI9EjD_2dCEyzBOSwHMJm624iMaml6iuLQQg7rVw7XoMY5c36', 'POST', '2026-02-04 17:04:43'),
+(165, NULL, NULL, 'Core', 'usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '/digisports/public/index.php?r=is-8K9s50opTNFSmWykfOCzhpctTHxct7cGYKa0tXIMkujJAYP5VjzsEG0DxMTfc5CbQzCoi6zEFrXCwoM_pOQEsjBmvvwnhB3lqG5FsoWgAJnFK09pMZxodzgSH-MiC', 'POST', '2026-02-04 19:24:56');
 
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `auditoria_logs`
+-- Estructura de tabla para la tabla `seguridad_auditoria_logs`
 --
 
-DROP TABLE IF EXISTS `auditoria_logs`;
-CREATE TABLE IF NOT EXISTS `auditoria_logs` (
-  `log_id` bigint NOT NULL AUTO_INCREMENT,
-  `tenant_id` int DEFAULT NULL,
-  `usuario_id` int DEFAULT NULL,
-  `accion` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `tabla` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `registro_id` int DEFAULT NULL,
-  `datos_anteriores` json DEFAULT NULL,
-  `datos_nuevos` json DEFAULT NULL,
-  `ip_address` varchar(45) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `user_agent` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`log_id`),
-  KEY `idx_tenant` (`tenant_id`),
-  KEY `idx_usuario` (`usuario_id`),
-  KEY `idx_accion` (`accion`),
-  KEY `idx_fecha` (`created_at`)
+DROP TABLE IF EXISTS `seguridad_auditoria_logs`;
+CREATE TABLE IF NOT EXISTS `seguridad_auditoria_logs` (
+  `log_log_id` bigint NOT NULL AUTO_INCREMENT,
+  `log_tenant_id` int DEFAULT NULL,
+  `log_usuario_id` int DEFAULT NULL,
+  `log_accion` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `log_tabla` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `log_registro_id` int DEFAULT NULL,
+  `log_datos_anteriores` json DEFAULT NULL,
+  `log_datos_nuevos` json DEFAULT NULL,
+  `log_ip_address` varchar(45) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `log_user_agent` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `log_created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`log_log_id`),
+  KEY `idx_tenant` (`log_tenant_id`),
+  KEY `idx_usuario` (`log_usuario_id`),
+  KEY `idx_accion` (`log_accion`),
+  KEY `idx_fecha` (`log_created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `canchas`
+-- Estructura de tabla para la tabla `seguridad_configuracion_sistema`
 --
 
-DROP TABLE IF EXISTS `canchas`;
-CREATE TABLE IF NOT EXISTS `canchas` (
-  `cancha_id` int NOT NULL AUTO_INCREMENT,
-  `tenant_id` int NOT NULL,
-  `instalacion_id` int NOT NULL,
-  `nombre` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `tipo` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'futbol, tenis, padel, voleibol, basquetbol, piscina, gimnasio, otro',
-  `descripcion` text COLLATE utf8mb4_unicode_ci,
-  `capacidad_maxima` int NOT NULL DEFAULT '0',
-  `ancho` decimal(8,2) DEFAULT NULL COMMENT 'Ancho en metros',
-  `largo` decimal(8,2) DEFAULT NULL COMMENT 'Largo en metros',
-  `estado` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT 'ACTIVO' COMMENT 'ACTIVO, INACTIVO, ELIMINADA',
-  `fecha_creacion` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `fecha_actualizacion` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `usuario_creacion` int DEFAULT NULL,
-  `usuario_actualizacion` int DEFAULT NULL,
-  PRIMARY KEY (`cancha_id`),
-  UNIQUE KEY `uk_tenant_nombre` (`tenant_id`,`nombre`),
-  KEY `idx_tenant` (`tenant_id`),
-  KEY `idx_instalacion` (`instalacion_id`),
-  KEY `idx_tipo` (`tipo`),
-  KEY `idx_estado` (`estado`)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Canchas/espacios deportivos especÃ­ficos dentro de una instalaciÃ³n';
-
---
--- Volcado de datos para la tabla `canchas`
---
-
-INSERT INTO `canchas` (`cancha_id`, `tenant_id`, `instalacion_id`, `nombre`, `tipo`, `descripcion`, `capacidad_maxima`, `ancho`, `largo`, `estado`, `fecha_creacion`, `fecha_actualizacion`, `usuario_creacion`, `usuario_actualizacion`) VALUES
-(1, 1, 2, 'Cancha Fútbol 1 - Complejo Norte', 'futbol', 'Cancha de fútbol profesional', 22, 25.00, 50.00, 'ACTIVO', '2026-01-25 23:07:00', '2026-01-26 00:26:29', 1, NULL),
-(2, 1, 2, 'Cancha Básquet - Complejo Norte', 'BASQUET', 'Cancha de baloncesto', 10, 25.00, 50.00, 'ACTIVO', '2026-01-25 23:07:00', '2026-01-25 23:07:00', 1, NULL),
-(3, 1, 2, 'Cancha Tenis - Complejo Norte', 'TENIS', 'Cancha de tenis individual', 4, 25.00, 50.00, 'ACTIVO', '2026-01-25 23:07:00', '2026-01-25 23:07:00', 1, NULL),
-(4, 1, 3, 'Cancha Fútbol 1 - Complejo Sur', 'FUTBOL', 'Cancha de fútbol profesional', 22, 25.00, 50.00, 'ACTIVO', '2026-01-25 23:07:00', '2026-01-25 23:07:00', 1, NULL),
-(5, 1, 3, 'Cancha Básquet - Complejo Sur', 'basquetbol', 'Cancha de baloncesto', 10, 25.00, 50.00, 'ACTIVO', '2026-01-25 23:07:00', '2026-01-26 00:26:12', 1, NULL),
-(6, 1, 3, 'Cancha Tenis - Complejo Sur', 'TENIS', 'Cancha de tenis individual', 4, 25.00, 50.00, 'ACTIVO', '2026-01-25 23:07:00', '2026-01-25 23:07:00', 1, NULL),
-(7, 1, 4, 'Cancha Fútbol 1 - Cancha Central', 'FUTBOL', 'Cancha de fútbol profesional', 22, 25.00, 50.00, 'ACTIVO', '2026-01-25 23:07:00', '2026-01-25 23:07:00', 1, NULL),
-(8, 1, 4, 'Cancha de Básquet - Coliseo Ciudad de Loja', 'basquetbol', 'Cancha de baloncesto', 10, 25.00, 50.00, 'ACTIVO', '2026-01-25 23:07:00', '2026-01-25 23:56:42', 1, NULL),
-(9, 1, 4, 'Cancha Tenis - Cancha Central', 'TENIS', 'Cancha de tenis individual', 4, 25.00, 50.00, 'ACTIVO', '2026-01-25 23:07:00', '2026-01-25 23:07:00', 1, NULL);
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `clientes`
---
-
-DROP TABLE IF EXISTS `clientes`;
-CREATE TABLE IF NOT EXISTS `clientes` (
-  `cliente_id` int NOT NULL AUTO_INCREMENT,
-  `tenant_id` int NOT NULL,
-  `tipo_identificacion` varchar(3) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `identificacion` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `nombres` varchar(150) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `apellidos` varchar(150) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `email` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `telefono` varchar(15) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `celular` varchar(15) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `direccion` varchar(400) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `fecha_nacimiento` date DEFAULT NULL,
-  `tipo_cliente` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT 'PUBLICO',
-  `saldo_abono` decimal(10,2) DEFAULT '0.00',
-  `estado` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'A',
-  `fecha_registro` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`cliente_id`),
-  UNIQUE KEY `uk_tenant_identificacion` (`tenant_id`,`identificacion`),
-  KEY `idx_email` (`email`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Volcado de datos para la tabla `clientes`
---
-
-INSERT INTO `clientes` (`cliente_id`, `tenant_id`, `tipo_identificacion`, `identificacion`, `nombres`, `apellidos`, `email`, `telefono`, `celular`, `direccion`, `fecha_nacimiento`, `tipo_cliente`, `saldo_abono`, `estado`, `fecha_registro`) VALUES
-(1, 1, 'PAS', 'TMP1769387779', 'Freddy', 'Bolivar Pinzon Olmedo', 'fbpinzon@gmail.com', '0993120984', NULL, NULL, NULL, 'PUBLICO', 0.00, 'A', '2026-01-26 00:36:19');
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `configuracion_sistema`
---
-
-DROP TABLE IF EXISTS `configuracion_sistema`;
-CREATE TABLE IF NOT EXISTS `configuracion_sistema` (
-  `config_id` int NOT NULL AUTO_INCREMENT,
-  `tenant_id` int DEFAULT NULL,
-  `clave` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `valor` text COLLATE utf8mb4_unicode_ci,
-  `tipo` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT 'STRING',
-  `descripcion` text COLLATE utf8mb4_unicode_ci,
-  `es_editable` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'S',
-  `requiere_reinicio` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'N',
-  `fecha_actualizacion` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`config_id`),
-  UNIQUE KEY `uk_tenant_clave` (`tenant_id`,`clave`),
-  KEY `idx_clave` (`clave`)
+DROP TABLE IF EXISTS `seguridad_configuracion_sistema`;
+CREATE TABLE IF NOT EXISTS `seguridad_configuracion_sistema` (
+  `sis_config_id` int NOT NULL AUTO_INCREMENT,
+  `sis_tenant_id` int DEFAULT NULL,
+  `sis_clave` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `sis_valor` text COLLATE utf8mb4_unicode_ci,
+  `sis_tipo` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT 'STRING',
+  `sis_descripcion` text COLLATE utf8mb4_unicode_ci,
+  `sis_es_editable` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'S',
+  `sis_requiere_reinicio` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'N',
+  `sis_fecha_actualizacion` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`sis_config_id`),
+  UNIQUE KEY `uk_tenant_clave` (`sis_tenant_id`,`sis_clave`),
+  KEY `idx_clave` (`sis_clave`)
 ) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Volcado de datos para la tabla `configuracion_sistema`
+-- Volcado de datos para la tabla `seguridad_configuracion_sistema`
 --
 
-INSERT INTO `configuracion_sistema` (`config_id`, `tenant_id`, `clave`, `valor`, `tipo`, `descripcion`, `es_editable`, `requiere_reinicio`, `fecha_actualizacion`) VALUES
+INSERT INTO `seguridad_configuracion_sistema` (`sis_config_id`, `sis_tenant_id`, `sis_clave`, `sis_valor`, `sis_tipo`, `sis_descripcion`, `sis_es_editable`, `sis_requiere_reinicio`, `sis_fecha_actualizacion`) VALUES
 (1, NULL, 'NOMBRE_SISTEMA', 'DigiSports', 'STRING', 'Nombre del sistema', 'S', 'N', '2026-01-25 00:35:10'),
 (2, NULL, 'VERSION', '1.0.0', 'STRING', 'Version actual del sistema', 'S', 'N', '2026-01-25 00:35:10'),
 (3, NULL, 'EMAIL_SOPORTE', 'soporte@digisports.com', 'STRING', 'Email de soporte', 'S', 'N', '2026-01-25 00:35:10'),
@@ -397,452 +1007,32 @@ INSERT INTO `configuracion_sistema` (`config_id`, `tenant_id`, `clave`, `valor`,
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `disponibilidad_canchas`
+-- Estructura de tabla para la tabla `seguridad_log_accesos`
 --
 
-DROP TABLE IF EXISTS `disponibilidad_canchas`;
-CREATE TABLE IF NOT EXISTS `disponibilidad_canchas` (
-  `disponibilidad_id` int NOT NULL AUTO_INCREMENT,
-  `cancha_id` int NOT NULL,
-  `fecha` date NOT NULL,
-  `hora_inicio` time NOT NULL,
-  `hora_fin` time NOT NULL,
-  `disponible` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'S' COMMENT 'S=Disponible, N=No disponible',
-  `motivo` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Mantenimiento, Reservada, Evento, etc',
-  `fecha_creacion` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`disponibilidad_id`),
-  UNIQUE KEY `uk_disp_unica` (`cancha_id`,`fecha`,`hora_inicio`,`hora_fin`),
-  KEY `idx_cancha_fecha` (`cancha_id`,`fecha`),
-  KEY `idx_disponible` (`disponible`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Cache de disponibilidad para bÃºsquedas rÃ¡pidas';
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `eventos_canchas`
---
-
-DROP TABLE IF EXISTS `eventos_canchas`;
-CREATE TABLE IF NOT EXISTS `eventos_canchas` (
-  `evento_id` int NOT NULL AUTO_INCREMENT,
-  `cancha_id` int NOT NULL,
-  `tipo_evento` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'MANTENIMIENTO, RESERVA, EVENTO, BLOQUEO, ESTADO_CAMBIO',
-  `descripcion` text COLLATE utf8mb4_unicode_ci,
-  `referencia_id` int DEFAULT NULL COMMENT 'ID de mantenimiento, reserva, etc',
-  `usuario_id` int DEFAULT NULL,
-  `fecha_evento` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`evento_id`),
-  KEY `fk_evento_usuario` (`usuario_id`),
-  KEY `idx_cancha` (`cancha_id`),
-  KEY `idx_tipo_evento` (`tipo_evento`),
-  KEY `idx_fecha_evento` (`fecha_evento`),
-  KEY `idx_referencia` (`referencia_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Registro de auditorÃ­a de eventos en canchas';
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `facturas_electronicas`
---
-
-DROP TABLE IF EXISTS `facturas_electronicas`;
-CREATE TABLE IF NOT EXISTS `facturas_electronicas` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `tenant_id` int NOT NULL,
-  `factura_id` int DEFAULT NULL,
-  `clave_acceso` varchar(49) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `tipo_comprobante` char(2) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '01' COMMENT '01=Factura, 04=Nota Crédito, 05=Nota Débito, 06=Guía Remisión, 07=Retención',
-  `establecimiento` char(3) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `punto_emision` char(3) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `secuencial` char(9) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `fecha_emision` date NOT NULL,
-  `cliente_id` int DEFAULT NULL,
-  `cliente_tipo_identificacion` char(2) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '04=RUC, 05=Cédula, 06=Pasaporte, 07=Cons.Final',
-  `cliente_identificacion` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `cliente_razon_social` varchar(300) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `cliente_direccion` varchar(300) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `cliente_email` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `cliente_telefono` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `subtotal_iva` decimal(14,2) NOT NULL DEFAULT '0.00' COMMENT 'Subtotal con IVA',
-  `subtotal_0` decimal(14,2) NOT NULL DEFAULT '0.00' COMMENT 'Subtotal 0%',
-  `subtotal_no_objeto` decimal(14,2) NOT NULL DEFAULT '0.00' COMMENT 'Subtotal no objeto de IVA',
-  `subtotal_exento` decimal(14,2) NOT NULL DEFAULT '0.00' COMMENT 'Subtotal exento',
-  `subtotal` decimal(14,2) NOT NULL DEFAULT '0.00',
-  `descuento` decimal(14,2) NOT NULL DEFAULT '0.00',
-  `iva` decimal(14,2) NOT NULL DEFAULT '0.00',
-  `ice` decimal(14,2) NOT NULL DEFAULT '0.00',
-  `irbpnr` decimal(14,2) NOT NULL DEFAULT '0.00',
-  `propina` decimal(14,2) NOT NULL DEFAULT '0.00',
-  `total` decimal(14,2) NOT NULL DEFAULT '0.00',
-  `estado_sri` enum('PENDIENTE','GENERADA','FIRMADA','ENVIADA','RECIBIDA','DEVUELTA','AUTORIZADO','NO_AUTORIZADO','ERROR','ANULADA') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'PENDIENTE',
-  `ambiente` char(1) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '1' COMMENT '1=Pruebas, 2=Producción',
-  `tipo_emision` char(1) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '1' COMMENT '1=Normal, 2=Contingencia',
-  `xml_generado` text COLLATE utf8mb4_unicode_ci COMMENT 'Ruta al archivo XML generado',
-  `xml_firmado` text COLLATE utf8mb4_unicode_ci COMMENT 'Ruta al archivo XML firmado',
-  `xml_autorizado` text COLLATE utf8mb4_unicode_ci COMMENT 'Ruta al archivo XML autorizado',
-  `numero_autorizacion` varchar(49) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `fecha_autorizacion` datetime DEFAULT NULL,
-  `mensaje_error` text COLLATE utf8mb4_unicode_ci,
-  `intentos_envio` int NOT NULL DEFAULT '0',
-  `ultimo_intento` datetime DEFAULT NULL,
-  `observaciones` text COLLATE utf8mb4_unicode_ci,
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `created_by` int DEFAULT NULL COMMENT 'Referencia a usuarios.usuario_id',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `clave_acceso` (`clave_acceso`),
-  KEY `idx_tenant` (`tenant_id`),
-  KEY `idx_factura` (`factura_id`),
-  KEY `idx_clave_acceso` (`clave_acceso`),
-  KEY `idx_fecha` (`fecha_emision`),
-  KEY `idx_estado` (`estado_sri`),
-  KEY `idx_cliente_identificacion` (`cliente_identificacion`),
-  KEY `idx_numero_completo` (`establecimiento`,`punto_emision`,`secuencial`),
-  KEY `idx_autorizacion` (`numero_autorizacion`),
-  KEY `idx_created_by` (`created_by`),
-  KEY `idx_fe_tenant_fecha` (`tenant_id`,`fecha_emision`),
-  KEY `idx_fe_tenant_estado_fecha` (`tenant_id`,`estado_sri`,`fecha_emision`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Facturas electrónicas emitidas al SRI';
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `facturas_electronicas_detalle`
---
-
-DROP TABLE IF EXISTS `facturas_electronicas_detalle`;
-CREATE TABLE IF NOT EXISTS `facturas_electronicas_detalle` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `factura_electronica_id` int NOT NULL,
-  `codigo_principal` varchar(25) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Código interno',
-  `codigo_auxiliar` varchar(25) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Código barras, etc.',
-  `descripcion` varchar(300) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `cantidad` decimal(14,6) NOT NULL,
-  `precio_unitario` decimal(14,6) NOT NULL,
-  `descuento` decimal(14,2) NOT NULL DEFAULT '0.00',
-  `precio_total_sin_impuesto` decimal(14,2) NOT NULL,
-  `producto_id` int DEFAULT NULL,
-  `servicio_id` int DEFAULT NULL,
-  `instalacion_id` int DEFAULT NULL,
-  `reserva_id` int DEFAULT NULL,
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  KEY `idx_factura` (`factura_electronica_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Detalles de facturas electrónicas';
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `facturas_electronicas_detalle_impuestos`
---
-
-DROP TABLE IF EXISTS `facturas_electronicas_detalle_impuestos`;
-CREATE TABLE IF NOT EXISTS `facturas_electronicas_detalle_impuestos` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `detalle_id` int NOT NULL,
-  `codigo` char(1) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '2=IVA, 3=ICE, 5=IRBPNR',
-  `codigo_porcentaje` char(4) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Código tarifa: 0, 2, 3, 4, 6, 7, 8',
-  `tarifa` decimal(5,2) NOT NULL COMMENT 'Porcentaje: 0, 12, 14, 15, etc.',
-  `base_imponible` decimal(14,2) NOT NULL,
-  `valor` decimal(14,2) NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_detalle` (`detalle_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Impuestos por detalle de factura electrónica';
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `facturas_electronicas_info_adicional`
---
-
-DROP TABLE IF EXISTS `facturas_electronicas_info_adicional`;
-CREATE TABLE IF NOT EXISTS `facturas_electronicas_info_adicional` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `factura_electronica_id` int NOT NULL,
-  `nombre` varchar(300) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `valor` varchar(300) COLLATE utf8mb4_unicode_ci NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_factura` (`factura_electronica_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Información adicional de facturas electrónicas';
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `facturas_electronicas_log`
---
-
-DROP TABLE IF EXISTS `facturas_electronicas_log`;
-CREATE TABLE IF NOT EXISTS `facturas_electronicas_log` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `factura_electronica_id` int DEFAULT NULL,
-  `clave_acceso` varchar(49) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `accion` enum('GENERAR','FIRMAR','ENVIAR','CONSULTAR','REENVIAR','ANULAR') COLLATE utf8mb4_unicode_ci NOT NULL,
-  `endpoint` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `request_data` longtext COLLATE utf8mb4_unicode_ci,
-  `response_data` longtext COLLATE utf8mb4_unicode_ci,
-  `estado_respuesta` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `codigo_error` varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `mensaje_error` text COLLATE utf8mb4_unicode_ci,
-  `duracion_ms` int DEFAULT NULL COMMENT 'Tiempo de respuesta en milisegundos',
-  `ip_origen` varchar(45) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `created_by` int DEFAULT NULL COMMENT 'Referencia a usuarios.usuario_id',
-  PRIMARY KEY (`id`),
-  KEY `idx_factura` (`factura_electronica_id`),
-  KEY `idx_clave_acceso` (`clave_acceso`),
-  KEY `idx_accion` (`accion`),
-  KEY `idx_fecha` (`created_at`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Log de comunicaciones con SRI';
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `facturas_electronicas_pagos`
---
-
-DROP TABLE IF EXISTS `facturas_electronicas_pagos`;
-CREATE TABLE IF NOT EXISTS `facturas_electronicas_pagos` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `factura_electronica_id` int NOT NULL,
-  `forma_pago` char(2) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '01=Efectivo, 16=Tarjeta Débito, etc.',
-  `total` decimal(14,2) NOT NULL,
-  `plazo` int DEFAULT NULL COMMENT 'Plazo en días/meses',
-  `unidad_tiempo` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT 'dias',
-  PRIMARY KEY (`id`),
-  KEY `idx_factura` (`factura_electronica_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Formas de pago de facturas electrónicas';
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `facturas_electronicas_secuenciales`
---
-
-DROP TABLE IF EXISTS `facturas_electronicas_secuenciales`;
-CREATE TABLE IF NOT EXISTS `facturas_electronicas_secuenciales` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `tenant_id` int NOT NULL,
-  `tipo_comprobante` char(2) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '01',
-  `establecimiento` char(3) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `punto_emision` char(3) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `secuencial_actual` int NOT NULL DEFAULT '0',
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_secuencial` (`tenant_id`,`tipo_comprobante`,`establecimiento`,`punto_emision`),
-  KEY `idx_tenant` (`tenant_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Control de secuenciales por establecimiento';
-
---
--- Volcado de datos para la tabla `facturas_electronicas_secuenciales`
---
-
-INSERT INTO `facturas_electronicas_secuenciales` (`id`, `tenant_id`, `tipo_comprobante`, `establecimiento`, `punto_emision`, `secuencial_actual`, `created_at`, `updated_at`) VALUES
-(1, 1, '01', '001', '001', 0, '2026-01-26 03:47:23', '2026-01-26 03:47:23');
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `facturas_suscripcion`
---
-
-DROP TABLE IF EXISTS `facturas_suscripcion`;
-CREATE TABLE IF NOT EXISTS `facturas_suscripcion` (
-  `factura_id` int NOT NULL AUTO_INCREMENT,
-  `tenant_id` int NOT NULL,
-  `periodo` varchar(7) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `tipo_factura` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT 'MENSUAL',
-  `subtotal` decimal(10,2) NOT NULL,
-  `descuento` decimal(10,2) DEFAULT '0.00',
-  `iva` decimal(10,2) NOT NULL,
-  `total` decimal(10,2) NOT NULL,
-  `plan_nombre` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `usuarios_cobrados` int DEFAULT NULL,
-  `sedes_cobradas` int DEFAULT NULL,
-  `modulos_adicionales` json DEFAULT NULL,
-  `fecha_emision` date NOT NULL,
-  `fecha_vencimiento` date NOT NULL,
-  `fecha_pago` date DEFAULT NULL,
-  `metodo_pago` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `referencia_pago` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `comprobante_pago` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `numero_autorizacion` varchar(49) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `clave_acceso` varchar(49) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `xml_firmado` text COLLATE utf8mb4_unicode_ci,
-  `estado` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT 'PENDIENTE',
-  `fecha_registro` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`factura_id`),
-  KEY `idx_tenant_periodo` (`tenant_id`,`periodo`),
-  KEY `idx_estado` (`estado`),
-  KEY `idx_vencimiento` (`fecha_vencimiento`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `instalaciones`
---
-
-DROP TABLE IF EXISTS `instalaciones`;
-CREATE TABLE IF NOT EXISTS `instalaciones` (
-  `instalacion_id` int NOT NULL AUTO_INCREMENT,
-  `tenant_id` int NOT NULL,
-  `sede_id` int NOT NULL,
-  `tipo_instalacion_id` int NOT NULL,
-  `codigo` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `nombre` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `descripcion` text COLLATE utf8mb4_unicode_ci,
-  `superficie` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `dimensiones` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `capacidad_personas` int DEFAULT NULL,
-  `tiene_iluminacion` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'S',
-  `tiene_graderias` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'N',
-  `tiene_vestuarios` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'N',
-  `tiene_duchas` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'N',
-  `duracion_minima_minutos` int DEFAULT '60',
-  `duracion_maxima_minutos` int DEFAULT '120',
-  `tiempo_anticipacion_dias` int DEFAULT '30',
-  `permite_reserva_recurrente` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'S',
-  `foto_principal` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `galeria_fotos` json DEFAULT NULL,
-  `estado` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT 'ACTIVO',
-  `motivo_inactivacion` text COLLATE utf8mb4_unicode_ci,
-  `fecha_inicio_inactivacion` datetime DEFAULT NULL,
-  `fecha_fin_inactivacion` datetime DEFAULT NULL,
-  `orden_visualizacion` int DEFAULT '0',
-  `fecha_registro` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `fecha_actualizacion` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `usuario_registro` int DEFAULT NULL,
-  PRIMARY KEY (`instalacion_id`),
-  UNIQUE KEY `uk_tenant_codigo` (`tenant_id`,`codigo`),
-  KEY `sede_id` (`sede_id`),
-  KEY `tipo_instalacion_id` (`tipo_instalacion_id`),
-  KEY `idx_tenant_sede` (`tenant_id`,`sede_id`),
-  KEY `idx_estado` (`estado`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Volcado de datos para la tabla `instalaciones`
---
-
-INSERT INTO `instalaciones` (`instalacion_id`, `tenant_id`, `sede_id`, `tipo_instalacion_id`, `codigo`, `nombre`, `descripcion`, `superficie`, `dimensiones`, `capacidad_personas`, `tiene_iluminacion`, `tiene_graderias`, `tiene_vestuarios`, `tiene_duchas`, `duracion_minima_minutos`, `duracion_maxima_minutos`, `tiempo_anticipacion_dias`, `permite_reserva_recurrente`, `foto_principal`, `galeria_fotos`, `estado`, `motivo_inactivacion`, `fecha_inicio_inactivacion`, `fecha_fin_inactivacion`, `orden_visualizacion`, `fecha_registro`, `fecha_actualizacion`, `usuario_registro`) VALUES
-(2, 1, 1, 2, 'INS001', 'Complejo Norte', 'Complejo deportivo zona norte', 'Césped sintético', '100x60', 200, 'S', 'S', 'S', 'S', 60, 180, 7, 'S', NULL, NULL, 'ACTIVO', NULL, NULL, NULL, 0, '2026-01-25 23:07:00', '2026-01-25 23:07:00', 1),
-(3, 1, 1, 2, 'INS002', 'Complejo Sur', 'Complejo deportivo zona sur', 'Césped natural', '90x50', 150, 'S', 'S', 'S', 'S', 60, 180, 7, 'S', NULL, NULL, 'ACTIVO', NULL, NULL, NULL, 0, '2026-01-25 23:07:00', '2026-01-25 23:07:00', 1),
-(4, 1, 1, 2, 'INS003', 'Cancha Central', 'Cancha principal techada', 'Indoor', '40x20', 100, 'S', 'S', 'S', 'S', 60, 180, 7, 'S', NULL, NULL, 'ACTIVO', NULL, NULL, NULL, 0, '2026-01-25 23:07:00', '2026-01-25 23:07:00', 1);
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `instalacion_bloqueos`
---
-
-DROP TABLE IF EXISTS `instalacion_bloqueos`;
-CREATE TABLE IF NOT EXISTS `instalacion_bloqueos` (
-  `bloqueo_id` int NOT NULL AUTO_INCREMENT,
-  `instalacion_id` int NOT NULL,
-  `tipo_bloqueo` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `fecha_inicio` datetime NOT NULL,
-  `fecha_fin` datetime NOT NULL,
-  `motivo` text COLLATE utf8mb4_unicode_ci NOT NULL,
-  `es_recurrente` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'N',
-  `recurrencia_config` json DEFAULT NULL,
-  `usuario_registro` int DEFAULT NULL,
-  `fecha_registro` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`bloqueo_id`),
-  KEY `instalacion_id` (`instalacion_id`),
-  KEY `idx_fechas` (`fecha_inicio`,`fecha_fin`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `instalacion_horarios`
---
-
-DROP TABLE IF EXISTS `instalacion_horarios`;
-CREATE TABLE IF NOT EXISTS `instalacion_horarios` (
-  `horario_id` int NOT NULL AUTO_INCREMENT,
-  `instalacion_id` int NOT NULL,
-  `dia_semana` tinyint NOT NULL,
-  `hora_apertura` time NOT NULL,
-  `hora_cierre` time NOT NULL,
-  `estado` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'A',
-  PRIMARY KEY (`horario_id`),
-  UNIQUE KEY `uk_instalacion_dia` (`instalacion_id`,`dia_semana`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `instalacion_tarifas`
---
-
-DROP TABLE IF EXISTS `instalacion_tarifas`;
-CREATE TABLE IF NOT EXISTS `instalacion_tarifas` (
-  `tarifa_id` int NOT NULL AUTO_INCREMENT,
-  `instalacion_id` int NOT NULL,
-  `nombre_tarifa` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `tipo_cliente` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `aplica_dia` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `hora_inicio` time DEFAULT NULL,
-  `hora_fin` time DEFAULT NULL,
-  `precio_por_hora` decimal(10,2) NOT NULL,
-  `precio_minimo` decimal(10,2) DEFAULT NULL,
-  `descuento_porcentaje` decimal(5,2) DEFAULT '0.00',
-  `fecha_inicio_vigencia` date NOT NULL,
-  `fecha_fin_vigencia` date DEFAULT NULL,
-  `prioridad` int DEFAULT '0',
-  `estado` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'A',
-  `fecha_registro` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`tarifa_id`),
-  KEY `instalacion_id` (`instalacion_id`),
-  KEY `idx_vigencia` (`fecha_inicio_vigencia`,`fecha_fin_vigencia`)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Volcado de datos para la tabla `instalacion_tarifas`
---
-
-INSERT INTO `instalacion_tarifas` (`tarifa_id`, `instalacion_id`, `nombre_tarifa`, `tipo_cliente`, `aplica_dia`, `hora_inicio`, `hora_fin`, `precio_por_hora`, `precio_minimo`, `descuento_porcentaje`, `fecha_inicio_vigencia`, `fecha_fin_vigencia`, `prioridad`, `estado`, `fecha_registro`) VALUES
-(1, 2, 'Tarifa Normal', 'PUBLICO', 'LUNES-VIERNES', '06:00:00', '18:00:00', 25.00, NULL, 0.00, '2026-01-25', NULL, 0, 'A', '2026-01-25 23:07:00'),
-(2, 2, 'Tarifa Nocturna', 'PUBLICO', 'LUNES-VIERNES', '18:00:00', '22:00:00', 35.00, NULL, 0.00, '2026-01-25', NULL, 0, 'A', '2026-01-25 23:07:00'),
-(3, 2, 'Tarifa Fin Semana', 'PUBLICO', 'SABADO-DOMINGO', '06:00:00', '22:00:00', 40.00, NULL, 0.00, '2026-01-25', NULL, 0, 'A', '2026-01-25 23:07:00'),
-(4, 3, 'Tarifa Normal', 'PUBLICO', 'LUNES-VIERNES', '06:00:00', '18:00:00', 25.00, NULL, 0.00, '2026-01-25', NULL, 0, 'A', '2026-01-25 23:07:00'),
-(5, 3, 'Tarifa Nocturna', 'PUBLICO', 'LUNES-VIERNES', '18:00:00', '22:00:00', 35.00, NULL, 0.00, '2026-01-25', NULL, 0, 'A', '2026-01-25 23:07:00'),
-(6, 3, 'Tarifa Fin Semana', 'PUBLICO', 'SABADO-DOMINGO', '06:00:00', '22:00:00', 40.00, NULL, 0.00, '2026-01-25', NULL, 0, 'A', '2026-01-25 23:07:00'),
-(7, 4, 'Tarifa Normal', 'PUBLICO', 'LUNES-VIERNES', '06:00:00', '18:00:00', 25.00, NULL, 0.00, '2026-01-25', NULL, 0, 'A', '2026-01-25 23:07:00'),
-(8, 4, 'Tarifa Nocturna', 'PUBLICO', 'LUNES-VIERNES', '18:00:00', '22:00:00', 35.00, NULL, 0.00, '2026-01-25', NULL, 0, 'A', '2026-01-25 23:07:00'),
-(9, 4, 'Tarifa Fin Semana', 'PUBLICO', 'SABADO-DOMINGO', '06:00:00', '22:00:00', 40.00, NULL, 0.00, '2026-01-25', NULL, 0, 'A', '2026-01-25 23:07:00');
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `log_accesos`
---
-
-DROP TABLE IF EXISTS `log_accesos`;
-CREATE TABLE IF NOT EXISTS `log_accesos` (
-  `log_id` int NOT NULL AUTO_INCREMENT,
-  `usuario_id` int DEFAULT NULL,
-  `tenant_id` int DEFAULT NULL,
-  `fecha` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `tipo` varchar(32) NOT NULL,
-  `ip` varchar(45) DEFAULT NULL,
-  `user_agent` varchar(255) DEFAULT NULL,
-  `exito` char(1) DEFAULT 'S',
-  `mensaje` varchar(255) DEFAULT NULL,
-  PRIMARY KEY (`log_id`),
-  KEY `idx_usuario` (`usuario_id`),
-  KEY `idx_tenant` (`tenant_id`),
-  KEY `idx_fecha` (`fecha`),
-  KEY `idx_tipo` (`tipo`)
+DROP TABLE IF EXISTS `seguridad_log_accesos`;
+CREATE TABLE IF NOT EXISTS `seguridad_log_accesos` (
+  `acc_log_id` int NOT NULL AUTO_INCREMENT,
+  `acc_usuario_id` int DEFAULT NULL,
+  `acc_tenant_id` int DEFAULT NULL,
+  `acc_fecha` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `acc_tipo` varchar(32) NOT NULL,
+  `acc_ip` varchar(45) DEFAULT NULL,
+  `acc_user_agent` varchar(255) DEFAULT NULL,
+  `acc_exito` char(1) DEFAULT 'S',
+  `acc_mensaje` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`acc_log_id`),
+  KEY `idx_usuario` (`acc_usuario_id`),
+  KEY `idx_tenant` (`acc_tenant_id`),
+  KEY `idx_fecha` (`acc_fecha`),
+  KEY `idx_tipo` (`acc_tipo`)
 ) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Volcado de datos para la tabla `log_accesos`
+-- Volcado de datos para la tabla `seguridad_log_accesos`
 --
 
-INSERT INTO `log_accesos` (`log_id`, `usuario_id`, `tenant_id`, `fecha`, `tipo`, `ip`, `user_agent`, `exito`, `mensaje`) VALUES
+INSERT INTO `seguridad_log_accesos` (`acc_log_id`, `acc_usuario_id`, `acc_tenant_id`, `acc_fecha`, `acc_tipo`, `acc_ip`, `acc_user_agent`, `acc_exito`, `acc_mensaje`) VALUES
 (1, 1, 1, '2026-01-29 17:16:37', 'LOGIN_OK', '127.0.0.1', 'Mozilla/5.0', 'S', 'Acceso correcto'),
 (2, 1, 1, '2026-01-29 17:16:37', 'LOGIN_FAILED', '127.0.0.1', 'Mozilla/5.0', 'N', 'Contraseña incorrecta'),
 (3, 1, 1, '2026-01-29 17:16:37', 'LOGIN_OK', '127.0.0.1', 'Mozilla/5.0', 'S', 'Acceso correcto'),
@@ -853,59 +1043,26 @@ INSERT INTO `log_accesos` (`log_id`, `usuario_id`, `tenant_id`, `fecha`, `tipo`,
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `mantenimientos`
+-- Estructura de tabla para la tabla `seguridad_menu_config`
 --
 
-DROP TABLE IF EXISTS `mantenimientos`;
-CREATE TABLE IF NOT EXISTS `mantenimientos` (
-  `mantenimiento_id` int NOT NULL AUTO_INCREMENT,
-  `tenant_id` int NOT NULL,
-  `cancha_id` int NOT NULL,
-  `tipo` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'preventivo, correctivo, limpieza, reparacion, inspeccion, otra',
-  `descripcion` text COLLATE utf8mb4_unicode_ci NOT NULL,
-  `notas` text COLLATE utf8mb4_unicode_ci,
-  `fecha_inicio` datetime NOT NULL,
-  `fecha_fin` datetime NOT NULL,
-  `responsable_id` int DEFAULT NULL,
-  `recurrir` varchar(2) COLLATE utf8mb4_unicode_ci DEFAULT 'NO' COMMENT 'SI o NO',
-  `cadencia_recurrencia` int DEFAULT NULL COMMENT 'Cada cuÃ¡ntos dÃ­as repetir',
-  `estado` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT 'PROGRAMADO' COMMENT 'PROGRAMADO, EN_PROGRESO, COMPLETADO, CANCELADO',
-  `fecha_creacion` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `fecha_actualizacion` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `usuario_creacion` int DEFAULT NULL,
-  `usuario_actualizacion` int DEFAULT NULL,
-  PRIMARY KEY (`mantenimiento_id`),
-  KEY `idx_tenant` (`tenant_id`),
-  KEY `idx_cancha` (`cancha_id`),
-  KEY `idx_fechas` (`fecha_inicio`,`fecha_fin`),
-  KEY `idx_estado` (`estado`),
-  KEY `idx_tipo` (`tipo`),
-  KEY `idx_responsable` (`responsable_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='ProgramaciÃ³n de mantenimiento preventivo y correctivo de canchas';
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `menu_config`
---
-
-DROP TABLE IF EXISTS `menu_config`;
-CREATE TABLE IF NOT EXISTS `menu_config` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `modulo_codigo` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `opcion` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `icono` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `color` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `permiso_requerido` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `orden` int DEFAULT '0',
-  PRIMARY KEY (`id`)
+DROP TABLE IF EXISTS `seguridad_menu_config`;
+CREATE TABLE IF NOT EXISTS `seguridad_menu_config` (
+  `con_id` int NOT NULL AUTO_INCREMENT,
+  `con_modulo_codigo` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `con_opcion` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `con_icono` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `con_color` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `con_permiso_requerido` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `con_orden` int DEFAULT '0',
+  PRIMARY KEY (`con_id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Volcado de datos para la tabla `menu_config`
+-- Volcado de datos para la tabla `seguridad_menu_config`
 --
 
-INSERT INTO `menu_config` (`id`, `modulo_codigo`, `opcion`, `icono`, `color`, `permiso_requerido`, `orden`) VALUES
+INSERT INTO `seguridad_menu_config` (`con_id`, `con_modulo_codigo`, `con_opcion`, `con_icono`, `con_color`, `con_permiso_requerido`, `con_orden`) VALUES
 (1, 'instalaciones', 'Instalaciones', 'fas fa-building', '#2563eb', 'instalaciones.ver', 1),
 (2, 'reservas', 'Reservas', 'fas fa-calendar-alt', '#22c55e', 'reservas.ver', 2),
 (3, 'facturacion', 'Facturación', 'fas fa-file-invoice', '#f59e0b', 'facturacion.ver', 3),
@@ -915,39 +1072,39 @@ INSERT INTO `menu_config` (`id`, `modulo_codigo`, `opcion`, `icono`, `color`, `p
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `modulos`
+-- Estructura de tabla para la tabla `seguridad_modulos`
 --
 
-DROP TABLE IF EXISTS `modulos`;
-CREATE TABLE IF NOT EXISTS `modulos` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `codigo` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Código único del módulo',
-  `nombre` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `descripcion` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `icono` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT 'fas fa-cube' COMMENT 'Clase Font Awesome',
-  `color_fondo` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT '#3B82F6' COMMENT 'Color del icono en hex',
-  `orden` int DEFAULT '0' COMMENT 'Orden de visualización',
-  `ruta_modulo` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'module para el router',
-  `ruta_controller` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'controller para el router',
-  `ruta_action` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT 'index' COMMENT 'action para el router',
-  `es_externo` tinyint(1) DEFAULT '0' COMMENT '1=Sistema externo con su propia BD',
-  `url_externa` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'URL si es sistema externo',
-  `requiere_licencia` tinyint(1) DEFAULT '1' COMMENT '1=Requiere suscripción',
-  `activo` tinyint(1) DEFAULT '1',
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `codigo` (`codigo`),
-  KEY `idx_codigo` (`codigo`),
-  KEY `idx_orden` (`orden`),
-  KEY `idx_activo` (`activo`)
+DROP TABLE IF EXISTS `seguridad_modulos`;
+CREATE TABLE IF NOT EXISTS `seguridad_modulos` (
+  `mod_id` int NOT NULL AUTO_INCREMENT,
+  `mod_codigo` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Código único del módulo',
+  `mod_nombre` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `mod_descripcion` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `mod_icono` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT 'fas fa-cube' COMMENT 'Clase Font Awesome',
+  `mod_color_fondo` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT '#3B82F6' COMMENT 'Color del icono en hex',
+  `mod_orden` int DEFAULT '0' COMMENT 'Orden de visualización',
+  `mod_ruta_modulo` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'module para el router',
+  `mod_ruta_controller` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'controller para el router',
+  `mod_ruta_action` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT 'index' COMMENT 'action para el router',
+  `mod_es_externo` tinyint(1) DEFAULT '0' COMMENT '1=Sistema externo con su propia BD',
+  `mod_url_externa` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'URL si es sistema externo',
+  `mod_requiere_licencia` tinyint(1) DEFAULT '1' COMMENT '1=Requiere suscripción',
+  `mod_activo` tinyint(1) DEFAULT '1',
+  `mod_created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `mod_updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`mod_id`),
+  UNIQUE KEY `codigo` (`mod_codigo`),
+  KEY `idx_codigo` (`mod_codigo`),
+  KEY `idx_orden` (`mod_orden`),
+  KEY `idx_activo` (`mod_activo`)
 ) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Catálogo de módulos/aplicaciones disponibles';
 
 --
--- Volcado de datos para la tabla `modulos`
+-- Volcado de datos para la tabla `seguridad_modulos`
 --
 
-INSERT INTO `modulos` (`id`, `codigo`, `nombre`, `descripcion`, `icono`, `color_fondo`, `orden`, `ruta_modulo`, `ruta_controller`, `ruta_action`, `es_externo`, `url_externa`, `requiere_licencia`, `activo`, `created_at`, `updated_at`) VALUES
+INSERT INTO `seguridad_modulos` (`mod_id`, `mod_codigo`, `mod_nombre`, `mod_descripcion`, `mod_icono`, `mod_color_fondo`, `mod_orden`, `mod_ruta_modulo`, `mod_ruta_controller`, `mod_ruta_action`, `mod_es_externo`, `mod_url_externa`, `mod_requiere_licencia`, `mod_activo`, `mod_created_at`, `mod_updated_at`) VALUES
 (1, 'instalaciones', 'Instalaciones', 'Gestiona canchas de fútbol, tenis, pádel, piscinas y más con tarifas flexibles.', 'fas fa-building', '#3B82F6', 1, 'instalaciones', 'cancha', 'index', 0, NULL, 1, 1, '2026-01-26 05:37:36', '2026-01-26 05:37:36'),
 (2, 'reservas', 'Reservas', 'Sistema de reservas por bloques horarios con confirmación automática y recurrencias.', 'fas fa-calendar-check', '#10B981', 2, 'reservas', 'reserva', 'index', 0, NULL, 1, 1, '2026-01-26 05:37:36', '2026-01-26 05:37:36'),
 (3, 'facturacion', 'Facturación', 'Comprobantes electrónicos SRI, múltiples formas de pago y pasarelas online.', 'fas fa-file-invoice-dollar', '#F59E0B', 3, 'facturacion', 'comprobante', 'index', 0, NULL, 1, 1, '2026-01-26 05:37:36', '2026-01-26 05:37:36'),
@@ -962,33 +1119,33 @@ INSERT INTO `modulos` (`id`, `codigo`, `nombre`, `descripcion`, `icono`, `color_
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `modulos_sistema`
+-- Estructura de tabla para la tabla `seguridad_modulos_sistema`
 --
 
-DROP TABLE IF EXISTS `modulos_sistema`;
-CREATE TABLE IF NOT EXISTS `modulos_sistema` (
-  `modulo_id` int NOT NULL AUTO_INCREMENT,
-  `codigo` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `nombre` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `descripcion` text COLLATE utf8mb4_unicode_ci,
-  `icono` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT 'fa-puzzle-piece',
-  `color` varchar(7) COLLATE utf8mb4_unicode_ci DEFAULT '#007bff',
-  `url_base` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'URL si es sistema externo',
-  `es_externo` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'N' COMMENT 'S si apunta a otro sistema',
-  `base_datos_externa` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Nombre de BD si es sistema legacy',
-  `orden_visualizacion` int DEFAULT '0',
-  `requiere_suscripcion` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'S',
-  `estado` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'A',
-  `fecha_registro` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`modulo_id`),
-  UNIQUE KEY `codigo` (`codigo`)
+DROP TABLE IF EXISTS `seguridad_modulos_sistema`;
+CREATE TABLE IF NOT EXISTS `seguridad_modulos_sistema` (
+  `sis_modulo_id` int NOT NULL AUTO_INCREMENT,
+  `sis_codigo` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `sis_nombre` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `sis_descripcion` text COLLATE utf8mb4_unicode_ci,
+  `sis_icono` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT 'fa-puzzle-piece',
+  `sis_color` varchar(7) COLLATE utf8mb4_unicode_ci DEFAULT '#007bff',
+  `sis_url_base` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'URL si es sistema externo',
+  `sis_es_externo` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'N' COMMENT 'S si apunta a otro sistema',
+  `sis_base_datos_externa` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Nombre de BD si es sistema legacy',
+  `sis_orden_visualizacion` int DEFAULT '0',
+  `sis_requiere_suscripcion` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'S',
+  `sis_estado` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'A',
+  `sis_fecha_registro` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`sis_modulo_id`),
+  UNIQUE KEY `codigo` (`sis_codigo`)
 ) ENGINE=InnoDB AUTO_INCREMENT=24 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Volcado de datos para la tabla `modulos_sistema`
+-- Volcado de datos para la tabla `seguridad_modulos_sistema`
 --
 
-INSERT INTO `modulos_sistema` (`modulo_id`, `codigo`, `nombre`, `descripcion`, `icono`, `color`, `url_base`, `es_externo`, `base_datos_externa`, `orden_visualizacion`, `requiere_suscripcion`, `estado`, `fecha_registro`) VALUES
+INSERT INTO `seguridad_modulos_sistema` (`sis_modulo_id`, `sis_codigo`, `sis_nombre`, `sis_descripcion`, `sis_icono`, `sis_color`, `sis_url_base`, `sis_es_externo`, `sis_base_datos_externa`, `sis_orden_visualizacion`, `sis_requiere_suscripcion`, `sis_estado`, `sis_fecha_registro`) VALUES
 (1, 'USUARIOS', 'Usuarios', 'Gestión de usuarios del sistema', 'fas fa-users', '#6366F1', NULL, 'N', NULL, 1, 'S', 'A', '2026-01-25 00:35:08'),
 (2, 'ROLES', 'Roles', 'Gestión de roles y permisos', 'fas fa-user-shield', '#3B82F6', '/escuelas/', 'S', 'digisports', 2, 'S', 'A', '2026-01-25 00:35:08'),
 (3, 'TENANTS', 'Tenants', 'Gestión de empresas/tenants', 'fas fa-building', '#10B981', '/instalaciones/', 'N', NULL, 3, 'S', 'A', '2026-01-25 00:35:08'),
@@ -1009,92 +1166,92 @@ INSERT INTO `modulos_sistema` (`modulo_id`, `codigo`, `nombre`, `descripcion`, `
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `notificaciones`
+-- Estructura de tabla para la tabla `seguridad_notificaciones`
 --
 
-DROP TABLE IF EXISTS `notificaciones`;
-CREATE TABLE IF NOT EXISTS `notificaciones` (
-  `notificacion_id` int NOT NULL AUTO_INCREMENT,
-  `tenant_id` int DEFAULT NULL,
-  `usuario_id` int DEFAULT NULL,
-  `tipo` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `titulo` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `mensaje` text COLLATE utf8mb4_unicode_ci NOT NULL,
-  `url_accion` varchar(300) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `icono` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `color` varchar(7) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `leida` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'N',
-  `fecha_lectura` datetime DEFAULT NULL,
-  `fecha_creacion` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `fecha_expiracion` datetime DEFAULT NULL,
-  PRIMARY KEY (`notificacion_id`),
-  KEY `tenant_id` (`tenant_id`),
-  KEY `idx_usuario` (`usuario_id`),
-  KEY `idx_leida` (`leida`),
-  KEY `idx_fecha` (`fecha_creacion`)
+DROP TABLE IF EXISTS `seguridad_notificaciones`;
+CREATE TABLE IF NOT EXISTS `seguridad_notificaciones` (
+  `not_notificacion_id` int NOT NULL AUTO_INCREMENT,
+  `not_tenant_id` int DEFAULT NULL,
+  `not_usuario_id` int DEFAULT NULL,
+  `not_tipo` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `not_titulo` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `not_mensaje` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `not_url_accion` varchar(300) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `not_icono` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `not_color` varchar(7) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `not_leida` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'N',
+  `not_fecha_lectura` datetime DEFAULT NULL,
+  `not_fecha_creacion` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `not_fecha_expiracion` datetime DEFAULT NULL,
+  PRIMARY KEY (`not_notificacion_id`),
+  KEY `tenant_id` (`not_tenant_id`),
+  KEY `idx_usuario` (`not_usuario_id`),
+  KEY `idx_leida` (`not_leida`),
+  KEY `idx_fecha` (`not_fecha_creacion`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `notificaciones_log`
+-- Estructura de tabla para la tabla `seguridad_notificaciones_log`
 --
 
-DROP TABLE IF EXISTS `notificaciones_log`;
-CREATE TABLE IF NOT EXISTS `notificaciones_log` (
-  `log_id` int NOT NULL AUTO_INCREMENT,
-  `usuario_id` int DEFAULT NULL,
-  `tenant_id` int DEFAULT NULL,
-  `destinatario_email` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `tipo_notificacion` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `asunto` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `mensaje` text COLLATE utf8mb4_unicode_ci NOT NULL,
-  `enviado` tinyint(1) DEFAULT '0',
-  `error` text COLLATE utf8mb4_unicode_ci,
-  `fecha_envio` datetime DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`log_id`),
-  KEY `usuario_id` (`usuario_id`),
-  KEY `tenant_id` (`tenant_id`),
-  KEY `destinatario_email` (`destinatario_email`(100))
+DROP TABLE IF EXISTS `seguridad_notificaciones_log`;
+CREATE TABLE IF NOT EXISTS `seguridad_notificaciones_log` (
+  `log_log_id` int NOT NULL AUTO_INCREMENT,
+  `log_usuario_id` int DEFAULT NULL,
+  `log_tenant_id` int DEFAULT NULL,
+  `log_destinatario_email` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `log_tipo_notificacion` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `log_asunto` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `log_mensaje` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `log_enviado` tinyint(1) DEFAULT '0',
+  `log_error` text COLLATE utf8mb4_unicode_ci,
+  `log_fecha_envio` datetime DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`log_log_id`),
+  KEY `usuario_id` (`log_usuario_id`),
+  KEY `tenant_id` (`log_tenant_id`),
+  KEY `destinatario_email` (`log_destinatario_email`(100))
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `planes_suscripcion`
+-- Estructura de tabla para la tabla `seguridad_planes_suscripcion`
 --
 
-DROP TABLE IF EXISTS `planes_suscripcion`;
-CREATE TABLE IF NOT EXISTS `planes_suscripcion` (
-  `plan_id` int NOT NULL AUTO_INCREMENT,
-  `codigo` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `nombre` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `descripcion` text COLLATE utf8mb4_unicode_ci,
-  `precio_mensual` decimal(10,2) NOT NULL,
-  `precio_anual` decimal(10,2) DEFAULT NULL,
-  `descuento_anual` decimal(5,2) DEFAULT '0.00',
-  `usuarios_incluidos` int DEFAULT '5',
-  `sedes_incluidas` int DEFAULT '1',
-  `almacenamiento_gb` int DEFAULT '10',
-  `modulos_incluidos` json DEFAULT NULL,
-  `caracteristicas` json DEFAULT NULL,
-  `es_destacado` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'N',
-  `es_personalizado` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'N',
-  `color` varchar(7) COLLATE utf8mb4_unicode_ci DEFAULT '#007bff',
-  `orden_visualizacion` int DEFAULT '0',
-  `estado` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'A',
-  `fecha_registro` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`plan_id`),
-  UNIQUE KEY `codigo` (`codigo`),
-  KEY `idx_codigo` (`codigo`),
-  KEY `idx_estado` (`estado`)
+DROP TABLE IF EXISTS `seguridad_planes_suscripcion`;
+CREATE TABLE IF NOT EXISTS `seguridad_planes_suscripcion` (
+  `sus_plan_id` int NOT NULL AUTO_INCREMENT,
+  `sus_codigo` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `sus_nombre` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `sus_descripcion` text COLLATE utf8mb4_unicode_ci,
+  `sus_precio_mensual` decimal(10,2) NOT NULL,
+  `sus_precio_anual` decimal(10,2) DEFAULT NULL,
+  `sus_descuento_anual` decimal(5,2) DEFAULT '0.00',
+  `sus_usuarios_incluidos` int DEFAULT '5',
+  `sus_sedes_incluidas` int DEFAULT '1',
+  `sus_almacenamiento_gb` int DEFAULT '10',
+  `sus_modulos_incluidos` json DEFAULT NULL,
+  `sus_caracteristicas` json DEFAULT NULL,
+  `sus_es_destacado` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'N',
+  `sus_es_personalizado` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'N',
+  `sus_color` varchar(7) COLLATE utf8mb4_unicode_ci DEFAULT '#007bff',
+  `sus_orden_visualizacion` int DEFAULT '0',
+  `sus_estado` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'A',
+  `sus_fecha_registro` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`sus_plan_id`),
+  UNIQUE KEY `codigo` (`sus_codigo`),
+  KEY `idx_codigo` (`sus_codigo`),
+  KEY `idx_estado` (`sus_estado`)
 ) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Volcado de datos para la tabla `planes_suscripcion`
+-- Volcado de datos para la tabla `seguridad_planes_suscripcion`
 --
 
-INSERT INTO `planes_suscripcion` (`plan_id`, `codigo`, `nombre`, `descripcion`, `precio_mensual`, `precio_anual`, `descuento_anual`, `usuarios_incluidos`, `sedes_incluidas`, `almacenamiento_gb`, `modulos_incluidos`, `caracteristicas`, `es_destacado`, `es_personalizado`, `color`, `orden_visualizacion`, `estado`, `fecha_registro`) VALUES
+INSERT INTO `seguridad_planes_suscripcion` (`sus_plan_id`, `sus_codigo`, `sus_nombre`, `sus_descripcion`, `sus_precio_mensual`, `sus_precio_anual`, `sus_descuento_anual`, `sus_usuarios_incluidos`, `sus_sedes_incluidas`, `sus_almacenamiento_gb`, `sus_modulos_incluidos`, `sus_caracteristicas`, `sus_es_destacado`, `sus_es_personalizado`, `sus_color`, `sus_orden_visualizacion`, `sus_estado`, `sus_fecha_registro`) VALUES
 (1, 'BASICO', 'Plan Basico', 'Ideal para pequenos centros deportivos', 49.99, 539.89, 0.00, 3, 1, 5, '[\"CORE\", \"INSTALACIONES\"]', NULL, 'N', 'N', '#007bff', 0, 'A', '2026-01-25 00:35:09'),
 (2, 'PROFESIONAL', 'Profesional', 'Perfecto para centros en crecimiento', 99.99, 1079.89, 0.00, 10, 3, 25, '[\"CORE\", \"INSTALACIONES\", \"ESCUELAS\", \"TORNEOS\"]', NULL, 'S', 'N', '#007bff', 0, 'A', '2026-01-25 00:35:09'),
 (3, 'EMPRESARIAL', 'Plan Empresarial', 'Para cadenas y complejos deportivos', 199.99, 2159.89, 0.00, 50, 10, 100, '[\"CORE\", \"INSTALACIONES\", \"ESCUELAS\", \"TORNEOS\", \"INVENTARIO\", \"NUTRICION\", \"REPORTES\"]', NULL, 'N', 'N', '#007bff', 0, 'A', '2026-01-25 00:35:09'),
@@ -1105,107 +1262,33 @@ INSERT INTO `planes_suscripcion` (`plan_id`, `codigo`, `nombre`, `descripcion`, 
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `reservas`
+-- Estructura de tabla para la tabla `seguridad_roles`
 --
 
-DROP TABLE IF EXISTS `reservas`;
-CREATE TABLE IF NOT EXISTS `reservas` (
-  `reserva_id` int NOT NULL AUTO_INCREMENT,
-  `tenant_id` int NOT NULL,
-  `instalacion_id` int NOT NULL,
-  `cliente_id` int NOT NULL,
-  `fecha_reserva` date NOT NULL,
-  `hora_inicio` time NOT NULL,
-  `hora_fin` time NOT NULL,
-  `duracion_minutos` int NOT NULL,
-  `es_recurrente` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'N',
-  `reserva_padre_id` int DEFAULT NULL,
-  `recurrencia_config` json DEFAULT NULL,
-  `tarifa_aplicada_id` int DEFAULT NULL,
-  `precio_base` decimal(10,2) NOT NULL,
-  `descuento_monto` decimal(10,2) DEFAULT '0.00',
-  `precio_total` decimal(10,2) NOT NULL,
-  `abono_utilizado` decimal(10,2) DEFAULT '0.00',
-  `estado` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT 'PENDIENTE',
-  `requiere_confirmacion` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'S',
-  `fecha_confirmacion` datetime DEFAULT NULL,
-  `observaciones` text COLLATE utf8mb4_unicode_ci,
-  `fecha_registro` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `usuario_registro` int DEFAULT NULL,
-  PRIMARY KEY (`reserva_id`),
-  KEY `instalacion_id` (`instalacion_id`),
-  KEY `cliente_id` (`cliente_id`),
-  KEY `reserva_padre_id` (`reserva_padre_id`),
-  KEY `idx_tenant_instalacion` (`tenant_id`,`instalacion_id`),
-  KEY `idx_fecha_reserva` (`fecha_reserva`),
-  KEY `idx_estado` (`estado`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Volcado de datos para la tabla `reservas`
---
-
-INSERT INTO `reservas` (`reserva_id`, `tenant_id`, `instalacion_id`, `cliente_id`, `fecha_reserva`, `hora_inicio`, `hora_fin`, `duracion_minutos`, `es_recurrente`, `reserva_padre_id`, `recurrencia_config`, `tarifa_aplicada_id`, `precio_base`, `descuento_monto`, `precio_total`, `abono_utilizado`, `estado`, `requiere_confirmacion`, `fecha_confirmacion`, `observaciones`, `fecha_registro`, `usuario_registro`) VALUES
-(1, 1, 4, 1, '2026-01-26', '06:00:00', '07:00:00', 60, 'N', NULL, NULL, 3, 15.00, 0.00, 15.00, 0.00, 'PENDIENTE', 'S', NULL, '', '2026-01-26 00:36:19', 1),
-(2, 1, 4, 1, '2026-01-26', '12:00:00', '13:00:00', 60, 'N', NULL, NULL, 4, 16.00, 0.00, 16.00, 0.00, 'PENDIENTE', 'S', NULL, 'ok', '2026-01-26 00:40:15', 1),
-(3, 1, 4, 1, '2026-01-26', '07:00:00', '08:00:00', 60, 'N', NULL, NULL, 3, 15.00, 0.00, 15.00, 0.00, 'PENDIENTE', 'S', NULL, 'ok', '2026-01-26 03:23:02', 1);
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `reserva_pagos`
---
-
-DROP TABLE IF EXISTS `reserva_pagos`;
-CREATE TABLE IF NOT EXISTS `reserva_pagos` (
-  `pago_id` int NOT NULL AUTO_INCREMENT,
-  `tenant_id` int NOT NULL,
-  `reserva_id` int NOT NULL,
-  `monto` decimal(10,2) NOT NULL,
-  `tipo_pago` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `forma_pago` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `referencia` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `pasarela` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `transaction_id` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `estado` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT 'COMPLETADO',
-  `fecha_pago` datetime DEFAULT CURRENT_TIMESTAMP,
-  `usuario_registro` int DEFAULT NULL,
-  PRIMARY KEY (`pago_id`),
-  KEY `tenant_id` (`tenant_id`),
-  KEY `idx_reserva` (`reserva_id`),
-  KEY `idx_fecha` (`fecha_pago`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `roles`
---
-
-DROP TABLE IF EXISTS `roles`;
-CREATE TABLE IF NOT EXISTS `roles` (
-  `rol_id` int NOT NULL AUTO_INCREMENT,
-  `tenant_id` int DEFAULT NULL,
-  `codigo` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `nombre` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `descripcion` text COLLATE utf8mb4_unicode_ci,
-  `permisos` json DEFAULT NULL,
-  `es_super_admin` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'N',
-  `es_admin_tenant` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'N',
-  `puede_modificar_permisos` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'N',
-  `nivel_acceso` int DEFAULT '1',
-  `estado` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'A',
-  `fecha_registro` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`rol_id`),
-  UNIQUE KEY `uk_tenant_codigo` (`tenant_id`,`codigo`),
-  KEY `idx_codigo` (`codigo`)
+DROP TABLE IF EXISTS `seguridad_roles`;
+CREATE TABLE IF NOT EXISTS `seguridad_roles` (
+  `rol_rol_id` int NOT NULL AUTO_INCREMENT,
+  `rol_tenant_id` int DEFAULT NULL,
+  `rol_codigo` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `rol_nombre` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `rol_descripcion` text COLLATE utf8mb4_unicode_ci,
+  `rol_permisos` json DEFAULT NULL,
+  `rol_es_super_admin` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'N',
+  `rol_es_admin_tenant` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'N',
+  `rol_puede_modificar_permisos` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'N',
+  `rol_nivel_acceso` int DEFAULT '1',
+  `rol_estado` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'A',
+  `rol_fecha_registro` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`rol_rol_id`),
+  UNIQUE KEY `uk_tenant_codigo` (`rol_tenant_id`,`rol_codigo`),
+  KEY `idx_codigo` (`rol_codigo`)
 ) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Volcado de datos para la tabla `roles`
+-- Volcado de datos para la tabla `seguridad_roles`
 --
 
-INSERT INTO `roles` (`rol_id`, `tenant_id`, `codigo`, `nombre`, `descripcion`, `permisos`, `es_super_admin`, `es_admin_tenant`, `puede_modificar_permisos`, `nivel_acceso`, `estado`, `fecha_registro`) VALUES
+INSERT INTO `seguridad_roles` (`rol_rol_id`, `rol_tenant_id`, `rol_codigo`, `rol_nombre`, `rol_descripcion`, `rol_permisos`, `rol_es_super_admin`, `rol_es_admin_tenant`, `rol_puede_modificar_permisos`, `rol_nivel_acceso`, `rol_estado`, `rol_fecha_registro`) VALUES
 (1, NULL, 'SUPERADMIN', 'Super Administrador', 'Acceso total al sistema', '[\"*\"]', 'S', 'N', 'N', 10, 'A', '2026-01-25 00:35:09'),
 (3, NULL, 'RECEPCION', 'Recepcionista', 'Gestion de reservas y clientes', '[\"reservas.*\", \"clientes.ver\", \"clientes.crear\", \"pagos.crear\"]', 'N', 'N', 'N', 3, 'A', '2026-01-25 00:35:09'),
 (4, NULL, 'CLIENTE', 'Cliente', 'Usuario final con acceso limitado', '[\"reservas.ver\", \"reservas.crear\", \"perfil.*\"]', 'N', 'N', 'N', 1, 'A', '2026-01-25 00:35:09'),
@@ -1224,31 +1307,31 @@ INSERT INTO `roles` (`rol_id`, `tenant_id`, `codigo`, `nombre`, `descripcion`, `
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `rol_modulos`
+-- Estructura de tabla para la tabla `seguridad_rol_modulos`
 --
 
-DROP TABLE IF EXISTS `rol_modulos`;
-CREATE TABLE IF NOT EXISTS `rol_modulos` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `rol_id` int NOT NULL,
-  `modulo_id` int NOT NULL,
-  `puede_ver` tinyint(1) DEFAULT '1',
-  `puede_crear` tinyint(1) DEFAULT '0',
-  `puede_editar` tinyint(1) DEFAULT '0',
-  `puede_eliminar` tinyint(1) DEFAULT '0',
-  `permisos_especiales` json DEFAULT NULL COMMENT 'Permisos específicos del módulo',
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_rol_modulo` (`rol_id`,`modulo_id`),
-  KEY `idx_rol` (`rol_id`),
-  KEY `idx_modulo` (`modulo_id`)
+DROP TABLE IF EXISTS `seguridad_rol_modulos`;
+CREATE TABLE IF NOT EXISTS `seguridad_rol_modulos` (
+  `rmo_rol_id` int NOT NULL AUTO_INCREMENT,
+  `rmo_rol_rol_id` int NOT NULL,
+  `rmo_rol_modulo_id` int NOT NULL,
+  `rmo_rol_puede_ver` tinyint(1) DEFAULT '1',
+  `rmo_rol_puede_crear` tinyint(1) DEFAULT '0',
+  `rmo_rol_puede_editar` tinyint(1) DEFAULT '0',
+  `rmo_rol_puede_eliminar` tinyint(1) DEFAULT '0',
+  `rmo_rol_permisos_especiales` json DEFAULT NULL COMMENT 'Permisos específicos del módulo',
+  `rmo_rol_created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`rmo_rol_id`),
+  UNIQUE KEY `uk_rol_modulo` (`rmo_rol_rol_id`,`rmo_rol_modulo_id`),
+  KEY `idx_rol` (`rmo_rol_rol_id`),
+  KEY `idx_modulo` (`rmo_rol_modulo_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=141 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Permisos de roles sobre módulos';
 
 --
--- Volcado de datos para la tabla `rol_modulos`
+-- Volcado de datos para la tabla `seguridad_rol_modulos`
 --
 
-INSERT INTO `rol_modulos` (`id`, `rol_id`, `modulo_id`, `puede_ver`, `puede_crear`, `puede_editar`, `puede_eliminar`, `permisos_especiales`, `created_at`) VALUES
+INSERT INTO `seguridad_rol_modulos` (`rmo_rol_id`, `rmo_rol_rol_id`, `rmo_rol_modulo_id`, `rmo_rol_puede_ver`, `rmo_rol_puede_crear`, `rmo_rol_puede_editar`, `rmo_rol_puede_eliminar`, `rmo_rol_permisos_especiales`, `rmo_rol_created_at`) VALUES
 (1, 1, 1, 1, 1, 1, 1, NULL, '2026-01-26 05:37:36'),
 (2, 1, 2, 1, 1, 1, 1, NULL, '2026-01-26 05:37:36'),
 (3, 1, 3, 1, 1, 1, 1, NULL, '2026-01-26 05:37:36'),
@@ -1273,81 +1356,33 @@ INSERT INTO `rol_modulos` (`id`, `rol_id`, `modulo_id`, `puede_ver`, `puede_crea
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `sedes`
+-- Estructura de tabla para la tabla `seguridad_tarifas`
 --
 
-DROP TABLE IF EXISTS `sedes`;
-CREATE TABLE IF NOT EXISTS `sedes` (
-  `sede_id` int NOT NULL AUTO_INCREMENT,
-  `tenant_id` int NOT NULL,
-  `codigo` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `nombre` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `descripcion` text COLLATE utf8mb4_unicode_ci,
-  `direccion` varchar(400) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `ciudad` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `provincia` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `pais` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT 'Ecuador',
-  `latitud` decimal(10,8) DEFAULT NULL,
-  `longitud` decimal(11,8) DEFAULT NULL,
-  `telefono` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `email` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `horario_apertura` time DEFAULT NULL,
-  `horario_cierre` time DEFAULT NULL,
-  `dias_atencion` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT 'LUNES-DOMINGO',
-  `superficie_total` decimal(10,2) DEFAULT NULL,
-  `capacidad_total` int DEFAULT NULL,
-  `estacionamiento` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'S',
-  `cafeteria` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'N',
-  `tienda` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'N',
-  `foto_principal` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `galeria` json DEFAULT NULL,
-  `es_principal` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'N',
-  `estado` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'A',
-  `fecha_registro` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `fecha_actualizacion` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`sede_id`),
-  UNIQUE KEY `uk_tenant_codigo` (`tenant_id`,`codigo`),
-  KEY `idx_tenant` (`tenant_id`),
-  KEY `idx_ciudad` (`ciudad`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Volcado de datos para la tabla `sedes`
---
-
-INSERT INTO `sedes` (`sede_id`, `tenant_id`, `codigo`, `nombre`, `descripcion`, `direccion`, `ciudad`, `provincia`, `pais`, `latitud`, `longitud`, `telefono`, `email`, `horario_apertura`, `horario_cierre`, `dias_atencion`, `superficie_total`, `capacidad_total`, `estacionamiento`, `cafeteria`, `tienda`, `foto_principal`, `galeria`, `es_principal`, `estado`, `fecha_registro`, `fecha_actualizacion`) VALUES
-(1, 1, 'CENTRAL', 'Sede Central', NULL, 'Av. Principal 123', 'Quito', 'Pichincha', 'Ecuador', NULL, NULL, NULL, NULL, NULL, NULL, 'LUNES-DOMINGO', NULL, NULL, 'S', 'N', 'N', NULL, NULL, 'S', 'A', '2026-01-25 00:35:10', '2026-01-25 00:35:10');
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `tarifas`
---
-
-DROP TABLE IF EXISTS `tarifas`;
-CREATE TABLE IF NOT EXISTS `tarifas` (
-  `tarifa_id` int NOT NULL AUTO_INCREMENT,
-  `cancha_id` int NOT NULL,
-  `dia_semana` tinyint NOT NULL COMMENT '0=Domingo, 1=Lunes...6=SÃ¡bado',
-  `hora_inicio` time NOT NULL,
-  `hora_fin` time NOT NULL,
-  `precio` decimal(10,2) NOT NULL DEFAULT '0.00',
-  `estado` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT 'ACTIVO' COMMENT 'ACTIVO, INACTIVO',
-  `fecha_creacion` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `fecha_actualizacion` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`tarifa_id`),
-  UNIQUE KEY `uk_tarifa_unica` (`cancha_id`,`dia_semana`,`hora_inicio`,`hora_fin`),
-  KEY `idx_cancha` (`cancha_id`),
-  KEY `idx_dia_semana` (`dia_semana`),
-  KEY `idx_horario` (`hora_inicio`,`hora_fin`),
-  KEY `idx_estado` (`estado`)
+DROP TABLE IF EXISTS `seguridad_tarifas`;
+CREATE TABLE IF NOT EXISTS `seguridad_tarifas` (
+  `tar_tarifa_id` int NOT NULL AUTO_INCREMENT,
+  `tar_cancha_id` int NOT NULL,
+  `tar_dia_semana` tinyint NOT NULL COMMENT '0=Domingo, 1=Lunes...6=SÃ¡bado',
+  `tar_hora_inicio` time NOT NULL,
+  `tar_hora_fin` time NOT NULL,
+  `tar_precio` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `tar_estado` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT 'ACTIVO' COMMENT 'ACTIVO, INACTIVO',
+  `tar_fecha_creacion` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `tar_fecha_actualizacion` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`tar_tarifa_id`),
+  UNIQUE KEY `uk_tarifa_unica` (`tar_cancha_id`,`tar_dia_semana`,`tar_hora_inicio`,`tar_hora_fin`),
+  KEY `idx_cancha` (`tar_cancha_id`),
+  KEY `idx_dia_semana` (`tar_dia_semana`),
+  KEY `idx_horario` (`tar_hora_inicio`,`tar_hora_fin`),
+  KEY `idx_estado` (`tar_estado`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Tarifas de reservas por cancha, dÃ­a y horario';
 
 --
--- Volcado de datos para la tabla `tarifas`
+-- Volcado de datos para la tabla `seguridad_tarifas`
 --
 
-INSERT INTO `tarifas` (`tarifa_id`, `cancha_id`, `dia_semana`, `hora_inicio`, `hora_fin`, `precio`, `estado`, `fecha_creacion`, `fecha_actualizacion`) VALUES
+INSERT INTO `seguridad_tarifas` (`tar_tarifa_id`, `tar_cancha_id`, `tar_dia_semana`, `tar_hora_inicio`, `tar_hora_fin`, `tar_precio`, `tar_estado`, `tar_fecha_creacion`, `tar_fecha_actualizacion`) VALUES
 (1, 8, 1, '17:00:00', '18:00:00', 21.00, 'ACTIVO', '2026-01-25 23:47:38', '2026-01-26 00:27:53'),
 (3, 8, 1, '07:00:00', '08:00:00', 15.00, 'ACTIVO', '2026-01-25 23:53:12', '2026-01-26 03:20:41'),
 (4, 8, 1, '12:00:00', '13:00:00', 16.00, 'ACTIVO', '2026-01-26 00:28:19', '2026-01-26 00:28:19');
@@ -1355,127 +1390,127 @@ INSERT INTO `tarifas` (`tarifa_id`, `cancha_id`, `dia_semana`, `hora_inicio`, `h
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `tenants`
+-- Estructura de tabla para la tabla `seguridad_tenants`
 --
 
-DROP TABLE IF EXISTS `tenants`;
-CREATE TABLE IF NOT EXISTS `tenants` (
-  `tenant_id` int NOT NULL AUTO_INCREMENT,
-  `ruc` varchar(13) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `razon_social` varchar(300) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `nombre_comercial` varchar(300) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `tipo_empresa` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `direccion` varchar(400) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `telefono` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `celular` varchar(15) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `email` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `sitio_web` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `representante_nombre` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `representante_identificacion` varchar(13) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `representante_email` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `representante_telefono` varchar(15) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `plan_id` int NOT NULL,
-  `fecha_inicio` date NOT NULL,
-  `fecha_vencimiento` date NOT NULL,
-  `estado_suscripcion` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT 'ACTIVA',
-  `usuarios_permitidos` int DEFAULT '5',
-  `sedes_permitidas` int DEFAULT '1',
-  `almacenamiento_gb` int DEFAULT '10',
-  `logo` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `favicon` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `color_primario` varchar(7) COLLATE utf8mb4_unicode_ci DEFAULT '#007bff',
-  `color_secundario` varchar(7) COLLATE utf8mb4_unicode_ci DEFAULT '#6c757d',
-  `color_acento` varchar(7) COLLATE utf8mb4_unicode_ci DEFAULT '#28a745',
-  `tiene_sistema_antiguo` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'N',
-  `bd_antigua` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `tenant_id_antiguo` int DEFAULT NULL,
-  `monto_mensual` decimal(10,2) NOT NULL,
-  `dia_corte` int DEFAULT '1',
-  `metodo_pago_preferido` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `timezone` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT 'America/Guayaquil',
-  `idioma` varchar(5) COLLATE utf8mb4_unicode_ci DEFAULT 'es',
-  `moneda` varchar(3) COLLATE utf8mb4_unicode_ci DEFAULT 'USD',
-  `estado` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'A',
-  `motivo_suspension` text COLLATE utf8mb4_unicode_ci,
-  `fecha_suspension` datetime DEFAULT NULL,
-  `fecha_registro` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `fecha_actualizacion` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `usuario_registro` int DEFAULT NULL,
-  `usuario_actualizacion` int DEFAULT NULL,
-  PRIMARY KEY (`tenant_id`),
-  UNIQUE KEY `ruc` (`ruc`),
-  KEY `plan_id` (`plan_id`),
-  KEY `idx_ruc` (`ruc`),
-  KEY `idx_estado` (`estado`),
-  KEY `idx_email` (`email`),
-  KEY `idx_fecha_vencimiento` (`fecha_vencimiento`)
+DROP TABLE IF EXISTS `seguridad_tenants`;
+CREATE TABLE IF NOT EXISTS `seguridad_tenants` (
+  `ten_tenant_id` int NOT NULL AUTO_INCREMENT,
+  `ten_ruc` varchar(13) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `ten_razon_social` varchar(300) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `ten_nombre_comercial` varchar(300) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `ten_tipo_empresa` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `ten_direccion` varchar(400) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `ten_telefono` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `ten_celular` varchar(15) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `ten_email` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `ten_sitio_web` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `ten_representante_nombre` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `ten_representante_identificacion` varchar(13) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `ten_representante_email` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `ten_representante_telefono` varchar(15) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `ten_plan_id` int NOT NULL,
+  `ten_fecha_inicio` date NOT NULL,
+  `ten_fecha_vencimiento` date NOT NULL,
+  `ten_estado_suscripcion` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT 'ACTIVA',
+  `ten_usuarios_permitidos` int DEFAULT '5',
+  `ten_sedes_permitidas` int DEFAULT '1',
+  `ten_almacenamiento_gb` int DEFAULT '10',
+  `ten_logo` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `ten_favicon` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `ten_color_primario` varchar(7) COLLATE utf8mb4_unicode_ci DEFAULT '#007bff',
+  `ten_color_secundario` varchar(7) COLLATE utf8mb4_unicode_ci DEFAULT '#6c757d',
+  `ten_color_acento` varchar(7) COLLATE utf8mb4_unicode_ci DEFAULT '#28a745',
+  `ten_tiene_sistema_antiguo` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'N',
+  `ten_bd_antigua` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `ten_tenant_id_antiguo` int DEFAULT NULL,
+  `ten_monto_mensual` decimal(10,2) NOT NULL,
+  `ten_dia_corte` int DEFAULT '1',
+  `ten_metodo_pago_preferido` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `ten_timezone` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT 'America/Guayaquil',
+  `ten_idioma` varchar(5) COLLATE utf8mb4_unicode_ci DEFAULT 'es',
+  `ten_moneda` varchar(3) COLLATE utf8mb4_unicode_ci DEFAULT 'USD',
+  `ten_estado` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'A',
+  `ten_motivo_suspension` text COLLATE utf8mb4_unicode_ci,
+  `ten_fecha_suspension` datetime DEFAULT NULL,
+  `ten_fecha_registro` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `ten_fecha_actualizacion` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `ten_usuario_registro` int DEFAULT NULL,
+  `ten_usuario_actualizacion` int DEFAULT NULL,
+  PRIMARY KEY (`ten_tenant_id`),
+  UNIQUE KEY `ruc` (`ten_ruc`),
+  KEY `plan_id` (`ten_plan_id`),
+  KEY `idx_ruc` (`ten_ruc`),
+  KEY `idx_estado` (`ten_estado`),
+  KEY `idx_email` (`ten_email`),
+  KEY `idx_fecha_vencimiento` (`ten_fecha_vencimiento`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Volcado de datos para la tabla `tenants`
+-- Volcado de datos para la tabla `seguridad_tenants`
 --
 
-INSERT INTO `tenants` (`tenant_id`, `ruc`, `razon_social`, `nombre_comercial`, `tipo_empresa`, `direccion`, `telefono`, `celular`, `email`, `sitio_web`, `representante_nombre`, `representante_identificacion`, `representante_email`, `representante_telefono`, `plan_id`, `fecha_inicio`, `fecha_vencimiento`, `estado_suscripcion`, `usuarios_permitidos`, `sedes_permitidas`, `almacenamiento_gb`, `logo`, `favicon`, `color_primario`, `color_secundario`, `color_acento`, `tiene_sistema_antiguo`, `bd_antigua`, `tenant_id_antiguo`, `monto_mensual`, `dia_corte`, `metodo_pago_preferido`, `timezone`, `idioma`, `moneda`, `estado`, `motivo_suspension`, `fecha_suspension`, `fecha_registro`, `fecha_actualizacion`, `usuario_registro`, `usuario_actualizacion`) VALUES
+INSERT INTO `seguridad_tenants` (`ten_tenant_id`, `ten_ruc`, `ten_razon_social`, `ten_nombre_comercial`, `ten_tipo_empresa`, `ten_direccion`, `ten_telefono`, `ten_celular`, `ten_email`, `ten_sitio_web`, `ten_representante_nombre`, `ten_representante_identificacion`, `ten_representante_email`, `ten_representante_telefono`, `ten_plan_id`, `ten_fecha_inicio`, `ten_fecha_vencimiento`, `ten_estado_suscripcion`, `ten_usuarios_permitidos`, `ten_sedes_permitidas`, `ten_almacenamiento_gb`, `ten_logo`, `ten_favicon`, `ten_color_primario`, `ten_color_secundario`, `ten_color_acento`, `ten_tiene_sistema_antiguo`, `ten_bd_antigua`, `ten_tenant_id_antiguo`, `ten_monto_mensual`, `ten_dia_corte`, `ten_metodo_pago_preferido`, `ten_timezone`, `ten_idioma`, `ten_moneda`, `ten_estado`, `ten_motivo_suspension`, `ten_fecha_suspension`, `ten_fecha_registro`, `ten_fecha_actualizacion`, `ten_usuario_registro`, `ten_usuario_actualizacion`) VALUES
 (1, '1792261104001', 'DigiSports Administracion', 'DigiSports Admin', '', 'Rey david y los Olivos', '0993120984', '', 'fbpinzon@gmail.com', '', '', '', '', '', 4, '2026-01-24', '2028-01-24', 'ACTIVA', 5, 0, 10, NULL, NULL, '', '', '#28a745', 'N', NULL, NULL, 0.00, 1, NULL, 'America/Guayaquil', 'es', 'USD', 'A', NULL, NULL, '2026-01-25 00:35:10', '2026-02-02 17:32:33', NULL, NULL),
 (2, '1104015282001', 'Champions', 'Champios CF 2013', '', '', '0993120984', '', 'fbpinzon@gmail.com', '', '', '', '', '', 2, '2026-01-27', '2029-03-27', 'ACTIVA', 5, 0, 10, NULL, NULL, '', '', '#28a745', 'N', NULL, NULL, 0.00, 1, NULL, 'America/Guayaquil', 'es', 'USD', 'A', NULL, NULL, '2026-01-27 05:27:48', '2026-02-03 05:22:27', NULL, NULL);
 
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `tenant_configuraciones`
+-- Estructura de tabla para la tabla `seguridad_tenant_configuraciones`
 --
 
-DROP TABLE IF EXISTS `tenant_configuraciones`;
-CREATE TABLE IF NOT EXISTS `tenant_configuraciones` (
-  `config_id` int NOT NULL AUTO_INCREMENT,
-  `tenant_id` int NOT NULL,
-  `clave` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `valor` text COLLATE utf8mb4_unicode_ci,
-  `tipo` enum('string','int','bool','json') COLLATE utf8mb4_unicode_ci DEFAULT 'string',
-  `descripcion` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`config_id`),
-  UNIQUE KEY `uk_tenant_clave` (`tenant_id`,`clave`),
-  KEY `idx_tenant` (`tenant_id`)
+DROP TABLE IF EXISTS `seguridad_tenant_configuraciones`;
+CREATE TABLE IF NOT EXISTS `seguridad_tenant_configuraciones` (
+  `con_config_id` int NOT NULL AUTO_INCREMENT,
+  `con_tenant_id` int NOT NULL,
+  `con_clave` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `con_valor` text COLLATE utf8mb4_unicode_ci,
+  `con_tipo` enum('string','int','bool','json') COLLATE utf8mb4_unicode_ci DEFAULT 'string',
+  `con_descripcion` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `con_created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `con_updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`con_config_id`),
+  UNIQUE KEY `uk_tenant_clave` (`con_tenant_id`,`con_clave`),
+  KEY `idx_tenant` (`con_tenant_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `tenant_modulos`
+-- Estructura de tabla para la tabla `seguridad_tenant_modulos`
 --
 
-DROP TABLE IF EXISTS `tenant_modulos`;
-CREATE TABLE IF NOT EXISTS `tenant_modulos` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `tenant_id` int NOT NULL,
-  `modulo_id` int NOT NULL,
-  `nombre_personalizado` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `icono_personalizado` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `color_personalizado` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `orden_visualizacion` int DEFAULT '0',
-  `activo` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'S',
-  `fecha_inicio` date NOT NULL,
-  `fecha_fin` date DEFAULT NULL COMMENT 'NULL = sin vencimiento',
-  `estado` enum('ACTIVO','SUSPENDIDO','VENCIDO','CANCELADO') COLLATE utf8mb4_unicode_ci DEFAULT 'ACTIVO',
-  `tipo_licencia` enum('PRUEBA','MENSUAL','ANUAL','PERPETUA') COLLATE utf8mb4_unicode_ci DEFAULT 'MENSUAL',
-  `max_usuarios` int DEFAULT NULL COMMENT 'NULL = ilimitado',
-  `observaciones` text COLLATE utf8mb4_unicode_ci,
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_tenant_modulo` (`tenant_id`,`modulo_id`),
-  KEY `idx_tenant` (`tenant_id`),
-  KEY `idx_modulo` (`modulo_id`),
-  KEY `idx_estado` (`estado`)
+DROP TABLE IF EXISTS `seguridad_tenant_modulos`;
+CREATE TABLE IF NOT EXISTS `seguridad_tenant_modulos` (
+  `tmo_id` int NOT NULL AUTO_INCREMENT,
+  `tmo_tenant_id` int NOT NULL,
+  `tmo_modulo_id` int NOT NULL,
+  `tmo_nombre_personalizado` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `tmo_icono_personalizado` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `tmo_color_personalizado` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `tmo_orden_visualizacion` int DEFAULT '0',
+  `tmo_activo` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'S',
+  `tmo_fecha_inicio` date NOT NULL,
+  `tmo_fecha_fin` date DEFAULT NULL COMMENT 'NULL = sin vencimiento',
+  `tmo_estado` enum('ACTIVO','SUSPENDIDO','VENCIDO','CANCELADO') COLLATE utf8mb4_unicode_ci DEFAULT 'ACTIVO',
+  `tmo_tipo_licencia` enum('PRUEBA','MENSUAL','ANUAL','PERPETUA') COLLATE utf8mb4_unicode_ci DEFAULT 'MENSUAL',
+  `tmo_max_usuarios` int DEFAULT NULL COMMENT 'NULL = ilimitado',
+  `tmo_observaciones` text COLLATE utf8mb4_unicode_ci,
+  `tmo_created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `tmo_updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`tmo_id`),
+  UNIQUE KEY `uk_tenant_modulo` (`tmo_tenant_id`,`tmo_modulo_id`),
+  KEY `idx_tenant` (`tmo_tenant_id`),
+  KEY `idx_modulo` (`tmo_modulo_id`),
+  KEY `idx_estado` (`tmo_estado`)
 ) ENGINE=InnoDB AUTO_INCREMENT=422 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Suscripciones de tenants a módulos';
 
 --
--- Volcado de datos para la tabla `tenant_modulos`
+-- Volcado de datos para la tabla `seguridad_tenant_modulos`
 --
 
-INSERT INTO `tenant_modulos` (`id`, `tenant_id`, `modulo_id`, `nombre_personalizado`, `icono_personalizado`, `color_personalizado`, `orden_visualizacion`, `activo`, `fecha_inicio`, `fecha_fin`, `estado`, `tipo_licencia`, `max_usuarios`, `observaciones`, `created_at`, `updated_at`) VALUES
+INSERT INTO `seguridad_tenant_modulos` (`tmo_id`, `tmo_tenant_id`, `tmo_modulo_id`, `tmo_nombre_personalizado`, `tmo_icono_personalizado`, `tmo_color_personalizado`, `tmo_orden_visualizacion`, `tmo_activo`, `tmo_fecha_inicio`, `tmo_fecha_fin`, `tmo_estado`, `tmo_tipo_licencia`, `tmo_max_usuarios`, `tmo_observaciones`, `tmo_created_at`, `tmo_updated_at`) VALUES
 (161, 2, 1, NULL, NULL, NULL, 0, 'N', '2026-02-02', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-02-02 17:31:51', '2026-02-02 17:31:51'),
 (162, 2, 2, NULL, NULL, NULL, 0, 'N', '2026-02-02', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-02-02 17:31:51', '2026-02-02 17:31:51'),
 (163, 2, 3, NULL, NULL, NULL, 0, 'N', '2026-02-02', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-02-02 17:31:51', '2026-02-02 17:31:51'),
@@ -1504,96 +1539,63 @@ INSERT INTO `tenant_modulos` (`id`, `tenant_id`, `modulo_id`, `nombre_personaliz
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `tipos_instalacion`
+-- Estructura de tabla para la tabla `seguridad_usuarios`
 --
 
-DROP TABLE IF EXISTS `tipos_instalacion`;
-CREATE TABLE IF NOT EXISTS `tipos_instalacion` (
-  `tipo_id` int NOT NULL AUTO_INCREMENT,
-  `tenant_id` int NOT NULL,
-  `codigo` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `nombre` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `descripcion` text COLLATE utf8mb4_unicode_ci,
-  `icono` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT 'fa-futbol',
-  `color` varchar(7) COLLATE utf8mb4_unicode_ci DEFAULT '#28a745',
-  `requiere_equipamiento` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'N',
-  `permite_reserva_online` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'S',
-  `estado` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'A',
-  `fecha_registro` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`tipo_id`),
-  UNIQUE KEY `uk_tenant_codigo` (`tenant_id`,`codigo`),
-  KEY `idx_estado` (`estado`)
+DROP TABLE IF EXISTS `seguridad_usuarios`;
+CREATE TABLE IF NOT EXISTS `seguridad_usuarios` (
+  `usu_usuario_id` int NOT NULL AUTO_INCREMENT,
+  `usu_tenant_id` int NOT NULL,
+  `usu_identificacion` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `usu_nombres` varchar(150) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `usu_apellidos` varchar(150) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `usu_email` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `usu_telefono` varchar(15) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `usu_celular` varchar(15) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `usu_username` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `usu_password` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `usu_requiere_2fa` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'S',
+  `usu_codigo_2fa` varchar(6) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `usu_codigo_2fa_expira` datetime DEFAULT NULL,
+  `usu_intentos_2fa` int DEFAULT '0',
+  `usu_token_recuperacion` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `usu_token_recuperacion_expira` datetime DEFAULT NULL,
+  `usu_rol_id` int NOT NULL,
+  `usu_permisos_especiales` json DEFAULT NULL,
+  `usu_ultimo_login` datetime DEFAULT NULL,
+  `usu_ip_ultimo_login` varchar(45) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `usu_token_sesion` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `usu_token_sesion_expira` datetime DEFAULT NULL,
+  `usu_sedes_acceso` json DEFAULT NULL,
+  `usu_sede_principal_id` int DEFAULT NULL,
+  `usu_avatar` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `usu_tema` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT 'light',
+  `usu_idioma` varchar(5) COLLATE utf8mb4_unicode_ci DEFAULT 'es',
+  `usu_notificaciones_email` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'S',
+  `usu_notificaciones_push` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'S',
+  `usu_debe_cambiar_password` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'N',
+  `usu_password_expira` date DEFAULT NULL,
+  `usu_intentos_fallidos` int DEFAULT '0',
+  `usu_bloqueado_hasta` datetime DEFAULT NULL,
+  `usu_estado` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'A',
+  `usu_fecha_registro` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `usu_fecha_actualizacion` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`usu_usuario_id`),
+  UNIQUE KEY `username` (`usu_username`),
+  UNIQUE KEY `uk_tenant_email` (`usu_tenant_id`,`usu_email`),
+  KEY `rol_id` (`usu_rol_id`),
+  KEY `idx_username` (`usu_username`),
+  KEY `idx_email` (`usu_email`),
+  KEY `idx_estado` (`usu_estado`),
+  KEY `idx_tenant` (`usu_tenant_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Volcado de datos para la tabla `tipos_instalacion`
+-- Volcado de datos para la tabla `seguridad_usuarios`
 --
 
-INSERT INTO `tipos_instalacion` (`tipo_id`, `tenant_id`, `codigo`, `nombre`, `descripcion`, `icono`, `color`, `requiere_equipamiento`, `permite_reserva_online`, `estado`, `fecha_registro`) VALUES
-(1, 1, 'FUTBOL', 'Cancha de Fútbol', 'Canchas para fútbol', 'fa-futbol', '#28a745', 'N', 'S', 'A', '2026-01-25 23:07:00'),
-(2, 1, 'BASQUET', 'Cancha de Básquet', 'Canchas para baloncesto', 'fa-basketball-ball', '#fd7e14', 'N', 'S', 'A', '2026-01-25 23:07:00'),
-(3, 1, 'TENIS', 'Cancha de Tenis', 'Canchas para tenis', 'fa-table-tennis', '#17a2b8', 'N', 'S', 'A', '2026-01-25 23:07:00');
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `usuarios`
---
-
-DROP TABLE IF EXISTS `usuarios`;
-CREATE TABLE IF NOT EXISTS `usuarios` (
-  `usuario_id` int NOT NULL AUTO_INCREMENT,
-  `tenant_id` int NOT NULL,
-  `identificacion` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `nombres` varchar(150) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `apellidos` varchar(150) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `email` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `telefono` varchar(15) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `celular` varchar(15) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `username` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `password` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `requiere_2fa` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'S',
-  `codigo_2fa` varchar(6) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `codigo_2fa_expira` datetime DEFAULT NULL,
-  `intentos_2fa` int DEFAULT '0',
-  `token_recuperacion` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `token_recuperacion_expira` datetime DEFAULT NULL,
-  `rol_id` int NOT NULL,
-  `permisos_especiales` json DEFAULT NULL,
-  `ultimo_login` datetime DEFAULT NULL,
-  `ip_ultimo_login` varchar(45) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `token_sesion` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `token_sesion_expira` datetime DEFAULT NULL,
-  `sedes_acceso` json DEFAULT NULL,
-  `sede_principal_id` int DEFAULT NULL,
-  `avatar` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `tema` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT 'light',
-  `idioma` varchar(5) COLLATE utf8mb4_unicode_ci DEFAULT 'es',
-  `notificaciones_email` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'S',
-  `notificaciones_push` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'S',
-  `debe_cambiar_password` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'N',
-  `password_expira` date DEFAULT NULL,
-  `intentos_fallidos` int DEFAULT '0',
-  `bloqueado_hasta` datetime DEFAULT NULL,
-  `estado` char(1) COLLATE utf8mb4_unicode_ci DEFAULT 'A',
-  `fecha_registro` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `fecha_actualizacion` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`usuario_id`),
-  UNIQUE KEY `username` (`username`),
-  UNIQUE KEY `uk_tenant_email` (`tenant_id`,`email`),
-  KEY `rol_id` (`rol_id`),
-  KEY `idx_username` (`username`),
-  KEY `idx_email` (`email`),
-  KEY `idx_estado` (`estado`),
-  KEY `idx_tenant` (`tenant_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Volcado de datos para la tabla `usuarios`
---
-
-INSERT INTO `usuarios` (`usuario_id`, `tenant_id`, `identificacion`, `nombres`, `apellidos`, `email`, `telefono`, `celular`, `username`, `password`, `requiere_2fa`, `codigo_2fa`, `codigo_2fa_expira`, `intentos_2fa`, `token_recuperacion`, `token_recuperacion_expira`, `rol_id`, `permisos_especiales`, `ultimo_login`, `ip_ultimo_login`, `token_sesion`, `token_sesion_expira`, `sedes_acceso`, `sede_principal_id`, `avatar`, `tema`, `idioma`, `notificaciones_email`, `notificaciones_push`, `debe_cambiar_password`, `password_expira`, `intentos_fallidos`, `bloqueado_hasta`, `estado`, `fecha_registro`, `fecha_actualizacion`) VALUES
-(1, 1, '1103345292', 'Super', 'Administrador', 'fbpinzon@gmail.com', '0993120984', '0993120984', 'superadmin', '$argon2id$v=19$m=65536,t=4,p=3$NDFVNHo0VGFXa055bnYyTw$/QaJhooHjruj4qyJDxLdD5/w9LGz9AHuY85E4exF8nA', 'N', '798279', '2026-01-24 20:21:48', 0, NULL, NULL, 1, NULL, '2026-02-03 20:55:27', '::1', 'd46c1a54c78b28260bf588612ead286bf1e0d7218452375938c70b356bcff026', '2026-02-24 17:56:18', NULL, NULL, NULL, 'light', 'es', 'S', 'S', 'N', NULL, 0, NULL, 'A', '2026-01-25 00:35:10', '2026-02-04 01:55:27'),
+INSERT INTO `seguridad_usuarios` (`usu_usuario_id`, `usu_tenant_id`, `usu_identificacion`, `usu_nombres`, `usu_apellidos`, `usu_email`, `usu_telefono`, `usu_celular`, `usu_username`, `usu_password`, `usu_requiere_2fa`, `usu_codigo_2fa`, `usu_codigo_2fa_expira`, `usu_intentos_2fa`, `usu_token_recuperacion`, `usu_token_recuperacion_expira`, `usu_rol_id`, `usu_permisos_especiales`, `usu_ultimo_login`, `usu_ip_ultimo_login`, `usu_token_sesion`, `usu_token_sesion_expira`, `usu_sedes_acceso`, `usu_sede_principal_id`, `usu_avatar`, `usu_tema`, `usu_idioma`, `usu_notificaciones_email`, `usu_notificaciones_push`, `usu_debe_cambiar_password`, `usu_password_expira`, `usu_intentos_fallidos`, `usu_bloqueado_hasta`, `usu_estado`, `usu_fecha_registro`, `usu_fecha_actualizacion`) VALUES
+(1, 1, '1103345292', 'Super', 'Administrador', 'fbpinzon@gmail.com', '0993120984', '0993120984', 'superadmin', '$argon2id$v=19$m=65536,t=4,p=3$NDFVNHo0VGFXa055bnYyTw$/QaJhooHjruj4qyJDxLdD5/w9LGz9AHuY85E4exF8nA', 'N', '798279', '2026-01-24 20:21:48', 0, NULL, NULL, 1, NULL, '2026-02-04 14:24:56', '::1', 'd46c1a54c78b28260bf588612ead286bf1e0d7218452375938c70b356bcff026', '2026-02-24 17:56:18', NULL, NULL, NULL, 'light', 'es', 'S', 'S', 'N', NULL, 0, NULL, 'A', '2026-01-25 00:35:10', '2026-02-04 19:24:56'),
 (3, 2, '1103345292', 'Freddy', 'Pinzón', 'fbpinzon@gmail.com', '0993120984', '', 'fbpinzon', '$argon2id$v=19$m=65536,t=4,p=1$dVNpUFJ1cTlDMFJieGVtUQ$6Yemzxhz01i9O3cwvnZLj7QP21uCrqtjoBFejtvYjhw', 'N', NULL, NULL, 0, NULL, NULL, 8, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'light', 'es', 'S', 'S', 'N', NULL, 0, NULL, 'A', '2026-01-29 22:22:55', '2026-01-29 22:22:55');
 
 -- --------------------------------------------------------
@@ -1604,14 +1606,6 @@ INSERT INTO `usuarios` (`usuario_id`, `tenant_id`, `identificacion`, `nombres`, 
 --
 DROP VIEW IF EXISTS `vw_estadisticas_canchas`;
 CREATE TABLE IF NOT EXISTS `vw_estadisticas_canchas` (
-`cancha_id` int
-,`mantenimientos_completados` bigint
-,`mantenimientos_pendientes` bigint
-,`nombre` varchar(100)
-,`tenant_id` int
-,`tipo` varchar(50)
-,`total_mantenimientos` bigint
-,`total_tarifas` bigint
 );
 
 -- --------------------------------------------------------
@@ -1622,17 +1616,6 @@ CREATE TABLE IF NOT EXISTS `vw_estadisticas_canchas` (
 --
 DROP VIEW IF EXISTS `vw_tarifas_por_dia`;
 CREATE TABLE IF NOT EXISTS `vw_tarifas_por_dia` (
-`cancha_id` int
-,`cancha_nombre` varchar(100)
-,`cancha_tipo` varchar(50)
-,`dia_nombre` varchar(10)
-,`dia_semana` tinyint
-,`estado` varchar(20)
-,`hora_fin` time
-,`hora_inicio` time
-,`precio` decimal(10,2)
-,`tarifa_id` int
-,`tenant_id` int
 );
 
 -- --------------------------------------------------------
@@ -1643,25 +1626,6 @@ CREATE TABLE IF NOT EXISTS `vw_tarifas_por_dia` (
 --
 DROP VIEW IF EXISTS `v_facturas_electronicas_resumen`;
 CREATE TABLE IF NOT EXISTS `v_facturas_electronicas_resumen` (
-`ambiente` char(1)
-,`ambiente_texto` varchar(10)
-,`badge_class` varchar(9)
-,`clave_acceso` varchar(49)
-,`cliente_identificacion` varchar(20)
-,`cliente_razon_social` varchar(300)
-,`created_at` timestamp
-,`estado_sri` enum('PENDIENTE','GENERADA','FIRMADA','ENVIADA','RECIBIDA','DEVUELTA','AUTORIZADO','NO_AUTORIZADO','ERROR','ANULADA')
-,`fecha_autorizacion` datetime
-,`fecha_emision` date
-,`id` int
-,`intentos_envio` int
-,`iva` decimal(14,2)
-,`mensaje_error` text
-,`numero_autorizacion` varchar(49)
-,`numero_factura` varchar(17)
-,`subtotal` decimal(14,2)
-,`tenant_id` int
-,`total` decimal(14,2)
 );
 
 -- --------------------------------------------------------
@@ -1672,26 +1636,6 @@ CREATE TABLE IF NOT EXISTS `v_facturas_electronicas_resumen` (
 --
 DROP VIEW IF EXISTS `v_modulos_usuario`;
 CREATE TABLE IF NOT EXISTS `v_modulos_usuario` (
-`codigo` varchar(50)
-,`color_fondo` varchar(20)
-,`descripcion` varchar(500)
-,`es_externo` tinyint(1)
-,`estado_suscripcion` enum('ACTIVO','SUSPENDIDO','VENCIDO','CANCELADO')
-,`fecha_fin` date
-,`icono` varchar(100)
-,`modulo_id` int
-,`nombre` varchar(100)
-,`orden` int
-,`puede_crear` tinyint(1)
-,`puede_editar` tinyint(1)
-,`puede_eliminar` tinyint(1)
-,`puede_ver` tinyint(1)
-,`rol_id` int
-,`ruta_action` varchar(100)
-,`ruta_controller` varchar(100)
-,`ruta_modulo` varchar(100)
-,`tenant_id` int
-,`url_externa` varchar(500)
 );
 
 -- --------------------------------------------------------
@@ -1739,206 +1683,206 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 --
 
 --
--- Indices de la tabla `canchas`
+-- Indices de la tabla `instalaciones_canchas`
 --
-ALTER TABLE `canchas` ADD FULLTEXT KEY `ft_nombre` (`nombre`,`descripcion`);
+ALTER TABLE `instalaciones_canchas` ADD FULLTEXT KEY `ft_nombre` (`can_nombre`,`can_descripcion`);
 
 --
--- Indices de la tabla `mantenimientos`
+-- Indices de la tabla `instalaciones_mantenimientos`
 --
-ALTER TABLE `mantenimientos` ADD FULLTEXT KEY `ft_descripcion` (`descripcion`);
+ALTER TABLE `instalaciones_mantenimientos` ADD FULLTEXT KEY `ft_descripcion` (`man_descripcion`);
 
 --
 -- Restricciones para tablas volcadas
 --
 
 --
--- Filtros para la tabla `abonos`
---
-ALTER TABLE `abonos`
-  ADD CONSTRAINT `abonos_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`tenant_id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `abonos_ibfk_2` FOREIGN KEY (`cliente_id`) REFERENCES `clientes` (`cliente_id`);
-
---
--- Filtros para la tabla `auditoria`
---
-ALTER TABLE `auditoria`
-  ADD CONSTRAINT `auditoria_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`tenant_id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `auditoria_ibfk_2` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`usuario_id`) ON DELETE SET NULL;
-
---
--- Filtros para la tabla `canchas`
---
-ALTER TABLE `canchas`
-  ADD CONSTRAINT `fk_cancha_instalacion` FOREIGN KEY (`instalacion_id`) REFERENCES `instalaciones` (`instalacion_id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `fk_cancha_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`tenant_id`) ON DELETE CASCADE;
-
---
 -- Filtros para la tabla `clientes`
 --
 ALTER TABLE `clientes`
-  ADD CONSTRAINT `clientes_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`tenant_id`) ON DELETE CASCADE;
-
---
--- Filtros para la tabla `configuracion_sistema`
---
-ALTER TABLE `configuracion_sistema`
-  ADD CONSTRAINT `configuracion_sistema_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`tenant_id`) ON DELETE CASCADE;
-
---
--- Filtros para la tabla `disponibilidad_canchas`
---
-ALTER TABLE `disponibilidad_canchas`
-  ADD CONSTRAINT `fk_disp_cancha` FOREIGN KEY (`cancha_id`) REFERENCES `canchas` (`cancha_id`) ON DELETE CASCADE;
-
---
--- Filtros para la tabla `eventos_canchas`
---
-ALTER TABLE `eventos_canchas`
-  ADD CONSTRAINT `fk_evento_cancha` FOREIGN KEY (`cancha_id`) REFERENCES `canchas` (`cancha_id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `fk_evento_usuario` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`usuario_id`) ON DELETE SET NULL;
+  ADD CONSTRAINT `clientes_ibfk_1` FOREIGN KEY (`cli_tenant_id`) REFERENCES `seguridad_tenants` (`ten_tenant_id`) ON DELETE CASCADE;
 
 --
 -- Filtros para la tabla `facturas_electronicas_detalle`
 --
 ALTER TABLE `facturas_electronicas_detalle`
-  ADD CONSTRAINT `facturas_electronicas_detalle_ibfk_1` FOREIGN KEY (`factura_electronica_id`) REFERENCES `facturas_electronicas` (`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `facturas_electronicas_detalle_ibfk_1` FOREIGN KEY (`det_factura_electronica_id`) REFERENCES `facturas_electronicas` (`fac_id`) ON DELETE CASCADE;
 
 --
 -- Filtros para la tabla `facturas_electronicas_detalle_impuestos`
 --
 ALTER TABLE `facturas_electronicas_detalle_impuestos`
-  ADD CONSTRAINT `facturas_electronicas_detalle_impuestos_ibfk_1` FOREIGN KEY (`detalle_id`) REFERENCES `facturas_electronicas_detalle` (`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `facturas_electronicas_detalle_impuestos_ibfk_1` FOREIGN KEY (`imp_detalle_id`) REFERENCES `facturas_electronicas_detalle` (`det_id`) ON DELETE CASCADE;
 
 --
 -- Filtros para la tabla `facturas_electronicas_info_adicional`
 --
 ALTER TABLE `facturas_electronicas_info_adicional`
-  ADD CONSTRAINT `facturas_electronicas_info_adicional_ibfk_1` FOREIGN KEY (`factura_electronica_id`) REFERENCES `facturas_electronicas` (`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `facturas_electronicas_info_adicional_ibfk_1` FOREIGN KEY (`adi_factura_electronica_id`) REFERENCES `facturas_electronicas` (`fac_id`) ON DELETE CASCADE;
 
 --
 -- Filtros para la tabla `facturas_electronicas_log`
 --
 ALTER TABLE `facturas_electronicas_log`
-  ADD CONSTRAINT `facturas_electronicas_log_ibfk_1` FOREIGN KEY (`factura_electronica_id`) REFERENCES `facturas_electronicas` (`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `facturas_electronicas_log_ibfk_1` FOREIGN KEY (`log_factura_electronica_id`) REFERENCES `facturas_electronicas` (`fac_id`) ON DELETE CASCADE;
 
 --
 -- Filtros para la tabla `facturas_electronicas_pagos`
 --
 ALTER TABLE `facturas_electronicas_pagos`
-  ADD CONSTRAINT `facturas_electronicas_pagos_ibfk_1` FOREIGN KEY (`factura_electronica_id`) REFERENCES `facturas_electronicas` (`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `facturas_electronicas_pagos_ibfk_1` FOREIGN KEY (`pag_factura_electronica_id`) REFERENCES `facturas_electronicas` (`fac_id`) ON DELETE CASCADE;
 
 --
 -- Filtros para la tabla `facturas_suscripcion`
 --
 ALTER TABLE `facturas_suscripcion`
-  ADD CONSTRAINT `facturas_suscripcion_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`tenant_id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `facturas_suscripcion_ibfk_1` FOREIGN KEY (`sus_tenant_id`) REFERENCES `seguridad_tenants` (`ten_tenant_id`) ON DELETE CASCADE;
 
 --
 -- Filtros para la tabla `instalaciones`
 --
 ALTER TABLE `instalaciones`
-  ADD CONSTRAINT `instalaciones_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`tenant_id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `instalaciones_ibfk_2` FOREIGN KEY (`sede_id`) REFERENCES `sedes` (`sede_id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `instalaciones_ibfk_3` FOREIGN KEY (`tipo_instalacion_id`) REFERENCES `tipos_instalacion` (`tipo_id`);
+  ADD CONSTRAINT `instalaciones_ibfk_1` FOREIGN KEY (`ins_tenant_id`) REFERENCES `seguridad_tenants` (`ten_tenant_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `instalaciones_ibfk_2` FOREIGN KEY (`ins_sede_id`) REFERENCES `instalaciones_sedes` (`sed_sede_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `instalaciones_ibfk_3` FOREIGN KEY (`ins_tipo_instalacion_id`) REFERENCES `instalaciones_tipos_instalacion` (`tip_tipo_id`);
 
 --
--- Filtros para la tabla `instalacion_bloqueos`
+-- Filtros para la tabla `instalaciones_abonos`
 --
-ALTER TABLE `instalacion_bloqueos`
-  ADD CONSTRAINT `instalacion_bloqueos_ibfk_1` FOREIGN KEY (`instalacion_id`) REFERENCES `instalaciones` (`instalacion_id`) ON DELETE CASCADE;
+ALTER TABLE `instalaciones_abonos`
+  ADD CONSTRAINT `instalaciones_abonos_ibfk_1` FOREIGN KEY (`abo_tenant_id`) REFERENCES `seguridad_tenants` (`ten_tenant_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `instalaciones_abonos_ibfk_2` FOREIGN KEY (`abo_cliente_id`) REFERENCES `clientes` (`cli_cliente_id`);
 
 --
--- Filtros para la tabla `instalacion_horarios`
+-- Filtros para la tabla `instalaciones_canchas`
 --
-ALTER TABLE `instalacion_horarios`
-  ADD CONSTRAINT `instalacion_horarios_ibfk_1` FOREIGN KEY (`instalacion_id`) REFERENCES `instalaciones` (`instalacion_id`) ON DELETE CASCADE;
+ALTER TABLE `instalaciones_canchas`
+  ADD CONSTRAINT `fk_cancha_instalacion` FOREIGN KEY (`can_instalacion_id`) REFERENCES `instalaciones` (`ins_instalacion_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_cancha_tenant` FOREIGN KEY (`can_tenant_id`) REFERENCES `seguridad_tenants` (`ten_tenant_id`) ON DELETE CASCADE;
 
 --
--- Filtros para la tabla `instalacion_tarifas`
+-- Filtros para la tabla `instalaciones_disponibilidad_canchas`
 --
-ALTER TABLE `instalacion_tarifas`
-  ADD CONSTRAINT `instalacion_tarifas_ibfk_1` FOREIGN KEY (`instalacion_id`) REFERENCES `instalaciones` (`instalacion_id`) ON DELETE CASCADE;
+ALTER TABLE `instalaciones_disponibilidad_canchas`
+  ADD CONSTRAINT `fk_disp_cancha` FOREIGN KEY (`dis_cancha_id`) REFERENCES `instalaciones_canchas` (`can_cancha_id`) ON DELETE CASCADE;
 
 --
--- Filtros para la tabla `mantenimientos`
+-- Filtros para la tabla `instalaciones_eventos_canchas`
 --
-ALTER TABLE `mantenimientos`
-  ADD CONSTRAINT `fk_mnt_cancha` FOREIGN KEY (`cancha_id`) REFERENCES `canchas` (`cancha_id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `fk_mnt_responsable` FOREIGN KEY (`responsable_id`) REFERENCES `usuarios` (`usuario_id`) ON DELETE SET NULL,
-  ADD CONSTRAINT `fk_mnt_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`tenant_id`) ON DELETE CASCADE;
+ALTER TABLE `instalaciones_eventos_canchas`
+  ADD CONSTRAINT `fk_evento_cancha` FOREIGN KEY (`eve_cancha_id`) REFERENCES `instalaciones_canchas` (`can_cancha_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_evento_usuario` FOREIGN KEY (`eve_usuario_id`) REFERENCES `seguridad_usuarios` (`usu_usuario_id`) ON DELETE SET NULL;
 
 --
--- Filtros para la tabla `notificaciones`
+-- Filtros para la tabla `instalaciones_instalacion_bloqueos`
 --
-ALTER TABLE `notificaciones`
-  ADD CONSTRAINT `notificaciones_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`tenant_id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `notificaciones_ibfk_2` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`usuario_id`) ON DELETE CASCADE;
+ALTER TABLE `instalaciones_instalacion_bloqueos`
+  ADD CONSTRAINT `instalaciones_instalacion_bloqueos_ibfk_1` FOREIGN KEY (`blo_instalacion_id`) REFERENCES `instalaciones` (`ins_instalacion_id`) ON DELETE CASCADE;
 
 --
--- Filtros para la tabla `reservas`
+-- Filtros para la tabla `instalaciones_instalacion_horarios`
 --
-ALTER TABLE `reservas`
-  ADD CONSTRAINT `reservas_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`tenant_id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `reservas_ibfk_2` FOREIGN KEY (`instalacion_id`) REFERENCES `instalaciones` (`instalacion_id`),
-  ADD CONSTRAINT `reservas_ibfk_3` FOREIGN KEY (`cliente_id`) REFERENCES `clientes` (`cliente_id`),
-  ADD CONSTRAINT `reservas_ibfk_4` FOREIGN KEY (`reserva_padre_id`) REFERENCES `reservas` (`reserva_id`) ON DELETE CASCADE;
+ALTER TABLE `instalaciones_instalacion_horarios`
+  ADD CONSTRAINT `instalaciones_instalacion_horarios_ibfk_1` FOREIGN KEY (`hor_instalacion_id`) REFERENCES `instalaciones` (`ins_instalacion_id`) ON DELETE CASCADE;
 
 --
--- Filtros para la tabla `reserva_pagos`
+-- Filtros para la tabla `instalaciones_instalacion_tarifas`
 --
-ALTER TABLE `reserva_pagos`
-  ADD CONSTRAINT `reserva_pagos_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`tenant_id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `reserva_pagos_ibfk_2` FOREIGN KEY (`reserva_id`) REFERENCES `reservas` (`reserva_id`);
+ALTER TABLE `instalaciones_instalacion_tarifas`
+  ADD CONSTRAINT `instalaciones_instalacion_tarifas_ibfk_1` FOREIGN KEY (`tar_instalacion_id`) REFERENCES `instalaciones` (`ins_instalacion_id`) ON DELETE CASCADE;
 
 --
--- Filtros para la tabla `roles`
+-- Filtros para la tabla `instalaciones_mantenimientos`
 --
-ALTER TABLE `roles`
-  ADD CONSTRAINT `roles_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`tenant_id`) ON DELETE CASCADE;
+ALTER TABLE `instalaciones_mantenimientos`
+  ADD CONSTRAINT `fk_mnt_cancha` FOREIGN KEY (`man_cancha_id`) REFERENCES `instalaciones_canchas` (`can_cancha_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_mnt_responsable` FOREIGN KEY (`man_responsable_id`) REFERENCES `seguridad_usuarios` (`usu_usuario_id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_mnt_tenant` FOREIGN KEY (`man_tenant_id`) REFERENCES `seguridad_tenants` (`ten_tenant_id`) ON DELETE CASCADE;
 
 --
--- Filtros para la tabla `rol_modulos`
+-- Filtros para la tabla `instalaciones_reservas`
 --
-ALTER TABLE `rol_modulos`
-  ADD CONSTRAINT `rol_modulos_ibfk_1` FOREIGN KEY (`modulo_id`) REFERENCES `modulos` (`id`) ON DELETE CASCADE;
+ALTER TABLE `instalaciones_reservas`
+  ADD CONSTRAINT `instalaciones_reservas_ibfk_1` FOREIGN KEY (`res_tenant_id`) REFERENCES `seguridad_tenants` (`ten_tenant_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `instalaciones_reservas_ibfk_2` FOREIGN KEY (`res_instalacion_id`) REFERENCES `instalaciones` (`ins_instalacion_id`),
+  ADD CONSTRAINT `instalaciones_reservas_ibfk_3` FOREIGN KEY (`res_cliente_id`) REFERENCES `clientes` (`cli_cliente_id`),
+  ADD CONSTRAINT `instalaciones_reservas_ibfk_4` FOREIGN KEY (`res_reserva_padre_id`) REFERENCES `instalaciones_reservas` (`res_reserva_id`) ON DELETE CASCADE;
 
 --
--- Filtros para la tabla `sedes`
+-- Filtros para la tabla `instalaciones_reserva_pagos`
 --
-ALTER TABLE `sedes`
-  ADD CONSTRAINT `sedes_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`tenant_id`) ON DELETE CASCADE;
+ALTER TABLE `instalaciones_reserva_pagos`
+  ADD CONSTRAINT `instalaciones_reserva_pagos_ibfk_1` FOREIGN KEY (`pag_tenant_id`) REFERENCES `seguridad_tenants` (`ten_tenant_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `instalaciones_reserva_pagos_ibfk_2` FOREIGN KEY (`pag_reserva_id`) REFERENCES `instalaciones_reservas` (`res_reserva_id`);
 
 --
--- Filtros para la tabla `tarifas`
+-- Filtros para la tabla `instalaciones_sedes`
 --
-ALTER TABLE `tarifas`
-  ADD CONSTRAINT `fk_tarifa_cancha` FOREIGN KEY (`cancha_id`) REFERENCES `canchas` (`cancha_id`) ON DELETE CASCADE;
+ALTER TABLE `instalaciones_sedes`
+  ADD CONSTRAINT `instalaciones_sedes_ibfk_1` FOREIGN KEY (`sed_tenant_id`) REFERENCES `seguridad_tenants` (`ten_tenant_id`) ON DELETE CASCADE;
 
 --
--- Filtros para la tabla `tenants`
+-- Filtros para la tabla `instalaciones_tipos_instalacion`
 --
-ALTER TABLE `tenants`
-  ADD CONSTRAINT `tenants_ibfk_1` FOREIGN KEY (`plan_id`) REFERENCES `planes_suscripcion` (`plan_id`);
+ALTER TABLE `instalaciones_tipos_instalacion`
+  ADD CONSTRAINT `instalaciones_tipos_instalacion_ibfk_1` FOREIGN KEY (`tip_tenant_id`) REFERENCES `seguridad_tenants` (`ten_tenant_id`) ON DELETE CASCADE;
 
 --
--- Filtros para la tabla `tenant_modulos`
+-- Filtros para la tabla `seguridad_auditoria`
 --
-ALTER TABLE `tenant_modulos`
-  ADD CONSTRAINT `fk_tenant_modulos_modulo_id` FOREIGN KEY (`modulo_id`) REFERENCES `modulos_sistema` (`modulo_id`) ON DELETE CASCADE;
+ALTER TABLE `seguridad_auditoria`
+  ADD CONSTRAINT `seguridad_auditoria_ibfk_1` FOREIGN KEY (`aud_tenant_id`) REFERENCES `seguridad_tenants` (`ten_tenant_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `seguridad_auditoria_ibfk_2` FOREIGN KEY (`aud_usuario_id`) REFERENCES `seguridad_usuarios` (`usu_usuario_id`) ON DELETE SET NULL;
 
 --
--- Filtros para la tabla `tipos_instalacion`
+-- Filtros para la tabla `seguridad_configuracion_sistema`
 --
-ALTER TABLE `tipos_instalacion`
-  ADD CONSTRAINT `tipos_instalacion_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`tenant_id`) ON DELETE CASCADE;
+ALTER TABLE `seguridad_configuracion_sistema`
+  ADD CONSTRAINT `seguridad_configuracion_sistema_ibfk_1` FOREIGN KEY (`sis_tenant_id`) REFERENCES `seguridad_tenants` (`ten_tenant_id`) ON DELETE CASCADE;
 
 --
--- Filtros para la tabla `usuarios`
+-- Filtros para la tabla `seguridad_notificaciones`
 --
-ALTER TABLE `usuarios`
-  ADD CONSTRAINT `usuarios_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`tenant_id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `usuarios_ibfk_2` FOREIGN KEY (`rol_id`) REFERENCES `roles` (`rol_id`);
+ALTER TABLE `seguridad_notificaciones`
+  ADD CONSTRAINT `seguridad_notificaciones_ibfk_1` FOREIGN KEY (`not_tenant_id`) REFERENCES `seguridad_tenants` (`ten_tenant_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `seguridad_notificaciones_ibfk_2` FOREIGN KEY (`not_usuario_id`) REFERENCES `seguridad_usuarios` (`usu_usuario_id`) ON DELETE CASCADE;
+
+--
+-- Filtros para la tabla `seguridad_roles`
+--
+ALTER TABLE `seguridad_roles`
+  ADD CONSTRAINT `seguridad_roles_ibfk_1` FOREIGN KEY (`rol_tenant_id`) REFERENCES `seguridad_tenants` (`ten_tenant_id`) ON DELETE CASCADE;
+
+--
+-- Filtros para la tabla `seguridad_rol_modulos`
+--
+ALTER TABLE `seguridad_rol_modulos`
+  ADD CONSTRAINT `seguridad_rol_modulos_ibfk_1` FOREIGN KEY (`rmo_rol_modulo_id`) REFERENCES `seguridad_modulos` (`mod_id`) ON DELETE CASCADE;
+
+--
+-- Filtros para la tabla `seguridad_tarifas`
+--
+ALTER TABLE `seguridad_tarifas`
+  ADD CONSTRAINT `fk_tarifa_cancha` FOREIGN KEY (`tar_cancha_id`) REFERENCES `instalaciones_canchas` (`can_cancha_id`) ON DELETE CASCADE;
+
+--
+-- Filtros para la tabla `seguridad_tenants`
+--
+ALTER TABLE `seguridad_tenants`
+  ADD CONSTRAINT `seguridad_tenants_ibfk_1` FOREIGN KEY (`ten_plan_id`) REFERENCES `seguridad_planes_suscripcion` (`sus_plan_id`);
+
+--
+-- Filtros para la tabla `seguridad_tenant_modulos`
+--
+ALTER TABLE `seguridad_tenant_modulos`
+  ADD CONSTRAINT `fk_tenant_modulos_modulo_id` FOREIGN KEY (`tmo_modulo_id`) REFERENCES `seguridad_modulos_sistema` (`sis_modulo_id`) ON DELETE CASCADE;
+
+--
+-- Filtros para la tabla `seguridad_usuarios`
+--
+ALTER TABLE `seguridad_usuarios`
+  ADD CONSTRAINT `seguridad_usuarios_ibfk_1` FOREIGN KEY (`usu_tenant_id`) REFERENCES `seguridad_tenants` (`ten_tenant_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `seguridad_usuarios_ibfk_2` FOREIGN KEY (`usu_rol_id`) REFERENCES `seguridad_roles` (`rol_rol_id`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
