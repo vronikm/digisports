@@ -34,7 +34,7 @@ $titulo = $esEdicion ? 'Editar Tenant' : 'Nuevo Tenant';
 
 <section class="content">
     <div class="container-fluid" style="padding-bottom: 48px; min-height: 80vh;">
-        <form method="POST" action="<?= url('seguridad', 'tenant', $esEdicion ? 'actualizar' : 'guardar') ?>">
+        <form method="POST" action="<?= url('seguridad', 'tenant', $esEdicion ? 'actualizar' : 'crear') ?>">
             <?php if ($esEdicion): ?>
             <input type="hidden" name="tenant_id" value="<?= $tenant['ten_tenant_id'] ?>">
             <?php endif; ?>

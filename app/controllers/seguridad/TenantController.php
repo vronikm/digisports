@@ -427,31 +427,33 @@ class TenantController extends \App\Controllers\ModuleController {
      * Crear tenant
      */
     public function crear() {
+        $isAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
+
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             try {
                 $data = [
-                    'ruc' => $_POST['ruc'],
-                    'razon_social' => $_POST['razon_social'],
-                    'nombre_comercial' => $_POST['nombre_comercial'] ?? null,
-                    'tipo_empresa' => $_POST['tipo_empresa'] ?? null,
-                    'direccion' => $_POST['direccion'] ?? null,
-                    'telefono' => $_POST['telefono'] ?? null,
-                    'celular' => $_POST['celular'] ?? null,
-                    'email' => $_POST['email'],
-                    'sitio_web' => $_POST['sitio_web'] ?? null,
-                    'representante_nombre' => $_POST['representante_nombre'] ?? null,
-                    'representante_identificacion' => $_POST['representante_identificacion'] ?? null,
-                    'representante_email' => $_POST['representante_email'] ?? null,
-                    'representante_telefono' => $_POST['representante_telefono'] ?? null,
-                    'plan_id' => $_POST['plan_id'],
-                    'fecha_inicio' => $_POST['fecha_inicio'],
-                    'fecha_vencimiento' => $_POST['fecha_vencimiento'],
-                    'usuarios_permitidos' => $_POST['usuarios_permitidos'] ?? 5,
-                    'sedes_permitidas' => $_POST['sedes_permitidas'] ?? 1,
-                    'monto_mensual' => $_POST['monto_mensual'],
-                    'color_primario' => $_POST['color_primario'] ?? '#007bff',
-                    'color_secundario' => $_POST['color_secundario'] ?? '#6c757d',
-                    'estado' => $_POST['estado'] ?? 'A'
+                    'ruc' => trim($_POST['ruc'] ?? ''),
+                    'razon_social' => trim($_POST['razon_social'] ?? ''),
+                    'nombre_comercial' => trim($_POST['nombre_comercial'] ?? ''),
+                    'tipo_empresa' => trim($_POST['tipo_empresa'] ?? ''),
+                    'direccion' => trim($_POST['direccion'] ?? ''),
+                    'telefono' => trim($_POST['telefono'] ?? ''),
+                    'celular' => trim($_POST['celular'] ?? ''),
+                    'email' => trim($_POST['email'] ?? ''),
+                    'sitio_web' => trim($_POST['sitio_web'] ?? ''),
+                    'representante_nombre' => trim($_POST['representante_nombre'] ?? $_POST['representante_legal'] ?? ''),
+                    'representante_identificacion' => trim($_POST['representante_identificacion'] ?? ''),
+                    'representante_email' => trim($_POST['representante_email'] ?? ''),
+                    'representante_telefono' => trim($_POST['representante_telefono'] ?? ''),
+                    'plan_id' => trim($_POST['plan_id'] ?? ''),
+                    'fecha_inicio' => trim($_POST['fecha_inicio'] ?? date('Y-m-d')),
+                    'fecha_vencimiento' => trim($_POST['fecha_vencimiento'] ?? date('Y-m-d', strtotime('+1 month'))),
+                    'usuarios_permitidos' => trim($_POST['usuarios_permitidos'] ?? 5),
+                    'sedes_permitidas' => trim($_POST['sedes_permitidas'] ?? 1),
+                    'monto_mensual' => trim($_POST['monto_mensual'] ?? 0),
+                    'color_primario' => trim($_POST['color_primario'] ?? '#007bff'),
+                    'color_secundario' => trim($_POST['color_secundario'] ?? '#6c757d'),
+                    'estado' => trim($_POST['estado'] ?? 'A')
                 ];
                 $this->db->beginTransaction();
                 $sql = "INSERT INTO seguridad_tenants (ten_ruc, ten_razon_social, ten_nombre_comercial, ten_tipo_empresa, ten_direccion, ten_telefono, ten_celular, ten_email, ten_sitio_web, ten_representante_nombre, ten_representante_identificacion, ten_representante_email, ten_representante_telefono, ten_plan_id, ten_fecha_inicio, ten_fecha_vencimiento, ten_usuarios_permitidos, ten_sedes_permitidas, ten_monto_mensual, ten_color_primario, ten_color_secundario, ten_estado)
@@ -464,12 +466,19 @@ class TenantController extends \App\Controllers\ModuleController {
                 if (method_exists($this, 'registrarAuditoria')) {
                     $this->registrarAuditoria('crear_tenant', 'tenant', $id, null, $data);
                 }
-                // Actualizar módulos si corresponde
+                // Asignar módulos seleccionados
                 if (isset($_POST['modulos']) && is_array($_POST['modulos'])) {
-                    $stmt = $this->db->prepare("UPDATE seguridad_tenant_modulos SET tmo_activo = 'N' WHERE tmo_tenant_id = ?");
-                    $stmt->execute([$id]);
+                    foreach ($_POST['modulos'] as $moduloId) {
+                        $stmtMod = $this->db->prepare("INSERT INTO seguridad_tenant_modulos (tmo_tenant_id, tmo_modulo_id, tmo_activo, tmo_fecha_inicio) VALUES (?, ?, 'S', CURDATE())");
+                        $stmtMod->execute([$id, (int)$moduloId]);
+                    }
                 }
                 $this->db->commit();
+                if ($isAjax) {
+                    header('Content-Type: application/json');
+                    echo json_encode(['success' => true, 'message' => 'Tenant creado correctamente']);
+                    exit;
+                }
                 setFlashMessage('success', 'Tenant creado correctamente');
                 redirect('seguridad', 'tenant', 'index');
                 return;
@@ -478,13 +487,33 @@ class TenantController extends \App\Controllers\ModuleController {
                 if (method_exists($this, 'registrarAuditoria')) {
                     $this->registrarAuditoria('crear_tenant', 'tenant', null, null, null, 'error', $e->getMessage());
                 }
+                if ($isAjax) {
+                    header('Content-Type: application/json');
+                    echo json_encode(['success' => false, 'message' => 'Error al crear: ' . $e->getMessage()]);
+                    exit;
+                }
                 setFlashMessage('error', 'Error al guardar: ' . $e->getMessage());
                 redirect('seguridad', 'tenant', 'crear');
                 return;
             }
         }
-        // Siempre mostrar el formulario en GET
-        $this->renderModule('seguridad/tenant/crear', [
+
+        // GET: Cargar planes y módulos para el formulario
+        $planes = $this->db->query("SELECT sus_plan_id, sus_nombre, sus_precio_mensual, sus_usuarios_incluidos FROM seguridad_planes_suscripcion WHERE sus_estado = 'A' ORDER BY sus_nombre")->fetchAll(\PDO::FETCH_ASSOC);
+
+        $modulos = $this->db->query("
+            SELECT mod_id AS id, mod_nombre AS nombre, mod_codigo AS codigo,
+                   mod_icono AS icono, mod_color_fondo AS color_fondo
+            FROM seguridad_modulos
+            WHERE mod_activo = 1 ORDER BY mod_nombre
+        ")->fetchAll(\PDO::FETCH_ASSOC);
+
+        $this->renderModule('seguridad/tenant/form', [
+            'tenant' => [],
+            'planes' => $planes,
+            'modulos' => $modulos,
+            'modulosAsignados' => [],
+            'esEdicion' => false,
             'pageTitle' => 'Nuevo Tenant'
         ]);
     }
