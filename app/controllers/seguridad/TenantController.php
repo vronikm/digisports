@@ -587,13 +587,14 @@ class TenantController extends \App\Controllers\ModuleController {
         
         try {
             $stmt = $this->db->prepare("
-                SELECT t.*, p.nombre as plan_nombre
-                FROM tenants t
-                LEFT JOIN planes_suscripcion p ON t.plan_id = p.plan_id
-                WHERE t.tenant_id = ?
+                SELECT t.*, 
+                    p.sus_nombre AS plan_nombre,
+                    DATEDIFF(t.ten_fecha_vencimiento, CURDATE()) AS dias_restantes
+                FROM seguridad_tenants t
+                LEFT JOIN seguridad_planes_suscripcion p ON t.ten_plan_id = p.sus_plan_id
+                WHERE t.ten_tenant_id = ?
             ");
-                $stmt->execute([$id]);
-                $stmt = $this->db->prepare("SELECT * FROM seguridad_tenants WHERE ten_tenant_id = ?");
+            $stmt->execute([$id]);
             $tenant = $stmt->fetch(\PDO::FETCH_ASSOC);
             
             if (!$tenant) {
@@ -604,22 +605,24 @@ class TenantController extends \App\Controllers\ModuleController {
             
             // Usuarios del tenant
             $stmt = $this->db->prepare("
-                SELECT u.*, r.nombre as rol_nombre
-                FROM usuarios u
-                LEFT JOIN roles r ON u.rol_id = r.rol_id
-                WHERE u.tenant_id = ?
-                ORDER BY u.fecha_registro DESC
+                SELECT u.*, r.rol_nombre AS rol_nombre,
+                    CONCAT(u.usu_nombres, ' ', u.usu_apellidos) AS nombre_completo
+                FROM seguridad_usuarios u
+                LEFT JOIN seguridad_roles r ON u.usu_rol_id = r.rol_rol_id
+                WHERE u.usu_tenant_id = ?
+                ORDER BY u.usu_usuario_id DESC
             ");
             $stmt->execute([$id]);
             $usuarios = $stmt->fetchAll(\PDO::FETCH_ASSOC);
             
             // Módulos del tenant (solo sistemas principales, con icono y color reales)
             $stmt = $this->db->prepare("
-                SELECT tm.*, m.nombre, m.icono AS icono_sistema, m.color_fondo AS color_sistema
-                FROM tenant_modulos tm
-                JOIN modulos m ON tm.modulo_id = m.id
-                WHERE tm.tenant_id = ? AND tm.activo = 'S'
-                ORDER BY m.orden
+                SELECT tm.*, m.mod_nombre AS nombre, m.mod_codigo AS codigo,
+                    m.mod_icono AS icono_sistema, m.mod_color_fondo AS color_sistema
+                FROM seguridad_tenant_modulos tm
+                JOIN seguridad_modulos m ON tm.tmo_modulo_id = m.mod_id
+                WHERE tm.tmo_tenant_id = ? AND tm.tmo_activo = 'S'
+                ORDER BY m.mod_orden
             ");
             $stmt->execute([$id]);
             $modulos = $stmt->fetchAll(\PDO::FETCH_ASSOC);
@@ -647,7 +650,7 @@ class TenantController extends \App\Controllers\ModuleController {
         $isAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             try {
-                $stmt = $this->db->prepare("UPDATE tenants SET estado = 'S', estado_suscripcion = 'SUSPENDIDA', motivo_suspension = ?, fecha_suspension = NOW() WHERE tenant_id = ?");
+                $stmt = $this->db->prepare("UPDATE seguridad_tenants SET ten_estado = 'S', ten_estado_suscripcion = 'SUSPENDIDA', ten_motivo_suspension = ?, ten_fecha_suspension = NOW() WHERE ten_tenant_id = ?");
                 $stmt->execute([$motivo, $id]);
                 if ($isAjax) {
                     header('Content-Type: application/json');
@@ -685,7 +688,7 @@ class TenantController extends \App\Controllers\ModuleController {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $isAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
             try {
-                $stmt = $this->db->prepare("UPDATE tenants SET estado = 'A', estado_suscripcion = 'ACTIVA', motivo_suspension = NULL, fecha_suspension = NULL WHERE tenant_id = ?");
+                $stmt = $this->db->prepare("UPDATE seguridad_tenants SET ten_estado = 'A', ten_estado_suscripcion = 'ACTIVA', ten_motivo_suspension = NULL, ten_fecha_suspension = NULL WHERE ten_tenant_id = ?");
                 $stmt->execute([$id]);
                 if ($isAjax) {
                     header('Content-Type: application/json');
@@ -722,34 +725,34 @@ class TenantController extends \App\Controllers\ModuleController {
         try {
             // Suscripciones por vencer en 30 días
             $stmt = $this->db->query("
-                SELECT t.*, p.nombre as plan_nombre, DATEDIFF(t.fecha_vencimiento, CURDATE()) as dias_restantes
-                FROM tenants t
-                LEFT JOIN planes_suscripcion p ON t.plan_id = p.plan_id
-                WHERE t.estado = 'A' 
-                AND t.fecha_vencimiento BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 30 DAY)
-                ORDER BY t.fecha_vencimiento ASC
+                SELECT t.*, p.sus_nombre AS plan_nombre, DATEDIFF(t.ten_fecha_vencimiento, CURDATE()) AS dias_restantes
+                FROM seguridad_tenants t
+                LEFT JOIN seguridad_planes_suscripcion p ON t.ten_plan_id = p.sus_plan_id
+                WHERE t.ten_estado = 'A' 
+                AND t.ten_fecha_vencimiento BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 30 DAY)
+                ORDER BY t.ten_fecha_vencimiento ASC
             ");
             $porVencer = $stmt->fetchAll(\PDO::FETCH_ASSOC);
             
             // Suscripciones vencidas
             $stmt = $this->db->query("
-                SELECT t.*, p.nombre as plan_nombre, DATEDIFF(CURDATE(), t.fecha_vencimiento) as dias_restantes
-                FROM tenants t
-                LEFT JOIN planes_suscripcion p ON t.plan_id = p.plan_id
-                WHERE t.fecha_vencimiento < CURDATE()
-                ORDER BY t.fecha_vencimiento DESC
+                SELECT t.*, p.sus_nombre AS plan_nombre, DATEDIFF(CURDATE(), t.ten_fecha_vencimiento) AS dias_restantes
+                FROM seguridad_tenants t
+                LEFT JOIN seguridad_planes_suscripcion p ON t.ten_plan_id = p.sus_plan_id
+                WHERE t.ten_fecha_vencimiento < CURDATE()
+                ORDER BY t.ten_fecha_vencimiento DESC
             ");
             $vencidas = $stmt->fetchAll(\PDO::FETCH_ASSOC);
             
             // Resumen por plan
             $stmt = $this->db->query("
-                SELECT p.nombre, p.precio_mensual, COUNT(t.tenant_id) as total,
-                       SUM(t.monto_mensual) as ingresos_mensuales
-                FROM planes_suscripcion p
-                LEFT JOIN tenants t ON p.plan_id = t.plan_id AND t.estado = 'A'
-                WHERE p.estado = 'A'
-                GROUP BY p.plan_id
-                ORDER BY p.precio_mensual
+                SELECT p.sus_nombre AS nombre, p.sus_precio_mensual AS precio_mensual, COUNT(t.ten_tenant_id) AS total,
+                       SUM(t.ten_monto_mensual) AS ingresos_mensuales
+                FROM seguridad_planes_suscripcion p
+                LEFT JOIN seguridad_tenants t ON p.sus_plan_id = t.ten_plan_id AND t.ten_estado = 'A'
+                WHERE p.sus_estado = 'A'
+                GROUP BY p.sus_plan_id
+                ORDER BY p.sus_precio_mensual
             ");
             $resumenPlanes = $stmt->fetchAll(\PDO::FETCH_ASSOC);
             
@@ -795,13 +798,13 @@ class TenantController extends \App\Controllers\ModuleController {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             try {
                 $stmt = $this->db->prepare("
-                    UPDATE tenants 
-                    SET fecha_vencimiento = DATE_ADD(
-                        CASE WHEN fecha_vencimiento < CURDATE() THEN CURDATE() ELSE fecha_vencimiento END, 
+                    UPDATE seguridad_tenants 
+                    SET ten_fecha_vencimiento = DATE_ADD(
+                        CASE WHEN ten_fecha_vencimiento < CURDATE() THEN CURDATE() ELSE ten_fecha_vencimiento END, 
                         INTERVAL ? MONTH
                     ),
-                    estado_suscripcion = 'ACTIVA'
-                    WHERE tenant_id = ?
+                    ten_estado_suscripcion = 'ACTIVA'
+                    WHERE ten_tenant_id = ?
                 ");
                 $stmt->execute([$meses, $id]);
                 if ($isAjax) {

@@ -16,12 +16,12 @@ $actividad = $actividad ?? [];
             <div class="col-sm-6">
                 <h1 class="m-0">
                     <i class="fas fa-building mr-2"></i>
-                    <?= htmlspecialchars($tenant['nombre_comercial'] ?? $tenant['razon_social'] ?? '-') ?>
+                    <?= htmlspecialchars($tenant['ten_nombre_comercial'] ?? $tenant['ten_razon_social'] ?? '-') ?>
                 </h1>
             </div>
             <div class="col-sm-6">
                 <div class="float-sm-right">
-                    <a href="<?= url('seguridad', 'tenant', 'editar', ['id' => $tenant['tenant_id']]) ?>" class="btn btn-primary">
+                    <a href="<?= url('seguridad', 'tenant', 'editar', ['id' => $tenant['ten_tenant_id']]) ?>" class="btn btn-primary">
                         <i class="fas fa-edit mr-1"></i> Editar
                     </a>
                     <a href="<?= url('seguridad', 'tenant') ?>" class="btn btn-secondary">
@@ -47,27 +47,22 @@ $actividad = $actividad ?? [];
                             </div>
                         </div>
                         <h3 class="profile-username text-center mt-3">
-                            <?= htmlspecialchars($tenant['nombre_comercial'] ?? $tenant['razon_social'] ?? '-') ?>
+                            <?= htmlspecialchars($tenant['ten_nombre_comercial'] ?? $tenant['ten_razon_social'] ?? '-') ?>
                         </h3>
-                        <p class="text-muted text-center">RUC: <?= $tenant['ruc'] ?></p>
+                        <p class="text-muted text-center">RUC: <?= htmlspecialchars($tenant['ten_ruc'] ?? '-') ?></p>
                         
                         <ul class="list-group list-group-unbordered mb-3">
                             <li class="list-group-item">
                                 <b>Estado</b>
                                 <span class="float-right">
                                     <?php 
-                                    $estadoClass = match($tenant['estado']) {
-                                        'A' => 'success',
-                                        'S' => 'warning',
-                                        'I' => 'secondary',
-                                        default => 'secondary'
-                                    };
-                                    $estadoText = match($tenant['estado']) {
-                                        'A' => 'Activo',
-                                        'S' => 'Suspendido',
-                                        'I' => 'Inactivo',
-                                        default => 'Desconocido'
-                                    };
+                                    $estado = $tenant['ten_estado'] ?? '';
+                                    switch ($estado) {
+                                        case 'A': $estadoClass = 'success'; $estadoText = 'Activo'; break;
+                                        case 'S': $estadoClass = 'warning'; $estadoText = 'Suspendido'; break;
+                                        case 'I': $estadoClass = 'secondary'; $estadoText = 'Inactivo'; break;
+                                        default:  $estadoClass = 'secondary'; $estadoText = 'Desconocido'; break;
+                                    }
                                     ?>
                                     <span class="badge badge-<?= $estadoClass ?>"><?= $estadoText ?></span>
                                 </span>
@@ -78,7 +73,7 @@ $actividad = $actividad ?? [];
                             </li>
                             <li class="list-group-item">
                                 <b>Usuarios</b>
-                                <span class="float-right"><?= count($usuarios) ?> / <?= $tenant['usuarios_permitidos'] ?? '-' ?></span>
+                                <span class="float-right"><?= count($usuarios) ?> / <?= $tenant['ten_usuarios_permitidos'] ?? '-' ?></span>
                             </li>
                             <li class="list-group-item">
                                 <b>Módulos</b>
@@ -86,8 +81,8 @@ $actividad = $actividad ?? [];
                             </li>
                         </ul>
                         
-                        <?php if ($tenant['estado'] == 'A'): ?>
-                        <a href="#" class="btn btn-warning btn-block btn-suspender" data-url="<?= url('seguridad', 'tenant', 'suspender', ['id' => $tenant['tenant_id']]) ?>">
+                        <?php if (($tenant['ten_estado'] ?? '') == 'A'): ?>
+                        <a href="#" class="btn btn-warning btn-block btn-suspender" data-url="<?= url('seguridad', 'tenant', 'suspender', ['id' => $tenant['ten_tenant_id']]) ?>">
                             <i class="fas fa-pause mr-1"></i> Suspender
                         </a>
                         <script>
@@ -143,7 +138,7 @@ $actividad = $actividad ?? [];
                         });
                         </script>
                         <?php else: ?>
-                        <a href="#" class="btn btn-success btn-block btn-reactivar" data-url="<?= url('seguridad', 'tenant', 'reactivar', ['id' => $tenant['tenant_id']]) ?>">
+                        <a href="#" class="btn btn-success btn-block btn-reactivar" data-url="<?= url('seguridad', 'tenant', 'reactivar', ['id' => $tenant['ten_tenant_id']]) ?>">
                             <i class="fas fa-play mr-1"></i> Reactivar
                         </a>
                         <script>
@@ -225,14 +220,14 @@ $actividad = $actividad ?? [];
                         <table class="table table-sm">
                             <tr>
                                 <td>Inicio:</td>
-                                <td class="text-right"><?= date('d/m/Y', strtotime($tenant['fecha_inicio'])) ?></td>
+                                <td class="text-right"><?= !empty($tenant['ten_fecha_inicio']) ? date('d/m/Y', strtotime($tenant['ten_fecha_inicio'])) : '-' ?></td>
                             </tr>
                             <tr>
                                 <td>Vencimiento:</td>
-                                <td class="text-right"><?= date('d/m/Y', strtotime($tenant['fecha_vencimiento'])) ?></td>
+                                <td class="text-right"><?= !empty($tenant['ten_fecha_vencimiento']) ? date('d/m/Y', strtotime($tenant['ten_fecha_vencimiento'])) : '-' ?></td>
                             </tr>
                         </table>
-                        <a href="#" class="btn btn-info btn-block btn-renovar" data-url="<?= url('seguridad', 'tenant', 'renovar', ['id' => $tenant['tenant_id']]) ?>">
+                        <a href="#" class="btn btn-info btn-block btn-renovar" data-url="<?= url('seguridad', 'tenant', 'renovar', ['id' => $tenant['ten_tenant_id']]) ?>">
                             <i class="fas fa-sync mr-1"></i> Renovar Suscripción
                         </a>
                         <script>
@@ -315,25 +310,25 @@ $actividad = $actividad ?? [];
                             <div class="col-md-6">
                                 <dl>
                                     <dt>Razón Social</dt>
-                                    <dd><?= htmlspecialchars($tenant['razon_social'] ?? '-') ?></dd>
+                                    <dd><?= htmlspecialchars($tenant['ten_razon_social'] ?? '-') ?></dd>
                                     
                                     <dt>Nombre Comercial</dt>
-                                    <dd><?= htmlspecialchars($tenant['nombre_comercial'] ?? '-') ?></dd>
+                                    <dd><?= htmlspecialchars($tenant['ten_nombre_comercial'] ?? '-') ?></dd>
                                     
                                     <dt>Representante Legal</dt>
-                                    <dd><?= isset($tenant['representante_legal']) ? htmlspecialchars($tenant['representante_legal']) : '-' ?></dd>
+                                    <dd><?= htmlspecialchars($tenant['ten_representante_nombre'] ?? '-') ?></dd>
                                 </dl>
                             </div>
                             <div class="col-md-6">
                                 <dl>
                                     <dt>Email</dt>
-                                    <dd><a href="mailto:<?= $tenant['email'] ?? '' ?>"><?= htmlspecialchars($tenant['email'] ?? '-') ?></a></dd>
+                                    <dd><a href="mailto:<?= $tenant['ten_email'] ?? '' ?>"><?= htmlspecialchars($tenant['ten_email'] ?? '-') ?></a></dd>
                                     
                                     <dt>Teléfono</dt>
-                                    <dd><?= htmlspecialchars($tenant['telefono'] ?? '-') ?></dd>
+                                    <dd><?= htmlspecialchars($tenant['ten_telefono'] ?? '-') ?></dd>
                                     
                                     <dt>Dirección</dt>
-                                    <dd><?= htmlspecialchars($tenant['direccion'] ?? '-') ?></dd>
+                                    <dd><?= htmlspecialchars($tenant['ten_direccion'] ?? '-') ?></dd>
                                 </dl>
                             </div>
                         </div>
@@ -345,7 +340,7 @@ $actividad = $actividad ?? [];
                     <div class="card-header">
                         <h3 class="card-title"><i class="fas fa-puzzle-piece mr-2"></i>Módulos Asignados (<?= count($modulos) ?>)</h3>
                         <div class="card-tools">
-                            <a href="<?= url('seguridad', 'asignacion', 'modulos', ['tenant_id' => $tenant['tenant_id']]) ?>" class="btn btn-tool">
+                            <a href="<?= url('seguridad', 'asignacion', 'modulos', ['tenant_id' => $tenant['ten_tenant_id']]) ?>" class="btn btn-tool">
                                 <i class="fas fa-cog"></i> Gestionar
                             </a>
                         </div>
@@ -387,7 +382,7 @@ $actividad = $actividad ?? [];
                     <div class="card-header">
                         <h3 class="card-title"><i class="fas fa-users mr-2"></i>Usuarios (<?= count($usuarios) ?>)</h3>
                         <div class="card-tools">
-                            <a href="<?= url('seguridad', 'usuario', 'crear', ['tenant_id' => $tenant['tenant_id']]) ?>" class="btn btn-tool">
+                            <a href="<?= url('seguridad', 'usuario', 'crear', ['tenant_id' => $tenant['ten_tenant_id']]) ?>" class="btn btn-tool">
                                 <i class="fas fa-plus"></i> Agregar
                             </a>
                         </div>
@@ -414,16 +409,17 @@ $actividad = $actividad ?? [];
                                         <img src="<?= $u['avatar'] ?? '/assets/img/avatar-default.png' ?>" class="img-circle elevation-1 mr-2" width="25" alt="">
                                         <?= htmlspecialchars($u['nombre_completo'] ?? '') ?>
                                     </td>
-                                    <td><?= htmlspecialchars($u['email']) ?></td>
+                                    <td><?= htmlspecialchars($u['usu_email']) ?></td>
                                     <td><span class="badge badge-info"><?= htmlspecialchars($u['rol_nombre'] ?? 'Sin rol') ?></span></td>
                                     <td>
                                         <?php 
-                                        $uEstado = match($u['estado']) {
-                                            'A' => ['success', 'Activo'],
-                                            'I' => ['secondary', 'Inactivo'],
-                                            'B' => ['danger', 'Bloqueado'],
-                                            default => ['secondary', 'Desconocido']
-                                        };
+                                        $uEstadoVal = $u['estado'] ?? '';
+                                        switch ($uEstadoVal) {
+                                            case 'A': $uEstado = ['success', 'Activo']; break;
+                                            case 'I': $uEstado = ['secondary', 'Inactivo']; break;
+                                            case 'B': $uEstado = ['danger', 'Bloqueado']; break;
+                                            default:  $uEstado = ['secondary', 'Desconocido']; break;
+                                        }
                                         ?>
                                         <span class="badge badge-<?= $uEstado[0] ?>"><?= $uEstado[1] ?></span>
                                     </td>
