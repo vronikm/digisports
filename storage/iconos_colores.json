@@ -1,13 +1,13 @@
 {
     "iconos": {
         "Sistema": {
-			"fa-building": "Edificio",	
+            "fa-building": "Edificio",
             "fa-store": "Tienda",
             "fa-shield-alt": "Seguridad",
-			"fa-th-large": "Ventana",
-			"fa-puzzle-piece": "Rompecabezas",
-			"fa-apple-alt": "Manzana",
-			"fa-chart-line": "Gráfico"		
+            "fa-th-large": "Ventana",
+            "fa-puzzle-piece": "Rompecabezas",
+            "fa-apple-alt": "Manzana",
+            "fa-chart-line": "Gráfico"
         },
         "Deportes": {
             "fa-futbol": "Fútbol",
@@ -27,9 +27,9 @@
             "fa-trophy": "Trofeo",
             "fa-users": "Equipo",
             "fa-boxing-glove": "Box",
-            "fa-user-ninja": "Artes Marciales I",			 
-			"fa-user-shield": "Artes Marciales II",					
-			"fa-chess": "Ajedrez II"		
+            "fa-user-ninja": "Artes Marciales I",
+            "fa-user-shield": "Artes Marciales II",
+            "fa-chess": "Ajedrez II"
         }
     },
     "colores": {
@@ -40,20 +40,21 @@
         "#A855F7": "Morado",
         "#FACC15": "Amarillo",
         "#64748B": "Gris",
-		"#6366F1": "Azul violeta",		
-		"#10B981": "verde esmeralda",		
-		"#fd7e14": "Naranja intenso",
-		"#6610f2": "Violeta",		
-		"#17a2b8": "Cian",		
-		"#343a40": "Gris grafito",
-		"#6f42c1": "Azul magenta",
-		"#F59E0B": "Ámbar",		
-		"#007bff": "Azul vívido",
-		"#DE3163": "Cereza",
-		"#FA5053": "Fresa",
-		"#FDBE02": "Mango",
-		"#FF7E70": "Salmón",
-		"#89F336": "Verde Líma",
-		"#EDE8D0": "Beige"
+        "#6366F1": "Azul violeta",
+        "#10B981": "verde esmeralda",
+        "#fd7e14": "Naranja intenso",
+        "#6610f2": "Violeta",
+        "#17a2b8": "Cian",
+        "#343a40": "Gris grafito",
+        "#6f42c1": "Azul magenta",
+        "#F59E0B": "Ámbar",
+        "#007bff": "Azul vívido",
+        "#DE3163": "Cereza",
+        "#FA5053": "Fresa",
+        "#FDBE02": "Mango",
+        "#FF7E70": "Salmón",
+        "#89F336": "Verde Líma",
+        "#EDE8D0": "Beige",
+        "#6D3B07": "Moka"
     }
 }

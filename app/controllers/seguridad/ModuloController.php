@@ -10,13 +10,28 @@ class ModuloController extends \App\Controllers\ModuleController {
     protected $moduloColor = '#F59E0B';
         public function iconos_admin_delete() {
             $this->authorize('editar', 'modulos');
+            header('Content-Type: application/json');
             $input = json_decode(file_get_contents('php://input'), true);
+            $data = $this->cargarIconosColores();
+
+            // Eliminar color (cuando viene color_hex)
+            $colorHex = $input['color_hex'] ?? null;
+            if ($colorHex) {
+                if (isset($data['colores'][$colorHex])) {
+                    unset($data['colores'][$colorHex]);
+                    $this->guardarIconosColores($data);
+                    echo json_encode(['success' => true]); exit;
+                } else {
+                    echo json_encode(['success' => false, 'error' => 'Color no encontrado']); exit;
+                }
+            }
+
+            // Eliminar icono
             $grupo = $input['grupo'] ?? null;
             $icono = $input['icono'] ?? null;
             if (!$grupo || !$icono) {
                 echo json_encode(['success' => false, 'error' => 'Datos incompletos']); exit;
             }
-            $data = $this->cargarIconosColores();
             if (isset($data['iconos'][$grupo][$icono])) {
                 unset($data['iconos'][$grupo][$icono]);
                 $this->guardarIconosColores($data);
@@ -30,6 +45,7 @@ class ModuloController extends \App\Controllers\ModuleController {
         // Endpoint para editar icono (cambiar nombre)
         public function iconos_admin_edit() {
             $this->authorize('editar', 'modulos');
+            header('Content-Type: application/json');
             $input = json_decode(file_get_contents('php://input'), true);
             $grupo = $input['grupo'] ?? null;
             $icono = $input['icono'] ?? null;
@@ -50,6 +66,7 @@ class ModuloController extends \App\Controllers\ModuleController {
     // Endpoint para agregar icono dinámicamente (AJAX)
     public function iconos_admin_add() {
         $this->authorize('editar', 'modulos');
+        header('Content-Type: application/json');
         $input = json_decode(file_get_contents('php://input'), true);
         $grupo = $input['grupo'] ?? null;
         $icono = $input['icono'] ?? null;
@@ -68,6 +85,7 @@ class ModuloController extends \App\Controllers\ModuleController {
     // Endpoint para agregar color dinámicamente (AJAX)
     public function iconos_admin_add_color() {
         $this->authorize('editar', 'modulos');
+        header('Content-Type: application/json');
         $input = json_decode(file_get_contents('php://input'), true);
         $hex = $input['hex'] ?? null;
         $nombre = $input['nombre'] ?? null;
@@ -186,11 +204,12 @@ class ModuloController extends \App\Controllers\ModuleController {
             header('Location: ' . url('seguridad', 'modulo', 'index'));
             exit;
         }
-        // Puedes agregar aquí la carga de iconos y colores si lo deseas
+        // Cargar iconos y colores desde storage/iconos_colores.json
+        $jsonData = $this->cargarIconosColores();
         $this->renderModule('modulo/form', [
             'modulo' => $modulo,
-            'iconos' => $this->iconosDisponibles,
-            // 'colores' => $this->coloresDisponibles, // si tienes colores definidos
+            'iconos' => $jsonData['iconos'] ?? [],
+            'colores' => $jsonData['colores'] ?? [],
             'pageTitle' => 'Editar Módulo'
         ]);
     }
