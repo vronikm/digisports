@@ -92,9 +92,9 @@ $colores = $colores ?? [];
                 <div class="row">
                     <?php foreach ($modulos as $m): ?>
                     <div class="col-lg-2 col-md-3 col-sm-4 col-6 mb-3">
-                        <div class="card h-100 modulo-card" data-id="<?= $m['mod_id'] ?>" style="cursor: pointer; border: 2px solid <?= $m['mod_color'] ?>;">
+                        <div class="card h-100 modulo-card" data-id="<?= $m['mod_id'] ?>" style="cursor: pointer; border: 2px solid <?= $m['mod_color_fondo'] ?? '#3B82F6' ?>;">
                             <div class="card-body text-center p-2">
-                                <i class="fas <?= $m['mod_icono'] ?> fa-2x mb-2" style="color: <?= $m['mod_color'] ?>;"></i>
+                                <i class="fas <?= $m['mod_icono'] ?> fa-2x mb-2" style="color: <?= $m['mod_color_fondo'] ?? '#3B82F6' ?>;"></i>
                                 <div class="small font-weight-bold"><?= htmlspecialchars($m['mod_nombre']) ?></div>
                                 <div class="badge badge-light"><?= $m['mod_codigo'] ?></div>
                             </div>

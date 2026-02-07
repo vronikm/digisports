@@ -97,7 +97,7 @@ $accionesIconos = [
             <div class="col-sm-6">
                 <h1 class="m-0">
                     <i class="fas fa-key mr-2"></i>
-                    Permisos: <?= htmlspecialchars($rol['nombre'] ?? 'Rol sin nombre') ?>
+                    Permisos: <?= htmlspecialchars($rol['rol_nombre'] ?? 'Rol sin nombre') ?>
                 </h1>
             </div>
             <div class="col-sm-6">
@@ -114,7 +114,7 @@ $accionesIconos = [
 <section class="content">
     <div class="container-fluid">
         <form method="POST" action="<?= url('seguridad', 'rol', 'guardarPermisos') ?>">
-            <input type="hidden" name="rol_id" value="<?= $rol['rol_id'] ?? '' ?>">
+            <input type="hidden" name="rol_id" value="<?= $rol['rol_rol_id'] ?? '' ?>">
             
             <div class="row">
                 <div class="col-md-9">
@@ -226,12 +226,12 @@ $accionesIconos = [
                             <h3 class="card-title"><i class="fas fa-user-tag mr-2"></i>Rol</h3>
                         </div>
                         <div class="card-body text-center">
-                            <div class="rounded-circle mx-auto d-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px; background-color: <?= $rol['color'] ?? '#3B82F6' ?>;">
+                            <div class="rounded-circle mx-auto d-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px; background-color: #3B82F6;">
                                 <i class="fas fa-user-shield text-white fa-2x"></i>
                             </div>
-                            <h5><?= htmlspecialchars($rol['nombre'] ?? '') ?></h5>
-                            <span class="badge badge-info">Nivel <?= $rol['nivel'] ?? 1 ?></span>
-                            <p class="text-muted mt-2 small"><?= htmlspecialchars($rol['descripcion'] ?? '') ?></p>
+                            <h5><?= htmlspecialchars($rol['rol_nombre'] ?? '') ?></h5>
+                            <span class="badge badge-info">Nivel <?= $rol['rol_nivel_acceso'] ?? 1 ?></span>
+                            <p class="text-muted mt-2 small"><?= htmlspecialchars($rol['rol_descripcion'] ?? '') ?></p>
                         </div>
                     </div>
                     
@@ -258,7 +258,7 @@ $accionesIconos = [
                             <button type="submit" class="btn btn-primary btn-block">
                                 <i class="fas fa-save mr-1"></i> Guardar Permisos
                             </button>
-                            <a href="<?= url('seguridad', 'rol', 'editar', ['id' => $rol['rol_id'] ?? '']) ?>" class="btn btn-info btn-block">
+                            <a href="<?= url('seguridad', 'rol', 'editar', ['id' => $rol['rol_rol_id'] ?? '']) ?>" class="btn btn-info btn-block">
                                 <i class="fas fa-edit mr-1"></i> Editar Rol
                             </a>
                             <a href="<?= url('seguridad', 'rol') ?>" class="btn btn-secondary btn-block">

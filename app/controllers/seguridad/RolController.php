@@ -18,10 +18,11 @@ require_once BASE_PATH . '/app/helpers/auditoria_helper.php';
 use App\Controllers\Seguridad\DashboardController;
 
 class RolController extends \App\Controllers\ModuleController {
+    protected $moduloCodigo = 'seguridad';
+    protected $moduloNombre = 'Seguridad';
+    protected $moduloIcono = 'fas fa-shield-alt';
+    protected $moduloColor = '#F59E0B';
 
-    // ...existing code...
-
-// ...existing code...
         private $permisosDisponibles = [
             'dashboard' => ['label' => 'Dashboard', 'permisos' => ['ver']],
             'usuarios' => ['label' => 'Usuarios', 'permisos' => ['ver', 'crear', 'editar', 'eliminar']],

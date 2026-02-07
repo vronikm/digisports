@@ -58,25 +58,25 @@ $esEdicion = !empty($modulo);
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                             <label>URL Base</label>
-                                             <input type="text" name="mod_url_base" class="form-control"
-                                                 value="<?= htmlspecialchars($modulo['mod_url_base'] ?? '') ?>"
-                                                 placeholder="/modulo/">
+                                             <label>URL Externa</label>
+                                             <input type="text" name="mod_url_externa" class="form-control"
+                                                 value="<?= htmlspecialchars($modulo['mod_url_externa'] ?? '') ?>"
+                                                 placeholder="URL si es módulo externo">
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="form-group">
                                              <label>Orden</label>
-                                             <input type="number" name="mod_orden_visualizacion" class="form-control"
-                                                 value="<?= $modulo['mod_orden_visualizacion'] ?? 0 ?>">
+                                             <input type="number" name="mod_orden" class="form-control"
+                                                 value="<?= $modulo['mod_orden'] ?? 0 ?>">
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="form-group">
                                         <label>Estado</label>
-                                        <select name="mod_estado" class="form-control">
-                                            <option value="A" <?= ($modulo['mod_estado'] ?? 'A') == 'A' ? 'selected' : '' ?>>Activo</option>
-                                            <option value="I" <?= ($modulo['mod_estado'] ?? '') == 'I' ? 'selected' : '' ?>>Inactivo</option>
+                                        <select name="mod_activo" class="form-control">
+                                            <option value="1" <?= ($modulo['mod_activo'] ?? 1) == 1 ? 'selected' : '' ?>>Activo</option>
+                                            <option value="0" <?= ($modulo['mod_activo'] ?? 1) == 0 ? 'selected' : '' ?>>Inactivo</option>
                                         </select>
                                     </div>
                                 </div>
@@ -93,25 +93,25 @@ $esEdicion = !empty($modulo);
                                             <div class="form-group">
                                                 <div class="custom-control custom-switch">
                                                        <input type="checkbox" class="custom-control-input" id="mod_es_externo" name="mod_es_externo"
-                                                           <?= ($modulo['mod_es_externo'] ?? 'N') == 'S' ? 'checked' : '' ?>>
+                                                           <?= ($modulo['mod_es_externo'] ?? 0) == 1 ? 'checked' : '' ?>>
                                                        <label class="custom-control-label" for="mod_es_externo">Es Sistema Externo</label>
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                      <label>Base de Datos Externa</label>
-                                                      <input type="text" name="mod_base_datos_externa" class="form-control"
-                                                          value="<?= htmlspecialchars($modulo['mod_base_datos_externa'] ?? '') ?>"
-                                                          placeholder="digisports_legacy">
+                                                      <label>URL Externa</label>
+                                                      <input type="text" name="mod_url_externa_legacy" class="form-control"
+                                                          value="<?= htmlspecialchars($modulo['mod_url_externa'] ?? '') ?>"
+                                                          placeholder="URL del sistema externo">
                                             </div>
                                         </div>
                                     </div>
                                     <div class="form-group mb-0">
                                         <div class="custom-control custom-switch">
-                                              <input type="checkbox" class="custom-control-input" id="mod_requiere_suscripcion" name="mod_requiere_suscripcion"
-                                                  <?= ($modulo['mod_requiere_suscripcion'] ?? 'S') == 'S' ? 'checked' : '' ?>>
-                                              <label class="custom-control-label" for="mod_requiere_suscripcion">Requiere Suscripción</label>
+                                              <input type="checkbox" class="custom-control-input" id="mod_requiere_licencia" name="mod_requiere_licencia"
+                                                  <?= ($modulo['mod_requiere_licencia'] ?? 1) == 1 ? 'checked' : '' ?>>
+                                              <label class="custom-control-label" for="mod_requiere_licencia">Requiere Licencia</label>
                                         </div>
                                     </div>
                                 </div>
@@ -129,7 +129,7 @@ $esEdicion = !empty($modulo);
                         <div class="card-body text-center" id="preview-card">
                             <div class="mb-3">
                                 <i class="fas <?= $modulo['mod_icono'] ?? 'fa-puzzle-piece' ?> fa-5x" id="preview-icon"
-                                   style="color: <?= $modulo['mod_color'] ?? '#007bff' ?>;"></i>
+                                   style="color: <?= $modulo['mod_color_fondo'] ?? '#007bff' ?>;"></i>
                             </div>
                             <h4 id="preview-nombre"><?= htmlspecialchars($modulo['mod_nombre'] ?? 'Nombre del Módulo') ?></h4>
                             <span class="badge badge-light" id="preview-codigo"><?= $modulo['mod_codigo'] ?? 'CODIGO' ?></span>
@@ -147,7 +147,7 @@ $esEdicion = !empty($modulo);
                                 <?php foreach ($iconos as $categoria => $icons): ?>
                                 <small class="text-muted d-block mt-2 mb-1"><?= $categoria ?></small>
                                 <?php foreach ($icons as $icon => $nombre): ?>
-                                <button type="button" class="btn btn-sm btn-outline-secondary m-1 icon-btn <?= ($modulo['icono'] ?? 'fa-puzzle-piece') == $icon ? 'active' : '' ?>" 
+                                <button type="button" class="btn btn-sm btn-outline-secondary m-1 icon-btn <?= ($modulo['mod_icono'] ?? 'fa-puzzle-piece') == $icon ? 'active' : '' ?>" 
                                         data-icon="<?= $icon ?>" title="<?= $nombre ?>">
                                     <i class="fas <?= $icon ?>"></i>
                                 </button>
@@ -163,13 +163,13 @@ $esEdicion = !empty($modulo);
                             <h3 class="card-title"><i class="fas fa-palette mr-2"></i>Color</h3>
                         </div>
                         <div class="card-body">
-                            <input type="hidden" name="mod_color" id="color-input" value="<?= $modulo['mod_color'] ?? '#007bff' ?>">
+                            <input type="hidden" name="mod_color_fondo" id="color-input" value="<?= $modulo['mod_color_fondo'] ?? '#007bff' ?>">
                             <div class="color-selector">
                                 <?php foreach ($colores as $hex => $nombre): ?>
-                                <button type="button" class="btn m-1 color-btn <?= ($modulo['color'] ?? '#007bff') == $hex ? 'active' : '' ?>"
+                                <button type="button" class="btn m-1 color-btn <?= ($modulo['mod_color_fondo'] ?? '#007bff') == $hex ? 'active' : '' ?>"
                                         data-color="<?= $hex ?>" title="<?= $nombre ?>"
                                         style="background: <?= $hex ?>; width: 40px; height: 40px; border-radius: 50%;">
-                                    <?php if (($modulo['color'] ?? '#007bff') == $hex): ?>
+                                    <?php if (($modulo['mod_color_fondo'] ?? '#007bff') == $hex): ?>
                                     <i class="fas fa-check text-white"></i>
                                     <?php endif; ?>
                                 </button>
@@ -177,7 +177,7 @@ $esEdicion = !empty($modulo);
                             </div>
                             <div class="mt-2">
                                     <input type="color" id="color-custom" class="form-control form-control-sm" 
-                                        value="<?= $modulo['mod_color'] ?? '#007bff' ?>" style="width: 100px;">
+                                        value="<?= $modulo['mod_color_fondo'] ?? '#007bff' ?>" style="width: 100px;">
                                 <small class="text-muted">Color personalizado</small>
                             </div>
                         </div>
@@ -242,12 +242,12 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Preview nombre
-    document.querySelector('input[name="nombre"]').addEventListener('input', function() {
+    document.querySelector('input[name="mod_nombre"]').addEventListener('input', function() {
         document.getElementById('preview-nombre').textContent = this.value || 'Nombre del Módulo';
     });
     
     // Preview código
-    document.querySelector('input[name="codigo"]').addEventListener('input', function() {
+    document.querySelector('input[name="mod_codigo"]').addEventListener('input', function() {
         document.getElementById('preview-codigo').textContent = this.value.toUpperCase() || 'CODIGO';
     });
 });

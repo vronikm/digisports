@@ -75,13 +75,13 @@ $modulos = $modulos ?? [];
                                     <tr>
                                         <td>
                                             <div class="custom-control custom-checkbox">
-                                                <input type="checkbox" class="custom-control-input tenant-check" id="tenant_<?= $t['tenant_id'] ?>" name="tenants[]" value="<?= $t['tenant_id'] ?>">
-                                                <label class="custom-control-label" for="tenant_<?= $t['tenant_id'] ?>"></label>
+                                                <input type="checkbox" class="custom-control-input tenant-check" id="tenant_<?= $t['ten_tenant_id'] ?>" name="tenants[]" value="<?= $t['ten_tenant_id'] ?>">
+                                                <label class="custom-control-label" for="tenant_<?= $t['ten_tenant_id'] ?>"></label>
                                             </div>
                                         </td>
                                         <td>
-                                            <strong><?= htmlspecialchars($t['nombre_comercial'] ?: $t['razon_social']) ?></strong>
-                                            <br><small class="text-muted"><?= $t['ruc'] ?></small>
+                                            <strong><?= htmlspecialchars($t['ten_nombre_comercial'] ?: $t['ten_razon_social']) ?></strong>
+                                            <br><small class="text-muted"><?= $t['ten_ruc'] ?? '' ?></small>
                                         </td>
                                         <td><span class="badge badge-info"><?= htmlspecialchars($t['plan_nombre'] ?? '-') ?></span></td>
                                         <td><span class="badge badge-secondary"><?= $t['modulos_count'] ?? 0 ?></span></td>
@@ -125,10 +125,10 @@ $modulos = $modulos ?? [];
                                 <?php foreach ($modulos as $m): ?>
                                 <div class="col-md-6 mb-3">
                                     <div class="custom-control custom-checkbox">
-                                        <input type="checkbox" class="custom-control-input modulo-check" id="modulo_<?= $m['modulo_id'] ?>" name="modulos[]" value="<?= $m['modulo_id'] ?>">
-                                        <label class="custom-control-label" for="modulo_<?= $m['modulo_id'] ?>">
-                                            <i class="<?= $m['icono'] ?? 'fas fa-cube' ?> mr-1" style="color: <?= $m['color'] ?? '#6c757d' ?>"></i>
-                                            <?= htmlspecialchars($m['nombre']) ?>
+                                        <input type="checkbox" class="custom-control-input modulo-check" id="modulo_<?= $m['mod_id'] ?>" name="modulos[]" value="<?= $m['mod_id'] ?>">
+                                        <label class="custom-control-label" for="modulo_<?= $m['mod_id'] ?>">
+                                            <i class="<?= $m['mod_icono'] ?? 'fas fa-cube' ?> mr-1" style="color: <?= $m['mod_color_fondo'] ?? '#6c757d' ?>"></i>
+                                            <?= htmlspecialchars($m['mod_nombre'] ?? '') ?>
                                         </label>
                                     </div>
                                 </div>

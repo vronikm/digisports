@@ -127,22 +127,22 @@ $resumen = is_array($resumen) ? $resumen : [
                         <?php foreach ($porVencer as $t): ?>
                         <tr>
                             <td>
-                                <strong><?= htmlspecialchars($t['nombre_comercial'] ?: $t['razon_social']) ?></strong>
-                                <br><small class="text-muted">RUC: <?= $t['ruc'] ?></small>
+                                <strong><?= htmlspecialchars($t['ten_nombre_comercial'] ?: $t['ten_razon_social']) ?></strong>
+                                <br><small class="text-muted">RUC: <?= $t['ten_ruc'] ?? '' ?></small>
                             </td>
-                            <td><span class="badge badge-info"><?= htmlspecialchars($t['plan_nombre']) ?></span></td>
-                            <td><?= date('d/m/Y', strtotime($t['fecha_vencimiento'])) ?></td>
+                            <td><span class="badge badge-info"><?= htmlspecialchars($t['plan_nombre'] ?? '-') ?></span></td>
+                            <td><?= date('d/m/Y', strtotime($t['ten_fecha_vencimiento'])) ?></td>
                             <td>
                                 <span class="badge badge-<?= $t['dias_restantes'] <= 3 ? 'danger' : 'warning' ?>">
                                     <?= $t['dias_restantes'] ?> días
                                 </span>
                             </td>
-                            <td><a href="mailto:<?= $t['email'] ?>"><?= $t['email'] ?></a></td>
+                            <td><a href="mailto:<?= $t['ten_email'] ?? '' ?>"><?= $t['ten_email'] ?? '' ?></a></td>
                             <td>
-                                <a href="<?= url('seguridad', 'tenant', 'renovar', ['id' => $t['tenant_id']]) ?>" class="btn btn-sm btn-success">
+                                <a href="<?= url('seguridad', 'tenant', 'renovar', ['id' => $t['ten_tenant_id']]) ?>" class="btn btn-sm btn-success">
                                     <i class="fas fa-sync mr-1"></i> Renovar
                                 </a>
-                                <a href="<?= url('seguridad', 'tenant', 'notificar', ['id' => $t['tenant_id']]) ?>" class="btn btn-sm btn-info">
+                                <a href="<?= url('seguridad', 'tenant', 'notificar', ['id' => $t['ten_tenant_id']]) ?>" class="btn btn-sm btn-info">
                                     <i class="fas fa-envelope"></i>
                                 </a>
                             </td>
@@ -184,44 +184,40 @@ $resumen = is_array($resumen) ? $resumen : [
                         </tr>
                         <?php else: ?>
                         <?php foreach ($vencidos as $t): ?>
-                        <tr class="<?= $t['estado'] == 'S' ? 'table-warning' : '' ?>">
+                        <tr class="<?= ($t['ten_estado'] ?? '') == 'S' ? 'table-warning' : '' ?>">
                             <td>
-                                <strong><?= htmlspecialchars($t['nombre_comercial'] ?: $t['razon_social']) ?></strong>
-                                <br><small class="text-muted">RUC: <?= $t['ruc'] ?></small>
+                                <strong><?= htmlspecialchars($t['ten_nombre_comercial'] ?: $t['ten_razon_social']) ?></strong>
+                                <br><small class="text-muted">RUC: <?= $t['ten_ruc'] ?? '' ?></small>
                             </td>
                             <td><span class="badge badge-info"><?= htmlspecialchars($t['plan_nombre'] ?? '-') ?></span></td>
-                            <td><?= date('d/m/Y', strtotime($t['fecha_vencimiento'])) ?></td>
+                            <td><?= date('d/m/Y', strtotime($t['ten_fecha_vencimiento'])) ?></td>
                             <td>
                                 <span class="badge badge-danger"><?= abs($t['dias_restantes']) ?> días</span>
                             </td>
                             <td>
                                 <?php 
-                                $estadoClass = match($t['estado']) {
-                                    'A' => 'success',
-                                    'S' => 'warning',
-                                    'I' => 'secondary',
-                                    default => 'secondary'
-                                };
-                                $estadoText = match($t['estado']) {
-                                    'A' => 'Activo',
-                                    'S' => 'Suspendido',
-                                    'I' => 'Inactivo',
-                                    default => 'Desconocido'
-                                };
+                                $estadoVal = $t['ten_estado'] ?? '';
+                                $estadoClass = 'secondary';
+                                $estadoText = 'Desconocido';
+                                switch ($estadoVal) {
+                                    case 'A': $estadoClass = 'success'; $estadoText = 'Activo'; break;
+                                    case 'S': $estadoClass = 'warning'; $estadoText = 'Suspendido'; break;
+                                    case 'I': $estadoClass = 'secondary'; $estadoText = 'Inactivo'; break;
+                                }
                                 ?>
                                 <span class="badge badge-<?= $estadoClass ?>"><?= $estadoText ?></span>
                             </td>
                             <td>
                                 <div class="btn-group btn-group-sm">
-                                    <a href="<?= url('seguridad', 'tenant', 'renovar', ['id' => $t['tenant_id']]) ?>" class="btn btn-success" title="Renovar">
+                                    <a href="<?= url('seguridad', 'tenant', 'renovar', ['id' => $t['ten_tenant_id']]) ?>" class="btn btn-success" title="Renovar">
                                         <i class="fas fa-sync mr-1"></i> Renovar
                                     </a>
-                                    <?php if ($t['estado'] == 'A'): ?>
-                                    <a href="<?= url('seguridad', 'tenant', 'suspender', ['id' => $t['tenant_id']]) ?>" class="btn btn-warning" title="Suspender">
+                                    <?php if (($t['ten_estado'] ?? '') == 'A'): ?>
+                                    <a href="<?= url('seguridad', 'tenant', 'suspender', ['id' => $t['ten_tenant_id']]) ?>" class="btn btn-warning" title="Suspender">
                                         <i class="fas fa-pause"></i>
                                     </a>
                                     <?php endif; ?>
-                                    <a href="<?= url('seguridad', 'tenant', 'notificar', ['id' => $t['tenant_id']]) ?>" class="btn btn-info" title="Notificar">
+                                    <a href="<?= url('seguridad', 'tenant', 'notificar', ['id' => $t['ten_tenant_id']]) ?>" class="btn btn-info" title="Notificar">
                                         <i class="fas fa-envelope"></i>
                                     </a>
                                 </div>

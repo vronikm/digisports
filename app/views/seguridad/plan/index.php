@@ -49,50 +49,46 @@ $total = $total ?? 0;
     <?php else: ?>
     <?php foreach ($planes as $plan): ?>
     <div class="col-lg-3 col-md-4 col-sm-6 mb-3">
-        <div class="card kpi-card h-100 <?= !empty($plan['destacado']) ? 'card-primary card-outline' : '' ?>">
-            <?php if (!empty($plan['destacado'])): ?>
+        <div class="card kpi-card h-100 <?= ($plan['sus_es_destacado'] ?? 'N') === 'S' ? 'card-primary card-outline' : '' ?>">
+            <?php if (($plan['sus_es_destacado'] ?? 'N') === 'S'): ?>
             <div class="ribbon-wrapper ribbon-lg">
                 <div class="ribbon bg-primary">Popular</div>
             </div>
             <?php endif; ?>
             <div class="card-body text-center">
                 <div class="d-flex align-items-center justify-content-center mb-3">
-                    <div class="kpi-icon" style="background: <?= $plan['color'] ?? '#6c757d' ?>20; color: <?= $plan['color'] ?? '#6c757d' ?>;">
-                        <i class="<?= $plan['icono'] ?? 'fas fa-crown' ?> fa-2x"></i>
+                    <div class="kpi-icon" style="background: <?= $plan['sus_color'] ?? '#6c757d' ?>20; color: <?= $plan['sus_color'] ?? '#6c757d' ?>;">
+                        <i class="fas fa-crown fa-2x"></i>
                     </div>
                 </div>
-                <h3 class="card-title mb-1" style="color: <?= $plan['color'] ?? '#6c757d' ?>; font-size: 1.2rem;">
-                    <?= htmlspecialchars($plan['nombre']) ?>
+                <h3 class="card-title mb-1" style="color: <?= $plan['sus_color'] ?? '#6c757d' ?>; font-size: 1.2rem;">
+                    <?= htmlspecialchars($plan['sus_nombre'] ?? '') ?>
                 </h3>
                 <div class="mb-2">
-                    <span class="kpi-value" style="font-size:2rem; color: <?= $plan['color'] ?? '#6c757d' ?>;">
-                        $<?= number_format($plan['precio_mensual'], 2) ?>
+                    <span class="kpi-value" style="font-size:2rem; color: <?= $plan['sus_color'] ?? '#6c757d' ?>;">
+                        $<?= number_format($plan['sus_precio_mensual'] ?? 0, 2) ?>
                     </span>
                     <span class="text-muted">/ mes</span>
                 </div>
-                <p class="text-muted small mb-2"><?= htmlspecialchars($plan['descripcion'] ?? '') ?></p>
+                <p class="text-muted small mb-2"><?= htmlspecialchars($plan['sus_descripcion'] ?? '') ?></p>
                 <ul class="list-unstyled text-left mb-2">
                     <li class="mb-1">
                         <i class="fas fa-users text-primary mr-2"></i>
-                        <strong><?= isset($plan['usuarios_permitidos']) ? $plan['usuarios_permitidos'] : 'N/D' ?></strong> usuarios
+                        <strong><?= $plan['sus_usuarios_incluidos'] ?? 'N/D' ?></strong> usuarios
                     </li>
                     <li class="mb-1">
                         <i class="fas fa-puzzle-piece text-success mr-2"></i>
-                        <strong><?= $plan['modulos_count'] ?? 'Ilimitados' ?></strong> módulos
+                        <strong><?= !empty($plan['modulos_array']) ? count($plan['modulos_array']) : 'Ilimitados' ?></strong> módulos
                     </li>
                     <li class="mb-1">
                         <i class="fas fa-hdd text-info mr-2"></i>
-                        <strong><?= $plan['almacenamiento_gb'] ?? 1 ?> GB</strong> almacenamiento
-                    </li>
-                    <li class="mb-1">
-                        <i class="fas fa-headset text-warning mr-2"></i>
-                        Soporte: <strong><?= ucfirst($plan['nivel_soporte'] ?? 'básico') ?></strong>
+                        <strong><?= $plan['sus_almacenamiento_gb'] ?? 1 ?> GB</strong> almacenamiento
                     </li>
                 </ul>
-                <?php if (!empty($plan['caracteristicas'])): ?>
+                <?php if (!empty($plan['sus_caracteristicas'])): ?>
                 <ul class="list-unstyled text-left small mb-2">
                     <?php 
-                    $caracteristicas = is_string($plan['caracteristicas']) ? json_decode($plan['caracteristicas'], true) : $plan['caracteristicas'];
+                    $caracteristicas = is_string($plan['sus_caracteristicas']) ? json_decode($plan['sus_caracteristicas'], true) : $plan['sus_caracteristicas'];
                     foreach ($caracteristicas ?? [] as $c): 
                     ?>
                     <li class="mb-1">
@@ -104,18 +100,18 @@ $total = $total ?? 0;
                 <?php endif; ?>
                 <div class="row text-center mb-2">
                     <div class="col-6">
-                        <h5 class="mb-0"><?= $plan['tenants_count'] ?? 0 ?></h5>
+                        <h5 class="mb-0"><?= $plan['tenants_activos'] ?? 0 ?></h5>
                         <small class="text-muted">Suscriptores</small>
                     </div>
                     <div class="col-6">
-                        <h5 class="mb-0">$<?= number_format(($plan['tenants_count'] ?? 0) * $plan['precio_mensual'], 2) ?></h5>
+                        <h5 class="mb-0">$<?= number_format(($plan['tenants_activos'] ?? 0) * ($plan['sus_precio_mensual'] ?? 0), 2) ?></h5>
                         <small class="text-muted">Ingreso/mes</small>
                     </div>
                 </div>
-                <a href="<?= url('seguridad', 'plan', 'editar', ['id' => $plan['plan_id']]) ?>" class="btn btn-outline-primary btn-block mb-1">
+                <a href="<?= url('seguridad', 'plan', 'editar', ['id' => $plan['sus_plan_id']]) ?>" class="btn btn-outline-primary btn-block mb-1">
                     <i class="fas fa-edit mr-1"></i> Editar
                 </a>
-                <a href="<?= url('seguridad', 'plan', 'eliminar', ['id' => $plan['plan_id']]) ?>" class="btn btn-outline-danger btn-block" onclick="return confirm('¿Eliminar este plan?')">
+                <a href="<?= url('seguridad', 'plan', 'eliminar', ['id' => $plan['sus_plan_id']]) ?>" class="btn btn-outline-danger btn-block" onclick="return confirm('¿Eliminar este plan?')">
                     <i class="fas fa-trash mr-1"></i> Eliminar
                 </a>
             </div>

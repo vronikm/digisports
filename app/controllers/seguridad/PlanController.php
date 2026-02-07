@@ -26,11 +26,6 @@ class PlanController extends \App\Controllers\ModuleController {
         $this->moduloColor = '#F59E0B';
     }
     
-    protected $moduleName = 'Seguridad';
-    protected $moduleIcon = 'fas fa-shield-alt';
-    protected $moduleColor = '#6366F1';
-    protected $moduleSlug = 'seguridad';
-    
     /**
      * Lista de planes
      */
@@ -38,19 +33,19 @@ class PlanController extends \App\Controllers\ModuleController {
         try {
             $sql = "
                 SELECT p.*,
-                       (SELECT COUNT(*) FROM core_tenants WHERE ten_plan_id = p.plan_id AND ten_estado = 'A') as tenants_activos,
-                       (SELECT SUM(ten_monto_mensual) FROM core_tenants WHERE ten_plan_id = p.plan_id AND ten_estado = 'A') as ingresos_mensuales
-                FROM core_planes_suscripcion p
-                ORDER BY p.plan_orden_visualizacion ASC, p.plan_precio_mensual ASC
+                       (SELECT COUNT(*) FROM seguridad_tenants WHERE ten_plan_id = p.sus_plan_id AND ten_estado = 'A') as tenants_activos,
+                       (SELECT SUM(ten_monto_mensual) FROM seguridad_tenants WHERE ten_plan_id = p.sus_plan_id AND ten_estado = 'A') as ingresos_mensuales
+                FROM seguridad_planes_suscripcion p
+                ORDER BY p.sus_orden_visualizacion ASC, p.sus_precio_mensual ASC
             ";
             $planes = $this->db->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
             // Decodificar módulos incluidos
             foreach ($planes as &$plan) {
-                $plan['modulos_array'] = !empty($plan['plan_modulos_incluidos']) ? json_decode($plan['plan_modulos_incluidos'], true) : [];
-                $plan['caracteristicas_array'] = !empty($plan['plan_caracteristicas']) ? json_decode($plan['plan_caracteristicas'], true) : [];
+                $plan['modulos_array'] = !empty($plan['sus_modulos_incluidos']) ? json_decode($plan['sus_modulos_incluidos'], true) : [];
+                $plan['caracteristicas_array'] = !empty($plan['sus_caracteristicas']) ? json_decode($plan['sus_caracteristicas'], true) : [];
             }
             // Obtener nombres de módulos
-            $modulos = $this->db->query("SELECT mod_codigo, mod_nombre FROM core_modulos_sistema WHERE mod_estado = 'A'")->fetchAll(\PDO::FETCH_KEY_PAIR);
+            $modulos = $this->db->query("SELECT mod_codigo, mod_nombre FROM seguridad_modulos WHERE mod_activo = 1")->fetchAll(\PDO::FETCH_KEY_PAIR);
             
         } catch (\Exception $e) {
             $planes = [];
@@ -61,15 +56,6 @@ class PlanController extends \App\Controllers\ModuleController {
             'planes' => $planes,
             'modulos' => $modulos,
             'pageTitle' => 'Planes de Suscripción',
-            'modulo_actual' => [
-                'codigo' => $this->moduleSlug ?? 'seguridad',
-                'nombre' => $this->moduleName ?? 'Seguridad',
-                'icono' => $this->moduleIcon ?? 'fas fa-shield-alt',
-                'color' => $this->moduleColor ?? '#6366F1',
-            ],
-            'moduloNombre' => $this->moduleName ?? 'Seguridad',
-            'moduloIcono' => $this->moduleIcon ?? 'fas fa-shield-alt',
-            'moduloColor' => $this->moduleColor ?? '#6366F1',
             'menu_items' => $this->getMenuItems(),
         ]);
     }
@@ -83,7 +69,7 @@ class PlanController extends \App\Controllers\ModuleController {
             return;
         }
         
-        $modulos = $this->db->query("SELECT * FROM modulos_sistema WHERE estado = 'A' ORDER BY orden_visualizacion")->fetchAll(\PDO::FETCH_ASSOC);
+        $modulos = $this->db->query("SELECT * FROM seguridad_modulos WHERE mod_activo = 1 ORDER BY mod_orden")->fetchAll(\PDO::FETCH_ASSOC);
         
         $this->renderModule('seguridad/plan/form', [
             'plan' => null,
@@ -103,20 +89,20 @@ class PlanController extends \App\Controllers\ModuleController {
             return;
         }
         
-        $stmt = $this->db->prepare("SELECT * FROM planes_suscripcion WHERE plan_id = ?");
+        $stmt = $this->db->prepare("SELECT * FROM seguridad_planes_suscripcion WHERE sus_plan_id = ?");
         $stmt->execute([$id]);
         $plan = $stmt->fetch(\PDO::FETCH_ASSOC);
         
         if (!$plan) {
-            $this->setFlash('error', 'Plan no encontrado');
-            $this->redirect('seguridad', 'plan', 'index');
+            setFlashMessage('error', 'Plan no encontrado');
+            redirect('seguridad', 'plan', 'index');
             return;
         }
         
-        $plan['modulos_array'] = json_decode($plan['modulos_incluidos'], true) ?: [];
-        $plan['caracteristicas_array'] = json_decode($plan['caracteristicas'], true) ?: [];
+        $plan['modulos_array'] = json_decode($plan['sus_modulos_incluidos'], true) ?: [];
+        $plan['caracteristicas_array'] = json_decode($plan['sus_caracteristicas'], true) ?: [];
         
-        $modulos = $this->db->query("SELECT * FROM modulos_sistema WHERE estado = 'A' ORDER BY orden_visualizacion")->fetchAll(\PDO::FETCH_ASSOC);
+        $modulos = $this->db->query("SELECT * FROM seguridad_modulos WHERE mod_activo = 1 ORDER BY mod_orden")->fetchAll(\PDO::FETCH_ASSOC);
         
         $this->renderModule('seguridad/plan/form', [
             'plan' => $plan,
@@ -133,32 +119,32 @@ class PlanController extends \App\Controllers\ModuleController {
         $caracteristicas = isset($_POST['caracteristicas']) ? array_filter($_POST['caracteristicas']) : [];
         
         $data = [
-            'codigo' => strtoupper($_POST['codigo']),
-            'nombre' => $_POST['nombre'],
-            'descripcion' => $_POST['descripcion'] ?? null,
-            'precio_mensual' => $_POST['precio_mensual'],
-            'precio_anual' => $_POST['precio_anual'] ?? null,
-            'descuento_anual' => $_POST['descuento_anual'] ?? 0,
-            'usuarios_incluidos' => $_POST['usuarios_incluidos'] ?? 5,
-            'sedes_incluidas' => $_POST['sedes_incluidas'] ?? 1,
-            'almacenamiento_gb' => $_POST['almacenamiento_gb'] ?? 10,
-            'modulos_incluidos' => json_encode($modulosIncluidos),
-            'caracteristicas' => json_encode($caracteristicas),
-            'es_destacado' => isset($_POST['es_destacado']) ? 'S' : 'N',
-            'es_personalizado' => isset($_POST['es_personalizado']) ? 'S' : 'N',
-            'color' => $_POST['color'] ?? '#007bff',
-            'orden_visualizacion' => $_POST['orden_visualizacion'] ?? 0,
-            'estado' => $_POST['estado'] ?? 'A'
+            'sus_codigo' => strtoupper($_POST['codigo']),
+            'sus_nombre' => $_POST['nombre'],
+            'sus_descripcion' => $_POST['descripcion'] ?? null,
+            'sus_precio_mensual' => $_POST['precio_mensual'],
+            'sus_precio_anual' => $_POST['precio_anual'] ?? null,
+            'sus_descuento_anual' => $_POST['descuento_anual'] ?? 0,
+            'sus_usuarios_incluidos' => $_POST['usuarios_incluidos'] ?? 5,
+            'sus_sedes_incluidas' => $_POST['sedes_incluidas'] ?? 1,
+            'sus_almacenamiento_gb' => $_POST['almacenamiento_gb'] ?? 10,
+            'sus_modulos_incluidos' => json_encode($modulosIncluidos),
+            'sus_caracteristicas' => json_encode($caracteristicas),
+            'sus_es_destacado' => isset($_POST['es_destacado']) ? 'S' : 'N',
+            'sus_es_personalizado' => isset($_POST['es_personalizado']) ? 'S' : 'N',
+            'sus_color' => $_POST['color'] ?? '#007bff',
+            'sus_orden_visualizacion' => $_POST['orden_visualizacion'] ?? 0,
+            'sus_estado' => $_POST['estado'] ?? 'A'
         ];
         
         try {
             if ($id) {
-                $sql = "UPDATE planes_suscripcion SET 
-                    codigo = ?, nombre = ?, descripcion = ?, precio_mensual = ?, precio_anual = ?,
-                    descuento_anual = ?, usuarios_incluidos = ?, sedes_incluidas = ?, almacenamiento_gb = ?,
-                    modulos_incluidos = ?, caracteristicas = ?, es_destacado = ?, es_personalizado = ?,
-                    color = ?, orden_visualizacion = ?, estado = ?
-                    WHERE plan_id = ?";
+                $sql = "UPDATE seguridad_planes_suscripcion SET 
+                    sus_codigo = ?, sus_nombre = ?, sus_descripcion = ?, sus_precio_mensual = ?, sus_precio_anual = ?,
+                    sus_descuento_anual = ?, sus_usuarios_incluidos = ?, sus_sedes_incluidas = ?, sus_almacenamiento_gb = ?,
+                    sus_modulos_incluidos = ?, sus_caracteristicas = ?, sus_es_destacado = ?, sus_es_personalizado = ?,
+                    sus_color = ?, sus_orden_visualizacion = ?, sus_estado = ?
+                    WHERE sus_plan_id = ?";
                 $params = array_values($data);
                 $params[] = $id;
                 
@@ -166,7 +152,7 @@ class PlanController extends \App\Controllers\ModuleController {
                 $stmt->execute($params);
                 setFlashMessage('success', 'Plan actualizado correctamente');
             } else {
-                $sql = "INSERT INTO planes_suscripcion (codigo, nombre, descripcion, precio_mensual, precio_anual, descuento_anual, usuarios_incluidos, sedes_incluidas, almacenamiento_gb, modulos_incluidos, caracteristicas, es_destacado, es_personalizado, color, orden_visualizacion, estado)
+                $sql = "INSERT INTO seguridad_planes_suscripcion (sus_codigo, sus_nombre, sus_descripcion, sus_precio_mensual, sus_precio_anual, sus_descuento_anual, sus_usuarios_incluidos, sus_sedes_incluidas, sus_almacenamiento_gb, sus_modulos_incluidos, sus_caracteristicas, sus_es_destacado, sus_es_personalizado, sus_color, sus_orden_visualizacion, sus_estado)
                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                 $params = array_values($data);
                 
@@ -191,7 +177,7 @@ class PlanController extends \App\Controllers\ModuleController {
         
         try {
             // Verificar que no hay tenants con este plan
-            $stmt = $this->db->prepare("SELECT COUNT(*) FROM tenants WHERE plan_id = ?");
+            $stmt = $this->db->prepare("SELECT COUNT(*) FROM seguridad_tenants WHERE ten_plan_id = ?");
             $stmt->execute([$id]);
             if ($stmt->fetchColumn() > 0) {
                 setFlashMessage('error', 'No se puede eliminar: hay tenants con este plan');
@@ -199,7 +185,7 @@ class PlanController extends \App\Controllers\ModuleController {
                 return;
             }
             
-            $stmt = $this->db->prepare("DELETE FROM planes_suscripcion WHERE plan_id = ?");
+            $stmt = $this->db->prepare("DELETE FROM seguridad_planes_suscripcion WHERE sus_plan_id = ?");
             $stmt->execute([$id]);
             setFlashMessage('success', 'Plan eliminado correctamente');
         } catch (\Exception $e) {
@@ -214,11 +200,11 @@ class PlanController extends \App\Controllers\ModuleController {
      */
     public function comparativa() {
         try {
-            $planes = $this->db->query("SELECT * FROM planes_suscripcion WHERE estado = 'A' ORDER BY precio_mensual")->fetchAll(\PDO::FETCH_ASSOC);
-            $modulos = $this->db->query("SELECT * FROM modulos_sistema WHERE estado = 'A' ORDER BY orden_visualizacion")->fetchAll(\PDO::FETCH_ASSOC);
+            $planes = $this->db->query("SELECT * FROM seguridad_planes_suscripcion WHERE sus_estado = 'A' ORDER BY sus_precio_mensual")->fetchAll(\PDO::FETCH_ASSOC);
+            $modulos = $this->db->query("SELECT * FROM seguridad_modulos WHERE mod_activo = 1 ORDER BY mod_orden")->fetchAll(\PDO::FETCH_ASSOC);
             
             foreach ($planes as &$plan) {
-                $plan['modulos_array'] = !empty($plan['modulos_incluidos']) ? json_decode($plan['modulos_incluidos'], true) : [];
+                $plan['modulos_array'] = !empty($plan['sus_modulos_incluidos']) ? json_decode($plan['sus_modulos_incluidos'], true) : [];
             }
         } catch (\Exception $e) {
             $planes = [];

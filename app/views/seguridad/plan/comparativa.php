@@ -37,10 +37,10 @@ $planes = $planes ?? [];
                             <tr>
                                 <th width="200">Característica</th>
                                 <?php foreach ($planes as $plan): ?>
-                                <th class="text-center <?= $plan['destacado'] ? 'bg-primary' : '' ?>">
-                                    <i class="<?= $plan['icono'] ?? 'fas fa-crown' ?> d-block fa-2x mb-2"></i>
-                                    <strong><?= htmlspecialchars($plan['nombre']) ?></strong>
-                                    <?php if ($plan['destacado']): ?>
+                                <th class="text-center <?= ($plan['sus_es_destacado'] ?? 'N') === 'S' ? 'bg-primary' : '' ?>">
+                                    <i class="fas fa-crown d-block fa-2x mb-2"></i>
+                                    <strong><?= htmlspecialchars($plan['sus_nombre'] ?? '') ?></strong>
+                                    <?php if (($plan['sus_es_destacado'] ?? 'N') === 'S'): ?>
                                     <br><span class="badge badge-warning">Popular</span>
                                     <?php endif; ?>
                                 </th>
@@ -56,7 +56,7 @@ $planes = $planes ?? [];
                                 <td>Precio Mensual</td>
                                 <?php foreach ($planes as $plan): ?>
                                 <td class="text-center">
-                                    <h4 class="mb-0" style="color: <?= $plan['color'] ?? '#333' ?>">$<?= number_format($plan['precio_mensual'], 2) ?></h4>
+                                    <h4 class="mb-0" style="color: <?= $plan['sus_color'] ?? '#333' ?>">$<?= number_format($plan['sus_precio_mensual'] ?? 0, 2) ?></h4>
                                     <small class="text-muted">/mes</small>
                                 </td>
                                 <?php endforeach; ?>
@@ -65,9 +65,9 @@ $planes = $planes ?? [];
                                 <td>Precio Anual</td>
                                 <?php foreach ($planes as $plan): ?>
                                 <td class="text-center">
-                                    <?php if ($plan['precio_anual'] > 0): ?>
-                                    <strong>$<?= number_format($plan['precio_anual'], 2) ?></strong>
-                                    <br><small class="text-success">Ahorra <?= round((1 - ($plan['precio_anual'] / ($plan['precio_mensual'] * 12))) * 100) ?>%</small>
+                                    <?php if (($plan['sus_precio_anual'] ?? 0) > 0): ?>
+                                    <strong>$<?= number_format($plan['sus_precio_anual'], 2) ?></strong>
+                                    <br><small class="text-success">Ahorra <?= round((1 - ($plan['sus_precio_anual'] / ($plan['sus_precio_mensual'] * 12))) * 100) ?>%</small>
                                     <?php else: ?>
                                     <span class="text-muted">-</span>
                                     <?php endif; ?>
@@ -78,11 +78,7 @@ $planes = $planes ?? [];
                                 <td>Período de Prueba</td>
                                 <?php foreach ($planes as $plan): ?>
                                 <td class="text-center">
-                                    <?php if ($plan['periodo_prueba'] > 0): ?>
-                                    <span class="badge badge-success"><?= $plan['periodo_prueba'] ?> días gratis</span>
-                                    <?php else: ?>
                                     <span class="text-muted">No incluido</span>
-                                    <?php endif; ?>
                                 </td>
                                 <?php endforeach; ?>
                             </tr>
@@ -95,7 +91,7 @@ $planes = $planes ?? [];
                                 <td><i class="fas fa-users mr-2"></i>Usuarios</td>
                                 <?php foreach ($planes as $plan): ?>
                                 <td class="text-center">
-                                    <strong><?= $plan['usuarios_permitidos'] ?></strong>
+                                    <strong><?= $plan['sus_usuarios_incluidos'] ?? 5 ?></strong>
                                 </td>
                                 <?php endforeach; ?>
                             </tr>
@@ -103,7 +99,7 @@ $planes = $planes ?? [];
                                 <td><i class="fas fa-hdd mr-2"></i>Almacenamiento</td>
                                 <?php foreach ($planes as $plan): ?>
                                 <td class="text-center">
-                                    <strong><?= $plan['almacenamiento_gb'] ?? 1 ?> GB</strong>
+                                    <strong><?= $plan['sus_almacenamiento_gb'] ?? 1 ?> GB</strong>
                                 </td>
                                 <?php endforeach; ?>
                             </tr>
@@ -111,11 +107,7 @@ $planes = $planes ?? [];
                                 <td><i class="fas fa-puzzle-piece mr-2"></i>Módulos</td>
                                 <?php foreach ($planes as $plan): ?>
                                 <td class="text-center">
-                                    <?php if (!empty($plan['todos_modulos'])): ?>
-                                    <span class="badge badge-success">Todos</span>
-                                    <?php else: ?>
-                                    <strong><?= $plan['modulos_count'] ?? 0 ?></strong>
-                                    <?php endif; ?>
+                                    <strong><?= !empty($plan['modulos_array']) ? count($plan['modulos_array']) : 0 ?></strong>
                                 </td>
                                 <?php endforeach; ?>
                             </tr>
@@ -128,17 +120,7 @@ $planes = $planes ?? [];
                                 <td>Nivel de Soporte</td>
                                 <?php foreach ($planes as $plan): ?>
                                 <td class="text-center">
-                                    <?php 
-                                    $nivel = $plan['nivel_soporte'] ?? 'basico';
-                                    $badgeClass = match($nivel) {
-                                        'basico' => 'secondary',
-                                        'estandar' => 'info',
-                                        'prioritario' => 'warning',
-                                        'premium' => 'success',
-                                        default => 'secondary'
-                                    };
-                                    ?>
-                                    <span class="badge badge-<?= $badgeClass ?>"><?= ucfirst($nivel) ?></span>
+                                    <span class="badge badge-info">Estándar</span>
                                 </td>
                                 <?php endforeach; ?>
                             </tr>
@@ -154,11 +136,7 @@ $planes = $planes ?? [];
                                 <td>Soporte Telefónico</td>
                                 <?php foreach ($planes as $plan): ?>
                                 <td class="text-center">
-                                    <?php if (in_array($plan['nivel_soporte'] ?? '', ['prioritario', 'premium'])): ?>
                                     <i class="fas fa-check text-success"></i>
-                                    <?php else: ?>
-                                    <i class="fas fa-times text-danger"></i>
-                                    <?php endif; ?>
                                 </td>
                                 <?php endforeach; ?>
                             </tr>
@@ -166,11 +144,7 @@ $planes = $planes ?? [];
                                 <td>Soporte 24/7</td>
                                 <?php foreach ($planes as $plan): ?>
                                 <td class="text-center">
-                                    <?php if (($plan['nivel_soporte'] ?? '') == 'premium'): ?>
-                                    <i class="fas fa-check text-success"></i>
-                                    <?php else: ?>
-                                    <i class="fas fa-times text-danger"></i>
-                                    <?php endif; ?>
+                                    <i class="fas fa-minus text-muted"></i>
                                 </td>
                                 <?php endforeach; ?>
                             </tr>
@@ -183,7 +157,7 @@ $planes = $planes ?? [];
                             // Recopilar todas las características únicas
                             $todasCaracteristicas = [];
                             foreach ($planes as $plan) {
-                                $caracs = is_string($plan['caracteristicas'] ?? '') ? json_decode($plan['caracteristicas'], true) : ($plan['caracteristicas'] ?? []);
+                                $caracs = is_string($plan['sus_caracteristicas'] ?? '') ? json_decode($plan['sus_caracteristicas'], true) : ($plan['sus_caracteristicas'] ?? []);
                                 foreach ($caracs ?? [] as $c) {
                                     if (!empty($c) && !in_array($c, $todasCaracteristicas)) {
                                         $todasCaracteristicas[] = $c;
@@ -197,7 +171,7 @@ $planes = $planes ?? [];
                                 <?php foreach ($planes as $plan): ?>
                                 <td class="text-center">
                                     <?php 
-                                    $caracs = is_string($plan['caracteristicas'] ?? '') ? json_decode($plan['caracteristicas'], true) : ($plan['caracteristicas'] ?? []);
+                                    $caracs = is_string($plan['sus_caracteristicas'] ?? '') ? json_decode($plan['sus_caracteristicas'], true) : ($plan['sus_caracteristicas'] ?? []);
                                     if (in_array($carac, $caracs ?? [])):
                                     ?>
                                     <i class="fas fa-check text-success"></i>
@@ -217,7 +191,7 @@ $planes = $planes ?? [];
                                 <td>Suscriptores Actuales</td>
                                 <?php foreach ($planes as $plan): ?>
                                 <td class="text-center">
-                                    <strong><?= $plan['tenants_count'] ?? 0 ?></strong>
+                                    <strong><?= $plan['tenants_activos'] ?? 0 ?></strong>
                                 </td>
                                 <?php endforeach; ?>
                             </tr>
@@ -225,7 +199,7 @@ $planes = $planes ?? [];
                                 <td>Ingreso Mensual</td>
                                 <?php foreach ($planes as $plan): ?>
                                 <td class="text-center">
-                                    <strong>$<?= number_format(($plan['tenants_count'] ?? 0) * $plan['precio_mensual'], 2) ?></strong>
+                                    <strong>$<?= number_format(($plan['tenants_activos'] ?? 0) * ($plan['sus_precio_mensual'] ?? 0), 2) ?></strong>
                                 </td>
                                 <?php endforeach; ?>
                             </tr>
@@ -235,7 +209,7 @@ $planes = $planes ?? [];
                                 <td></td>
                                 <?php foreach ($planes as $plan): ?>
                                 <td class="text-center">
-                                    <a href="<?= url('seguridad', 'plan', 'editar', ['id' => $plan['plan_id']]) ?>" class="btn btn-light btn-sm">
+                                    <a href="<?= url('seguridad', 'plan', 'editar', ['id' => $plan['sus_plan_id']]) ?>" class="btn btn-light btn-sm">
                                         <i class="fas fa-edit mr-1"></i> Editar
                                     </a>
                                 </td>

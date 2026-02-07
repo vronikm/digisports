@@ -4,7 +4,7 @@
  */
 
 $rol = $rol ?? [];
-$esEdicion = !empty($rol['rol_id']);
+$esEdicion = !empty($rol['rol_rol_id']);
 $titulo = $esEdicion ? 'Editar Rol' : 'Nuevo Rol';
 
 $colores = [
@@ -52,7 +52,7 @@ $colores = [
     <div class="container-fluid">
         <form method="POST" action="<?= url('seguridad', 'rol', $esEdicion ? 'actualizar' : 'guardar') ?>">
             <?php if ($esEdicion): ?>
-            <input type="hidden" name="rol_id" value="<?= $rol['rol_id'] ?>">
+            <input type="hidden" name="rol_id" value="<?= $rol['rol_rol_id'] ?>">
             <?php endif; ?>
             
             <div class="row">
@@ -66,13 +66,13 @@ $colores = [
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label for="nombre">Nombre del Rol <span class="text-danger">*</span></label>
-                                        <input type="text" class="form-control" id="nombre" name="nombre" value="<?= htmlspecialchars($rol['nombre'] ?? '') ?>" required>
+                                        <input type="text" class="form-control" id="nombre" name="nombre" value="<?= htmlspecialchars($rol['rol_nombre'] ?? '') ?>" required>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label for="codigo">Código</label>
-                                        <input type="text" class="form-control" id="codigo" name="codigo" value="<?= htmlspecialchars($rol['codigo'] ?? '') ?>" placeholder="Auto-generado si se deja vacío">
+                                        <input type="text" class="form-control" id="codigo" name="codigo" value="<?= htmlspecialchars($rol['rol_codigo'] ?? '') ?>" placeholder="Auto-generado si se deja vacío">
                                         <small class="text-muted">Identificador único del rol</small>
                                     </div>
                                 </div>
@@ -80,7 +80,7 @@ $colores = [
                             
                             <div class="form-group">
                                 <label for="descripcion">Descripción</label>
-                                <textarea class="form-control" id="descripcion" name="descripcion" rows="3" placeholder="Describe las responsabilidades de este rol..."><?= htmlspecialchars($rol['descripcion'] ?? '') ?></textarea>
+                                <textarea class="form-control" id="descripcion" name="descripcion" rows="3" placeholder="Describe las responsabilidades de este rol..."><?= htmlspecialchars($rol['rol_descripcion'] ?? '') ?></textarea>
                             </div>
                             
                             <div class="form-group">
@@ -88,7 +88,7 @@ $colores = [
                                 <div class="d-flex flex-wrap">
                                     <?php foreach ($colores as $hex => $nombre): ?>
                                     <div class="mr-2 mb-2">
-                                        <input type="radio" name="color" value="<?= $hex ?>" id="color_<?= substr($hex, 1) ?>" class="d-none" <?= ($rol['color'] ?? '#3B82F6') == $hex ? 'checked' : '' ?>>
+                                        <input type="radio" name="color" value="<?= $hex ?>" id="color_<?= substr($hex, 1) ?>" class="d-none" <?= '#3B82F6' == $hex ? 'checked' : '' ?>>
                                         <label for="color_<?= substr($hex, 1) ?>" class="btn btn-sm color-selector" style="background-color: <?= $hex ?>; width: 40px; height: 40px; border-radius: 50%; cursor: pointer;" title="<?= $nombre ?>">
                                             <i class="fas fa-check text-white d-none"></i>
                                         </label>
@@ -107,28 +107,29 @@ $colores = [
                         </div>
                         <div class="card-body">
                             <div class="form-group">
-                                <label for="nivel">Nivel de Acceso</label>
-                                <select class="form-control" id="nivel" name="nivel">
-                                    <option value="1" <?= ($rol['nivel'] ?? 1) == 1 ? 'selected' : '' ?>>1 - Básico</option>
-                                    <option value="2" <?= ($rol['nivel'] ?? 1) == 2 ? 'selected' : '' ?>>2 - Intermedio</option>
-                                    <option value="3" <?= ($rol['nivel'] ?? 1) == 3 ? 'selected' : '' ?>>3 - Avanzado</option>
-                                    <option value="4" <?= ($rol['nivel'] ?? 1) == 4 ? 'selected' : '' ?>>4 - Administrador</option>
-                                    <option value="5" <?= ($rol['nivel'] ?? 1) == 5 ? 'selected' : '' ?>>5 - Super Admin</option>
+                                <label for="nivel_acceso">Nivel de Acceso</label>
+                                <select class="form-control" id="nivel_acceso" name="nivel_acceso">
+                                    <option value="1" <?= ($rol['rol_nivel_acceso'] ?? 1) == 1 ? 'selected' : '' ?>>1 - Básico</option>
+                                    <option value="2" <?= ($rol['rol_nivel_acceso'] ?? 1) == 2 ? 'selected' : '' ?>>2 - Intermedio</option>
+                                    <option value="3" <?= ($rol['rol_nivel_acceso'] ?? 1) == 3 ? 'selected' : '' ?>>3 - Avanzado</option>
+                                    <option value="4" <?= ($rol['rol_nivel_acceso'] ?? 1) == 4 ? 'selected' : '' ?>>4 - Administrador</option>
+                                    <option value="5" <?= ($rol['rol_nivel_acceso'] ?? 1) == 5 ? 'selected' : '' ?>>5 - Super Admin</option>
+                                    <option value="10" <?= ($rol['rol_nivel_acceso'] ?? 1) == 10 ? 'selected' : '' ?>>10 - Super Admin Global</option>
                                 </select>
                                 <small class="text-muted">Determina la jerarquía del rol</small>
                             </div>
                             
                             <div class="form-group">
                                 <div class="custom-control custom-switch">
-                                    <input type="checkbox" class="custom-control-input" id="es_sistema" name="es_sistema" value="1" <?= !empty($rol['es_sistema']) ? 'checked' : '' ?>>
-                                    <label class="custom-control-label" for="es_sistema">Rol de Sistema</label>
+                                    <input type="checkbox" class="custom-control-input" id="es_admin_tenant" name="es_admin_tenant" value="1" <?= ($rol['rol_es_admin_tenant'] ?? 'N') === 'S' ? 'checked' : '' ?>>
+                                    <label class="custom-control-label" for="es_admin_tenant">Admin de Tenant</label>
                                 </div>
-                                <small class="text-muted">Los roles de sistema no pueden ser eliminados</small>
+                                <small class="text-muted">Los administradores de tenant gestionan su propia empresa</small>
                             </div>
                             
                             <div class="form-group">
                                 <div class="custom-control custom-switch">
-                                    <input type="checkbox" class="custom-control-input" id="estado" name="estado" value="A" <?= ($rol['estado'] ?? 'A') == 'A' ? 'checked' : '' ?>>
+                                    <input type="checkbox" class="custom-control-input" id="estado" name="estado" value="A" <?= ($rol['rol_estado'] ?? 'A') == 'A' ? 'checked' : '' ?>>
                                     <label class="custom-control-label" for="estado">Activo</label>
                                 </div>
                             </div>
@@ -141,12 +142,12 @@ $colores = [
                             <h3 class="card-title"><i class="fas fa-eye mr-2"></i>Vista Previa</h3>
                         </div>
                         <div class="card-body text-center">
-                            <div id="preview-icon" class="rounded-circle mx-auto d-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px; background-color: <?= isset($rol['color']) && $rol['color'] ? $rol['color'] : '#3B82F6' ?>;">
+                            <div id="preview-icon" class="rounded-circle mx-auto d-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px; background-color: #3B82F6;">
                                 <i class="fas fa-user-shield text-white fa-2x"></i>
                             </div>
-                            <h5 id="preview-nombre" class="mb-1"><?= isset($rol['nombre']) && $rol['nombre'] ? htmlspecialchars($rol['nombre']) : 'Nombre del Rol' ?></h5>
-                            <span class="badge" id="preview-nivel" style="background-color: <?= isset($rol['color']) && $rol['color'] ? $rol['color'] : '#3B82F6' ?>; color: white;">
-                                Nivel <?= isset($rol['nivel']) && $rol['nivel'] ? $rol['nivel'] : 1 ?>
+                            <h5 id="preview-nombre" class="mb-1"><?= isset($rol['rol_nombre']) && $rol['rol_nombre'] ? htmlspecialchars($rol['rol_nombre']) : 'Nombre del Rol' ?></h5>
+                            <span class="badge" id="preview-nivel" style="background-color: #3B82F6; color: white;">
+                                Nivel <?= isset($rol['rol_nivel_acceso']) && $rol['rol_nivel_acceso'] ? $rol['rol_nivel_acceso'] : 1 ?>
                             </span>
                         </div>
                     </div>
@@ -159,7 +160,7 @@ $colores = [
                                 <?= $esEdicion ? 'Actualizar' : 'Crear' ?> Rol
                             </button>
                             <?php if ($esEdicion): ?>
-                            <a href="<?= url('seguridad', 'rol', 'permisos', ['id' => $rol['rol_id']]) ?>" class="btn btn-info btn-block">
+                            <a href="<?= url('seguridad', 'rol', 'permisos', ['id' => $rol['rol_rol_id']]) ?>" class="btn btn-info btn-block">
                                 <i class="fas fa-key mr-1"></i> Configurar Permisos
                             </a>
                             <?php endif; ?>
@@ -194,7 +195,7 @@ input[type="radio"]:checked + .color-selector .fa-check {
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const nombreInput = document.getElementById('nombre');
-    const nivelSelect = document.getElementById('nivel');
+    const nivelSelect = document.getElementById('nivel_acceso');
     const colorRadios = document.querySelectorAll('input[name="color"]');
     const previewNombre = document.getElementById('preview-nombre');
     const previewNivel = document.getElementById('preview-nivel');

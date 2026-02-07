@@ -41,14 +41,14 @@ class TenantController extends \App\Controllers\ModuleController {
                     // Obtener destinatarios según tipo
                     if ($tipo === 'por_vencer') {
                         $stmt = $this->db->query("
-                            SELECT ten_id, ten_email, ten_nombre_comercial, ten_razon_social, ten_fecha_vencimiento
-                            FROM core_tenants
+                            SELECT ten_tenant_id, ten_email, ten_nombre_comercial, ten_razon_social, ten_fecha_vencimiento
+                            FROM seguridad_tenants
                             WHERE ten_estado = 'A' AND ten_fecha_vencimiento BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 7 DAY)
                         ");
                     } else {
                         $stmt = $this->db->query("
-                            SELECT ten_id, ten_email, ten_nombre_comercial, ten_razon_social, ten_fecha_vencimiento
-                            FROM core_tenants
+                            SELECT ten_tenant_id, ten_email, ten_nombre_comercial, ten_razon_social, ten_fecha_vencimiento
+                            FROM seguridad_tenants
                             WHERE ten_fecha_vencimiento < CURDATE()
                         ");
                     }
@@ -86,10 +86,10 @@ class TenantController extends \App\Controllers\ModuleController {
                     $mail->isHTML(true);
                     $asunto = ($tipo === 'por_vencer') ? 'Tu suscripción está por vencer' : 'Tu suscripción ha vencido';
                     foreach ($destinatarios as $d) {
-                        $to = $d['email'];
+                        $to = $d['ten_email'];
                         if (!filter_var($to, FILTER_VALIDATE_EMAIL)) continue;
-                        $nombre = $d['nombre_comercial'] ?: $d['razon_social'];
-                        $fecha = date('d/m/Y', strtotime($d['fecha_vencimiento']));
+                        $nombre = $d['ten_nombre_comercial'] ?: $d['ten_razon_social'];
+                        $fecha = date('d/m/Y', strtotime($d['ten_fecha_vencimiento']));
                         $mensaje = '<div style="font-family:Arial,sans-serif;background:#f7f7f7;padding:30px;">
                             <div style="max-width:500px;margin:auto;background:#fff;border-radius:8px;box-shadow:0 2px 8px #ddd;padding:30px;">
                                 <div style="text-align:center;margin-bottom:20px;">

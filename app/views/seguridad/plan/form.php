@@ -6,7 +6,7 @@
 $plan = $plan ?? [];
 $modulos = $modulos ?? [];
 $modulosIncluidos = $modulosIncluidos ?? [];
-$esEdicion = !empty($plan['plan_id']);
+$esEdicion = !empty($plan['sus_plan_id']);
 $titulo = $esEdicion ? 'Editar Plan' : 'Nuevo Plan';
 
 $colores = [
@@ -57,7 +57,7 @@ $iconos = [
     <div class="container-fluid">
         <form method="POST" action="<?= url('seguridad', 'plan', $esEdicion ? 'actualizar' : 'guardar') ?>">
             <?php if ($esEdicion): ?>
-            <input type="hidden" name="plan_id" value="<?= $plan['plan_id'] ?>">
+            <input type="hidden" name="plan_id" value="<?= $plan['sus_plan_id'] ?>">
             <?php endif; ?>
             
             <div class="row">
@@ -72,40 +72,40 @@ $iconos = [
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label for="nombre">Nombre del Plan <span class="text-danger">*</span></label>
-                                        <input type="text" class="form-control" id="nombre" name="nombre" value="<?= htmlspecialchars($plan['nombre'] ?? '') ?>" required>
+                                        <input type="text" class="form-control" id="nombre" name="nombre" value="<?= htmlspecialchars($plan['sus_nombre'] ?? '') ?>" required>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label for="codigo">Código</label>
-                                        <input type="text" class="form-control" id="codigo" name="codigo" value="<?= htmlspecialchars($plan['codigo'] ?? '') ?>" placeholder="Auto-generado si se deja vacío">
+                                        <input type="text" class="form-control" id="codigo" name="codigo" value="<?= htmlspecialchars($plan['sus_codigo'] ?? '') ?>" placeholder="Auto-generado si se deja vacío">
                                     </div>
                                 </div>
                             </div>
                             
                             <div class="form-group">
                                 <label for="descripcion">Descripción</label>
-                                <textarea class="form-control" id="descripcion" name="descripcion" rows="2"><?= htmlspecialchars($plan['descripcion'] ?? '') ?></textarea>
+                                <textarea class="form-control" id="descripcion" name="descripcion" rows="2"><?= htmlspecialchars($plan['sus_descripcion'] ?? '') ?></textarea>
                             </div>
                             
                             <div class="row">
                                 <div class="col-md-4">
                                     <div class="form-group">
                                         <label for="precio_mensual">Precio Mensual ($) <span class="text-danger">*</span></label>
-                                        <input type="number" step="0.01" class="form-control" id="precio_mensual" name="precio_mensual" value="<?= $plan['precio_mensual'] ?? '0.00' ?>" required>
+                                        <input type="number" step="0.01" class="form-control" id="precio_mensual" name="precio_mensual" value="<?= $plan['sus_precio_mensual'] ?? '0.00' ?>" required>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="form-group">
                                         <label for="precio_anual">Precio Anual ($)</label>
-                                        <input type="number" step="0.01" class="form-control" id="precio_anual" name="precio_anual" value="<?= $plan['precio_anual'] ?? '0.00' ?>">
+                                        <input type="number" step="0.01" class="form-control" id="precio_anual" name="precio_anual" value="<?= $plan['sus_precio_anual'] ?? '0.00' ?>">
                                         <small class="text-muted">Precio con descuento anual</small>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="form-group">
                                         <label for="periodo_prueba">Días de Prueba</label>
-                                        <input type="number" class="form-control" id="periodo_prueba" name="periodo_prueba" value="<?= $plan['periodo_prueba'] ?? 0 ?>" min="0">
+                                        <input type="number" class="form-control" id="periodo_prueba" name="periodo_prueba" value="0" min="0">
                                     </div>
                                 </div>
                             </div>
@@ -121,25 +121,20 @@ $iconos = [
                             <div class="row">
                                 <div class="col-md-4">
                                     <div class="form-group">
-                                        <label for="usuarios_permitidos">Usuarios <span class="text-danger">*</span></label>
-                                        <input type="number" class="form-control" id="usuarios_permitidos" name="usuarios_permitidos" value="<?= $plan['usuarios_permitidos'] ?? 5 ?>" min="1" required>
+                                        <label for="usuarios_incluidos">Usuarios <span class="text-danger">*</span></label>
+                                        <input type="number" class="form-control" id="usuarios_incluidos" name="usuarios_incluidos" value="<?= $plan['sus_usuarios_incluidos'] ?? 5 ?>" min="1" required>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="form-group">
                                         <label for="almacenamiento_gb">Almacenamiento (GB)</label>
-                                        <input type="number" class="form-control" id="almacenamiento_gb" name="almacenamiento_gb" value="<?= $plan['almacenamiento_gb'] ?? 1 ?>" min="1">
+                                        <input type="number" class="form-control" id="almacenamiento_gb" name="almacenamiento_gb" value="<?= $plan['sus_almacenamiento_gb'] ?? 1 ?>" min="1">
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="form-group">
-                                        <label for="nivel_soporte">Nivel de Soporte</label>
-                                        <select class="form-control" id="nivel_soporte" name="nivel_soporte">
-                                            <option value="basico" <?= ($plan['nivel_soporte'] ?? 'basico') == 'basico' ? 'selected' : '' ?>>Básico</option>
-                                            <option value="estandar" <?= ($plan['nivel_soporte'] ?? '') == 'estandar' ? 'selected' : '' ?>>Estándar</option>
-                                            <option value="prioritario" <?= ($plan['nivel_soporte'] ?? '') == 'prioritario' ? 'selected' : '' ?>>Prioritario</option>
-                                            <option value="premium" <?= ($plan['nivel_soporte'] ?? '') == 'premium' ? 'selected' : '' ?>>Premium 24/7</option>
-                                        </select>
+                                        <label for="sedes_incluidas">Sedes Incluidas</label>
+                                        <input type="number" class="form-control" id="sedes_incluidas" name="sedes_incluidas" value="<?= $plan['sus_sedes_incluidas'] ?? 1 ?>" min="1">
                                     </div>
                                 </div>
                             </div>
@@ -152,21 +147,18 @@ $iconos = [
                             <h3 class="card-title"><i class="fas fa-puzzle-piece mr-2"></i>Módulos Incluidos</h3>
                         </div>
                         <div class="card-body">
-                            <div class="custom-control custom-checkbox mb-3">
-                                <input type="checkbox" class="custom-control-input" id="todos_modulos" name="todos_modulos" value="1" <?= !empty($plan['todos_modulos']) ? 'checked' : '' ?>>
-                                <label class="custom-control-label" for="todos_modulos"><strong>Incluir todos los módulos</strong></label>
-                            </div>
+                            <p class="text-muted mb-3">Seleccione los módulos que incluye este plan:</p>
                             
-                            <div id="lista-modulos" <?= !empty($plan['todos_modulos']) ? 'style="display:none;"' : '' ?>>
+                            <div id="lista-modulos">
                                 <div class="row">
                                     <?php foreach ($modulos as $m): ?>
-                                    <?php $checked = in_array($m['modulo_id'], $modulosIncluidos); ?>
+                                    <?php $checked = in_array($m['mod_codigo'] ?? '', $plan['modulos_array'] ?? []); ?>
                                     <div class="col-md-4 col-sm-6 mb-2">
                                         <div class="custom-control custom-checkbox">
-                                            <input type="checkbox" class="custom-control-input modulo-check" id="mod_<?= $m['modulo_id'] ?>" name="modulos[]" value="<?= $m['modulo_id'] ?>" <?= $checked ? 'checked' : '' ?>>
-                                            <label class="custom-control-label" for="mod_<?= $m['modulo_id'] ?>">
-                                                <i class="<?= $m['icono'] ?? 'fas fa-cube' ?> mr-1" style="color: <?= $m['color'] ?? '#6c757d' ?>"></i>
-                                                <?= htmlspecialchars($m['nombre']) ?>
+                                            <input type="checkbox" class="custom-control-input modulo-check" id="mod_<?= $m['mod_id'] ?>" name="modulos[]" value="<?= $m['mod_codigo'] ?>" <?= $checked ? 'checked' : '' ?>>
+                                            <label class="custom-control-label" for="mod_<?= $m['mod_id'] ?>">
+                                                <i class="<?= $m['mod_icono'] ?? 'fas fa-cube' ?> mr-1" style="color: <?= $m['mod_color_fondo'] ?? '#6c757d' ?>"></i>
+                                                <?= htmlspecialchars($m['mod_nombre'] ?? '') ?>
                                             </label>
                                         </div>
                                     </div>
@@ -189,7 +181,7 @@ $iconos = [
                         <div class="card-body">
                             <div id="caracteristicas-container">
                                 <?php 
-                                $caracteristicas = is_string($plan['caracteristicas'] ?? '') ? json_decode($plan['caracteristicas'], true) : ($plan['caracteristicas'] ?? []);
+                                $caracteristicas = is_string($plan['sus_caracteristicas'] ?? '') ? json_decode($plan['sus_caracteristicas'], true) : ($plan['sus_caracteristicas'] ?? []);
                                 if (empty($caracteristicas)) $caracteristicas = [''];
                                 foreach ($caracteristicas as $i => $c): 
                                 ?>
@@ -222,7 +214,7 @@ $iconos = [
                                 <div class="d-flex flex-wrap">
                                     <?php foreach ($iconos as $ico => $nombre): ?>
                                     <div class="mr-2 mb-2">
-                                        <input type="radio" name="icono" value="<?= $ico ?>" id="ico_<?= md5($ico) ?>" class="d-none" <?= ($plan['icono'] ?? 'fas fa-crown') == $ico ? 'checked' : '' ?>>
+                                        <input type="radio" name="icono" value="<?= $ico ?>" id="ico_<?= md5($ico) ?>" class="d-none" <?= 'fas fa-crown' == $ico ? 'checked' : '' ?>>
                                         <label for="ico_<?= md5($ico) ?>" class="btn btn-outline-secondary icon-selector" title="<?= $nombre ?>">
                                             <i class="<?= $ico ?>"></i>
                                         </label>
@@ -236,7 +228,7 @@ $iconos = [
                                 <div class="d-flex flex-wrap">
                                     <?php foreach ($colores as $hex => $nombre): ?>
                                     <div class="mr-2 mb-2">
-                                        <input type="radio" name="color" value="<?= $hex ?>" id="col_<?= substr($hex, 1) ?>" class="d-none" <?= ($plan['color'] ?? '#3B82F6') == $hex ? 'checked' : '' ?>>
+                                        <input type="radio" name="color" value="<?= $hex ?>" id="col_<?= substr($hex, 1) ?>" class="d-none" <?= ($plan['sus_color'] ?? '#3B82F6') == $hex ? 'checked' : '' ?>>
                                         <label for="col_<?= substr($hex, 1) ?>" class="btn color-selector" style="background-color: <?= $hex ?>; width: 35px; height: 35px; border-radius: 50%;" title="<?= $nombre ?>">
                                             <i class="fas fa-check text-white d-none"></i>
                                         </label>
@@ -247,7 +239,7 @@ $iconos = [
                             
                             <div class="form-group">
                                 <div class="custom-control custom-switch">
-                                    <input type="checkbox" class="custom-control-input" id="destacado" name="destacado" value="1" <?= !empty($plan['destacado']) ? 'checked' : '' ?>>
+                                    <input type="checkbox" class="custom-control-input" id="es_destacado" name="es_destacado" value="1" <?= ($plan['sus_es_destacado'] ?? 'N') === 'S' ? 'checked' : '' ?>>
                                     <label class="custom-control-label" for="destacado">Plan Destacado</label>
                                 </div>
                                 <small class="text-muted">Se mostrará con etiqueta "Popular"</small>
@@ -260,11 +252,11 @@ $iconos = [
                         <div class="card-header">
                             <h3 class="card-title"><i class="fas fa-eye mr-2"></i>Vista Previa</h3>
                         </div>
-                        <div class="card-body text-center p-4" id="preview-card" style="background-color: <?= $plan['color'] ?? '#3B82F6' ?>20;">
-                            <i id="preview-icon" class="<?= $plan['icono'] ?? 'fas fa-crown' ?> fa-3x mb-3" style="color: <?= $plan['color'] ?? '#3B82F6' ?>"></i>
-                            <h4 id="preview-nombre"><?= htmlspecialchars($plan['nombre'] ?? 'Nombre del Plan') ?></h4>
-                            <h2 id="preview-precio" style="color: <?= $plan['color'] ?? '#3B82F6' ?>">$<?= number_format($plan['precio_mensual'] ?? 0, 2) ?><small>/mes</small></h2>
-                            <p class="text-muted" id="preview-usuarios"><?= $plan['usuarios_permitidos'] ?? 5 ?> usuarios</p>
+                        <div class="card-body text-center p-4" id="preview-card" style="background-color: <?= $plan['sus_color'] ?? '#3B82F6' ?>20;">
+                            <i id="preview-icon" class="fas fa-crown fa-3x mb-3" style="color: <?= $plan['sus_color'] ?? '#3B82F6' ?>"></i>
+                            <h4 id="preview-nombre"><?= htmlspecialchars($plan['sus_nombre'] ?? 'Nombre del Plan') ?></h4>
+                            <h2 id="preview-precio" style="color: <?= $plan['sus_color'] ?? '#3B82F6' ?>">$<?= number_format($plan['sus_precio_mensual'] ?? 0, 2) ?><small>/mes</small></h2>
+                            <p class="text-muted" id="preview-usuarios"><?= $plan['sus_usuarios_incluidos'] ?? 5 ?> usuarios</p>
                         </div>
                     </div>
                     
@@ -273,7 +265,7 @@ $iconos = [
                         <div class="card-body">
                             <div class="form-group">
                                 <div class="custom-control custom-switch">
-                                    <input type="checkbox" class="custom-control-input" id="estado" name="estado" value="A" <?= ($plan['estado'] ?? 'A') == 'A' ? 'checked' : '' ?>>
+                                    <input type="checkbox" class="custom-control-input" id="estado" name="estado" value="A" <?= ($plan['sus_estado'] ?? 'A') == 'A' ? 'checked' : '' ?>>
                                     <label class="custom-control-label" for="estado">Plan Activo</label>
                                 </div>
                             </div>
@@ -331,7 +323,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Vista previa en tiempo real
     const nombre = document.getElementById('nombre');
     const precio = document.getElementById('precio_mensual');
-    const usuarios = document.getElementById('usuarios_permitidos');
+    const usuarios = document.getElementById('usuarios_incluidos');
     const iconoRadios = document.querySelectorAll('input[name="icono"]');
     const colorRadios = document.querySelectorAll('input[name="color"]');
     

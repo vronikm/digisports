@@ -37,24 +37,24 @@ $modulos = $modulos ?? [];
                         <div class="mb-3">
                             <i class="fas <?= !empty($m['mod_icono']) ? $m['mod_icono'] : 'fa-cube' ?> fa-4x" style="color: <?= htmlspecialchars($m['mod_color_fondo'] ?? '#F59E0B') ?>;"></i>
                         </div>
-                        <h5 class="card-title" style="color: <?= htmlspecialchars($m['mod_color'] ?? '#F59E0B') ?>;">
+                        <h5 class="card-title" style="color: <?= htmlspecialchars($m['mod_color_fondo'] ?? '#F59E0B') ?>;">
                             <?= htmlspecialchars($m['mod_nombre']) ?>
                         </h5>
                         <p class="card-text text-muted small">
                             <?= htmlspecialchars($m['mod_descripcion'] ?? 'Sin descripción') ?>
                         </p>
                         <div class="mb-3">
-                            <span class="badge badge-light" style="border: 1px solid <?= htmlspecialchars($m['mod_color'] ?? '#F59E0B') ?>; color: <?= htmlspecialchars($m['mod_color'] ?? '#F59E0B') ?>;">
+                            <span class="badge badge-light" style="border: 1px solid <?= htmlspecialchars($m['mod_color_fondo'] ?? '#F59E0B') ?>; color: <?= htmlspecialchars($m['mod_color_fondo'] ?? '#F59E0B') ?>;">
                                 <?= $m['mod_codigo'] ?>
                             </span>
-                            <?php if ($m['mod_es_externo'] == 'S') { ?>
+                            <?php if ($m['mod_es_externo'] == 1) { ?>
                                 <span class="badge badge-warning">Externo</span>
                             <?php } ?>
-                            <span class="badge badge-<?= $m['mod_estado'] == 'A' ? 'success' : 'secondary' ?>">
-                                <?= $m['mod_estado'] == 'A' ? 'Activo' : 'Inactivo' ?>
+                            <span class="badge badge-<?= $m['mod_activo'] ? 'success' : 'secondary' ?>">
+                                <?= $m['mod_activo'] ? 'Activo' : 'Inactivo' ?>
                             </span>
                         </div>
-                        <small class="d-block mb-2" style="color: <?= htmlspecialchars($m['mod_color'] ?? '#F59E0B') ?>;">
+                        <small class="d-block mb-2" style="color: <?= htmlspecialchars($m['mod_color_fondo'] ?? '#F59E0B') ?>;">
                             <i class="fas fa-building mr-1"></i>
                             <?= $m['mod_tenants_activos'] ?? 0 ?> tenants
                         </small>

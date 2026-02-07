@@ -5,6 +5,9 @@ require_once BASE_PATH . '/app/controllers/ModuleController.php';
 
 class ModuloController extends \App\Controllers\ModuleController {
     protected $moduloCodigo = 'seguridad';
+    protected $moduloNombre = 'Seguridad';
+    protected $moduloIcono = 'fas fa-shield-alt';
+    protected $moduloColor = '#F59E0B';
         public function iconos_admin_delete() {
             $this->authorize('editar', 'modulos');
             $input = json_decode(file_get_contents('php://input'), true);
@@ -153,7 +156,7 @@ class ModuloController extends \App\Controllers\ModuleController {
     public function index() {
         $this->authorize('ver', 'modulos');
         try {
-            $modulos = $this->db->query("SELECT mod_id, mod_codigo, mod_nombre, mod_descripcion, mod_icono, mod_color_fondo, mod_orden, mod_activo, mod_activo AS mod_estado, mod_es_externo, mod_url_externa, mod_ruta_modulo, mod_ruta_controller, mod_ruta_action, mod_requiere_licencia FROM seguridad_modulos ORDER BY mod_orden")
+            $modulos = $this->db->query("SELECT mod_id, mod_codigo, mod_nombre, mod_descripcion, mod_icono, mod_color_fondo, mod_orden, mod_activo, mod_es_externo, mod_url_externa, mod_ruta_modulo, mod_ruta_controller, mod_ruta_action, mod_requiere_licencia FROM seguridad_modulos ORDER BY mod_orden")
             ->fetchAll(\PDO::FETCH_ASSOC);
         } catch (\Exception $e) {
             $modulos = [];
@@ -223,19 +226,18 @@ class ModuloController extends \App\Controllers\ModuleController {
                 echo json_encode(['success' => false, 'message' => 'El módulo ya está activo en el sistema']);
                 exit;
             }
-                $sql = "INSERT INTO seguridad_modulos (mod_codigo, mod_nombre, mod_descripcion, mod_icono, mod_color, mod_url_base, mod_es_externo, mod_base_datos_externa, mod_orden_visualizacion, mod_requiere_suscripcion, mod_estado) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                $sql = "INSERT INTO seguridad_modulos (mod_codigo, mod_nombre, mod_descripcion, mod_icono, mod_color_fondo, mod_orden, mod_es_externo, mod_url_externa, mod_requiere_licencia, mod_activo) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             $params = [
                     $moduloSis['mod_codigo'],
                     $moduloSis['mod_nombre'],
                     $moduloSis['mod_descripcion'],
                     $moduloSis['mod_icono'],
-                    $moduloSis['mod_color'],
-                    $moduloSis['mod_url_base'],
-                    $moduloSis['mod_es_externo'],
-                    $moduloSis['mod_base_datos_externa'],
-                    $moduloSis['mod_orden_visualizacion'],
-                    $moduloSis['mod_requiere_suscripcion'],
-                    $moduloSis['mod_estado']
+                    $moduloSis['mod_color_fondo'] ?? '#3B82F6',
+                    $moduloSis['mod_orden'] ?? 0,
+                    $moduloSis['mod_es_externo'] ?? 0,
+                    $moduloSis['mod_url_externa'] ?? null,
+                    $moduloSis['mod_requiere_licencia'] ?? 1,
+                    1
             ];
             $stmt = $this->db->prepare($sql);
             $stmt->execute($params);
@@ -264,7 +266,7 @@ class ModuloController extends \App\Controllers\ModuleController {
 
     public function iconos() {
         try {
-                $modulos = $this->db->query("SELECT * FROM seguridad_modulos ORDER BY mod_orden_visualizacion")->fetchAll(\PDO::FETCH_ASSOC);
+                $modulos = $this->db->query("SELECT * FROM seguridad_modulos ORDER BY mod_orden")->fetchAll(\PDO::FETCH_ASSOC);
         } catch (\Exception $e) {
             $modulos = [];
         }
@@ -292,7 +294,7 @@ class ModuloController extends \App\Controllers\ModuleController {
                 $params[] = $icono;
             }
             if ($color) {
-                    $updates[] = "mod_color = ?";
+                    $updates[] = "mod_color_fondo = ?";
                 $params[] = $color;
             }
             if (!empty($updates)) {

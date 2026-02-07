@@ -17,7 +17,7 @@ $asignados = $asignados ?? [];
                 <h1 class="m-0">
                     <i class="<?= htmlspecialchars($moduloIcono ?? 'fas fa-shield-alt') ?> mr-2" style="color: <?= htmlspecialchars($moduloColor ?? '#F59E0B') ?>"></i>
                     <?= htmlspecialchars($moduloNombre ?? 'Seguridad') ?> - Asignar Módulos: <?php
-                        $nombre = isset($tenant['nombre_comercial']) && $tenant['nombre_comercial'] ? $tenant['nombre_comercial'] : (isset($tenant['razon_social']) && $tenant['razon_social'] ? $tenant['razon_social'] : '');
+                        $nombre = isset($tenant['ten_nombre_comercial']) && $tenant['ten_nombre_comercial'] ? $tenant['ten_nombre_comercial'] : (isset($tenant['ten_razon_social']) && $tenant['ten_razon_social'] ? $tenant['ten_razon_social'] : '');
                         echo htmlspecialchars($nombre);
                     ?>
                 </h1>
@@ -36,7 +36,7 @@ $asignados = $asignados ?? [];
 <section class="content">
     <div class="container-fluid">
         <form method="POST" action="<?= url('seguridad', 'asignacion', 'guardarModulos') ?>">
-            <input type="hidden" name="tenant_id" value="<?= isset($tenant['tenant_id']) ? htmlspecialchars($tenant['tenant_id']) : '' ?>">
+            <input type="hidden" name="tenant_id" value="<?= isset($tenant['ten_tenant_id']) ? htmlspecialchars($tenant['ten_tenant_id']) : '' ?>">
             
             <div class="row">
                 <div class="col-md-8">
@@ -57,23 +57,23 @@ $asignados = $asignados ?? [];
                             <div class="row">
                                 <?php foreach ($modulos as $m): ?>
                                 <?php 
-                                $asignado = isset($asignados[$m['modulo_id']]);
-                                $config = $asignado ? $asignados[$m['modulo_id']] : [];
+                                $asignado = isset($asignados[$m['mod_id']]);
+                                $config = $asignado ? $asignados[$m['mod_id']] : [];
                                 ?>
                                 <div class="col-lg-4 col-md-6 mb-4">
                                     <div class="card h-100 modulo-card <?= $asignado ? 'border-primary' : '' ?>">
-                                        <div class="card-header p-2" style="background-color: <?= htmlspecialchars($m['color'] ?? '#F59E0B') ?>20;">
+                                        <div class="card-header p-2" style="background-color: <?= htmlspecialchars($m['mod_color_fondo'] ?? '#F59E0B') ?>20;">
                                             <div class="custom-control custom-checkbox float-right">
-                                                <input type="checkbox" class="custom-control-input modulo-check" id="mod_<?= $m['modulo_id'] ?>" name="modulos[<?= $m['modulo_id'] ?>][activo]" value="1" <?= $asignado ? 'checked' : '' ?>>
-                                                <label class="custom-control-label" for="mod_<?= $m['modulo_id'] ?>"></label>
+                                                <input type="checkbox" class="custom-control-input modulo-check" id="mod_<?= $m['mod_id'] ?>" name="modulos[<?= $m['mod_id'] ?>][activo]" value="1" <?= $asignado ? 'checked' : '' ?>>
+                                                <label class="custom-control-label" for="mod_<?= $m['mod_id'] ?>"></label>
                                             </div>
                                             <?php
                                             // Priorizar icono personalizado si está asignado y definido
                                             $icono = null;
-                                            if ($asignado && !empty($config['icono_custom'])) {
-                                                $icono = $config['icono_custom'];
-                                            } elseif (!empty($m['icono']) && $m['icono'] !== '-') {
-                                                $icono = $m['icono'];
+                                            if ($asignado && !empty($config['tmo_icono_personalizado'])) {
+                                                $icono = $config['tmo_icono_personalizado'];
+                                            } elseif (!empty($m['mod_icono']) && $m['mod_icono'] !== '-') {
+                                                $icono = $m['mod_icono'];
                                             } else {
                                                 $icono = 'fa-cube';
                                             }
@@ -91,26 +91,26 @@ $asignados = $asignados ?? [];
                                                 $icono = 'fas fa-' . $icono;
                                             }
                                             ?>
-                                            <i class="<?= $icono ?> fa-lg mr-2" style="color: <?= htmlspecialchars($m['color'] ?? '#F59E0B') ?>;"></i>
-                                            <strong style="color: <?= htmlspecialchars($m['color'] ?? '#F59E0B') ?>;"><?= htmlspecialchars($m['nombre']) ?></strong>
-                                            <span class="badge badge-light border ml-1" style="font-size:10px;vertical-align:middle;">icono: <?= htmlspecialchars($m['icono'] ?? '-') ?></span>
+                                            <i class="<?= $icono ?> fa-lg mr-2" style="color: <?= htmlspecialchars($m['mod_color_fondo'] ?? '#F59E0B') ?>;"></i>
+                                            <strong style="color: <?= htmlspecialchars($m['mod_color_fondo'] ?? '#F59E0B') ?>;"><?= htmlspecialchars($m['mod_nombre'] ?? '') ?></strong>
+                                            <span class="badge badge-light border ml-1" style="font-size:10px;vertical-align:middle;">icono: <?= htmlspecialchars($m['mod_icono'] ?? '-') ?></span>
                                         </div>
                                         <div class="card-body p-2">
-                                            <p class="small text-muted mb-2"><?= htmlspecialchars($m['descripcion'] ?? 'Sin descripción') ?></p>
+                                            <p class="small text-muted mb-2"><?= htmlspecialchars($m['mod_descripcion'] ?? 'Sin descripción') ?></p>
                                             
                                             <div class="config-options <?= $asignado ? '' : 'd-none' ?>">
                                                 <hr class="my-2">
                                                 <div class="form-group mb-2">
                                                     <label class="small">Nombre personalizado:</label>
-                                                    <input type="text" class="form-control form-control-sm" name="modulos[<?= $m['modulo_id'] ?>][nombre_custom]" value="<?= htmlspecialchars($config['nombre_custom'] ?? '') ?>" placeholder="<?= htmlspecialchars($m['nombre']) ?>">
+                                                    <input type="text" class="form-control form-control-sm" name="modulos[<?= $m['mod_id'] ?>][nombre_custom]" value="<?= htmlspecialchars($config['tmo_nombre_personalizado'] ?? '') ?>" placeholder="<?= htmlspecialchars($m['mod_nombre'] ?? '') ?>">
                                                 </div>
                                                 <div class="form-group mb-2">
                                                     <label class="small">Icono:</label>
-                                                    <input type="text" class="form-control form-control-sm" name="modulos[<?= $m['modulo_id'] ?>][icono_custom]" value="<?= htmlspecialchars($config['icono_custom'] ?? '') ?>" placeholder="<?= $m['icono'] ?>">
+                                                    <input type="text" class="form-control form-control-sm" name="modulos[<?= $m['mod_id'] ?>][icono_custom]" value="<?= htmlspecialchars($config['tmo_icono_personalizado'] ?? '') ?>" placeholder="<?= $m['mod_icono'] ?? '' ?>">
                                                 </div>
                                                 <div class="form-group mb-0">
                                                     <label class="small">Color:</label>
-                                                    <input type="color" class="form-control form-control-sm" name="modulos[<?= $m['modulo_id'] ?>][color_custom]" value="<?= $config['color_custom'] ?? $m['color'] ?? '#6c757d' ?>" style="height: 30px;">
+                                                    <input type="color" class="form-control form-control-sm" name="modulos[<?= $m['mod_id'] ?>][color_custom]" value="<?= $config['tmo_color_personalizado'] ?? $m['mod_color_fondo'] ?? '#6c757d' ?>" style="height: 30px;">
                                                 </div>
                                             </div>
                                         </div>
@@ -131,9 +131,9 @@ $asignados = $asignados ?? [];
                         <div class="card-body">
                             <dl>
                                 <dt>Razón Social</dt>
-                                <dd><?= isset($tenant['razon_social']) && $tenant['razon_social'] ? htmlspecialchars($tenant['razon_social']) : '' ?></dd>
+                                <dd><?= isset($tenant['ten_razon_social']) && $tenant['ten_razon_social'] ? htmlspecialchars($tenant['ten_razon_social']) : '' ?></dd>
                                 <dt>RUC</dt>
-                                <dd><?= isset($tenant['ruc']) && $tenant['ruc'] ? htmlspecialchars($tenant['ruc']) : '' ?></dd>
+                                <dd><?= isset($tenant['ten_ruc']) && $tenant['ten_ruc'] ? htmlspecialchars($tenant['ten_ruc']) : '' ?></dd>
                                 <dt>Plan</dt>
                                 <dd><span class="badge badge-info"><?= htmlspecialchars($tenant['plan_nombre'] ?? 'Sin plan') ?></span></dd>
                             </dl>
@@ -158,7 +158,7 @@ $asignados = $asignados ?? [];
                             <button type="submit" class="btn btn-primary btn-block">
                                 <i class="fas fa-save mr-1"></i> Guardar Asignación
                             </button>
-                            <a href="<?= url('seguridad', 'tenant', 'ver', ['id' => isset($tenant['tenant_id']) ? $tenant['tenant_id'] : '']) ?>" class="btn btn-info btn-block">
+                            <a href="<?= url('seguridad', 'tenant', 'ver', ['id' => isset($tenant['ten_tenant_id']) ? $tenant['ten_tenant_id'] : '']) ?>" class="btn btn-info btn-block">
                                 <i class="fas fa-eye mr-1"></i> Ver Tenant
                             </a>
                             <a href="<?= url('seguridad', 'tenant') ?>" class="btn btn-secondary btn-block">

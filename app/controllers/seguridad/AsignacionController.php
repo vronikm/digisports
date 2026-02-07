@@ -36,40 +36,55 @@ class AsignacionController extends \App\Controllers\ModuleController {
         try {
             // Todos los tenants
             $tenants = $this->db->query("
-                SELECT t.ten_id, t.ten_nombre_comercial, t.ten_ruc, p.plan_nombre
-                FROM core_tenants t
-                LEFT JOIN core_planes_suscripcion p ON t.ten_plan_id = p.plan_id
+                SELECT t.ten_tenant_id, t.ten_nombre_comercial, t.ten_ruc, p.sus_nombre as plan_nombre
+                FROM seguridad_tenants t
+                LEFT JOIN seguridad_planes_suscripcion p ON t.ten_plan_id = p.sus_plan_id
                 WHERE t.ten_estado = 'A'
                 ORDER BY t.ten_nombre_comercial
             ")->fetchAll(\PDO::FETCH_ASSOC);
 
             // Todos los módulos
             $modulos = $this->db->query("
-                SELECT * FROM core_modulos_sistema WHERE mod_estado = 'A' ORDER BY mod_orden_visualizacion
+                SELECT * FROM seguridad_modulos WHERE mod_activo = 1 ORDER BY mod_orden
             ")->fetchAll(\PDO::FETCH_ASSOC);
 
-            // Si hay tenant seleccionado, obtener sus módulos
-            $modulosAsignados = [];
+            // Si hay tenant seleccionado, obtener sus datos y módulos
+            $tenant = null;
+            $asignados = [];
             if ($tenantId) {
+                $stmtT = $this->db->prepare("
+                    SELECT t.*, p.sus_nombre as plan_nombre
+                    FROM seguridad_tenants t
+                    LEFT JOIN seguridad_planes_suscripcion p ON t.ten_plan_id = p.sus_plan_id
+                    WHERE t.ten_tenant_id = ?
+                ");
+                $stmtT->execute([$tenantId]);
+                $tenant = $stmtT->fetch(\PDO::FETCH_ASSOC) ?: [];
+
                 $stmt = $this->db->prepare("
-                    SELECT tm.*, m.mod_nombre, m.mod_icono, m.mod_color
-                    FROM core_tenant_modulos tm
-                    JOIN core_modulos_sistema m ON tm.tm_modulo_id = m.mod_id
-                    WHERE tm.tm_tenant_id = ?
+                    SELECT tm.*, m.mod_nombre, m.mod_icono, m.mod_color_fondo
+                    FROM seguridad_tenant_modulos tm
+                    JOIN seguridad_modulos m ON tm.tmo_modulo_id = m.mod_id
+                    WHERE tm.tmo_tenant_id = ?
                 ");
                 $stmt->execute([$tenantId]);
-                $modulosAsignados = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+                $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+                foreach ($rows as $row) {
+                    $asignados[$row['tmo_modulo_id']] = $row;
+                }
             }
         } catch (\Exception $e) {
             $tenants = [];
             $modulos = [];
-            $modulosAsignados = [];
+            $tenant = null;
+            $asignados = [];
         }
 
         $this->renderModule('asignacion/modulos', [
             'tenants' => $tenants,
             'modulos' => $modulos,
-            'modulosAsignados' => $modulosAsignados,
+            'tenant' => $tenant,
+            'asignados' => $asignados,
             'tenantSeleccionado' => $tenantId,
             'pageTitle' => 'Asignación de Módulos'
         ]);
@@ -85,7 +100,7 @@ class AsignacionController extends \App\Controllers\ModuleController {
             $this->db->beginTransaction();
 
             // Desactivar todos los módulos actuales
-            $stmt = $this->db->prepare("UPDATE tenant_modulos SET activo = 'N', fecha_desactivacion = CURDATE() WHERE tenant_id = ?");
+            $stmt = $this->db->prepare("UPDATE seguridad_tenant_modulos SET tmo_activo = 'N' WHERE tmo_tenant_id = ?");
             $stmt->execute([$tenantId]);
 
             // Activar los seleccionados
@@ -94,20 +109,20 @@ class AsignacionController extends \App\Controllers\ModuleController {
                 $nombrePersonalizado = $_POST['nombre_' . $moduloId] ?? null;
                 $colorPersonalizado = $_POST['color_' . $moduloId] ?? null;
                 // Verificar si existe
-                $stmt = $this->db->prepare("SELECT tenant_modulo_id FROM tenant_modulos WHERE tenant_id = ? AND modulo_id = ?");
+                $stmt = $this->db->prepare("SELECT tmo_id FROM seguridad_tenant_modulos WHERE tmo_tenant_id = ? AND tmo_modulo_id = ?");
                 $stmt->execute([$tenantId, $moduloId]);
                 
                 if ($row = $stmt->fetch()) {
                     $stmt = $this->db->prepare("
-                        UPDATE tenant_modulos 
-                        SET activo = 'S', fecha_activacion = CURDATE(), fecha_desactivacion = NULL,
-                            nombre_personalizado = ?, icono_personalizado = ?, color_personalizado = ?
-                        WHERE tenant_modulo_id = ?
+                        UPDATE seguridad_tenant_modulos 
+                        SET tmo_activo = 'S', tmo_fecha_inicio = CURDATE(), tmo_fecha_fin = NULL,
+                            tmo_nombre_personalizado = ?, tmo_icono_personalizado = ?, tmo_color_personalizado = ?
+                        WHERE tmo_id = ?
                     ");
-                    $stmt->execute([$nombrePersonalizado, $iconoPersonalizado, $colorPersonalizado, $row['tenant_modulo_id']]);
+                    $stmt->execute([$nombrePersonalizado, $iconoPersonalizado, $colorPersonalizado, $row['tmo_id']]);
                 } else {
                     $stmt = $this->db->prepare("
-                        INSERT INTO tenant_modulos (tenant_id, modulo_id, activo, fecha_activacion, nombre_personalizado, icono_personalizado, color_personalizado)
+                        INSERT INTO seguridad_tenant_modulos (tmo_tenant_id, tmo_modulo_id, tmo_activo, tmo_fecha_inicio, tmo_nombre_personalizado, tmo_icono_personalizado, tmo_color_personalizado)
                         VALUES (?, ?, 'S', CURDATE(), ?, ?, ?)
                     ");
                     $stmt->execute([$tenantId, $moduloId, $nombrePersonalizado, $iconoPersonalizado, $colorPersonalizado]);
@@ -130,23 +145,23 @@ class AsignacionController extends \App\Controllers\ModuleController {
     public function masiva() {
         try {
             $tenants = $this->db->query("
-                SELECT t.*, p.nombre as plan_nombre
-                FROM tenants t
-                LEFT JOIN planes_suscripcion p ON t.plan_id = p.plan_id
-                WHERE t.estado = 'A'
-                ORDER BY t.nombre_comercial
+                SELECT t.*, p.sus_nombre as plan_nombre
+                FROM seguridad_tenants t
+                LEFT JOIN seguridad_planes_suscripcion p ON t.ten_plan_id = p.sus_plan_id
+                WHERE t.ten_estado = 'A'
+                ORDER BY t.ten_nombre_comercial
             ")->fetchAll(\PDO::FETCH_ASSOC);
 
             $modulos = $this->db->query("
-                SELECT * FROM modulos_sistema WHERE estado = 'A' ORDER BY orden_visualizacion
+                SELECT * FROM seguridad_modulos WHERE mod_activo = 1 ORDER BY mod_orden
             ")->fetchAll(\PDO::FETCH_ASSOC);
 
             // Matriz de asignación
             $matriz = [];
             foreach ($tenants as $tenant) {
-                $stmt = $this->db->prepare("SELECT modulo_id FROM tenant_modulos WHERE tenant_id = ? AND activo = 'S'");
-                $stmt->execute([$tenant['tenant_id']]);
-                $matriz[$tenant['tenant_id']] = $stmt->fetchAll(\PDO::FETCH_COLUMN);
+                $stmt = $this->db->prepare("SELECT tmo_modulo_id FROM seguridad_tenant_modulos WHERE tmo_tenant_id = ? AND tmo_activo = 'S'");
+                $stmt->execute([$tenant['ten_tenant_id']]);
+                $matriz[$tenant['ten_tenant_id']] = $stmt->fetchAll(\PDO::FETCH_COLUMN);
             }
         } catch (\Exception $e) {
             $tenants = [];
@@ -172,18 +187,18 @@ class AsignacionController extends \App\Controllers\ModuleController {
 
             foreach ($asignaciones as $tenantId => $modulos) {
                 // Desactivar todos
-                $stmt = $this->db->prepare("UPDATE tenant_modulos SET activo = 'N' WHERE tenant_id = ?");
+                $stmt = $this->db->prepare("UPDATE seguridad_tenant_modulos SET tmo_activo = 'N' WHERE tmo_tenant_id = ?");
                 $stmt->execute([$tenantId]);
 
                 // Activar seleccionados
                 foreach ($modulos as $moduloId) {
-                    $stmt = $this->db->prepare("SELECT tenant_modulo_id FROM tenant_modulos WHERE tenant_id = ? AND modulo_id = ?");
+                    $stmt = $this->db->prepare("SELECT tmo_id FROM seguridad_tenant_modulos WHERE tmo_tenant_id = ? AND tmo_modulo_id = ?");
                     $stmt->execute([$tenantId, $moduloId]);
 
                     if ($stmt->fetch()) {
-                        $stmt = $this->db->prepare("UPDATE tenant_modulos SET activo = 'S', fecha_activacion = CURDATE() WHERE tenant_id = ? AND modulo_id = ?");
+                        $stmt = $this->db->prepare("UPDATE seguridad_tenant_modulos SET tmo_activo = 'S', tmo_fecha_inicio = CURDATE() WHERE tmo_tenant_id = ? AND tmo_modulo_id = ?");
                     } else {
-                        $stmt = $this->db->prepare("INSERT INTO tenant_modulos (tenant_id, modulo_id, activo, fecha_activacion) VALUES (?, ?, 'S', CURDATE())");
+                        $stmt = $this->db->prepare("INSERT INTO seguridad_tenant_modulos (tmo_tenant_id, tmo_modulo_id, tmo_activo, tmo_fecha_inicio) VALUES (?, ?, 'S', CURDATE())");
                     }
                     $stmt->execute([$tenantId, $moduloId]);
                 }
