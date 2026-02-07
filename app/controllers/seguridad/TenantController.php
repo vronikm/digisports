@@ -199,14 +199,20 @@ class TenantController extends \App\Controllers\ModuleController {
             return;
         }
         // Obtener planes activos
-        $planes = $this->db->query("SELECT sus_plan_id, sus_nombre FROM seguridad_planes_suscripcion WHERE sus_estado = 'A' ORDER BY sus_nombre")->fetchAll(\PDO::FETCH_ASSOC);
+        $planes = $this->db->query("SELECT sus_plan_id, sus_nombre, sus_precio_mensual, sus_usuarios_incluidos FROM seguridad_planes_suscripcion WHERE sus_estado = 'A' ORDER BY sus_nombre")->fetchAll(\PDO::FETCH_ASSOC);
         // Obtener solo módulos activos y operativos
-        $modulos = $this->db->query("
-            SELECT m.*, tm.icono_personalizado, tm.color_personalizado, tm.activo
-            FROM modulos m
-            LEFT JOIN tenant_modulos tm ON m.id = tm.modulo_id AND tm.tenant_id = $id
-            WHERE m.activo = 1 ORDER BY m.nombre
-        ")->fetchAll(\PDO::FETCH_ASSOC);
+        $stmtMod = $this->db->prepare("
+            SELECT m.mod_id AS id, m.mod_nombre AS nombre, m.mod_codigo AS codigo,
+                   m.mod_icono AS icono, m.mod_color_fondo AS color_fondo,
+                   tm.tmo_icono_personalizado AS icono_personalizado, 
+                   tm.tmo_color_personalizado AS color_personalizado, 
+                   tm.tmo_activo AS activo
+            FROM seguridad_modulos m
+            LEFT JOIN seguridad_tenant_modulos tm ON m.mod_id = tm.tmo_modulo_id AND tm.tmo_tenant_id = ?
+            WHERE m.mod_activo = 1 ORDER BY m.mod_nombre
+        ");
+        $stmtMod->execute([$id]);
+        $modulos = $stmtMod->fetchAll(\PDO::FETCH_ASSOC);
         $modulosAsignados = [];
         foreach ($modulos as $m) {
             if (isset($m['activo']) && $m['activo'] === 'S') {
@@ -298,10 +304,10 @@ class TenantController extends \App\Controllers\ModuleController {
             $stmt = $this->db->prepare($sql);
             $stmt->execute($params);
             // Eliminar todos los registros de módulos del tenant
-            $stmt = $this->db->prepare("DELETE FROM tenant_modulos WHERE tenant_id = ?");
+            $stmt = $this->db->prepare("DELETE FROM seguridad_tenant_modulos WHERE tmo_tenant_id = ?");
             $stmt->execute([$id]);
             // Insertar todos los módulos activos con el estado correcto y fecha_inicio actual
-            $modulosSistema = $this->db->query("SELECT modulo_id FROM modulos_sistema WHERE estado = 'A'")->fetchAll(\PDO::FETCH_COLUMN);
+            $modulosSistema = $this->db->query("SELECT sis_modulo_id FROM seguridad_modulos_sistema WHERE sis_estado = 'A'")->fetchAll(\PDO::FETCH_COLUMN);
             $modulosSeleccionados = isset($_POST['modulos']) && is_array($_POST['modulos']) ? array_map('intval', $_POST['modulos']) : [];
             $fechaHoy = date('Y-m-d');
             foreach ($modulosSistema as $modulo_id) {
@@ -309,7 +315,7 @@ class TenantController extends \App\Controllers\ModuleController {
                 $logMsg = "Intentando insertar: tenant_id=$id, modulo_id=$modulo_id, activo=$activo, fecha_inicio=$fechaHoy\n";
                 file_put_contents(BASE_PATH . '/storage/logs/tenant_modulos_debug.log', $logMsg, FILE_APPEND);
                 try {
-                    $stmt = $this->db->prepare("INSERT INTO tenant_modulos (tenant_id, modulo_id, activo, fecha_inicio) VALUES (?, ?, ?, ?)");
+                    $stmt = $this->db->prepare("INSERT INTO seguridad_tenant_modulos (tmo_tenant_id, tmo_modulo_id, tmo_activo, tmo_fecha_inicio) VALUES (?, ?, ?, ?)");
                     $stmt->execute([$id, $modulo_id, $activo, $fechaHoy]);
                     file_put_contents(BASE_PATH . '/storage/logs/tenant_modulos_debug.log', "OK: modulo_id=$modulo_id insertado.\n", FILE_APPEND);
                 } catch (\Exception $e) {
@@ -448,7 +454,7 @@ class TenantController extends \App\Controllers\ModuleController {
                     'estado' => $_POST['estado'] ?? 'A'
                 ];
                 $this->db->beginTransaction();
-                $sql = "INSERT INTO tenants (ruc, razon_social, nombre_comercial, tipo_empresa, direccion, telefono, celular, email, sitio_web, representante_nombre, representante_identificacion, representante_email, representante_telefono, plan_id, fecha_inicio, fecha_vencimiento, usuarios_permitidos, sedes_permitidas, monto_mensual, color_primario, color_secundario, estado)
+                $sql = "INSERT INTO seguridad_tenants (ten_ruc, ten_razon_social, ten_nombre_comercial, ten_tipo_empresa, ten_direccion, ten_telefono, ten_celular, ten_email, ten_sitio_web, ten_representante_nombre, ten_representante_identificacion, ten_representante_email, ten_representante_telefono, ten_plan_id, ten_fecha_inicio, ten_fecha_vencimiento, ten_usuarios_permitidos, ten_sedes_permitidas, ten_monto_mensual, ten_color_primario, ten_color_secundario, ten_estado)
                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                 $params = array_values($data);
                 $stmt = $this->db->prepare($sql);
@@ -460,9 +466,8 @@ class TenantController extends \App\Controllers\ModuleController {
                 }
                 // Actualizar módulos si corresponde
                 if (isset($_POST['modulos']) && is_array($_POST['modulos'])) {
-                    $stmt = $this->db->prepare("UPDATE tenant_modulos SET activo = 'N' WHERE tenant_id = ?");
+                    $stmt = $this->db->prepare("UPDATE seguridad_tenant_modulos SET tmo_activo = 'N' WHERE tmo_tenant_id = ?");
                     $stmt->execute([$id]);
-                    // ...aquí podrías agregar lógica para activar módulos seleccionados...
                 }
                 $this->db->commit();
                 setFlashMessage('success', 'Tenant creado correctamente');
@@ -518,14 +523,14 @@ class TenantController extends \App\Controllers\ModuleController {
             
             if ($id) {
                 // Actualizar
-                $sql = "UPDATE tenants SET 
-                    ruc = ?, razon_social = ?, nombre_comercial = ?, tipo_empresa = ?,
-                    direccion = ?, telefono = ?, celular = ?, email = ?, sitio_web = ?,
-                    representante_nombre = ?, representante_identificacion = ?, representante_email = ?, representante_telefono = ?,
-                    plan_id = ?, fecha_inicio = ?, fecha_vencimiento = ?,
-                    usuarios_permitidos = ?, sedes_permitidas = ?, monto_mensual = ?,
-                    color_primario = ?, color_secundario = ?, estado = ?
-                    WHERE tenant_id = ?";
+                $sql = "UPDATE seguridad_tenants SET 
+                    ten_ruc = ?, ten_razon_social = ?, ten_nombre_comercial = ?, ten_tipo_empresa = ?,
+                    ten_direccion = ?, ten_telefono = ?, ten_celular = ?, ten_email = ?, ten_sitio_web = ?,
+                    ten_representante_nombre = ?, ten_representante_identificacion = ?, ten_representante_email = ?, ten_representante_telefono = ?,
+                    ten_plan_id = ?, ten_fecha_inicio = ?, ten_fecha_vencimiento = ?,
+                    ten_usuarios_permitidos = ?, ten_sedes_permitidas = ?, ten_monto_mensual = ?,
+                    ten_color_primario = ?, ten_color_secundario = ?, ten_estado = ?
+                    WHERE ten_tenant_id = ?";
                 $params = array_values($data);
                 $params[] = $id;
                 
@@ -534,7 +539,7 @@ class TenantController extends \App\Controllers\ModuleController {
                 
             } else {
                 // Crear
-                $sql = "INSERT INTO tenants (ruc, razon_social, nombre_comercial, tipo_empresa, direccion, telefono, celular, email, sitio_web, representante_nombre, representante_identificacion, representante_email, representante_telefono, plan_id, fecha_inicio, fecha_vencimiento, usuarios_permitidos, sedes_permitidas, monto_mensual, color_primario, color_secundario, estado)
+                $sql = "INSERT INTO seguridad_tenants (ten_ruc, ten_razon_social, ten_nombre_comercial, ten_tipo_empresa, ten_direccion, ten_telefono, ten_celular, ten_email, ten_sitio_web, ten_representante_nombre, ten_representante_identificacion, ten_representante_email, ten_representante_telefono, ten_plan_id, ten_fecha_inicio, ten_fecha_vencimiento, ten_usuarios_permitidos, ten_sedes_permitidas, ten_monto_mensual, ten_color_primario, ten_color_secundario, ten_estado)
                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                 $params = array_values($data);
                 
@@ -546,19 +551,19 @@ class TenantController extends \App\Controllers\ModuleController {
             // Actualizar módulos
             if (isset($_POST['modulos']) && is_array($_POST['modulos'])) {
                 // Desactivar todos los módulos actuales
-                $stmt = $this->db->prepare("UPDATE tenant_modulos SET activo = 'N' WHERE tenant_id = ?");
+                $stmt = $this->db->prepare("UPDATE seguridad_tenant_modulos SET tmo_activo = 'N' WHERE tmo_tenant_id = ?");
                 $stmt->execute([$id]);
                 
                 // Activar los seleccionados
                 foreach ($_POST['modulos'] as $moduloId) {
                     // Verificar si existe
-                    $stmt = $this->db->prepare("SELECT tenant_modulo_id FROM tenant_modulos WHERE tenant_id = ? AND modulo_id = ?");
+                    $stmt = $this->db->prepare("SELECT tmo_id FROM seguridad_tenant_modulos WHERE tmo_tenant_id = ? AND tmo_modulo_id = ?");
                     $stmt->execute([$id, $moduloId]);
                     
                     if ($stmt->fetch()) {
-                        $stmt = $this->db->prepare("UPDATE tenant_modulos SET activo = 'S', fecha_activacion = CURDATE() WHERE tenant_id = ? AND modulo_id = ?");
+                        $stmt = $this->db->prepare("UPDATE seguridad_tenant_modulos SET tmo_activo = 'S' WHERE tmo_tenant_id = ? AND tmo_modulo_id = ?");
                     } else {
-                        $stmt = $this->db->prepare("INSERT INTO tenant_modulos (tenant_id, modulo_id, activo, fecha_activacion) VALUES (?, ?, 'S', CURDATE())");
+                        $stmt = $this->db->prepare("INSERT INTO seguridad_tenant_modulos (tmo_tenant_id, tmo_modulo_id, tmo_activo, tmo_fecha_inicio) VALUES (?, ?, 'S', CURDATE())");
                     }
                     $stmt->execute([$id, $moduloId]);
                 }

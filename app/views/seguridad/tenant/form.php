@@ -7,7 +7,7 @@ $tenant = $tenant ?? [];
 $planes = $planes ?? [];
 $modulos = $modulos ?? [];
 $modulosAsignados = $modulosAsignados ?? [];
-$esEdicion = !empty($tenant['tenant_id']);
+$esEdicion = !empty($tenant['ten_tenant_id']);
 $titulo = $esEdicion ? 'Editar Tenant' : 'Nuevo Tenant';
 ?>
 
@@ -36,7 +36,7 @@ $titulo = $esEdicion ? 'Editar Tenant' : 'Nuevo Tenant';
     <div class="container-fluid" style="padding-bottom: 48px; min-height: 80vh;">
         <form method="POST" action="<?= url('seguridad', 'tenant', $esEdicion ? 'actualizar' : 'guardar') ?>">
             <?php if ($esEdicion): ?>
-            <input type="hidden" name="tenant_id" value="<?= $tenant['tenant_id'] ?>">
+            <input type="hidden" name="tenant_id" value="<?= $tenant['ten_tenant_id'] ?>">
             <?php endif; ?>
             
             <div class="row">
@@ -51,13 +51,13 @@ $titulo = $esEdicion ? 'Editar Tenant' : 'Nuevo Tenant';
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label for="ruc">RUC <span class="text-danger">*</span></label>
-                                        <input type="text" class="form-control" id="ruc" name="ruc" value="<?= htmlspecialchars($tenant['ruc'] ?? '') ?>" required maxlength="13">
+                                        <input type="text" class="form-control" id="ruc" name="ruc" value="<?= htmlspecialchars($tenant['ten_ruc'] ?? '') ?>" required maxlength="13">
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label for="razon_social">Razón Social <span class="text-danger">*</span></label>
-                                        <input type="text" class="form-control" id="razon_social" name="razon_social" value="<?= htmlspecialchars($tenant['razon_social'] ?? '') ?>" required>
+                                        <input type="text" class="form-control" id="razon_social" name="razon_social" value="<?= htmlspecialchars($tenant['ten_razon_social'] ?? '') ?>" required>
                                     </div>
                                 </div>
                             </div>
@@ -65,13 +65,13 @@ $titulo = $esEdicion ? 'Editar Tenant' : 'Nuevo Tenant';
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label for="nombre_comercial">Nombre Comercial</label>
-                                        <input type="text" class="form-control" id="nombre_comercial" name="nombre_comercial" value="<?= htmlspecialchars($tenant['nombre_comercial'] ?? '') ?>">
+                                        <input type="text" class="form-control" id="nombre_comercial" name="nombre_comercial" value="<?= htmlspecialchars($tenant['ten_nombre_comercial'] ?? '') ?>">
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label for="email">Email <span class="text-danger">*</span></label>
-                                        <input type="email" class="form-control" id="email" name="email" value="<?= htmlspecialchars($tenant['email'] ?? '') ?>" required>
+                                        <input type="email" class="form-control" id="email" name="email" value="<?= htmlspecialchars($tenant['ten_email'] ?? '') ?>" required>
                                     </div>
                                 </div>
                             </div>
@@ -79,19 +79,19 @@ $titulo = $esEdicion ? 'Editar Tenant' : 'Nuevo Tenant';
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label for="telefono">Teléfono</label>
-                                        <input type="text" class="form-control" id="telefono" name="telefono" value="<?= htmlspecialchars($tenant['telefono'] ?? '') ?>">
+                                        <input type="text" class="form-control" id="telefono" name="telefono" value="<?= htmlspecialchars($tenant['ten_telefono'] ?? '') ?>">
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label for="representante_legal">Representante Legal</label>
-                                        <input type="text" class="form-control" id="representante_legal" name="representante_legal" value="<?= htmlspecialchars($tenant['representante_legal'] ?? '') ?>">
+                                        <input type="text" class="form-control" id="representante_legal" name="representante_legal" value="<?= htmlspecialchars($tenant['ten_representante_nombre'] ?? '') ?>">
                                     </div>
                                 </div>
                             </div>
                             <div class="form-group">
                                 <label for="direccion">Dirección</label>
-                                <textarea class="form-control" id="direccion" name="direccion" rows="2"><?= htmlspecialchars($tenant['direccion'] ?? '') ?></textarea>
+                                <textarea class="form-control" id="direccion" name="direccion" rows="2"><?= htmlspecialchars($tenant['ten_direccion'] ?? '') ?></textarea>
                             </div>
                         </div>
                     </div>
@@ -162,24 +162,24 @@ $titulo = $esEdicion ? 'Editar Tenant' : 'Nuevo Tenant';
                                 <select class="form-control" id="plan_id" name="plan_id" required>
                                     <option value="">-- Seleccionar --</option>
                                     <?php foreach ($planes as $p): ?>
-                                    <option value="<?= $p['plan_id'] ?>" <?= ($tenant['plan_id'] ?? '') == $p['plan_id'] ? 'selected' : '' ?> data-usuarios="<?= $p['usuarios_permitidos'] ?? ($p['usuarios_incluidos'] ?? 0) ?>">
-                                        <?= htmlspecialchars($p['nombre']) ?> - $
-                                        <?= isset($p['precio_mensual']) ? number_format($p['precio_mensual'], 2) : (isset($p['precio']) ? number_format($p['precio'], 2) : '0.00') ?>/mes
+                                    <option value="<?= $p['sus_plan_id'] ?>" <?= ($tenant['ten_plan_id'] ?? '') == $p['sus_plan_id'] ? 'selected' : '' ?> data-usuarios="<?= $p['sus_usuarios_incluidos'] ?? 0 ?>">
+                                        <?= htmlspecialchars($p['sus_nombre']) ?> - $
+                                        <?= isset($p['sus_precio_mensual']) ? number_format($p['sus_precio_mensual'], 2) : '0.00' ?>/mes
                                     </option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
                             <div class="form-group">
                                 <label for="usuarios_permitidos">Usuarios Permitidos</label>
-                                <input type="number" class="form-control" id="usuarios_permitidos" name="usuarios_permitidos" value="<?= $tenant['usuarios_permitidos'] ?? 5 ?>" min="1">
+                                <input type="number" class="form-control" id="usuarios_permitidos" name="usuarios_permitidos" value="<?= $tenant['ten_usuarios_permitidos'] ?? 5 ?>" min="1">
                             </div>
                             <div class="form-group">
                                 <label for="fecha_inicio">Fecha Inicio <span class="text-danger">*</span></label>
-                                <input type="date" class="form-control" id="fecha_inicio" name="fecha_inicio" value="<?= $tenant['fecha_inicio'] ?? date('Y-m-d') ?>" required>
+                                <input type="date" class="form-control" id="fecha_inicio" name="fecha_inicio" value="<?= $tenant['ten_fecha_inicio'] ?? date('Y-m-d') ?>" required>
                             </div>
                             <div class="form-group">
                                 <label for="fecha_vencimiento">Fecha Vencimiento <span class="text-danger">*</span></label>
-                                <input type="date" class="form-control" id="fecha_vencimiento" name="fecha_vencimiento" value="<?= $tenant['fecha_vencimiento'] ?? date('Y-m-d', strtotime('+1 month')) ?>" required>
+                                <input type="date" class="form-control" id="fecha_vencimiento" name="fecha_vencimiento" value="<?= $tenant['ten_fecha_vencimiento'] ?? date('Y-m-d', strtotime('+1 month')) ?>" required>
                             </div>
                         </div>
                     </div>
@@ -192,14 +192,14 @@ $titulo = $esEdicion ? 'Editar Tenant' : 'Nuevo Tenant';
                             <div class="form-group">
                                 <label for="estado">Estado</label>
                                 <select class="form-control" id="estado" name="estado">
-                                    <option value="A" <?= ($tenant['estado'] ?? 'A') == 'A' ? 'selected' : '' ?>>Activo</option>
-                                    <option value="S" <?= ($tenant['estado'] ?? '') == 'S' ? 'selected' : '' ?>>Suspendido</option>
-                                    <option value="I" <?= ($tenant['estado'] ?? '') == 'I' ? 'selected' : '' ?>>Inactivo</option>
+                                    <option value="A" <?= ($tenant['ten_estado'] ?? 'A') == 'A' ? 'selected' : '' ?>>Activo</option>
+                                    <option value="S" <?= ($tenant['ten_estado'] ?? '') == 'S' ? 'selected' : '' ?>>Suspendido</option>
+                                    <option value="I" <?= ($tenant['ten_estado'] ?? '') == 'I' ? 'selected' : '' ?>>Inactivo</option>
                                 </select>
                             </div>
                             <div class="form-group">
                                 <label for="codigo_tenant">Código Tenant</label>
-                                <input type="text" class="form-control" id="codigo_tenant" name="codigo_tenant" value="<?= htmlspecialchars($tenant['codigo_tenant'] ?? '') ?>" placeholder="Auto-generado si se deja vacío">
+                                <input type="text" class="form-control" id="codigo_tenant" name="codigo_tenant" value="<?= htmlspecialchars($tenant['ten_codigo_tenant'] ?? '') ?>" placeholder="Auto-generado si se deja vacío">
                                 <small class="text-muted">Identificador único del tenant</small>
                             </div>
                         </div>
