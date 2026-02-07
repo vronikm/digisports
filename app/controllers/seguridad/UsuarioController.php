@@ -88,7 +88,7 @@ class UsuarioController extends \App\Controllers\ModuleController {
                 SELECT u.*, r.rol_nombre, t.ten_nombre_comercial as tenant_nombre
                 FROM seguridad_usuarios u
                 LEFT JOIN seguridad_roles r ON u.usr_rol_id = r.rol_id
-                LEFT JOIN core_tenants t ON u.usr_tenant_id = t.ten_id
+                LEFT JOIN seguridad_tenants t ON u.usr_tenant_id = t.ten_tenant_id
                 $where
                 ORDER BY u.usr_fecha_registro DESC
                 LIMIT $porPagina OFFSET $offset
@@ -99,6 +99,7 @@ class UsuarioController extends \App\Controllers\ModuleController {
             
             // Obtener tenants para filtro
             $tenants = $this->db->query("SELECT ten_id, ten_nombre_comercial FROM core_tenants WHERE ten_estado = 'A' ORDER BY ten_nombre_comercial")->fetchAll(\PDO::FETCH_ASSOC);
+                        $tenants = $this->db->query("SELECT ten_tenant_id, ten_nombre_comercial FROM seguridad_tenants WHERE ten_estado = 'A' ORDER BY ten_nombre_comercial")->fetchAll(\PDO::FETCH_ASSOC);
             
         } catch (\Exception $e) {
             $usuarios = [];
@@ -128,7 +129,7 @@ class UsuarioController extends \App\Controllers\ModuleController {
             return;
         }
         
-        $tenants = $this->db->query("SELECT ten_id, ten_nombre_comercial FROM core_tenants WHERE ten_estado = 'A' ORDER BY ten_nombre_comercial")->fetchAll(\PDO::FETCH_ASSOC);
+        $tenants = $this->db->query("SELECT ten_tenant_id, ten_nombre_comercial FROM seguridad_tenants WHERE ten_estado = 'A' ORDER BY ten_nombre_comercial")->fetchAll(\PDO::FETCH_ASSOC);
         $roles = $this->db->query("SELECT rol_id, rol_nombre, rol_codigo FROM seguridad_roles WHERE rol_estado = 'A' ORDER BY rol_nombre")->fetchAll(\PDO::FETCH_ASSOC);
         
         $this->renderModule('usuario/form', [

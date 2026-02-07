@@ -190,7 +190,7 @@ class TenantController extends \App\Controllers\ModuleController {
             return;
         }
         // Obtener datos del tenant
-        $stmt = $this->db->prepare("SELECT * FROM tenants WHERE tenant_id = ?");
+        $stmt = $this->db->prepare("SELECT * FROM seguridad_tenants WHERE ten_tenant_id = ?");
         $stmt->execute([$id]);
         $tenant = $stmt->fetch(\PDO::FETCH_ASSOC);
         if (!$tenant) {
@@ -199,7 +199,7 @@ class TenantController extends \App\Controllers\ModuleController {
             return;
         }
         // Obtener planes activos
-        $planes = $this->db->query("SELECT plan_id, nombre FROM planes_suscripcion WHERE estado = 'A' ORDER BY nombre")->fetchAll(\PDO::FETCH_ASSOC);
+        $planes = $this->db->query("SELECT sus_plan_id, sus_nombre FROM seguridad_planes_suscripcion WHERE sus_estado = 'A' ORDER BY sus_nombre")->fetchAll(\PDO::FETCH_ASSOC);
         // Obtener solo módulos activos y operativos
         $modulos = $this->db->query("
             SELECT m.*, tm.icono_personalizado, tm.color_personalizado, tm.activo
@@ -281,18 +281,18 @@ class TenantController extends \App\Controllers\ModuleController {
         try {
             $this->db->beginTransaction();
             // Obtener datos previos para auditoría
-            $stmt = $this->db->prepare("SELECT * FROM tenants WHERE tenant_id = ?");
+            $stmt = $this->db->prepare("SELECT * FROM seguridad_tenants WHERE ten_tenant_id = ?");
             $stmt->execute([$id]);
             $previo = $stmt->fetch(\PDO::FETCH_ASSOC);
             // Actualizar tenant
-            $sql = "UPDATE tenants SET 
-                ruc = ?, razon_social = ?, nombre_comercial = ?, tipo_empresa = ?,
-                direccion = ?, telefono = ?, celular = ?, email = ?, sitio_web = ?,
-                representante_nombre = ?, representante_identificacion = ?, representante_email = ?, representante_telefono = ?,
-                plan_id = ?, fecha_inicio = ?, fecha_vencimiento = ?,
-                usuarios_permitidos = ?, sedes_permitidas = ?, monto_mensual = ?,
-                color_primario = ?, color_secundario = ?, estado = ?
-                WHERE tenant_id = ?";
+            $sql = "UPDATE seguridad_tenants SET 
+                ten_ruc = ?, ten_razon_social = ?, ten_nombre_comercial = ?, ten_tipo_empresa = ?,
+                ten_direccion = ?, ten_telefono = ?, ten_celular = ?, ten_email = ?, ten_sitio_web = ?,
+                ten_representante_nombre = ?, ten_representante_identificacion = ?, ten_representante_email = ?, ten_representante_telefono = ?,
+                ten_plan_id = ?, ten_fecha_inicio = ?, ten_fecha_vencimiento = ?,
+                ten_usuarios_permitidos = ?, ten_sedes_permitidas = ?, ten_monto_mensual = ?,
+                ten_color_primario = ?, ten_color_secundario = ?, ten_estado = ?
+                WHERE ten_tenant_id = ?";
             $params = array_values($data);
             $params[] = $id;
             $stmt = $this->db->prepare($sql);
@@ -366,56 +366,34 @@ class TenantController extends \App\Controllers\ModuleController {
         
         $where = "WHERE 1=1";
         $params = [];
-        
         if ($estado) {
             if (in_array($estado, ['A','S','I'])) {
-                $where .= " AND t.estado = ?";
+                $where .= " AND t.ten_estado = ?";
                 $params[] = $estado;
             }
         }
-        
         if ($plan) {
             if (is_numeric($plan)) {
-                $where .= " AND t.plan_id = ?";
+                $where .= " AND t.ten_plan_id = ?";
                 $params[] = $plan;
             }
         }
-        
         if ($buscar) {
-            $where .= " AND (t.razon_social LIKE ? OR t.nombre_comercial LIKE ? OR t.ruc LIKE ? OR t.email LIKE ?)";
-            $buscarLike = "%$buscar%";
-            $params = array_merge($params, [$buscarLike, $buscarLike, $buscarLike, $buscarLike]);
+            $where .= " AND (t.ten_nombre_comercial LIKE ? OR t.ten_razon_social LIKE ? OR t.ten_ruc LIKE ?)";
+            $params[] = "%$buscar%";
+            $params[] = "%$buscar%";
+            $params[] = "%$buscar%";
         }
+        $countSql = "SELECT COUNT(*) FROM seguridad_tenants t $where";
+        $stmt = $this->db->prepare($countSql);
+        $stmt->execute($params);
+        $total = $stmt->fetchColumn();
+        $sql = "SELECT t.ten_tenant_id, t.ten_ruc, t.ten_razon_social, t.ten_nombre_comercial, t.ten_email, t.ten_telefono, t.ten_direccion, t.ten_usuarios_permitidos, t.ten_estado FROM seguridad_tenants t $where ORDER BY t.ten_fecha_registro DESC LIMIT $porPagina OFFSET $offset";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        $tenants = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        $planes = $this->db->query("SELECT sus_plan_id, sus_nombre FROM seguridad_planes_suscripcion WHERE sus_estado = 'A' ORDER BY sus_nombre")->fetchAll(\PDO::FETCH_ASSOC);
         
-        try {
-            // Log de depuración: SQL y parámetros (solo después de definir $countSql)
-            // Total de registros
-            $countSql = "SELECT COUNT(*) FROM tenants t $where";
-            $stmt = $this->db->prepare($countSql);
-            $stmt->execute($params);
-            $total = $stmt->fetchColumn();
-            
-            // Obtener tenants
-            $sql = "
-                SELECT * FROM tenants t
-                $where
-                ORDER BY t.fecha_registro DESC
-                LIMIT $porPagina OFFSET $offset
-            ";
-            error_log('DEBUG_SQL_TENANTS: ' . $sql);
-            error_log('DEBUG_SQL_PARAMS_TENANTS: ' . print_r($params, true));
-            $stmt = $this->db->prepare($sql);
-            $stmt->execute($params);
-            $tenants = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-            
-            // Obtener planes para filtro
-            $planes = $this->db->query("SELECT plan_id, nombre FROM planes_suscripcion WHERE estado = 'A' ORDER BY nombre")->fetchAll(\PDO::FETCH_ASSOC);
-            
-        } catch (\Exception $e) {
-            $tenants = [];
-            $planes = [];
-            $total = 0;
-        }
         // DEBUG: Log temporal para ver el contenido de $tenants
         error_log('DEBUG_TENANTS: ' . print_r($tenants, true));
         $this->renderModule('seguridad/tenant/index', [
@@ -605,7 +583,8 @@ class TenantController extends \App\Controllers\ModuleController {
                 LEFT JOIN planes_suscripcion p ON t.plan_id = p.plan_id
                 WHERE t.tenant_id = ?
             ");
-            $stmt->execute([$id]);
+                $stmt->execute([$id]);
+                $stmt = $this->db->prepare("SELECT * FROM seguridad_tenants WHERE ten_tenant_id = ?");
             $tenant = $stmt->fetch(\PDO::FETCH_ASSOC);
             
             if (!$tenant) {

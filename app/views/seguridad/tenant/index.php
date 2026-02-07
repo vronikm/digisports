@@ -129,14 +129,14 @@ $totalPaginas = $totalPaginas ?? 1;
                             <tr>
                                 <td>
                                     <strong><?= htmlspecialchars($t['ten_nombre_comercial'] ?: $t['ten_razon_social']) ?></strong>
-                                    <br><small class="text-muted">RUC: <?= $t['ruc'] ?></small>
+                                    <br><small class="text-muted">RUC: <?= $t['ten_ruc'] ?></small>
                                 </td>
                                 <td>
                                     <span class="badge badge-info"><?= htmlspecialchars($t['plan_nombre'] ?? 'Sin plan') ?></span>
                                 </td>
                                 <td>
                                     <i class="fas fa-users mr-1"></i>
-                                    <?= $t['usuarios_count'] ?? 0 ?>/<?= $t['usuarios_permitidos'] ?>
+                                    <?= $t['usuarios_count'] ?? 0 ?>/<?= $t['ten_usuarios_permitidos'] ?>
                                 </td>
                                 <td>
                                     <i class="fas fa-puzzle-piece mr-1"></i>
@@ -177,14 +177,14 @@ $totalPaginas = $totalPaginas ?? 1;
                                 </td>
                                 <td>
                                     <div class="btn-group btn-group-sm">
-                                        <a href="<?= url('seguridad', 'tenant', 'ver', ['id' => $t['tenant_id']]) ?>" class="btn btn-info" title="Ver">
+                                        <a href="<?= url('seguridad', 'tenant', 'ver', ['id' => $t['ten_tenant_id']]) ?>" class="btn btn-info" title="Ver">
                                             <i class="fas fa-eye"></i>
                                         </a>
-                                        <a href="<?= url('seguridad', 'tenant', 'editar', ['id' => $t['tenant_id']]) ?>" class="btn btn-primary" title="Editar">
+                                        <a href="<?= url('seguridad', 'tenant', 'editar', ['id' => $t['ten_tenant_id']]) ?>" class="btn btn-primary" title="Editar">
                                             <i class="fas fa-edit"></i>
                                         </a>
                                         <?php if ($t['ten_estado'] == 'A'): ?>
-                                        <a href="#" class="btn btn-warning btn-suspender" data-url="<?= url('seguridad', 'tenant', 'suspender', ['id' => $t['tenant_id']]) ?>" title="Suspender">
+                                        <a href="#" class="btn btn-warning btn-suspender" data-url="<?= url('seguridad', 'tenant', 'suspender', ['id' => $t['ten_tenant_id']]) ?>" title="Suspender">
                                             <i class="fas fa-pause"></i>
                                         </a>
                                         <?php /* SweetAlert2 para suspender tenant */ ?>

@@ -99,22 +99,27 @@ class DashboardController extends \App\Controllers\ModuleController {
         try {
             // Total tenants
             $stmt = $this->db->query("SELECT COUNT(*) FROM tenants WHERE estado = 'A'");
+            $stmt = $this->db->query("SELECT COUNT(*) FROM seguridad_tenants WHERE ten_estado = 'A'");
             $stats['tenants_activos'] = $stmt->fetchColumn();
             
             // Total usuarios
             $stmt = $this->db->query("SELECT COUNT(*) FROM usuarios WHERE estado = 'A'");
+            $stmt = $this->db->query("SELECT COUNT(*) FROM seguridad_usuarios WHERE usr_estado = 'A'");
             $stats['usuarios_activos'] = $stmt->fetchColumn();
             
             // Total módulos
             $stmt = $this->db->query("SELECT COUNT(*) FROM modulos_sistema WHERE estado = 'A'");
+            $stmt = $this->db->query("SELECT COUNT(*) FROM seguridad_modulos_sistema WHERE sis_estado = 'A'");
             $stats['modulos_activos'] = $stmt->fetchColumn();
             
             // Usuarios online (último login < 30 min)
             $stmt = $this->db->query("SELECT COUNT(*) FROM usuarios WHERE ultimo_login >= DATE_SUB(NOW(), INTERVAL 30 MINUTE)");
+            $stmt = $this->db->query("SELECT COUNT(*) FROM seguridad_usuarios WHERE usr_ultimo_login >= DATE_SUB(NOW(), INTERVAL 30 MINUTE)");
             $stats['usuarios_online'] = $stmt->fetchColumn();
             
             // Intentos de login fallidos hoy
             $stmt = $this->db->query("SELECT COUNT(*) FROM log_accesos WHERE fecha >= CURDATE() AND tipo = 'LOGIN_FAILED'");
+            $stmt = $this->db->query("SELECT COUNT(*) FROM seguridad_log_accesos WHERE acc_fecha >= CURDATE() AND acc_tipo = 'LOGIN_FAILED'");
             $stats['login_fallidos_hoy'] = $stmt->fetchColumn() ?: 0;
             
         } catch (\Exception $e) {
@@ -137,15 +142,19 @@ class DashboardController extends \App\Controllers\ModuleController {
         try {
             // Tenants activos
             $stmt = $this->db->query("SELECT COUNT(*) FROM tenants WHERE estado = 'A'");
+            $stmt = $this->db->query("SELECT COUNT(*) FROM seguridad_tenants WHERE ten_estado = 'A'");
             $tenants = $stmt->fetchColumn();
             // Usuarios totales
             $stmt = $this->db->query("SELECT COUNT(*) FROM usuarios WHERE estado = 'A'");
+            $stmt = $this->db->query("SELECT COUNT(*) FROM seguridad_usuarios WHERE usr_estado = 'A'");
             $usuarios = $stmt->fetchColumn();
             // Módulos del sistema
             $stmt = $this->db->query("SELECT COUNT(*) FROM modulos_sistema WHERE estado = 'A'");
+            $stmt = $this->db->query("SELECT COUNT(*) FROM seguridad_modulos_sistema WHERE sis_estado = 'A'");
             $modulos = $stmt->fetchColumn();
             // Roles definidos
             $stmt = $this->db->query("SELECT COUNT(*) FROM roles WHERE estado = 'A'");
+            $stmt = $this->db->query("SELECT COUNT(*) FROM seguridad_roles WHERE rol_estado = 'A'");
             $roles = $stmt->fetchColumn();
             // Suscripciones por vencer (30 días)
             $stmt = $this->db->query("SELECT COUNT(*) FROM tenants WHERE fecha_vencimiento BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 30 DAY)");

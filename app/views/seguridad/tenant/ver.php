@@ -16,7 +16,7 @@ $actividad = $actividad ?? [];
             <div class="col-sm-6">
                 <h1 class="m-0">
                     <i class="fas fa-building mr-2"></i>
-                    <?= htmlspecialchars($tenant['nombre_comercial'] ?: $tenant['razon_social']) ?>
+                    <?= htmlspecialchars($tenant['nombre_comercial'] ?? $tenant['razon_social'] ?? '-') ?>
                 </h1>
             </div>
             <div class="col-sm-6">
@@ -47,7 +47,7 @@ $actividad = $actividad ?? [];
                             </div>
                         </div>
                         <h3 class="profile-username text-center mt-3">
-                            <?= htmlspecialchars($tenant['nombre_comercial'] ?: $tenant['razon_social']) ?>
+                            <?= htmlspecialchars($tenant['nombre_comercial'] ?? $tenant['razon_social'] ?? '-') ?>
                         </h3>
                         <p class="text-muted text-center">RUC: <?= $tenant['ruc'] ?></p>
                         
@@ -78,7 +78,7 @@ $actividad = $actividad ?? [];
                             </li>
                             <li class="list-group-item">
                                 <b>Usuarios</b>
-                                <span class="float-right"><?= count($usuarios) ?> / <?= $tenant['usuarios_permitidos'] ?></span>
+                                <span class="float-right"><?= count($usuarios) ?> / <?= $tenant['usuarios_permitidos'] ?? '-' ?></span>
                             </li>
                             <li class="list-group-item">
                                 <b>Módulos</b>
@@ -315,10 +315,10 @@ $actividad = $actividad ?? [];
                             <div class="col-md-6">
                                 <dl>
                                     <dt>Razón Social</dt>
-                                    <dd><?= htmlspecialchars($tenant['razon_social']) ?></dd>
+                                    <dd><?= htmlspecialchars($tenant['razon_social'] ?? '-') ?></dd>
                                     
                                     <dt>Nombre Comercial</dt>
-                                    <dd><?= htmlspecialchars($tenant['nombre_comercial'] ?: '-') ?></dd>
+                                    <dd><?= htmlspecialchars($tenant['nombre_comercial'] ?? '-') ?></dd>
                                     
                                     <dt>Representante Legal</dt>
                                     <dd><?= isset($tenant['representante_legal']) ? htmlspecialchars($tenant['representante_legal']) : '-' ?></dd>
@@ -327,13 +327,13 @@ $actividad = $actividad ?? [];
                             <div class="col-md-6">
                                 <dl>
                                     <dt>Email</dt>
-                                    <dd><a href="mailto:<?= $tenant['email'] ?>"><?= htmlspecialchars($tenant['email']) ?></a></dd>
+                                    <dd><a href="mailto:<?= $tenant['email'] ?? '' ?>"><?= htmlspecialchars($tenant['email'] ?? '-') ?></a></dd>
                                     
                                     <dt>Teléfono</dt>
-                                    <dd><?= htmlspecialchars($tenant['telefono'] ?: '-') ?></dd>
+                                    <dd><?= htmlspecialchars($tenant['telefono'] ?? '-') ?></dd>
                                     
                                     <dt>Dirección</dt>
-                                    <dd><?= htmlspecialchars($tenant['direccion'] ?: '-') ?></dd>
+                                    <dd><?= htmlspecialchars($tenant['direccion'] ?? '-') ?></dd>
                                 </dl>
                             </div>
                         </div>

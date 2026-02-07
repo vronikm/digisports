@@ -153,8 +153,8 @@ class ModuloController extends \App\Controllers\ModuleController {
     public function index() {
         $this->authorize('ver', 'modulos');
         try {
-                $modulos = $this->db->query("SELECT * FROM seguridad_modulos ORDER BY mod_orden_visualizacion")
-                ->fetchAll(\PDO::FETCH_ASSOC);
+            $modulos = $this->db->query("SELECT mod_id, mod_codigo, mod_nombre, mod_descripcion, mod_icono, mod_color_fondo, mod_orden, mod_activo, mod_activo AS mod_estado, mod_es_externo, mod_url_externa, mod_ruta_modulo, mod_ruta_controller, mod_ruta_action, mod_requiere_licencia FROM seguridad_modulos ORDER BY mod_orden")
+            ->fetchAll(\PDO::FETCH_ASSOC);
         } catch (\Exception $e) {
             $modulos = [];
         }

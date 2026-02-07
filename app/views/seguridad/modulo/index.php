@@ -31,11 +31,11 @@ $modulos = $modulos ?? [];
     <div class="row g-3 justify-content-center">
         <?php foreach ($modulos as $m) { ?>
         <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
-            <div class="card h-100 d-flex flex-column" style="border-top: 4px solid <?= htmlspecialchars($m['color'] ?? '#F59E0B') ?>;">
+            <div class="card h-100 d-flex flex-column" style="border-top: 4px solid <?= htmlspecialchars($m['mod_color_fondo'] ?? '#F59E0B') ?>;">
                 <div class="card-body text-center flex-grow-1 d-flex flex-column justify-content-between">
                     <div>
                         <div class="mb-3">
-                            <i class="fas <?= !empty($m['mod_icono']) ? $m['mod_icono'] : 'fa-cube' ?> fa-4x" style="color: <?= htmlspecialchars($m['mod_color'] ?? '#F59E0B') ?>;"></i>
+                            <i class="fas <?= !empty($m['mod_icono']) ? $m['mod_icono'] : 'fa-cube' ?> fa-4x" style="color: <?= htmlspecialchars($m['mod_color_fondo'] ?? '#F59E0B') ?>;"></i>
                         </div>
                         <h5 class="card-title" style="color: <?= htmlspecialchars($m['mod_color'] ?? '#F59E0B') ?>;">
                             <?= htmlspecialchars($m['mod_nombre']) ?>
@@ -71,13 +71,13 @@ $modulos = $modulos ?? [];
                         </div>
                     </div>
                     <div class="mt-3 d-flex justify-content-between">
-                        <a href="<?= url('seguridad', 'modulo', 'editar', ['id' => $m['modulo_id']]) ?>" class="btn btn-outline-primary">
+                        <a href="<?= url('seguridad', 'modulo', 'editar', ['id' => $m['mod_id']]) ?>" class="btn btn-outline-primary">
                             <i class="fas fa-edit"></i> Editar
                         </a>
-                        <a href="<?= url('seguridad', 'modulo', 'duplicar', ['id' => $m['modulo_id']]) ?>" class="btn btn-outline-secondary">
+                        <a href="<?= url('seguridad', 'modulo', 'duplicar', ['id' => $m['mod_id']]) ?>" class="btn btn-outline-secondary">
                             <i class="fas fa-copy"></i>
                         </a>
-                        <a href="<?= url('seguridad', 'modulo', 'eliminar', ['id' => $m['modulo_id']]) ?>" class="btn btn-outline-danger" onclick="return confirm('¿Eliminar módulo?')">
+                        <a href="<?= url('seguridad', 'modulo', 'eliminar', ['id' => $m['mod_id']]) ?>" class="btn btn-outline-danger" onclick="return confirm('¿Eliminar módulo?')">
                             <i class="fas fa-trash"></i>
                         </a>
                     </div>
