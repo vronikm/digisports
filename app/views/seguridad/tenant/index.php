@@ -56,8 +56,8 @@ $totalPaginas = $totalPaginas ?? 1;
                                 <select name="plan_id" class="form-control">
                                     <option value="">-- Todos --</option>
                                     <?php foreach ($planes as $p): ?>
-                                    <option value="<?= $p['plan_id'] ?>" <?= ($filtros['plan_id'] ?? '') == $p['plan_id'] ? 'selected' : '' ?>>
-                                        <?= htmlspecialchars($p['nombre']) ?>
+                                    <option value="<?= $p['sus_plan_id'] ?>" <?= ($filtros['plan_id'] ?? '') == $p['sus_plan_id'] ? 'selected' : '' ?>>
+                                        <?= htmlspecialchars($p['sus_nombre']) ?>
                                     </option>
                                     <?php endforeach; ?>
                                 </select>
@@ -144,8 +144,9 @@ $totalPaginas = $totalPaginas ?? 1;
                                 </td>
                                 <td>
                                     <?php 
-                                    $dias = $t['dias_restantes'] ?? 0;
+                                    $dias = isset($t['dias_restantes']) ? (int)$t['dias_restantes'] : 0;
                                     $badgeClass = $dias > 30 ? 'success' : ($dias > 0 ? 'warning' : 'danger');
+                                    $fechaVenc = isset($t['ten_fecha_vencimiento']) && $t['ten_fecha_vencimiento'] ? $t['ten_fecha_vencimiento'] : null;
                                     ?>
                                     <span class="badge badge-<?= $badgeClass ?>">
                                         <?php if ($dias > 0): ?>
@@ -156,22 +157,18 @@ $totalPaginas = $totalPaginas ?? 1;
                                         Vencido (<?= abs($dias) ?>d)
                                         <?php endif; ?>
                                     </span>
-                                    <br><small><?= date('d/m/Y', strtotime($t['ten_fecha_vencimiento'])) ?></small>
+                                    <br><small><?= $fechaVenc ? date('d/m/Y', strtotime($fechaVenc)) : '—' ?></small>
                                 </td>
                                 <td>
                                     <?php 
-                                    $estadoClass = match($t['ten_estado']) {
-                                        'A' => 'success',
-                                        'S' => 'warning',
-                                        'I' => 'secondary',
-                                        default => 'secondary'
-                                    };
-                                    $estadoText = match($t['ten_estado']) {
-                                        'A' => 'Activo',
-                                        'S' => 'Suspendido',
-                                        'I' => 'Inactivo',
-                                        default => 'Desconocido'
-                                    };
+                                    $estadoVal = $t['ten_estado'] ?? '';
+                                    $estadoClass = 'secondary';
+                                    $estadoText = 'Desconocido';
+                                    switch ($estadoVal) {
+                                        case 'A': $estadoClass = 'success'; $estadoText = 'Activo'; break;
+                                        case 'S': $estadoClass = 'warning'; $estadoText = 'Suspendido'; break;
+                                        case 'I': $estadoClass = 'secondary'; $estadoText = 'Inactivo'; break;
+                                    }
                                     ?>
                                     <span class="badge badge-<?= $estadoClass ?>"><?= $estadoText ?></span>
                                 </td>
@@ -240,7 +237,7 @@ $totalPaginas = $totalPaginas ?? 1;
                                         });
                                         </script>
                                         <?php else: ?>
-                                        <a href="#" class="btn btn-success btn-reactivar" data-url="<?= url('seguridad', 'tenant', 'reactivar', ['id' => $t['tenant_id']]) ?>" title="Reactivar">
+                                        <a href="#" class="btn btn-success btn-reactivar" data-url="<?= url('seguridad', 'tenant', 'reactivar', ['id' => $t['ten_tenant_id']]) ?>" title="Reactivar">
                                             <i class="fas fa-play"></i>
                                         </a>
                                         <script>

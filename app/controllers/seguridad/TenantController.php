@@ -388,7 +388,16 @@ class TenantController extends \App\Controllers\ModuleController {
         $stmt = $this->db->prepare($countSql);
         $stmt->execute($params);
         $total = $stmt->fetchColumn();
-        $sql = "SELECT t.ten_tenant_id, t.ten_ruc, t.ten_razon_social, t.ten_nombre_comercial, t.ten_email, t.ten_telefono, t.ten_direccion, t.ten_usuarios_permitidos, t.ten_estado FROM seguridad_tenants t $where ORDER BY t.ten_fecha_registro DESC LIMIT $porPagina OFFSET $offset";
+        $sql = "SELECT t.ten_tenant_id, t.ten_ruc, t.ten_razon_social, t.ten_nombre_comercial, 
+                t.ten_email, t.ten_telefono, t.ten_direccion, t.ten_usuarios_permitidos, 
+                t.ten_estado, t.ten_fecha_vencimiento, t.ten_plan_id,
+                DATEDIFF(t.ten_fecha_vencimiento, CURDATE()) AS dias_restantes,
+                p.sus_nombre AS plan_nombre,
+                (SELECT COUNT(*) FROM seguridad_usuarios u WHERE u.usu_tenant_id = t.ten_tenant_id) AS usuarios_count,
+                (SELECT COUNT(*) FROM seguridad_tenant_modulos tm WHERE tm.tmo_tenant_id = t.ten_tenant_id AND tm.tmo_activo = 'S') AS modulos_count
+                FROM seguridad_tenants t
+                LEFT JOIN seguridad_planes_suscripcion p ON p.sus_plan_id = t.ten_plan_id
+                $where ORDER BY t.ten_fecha_registro DESC LIMIT $porPagina OFFSET $offset";
         $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
         $tenants = $stmt->fetchAll(\PDO::FETCH_ASSOC);
