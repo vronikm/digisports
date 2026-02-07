@@ -82,6 +82,7 @@ class DashboardController extends \App\Controllers\ModuleController {
         $kpis = $this->getKPIs();
         $recentActivity = $this->getRecentActivity();
         $securityAlerts = $this->getSecurityAlerts();
+        $chartData = $this->getChartData();
         
         // Forzar menú de seguridad manualmente
         $this->viewData['menu_items'] = $this->getMenuItems();
@@ -90,6 +91,7 @@ class DashboardController extends \App\Controllers\ModuleController {
             'kpis' => $kpis,
             'recentActivity' => $recentActivity,
             'securityAlerts' => $securityAlerts,
+            'chartData' => $chartData,
             'pageTitle' => 'Panel de Seguridad'
         ]);
     }
@@ -304,6 +306,132 @@ class DashboardController extends \App\Controllers\ModuleController {
         return $alerts;
     }
     
+    /**
+     * Obtener datos para gráficos del dashboard
+     */
+    protected function getChartData($tabla = null, $dias = 7, $campoFecha = 'created_at') {
+        $data = [
+            'logins_semana' => [],
+            'usuarios_por_rol' => [],
+            'actividad_por_hora' => [],
+            'tenants_por_plan' => [],
+            'modulos_mas_usados' => []
+        ];
+
+        try {
+            // Logins de los últimos 7 días (exitosos vs fallidos)
+            $stmt = $this->db->query("
+                SELECT 
+                    DATE(acc_fecha) as fecha,
+                    SUM(CASE WHEN acc_tipo = 'LOGIN' THEN 1 ELSE 0 END) as exitosos,
+                    SUM(CASE WHEN acc_tipo = 'LOGIN_FAILED' THEN 1 ELSE 0 END) as fallidos
+                FROM seguridad_log_accesos
+                WHERE acc_fecha >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)
+                GROUP BY DATE(acc_fecha)
+                ORDER BY fecha ASC
+            ");
+            $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+            // Rellenar los 7 días
+            for ($i = 6; $i >= 0; $i--) {
+                $fecha = date('Y-m-d', strtotime("-$i days"));
+                $label = date('D d', strtotime($fecha));
+                $found = false;
+                foreach ($rows as $r) {
+                    if ($r['fecha'] === $fecha) {
+                        $data['logins_semana'][] = [
+                            'label' => $label,
+                            'exitosos' => (int)$r['exitosos'],
+                            'fallidos' => (int)$r['fallidos']
+                        ];
+                        $found = true;
+                        break;
+                    }
+                }
+                if (!$found) {
+                    $data['logins_semana'][] = ['label' => $label, 'exitosos' => 0, 'fallidos' => 0];
+                }
+            }
+        } catch (\Exception $e) {
+            for ($i = 6; $i >= 0; $i--) {
+                $data['logins_semana'][] = ['label' => date('D d', strtotime("-$i days")), 'exitosos' => 0, 'fallidos' => 0];
+            }
+        }
+
+        try {
+            // Usuarios por rol
+            $stmt = $this->db->query("
+                SELECT r.rol_nombre as rol, COUNT(u.usu_usuario_id) as total
+                FROM seguridad_roles r
+                LEFT JOIN seguridad_usuarios u ON r.rol_rol_id = u.usu_rol_id AND u.usu_estado = 'A'
+                WHERE r.rol_estado = 'A'
+                GROUP BY r.rol_rol_id, r.rol_nombre
+                ORDER BY total DESC
+                LIMIT 6
+            ");
+            $data['usuarios_por_rol'] = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        } catch (\Exception $e) {
+            $data['usuarios_por_rol'] = [];
+        }
+
+        try {
+            // Actividad por hora (últimas 24h)
+            $stmt = $this->db->query("
+                SELECT HOUR(acc_fecha) as hora, COUNT(*) as total
+                FROM seguridad_log_accesos
+                WHERE acc_fecha >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
+                GROUP BY HOUR(acc_fecha)
+                ORDER BY hora ASC
+            ");
+            $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+            $horasMap = array_column($rows, 'total', 'hora');
+            for ($h = 0; $h < 24; $h++) {
+                $data['actividad_por_hora'][] = [
+                    'hora' => sprintf('%02d:00', $h),
+                    'total' => (int)($horasMap[$h] ?? 0)
+                ];
+            }
+        } catch (\Exception $e) {
+            for ($h = 0; $h < 24; $h++) {
+                $data['actividad_por_hora'][] = ['hora' => sprintf('%02d:00', $h), 'total' => 0];
+            }
+        }
+
+        try {
+            // Tenants por plan de suscripción
+            $stmt = $this->db->query("
+                SELECT 
+                    COALESCE(p.sus_nombre, 'Sin plan') as plan_nombre,
+                    COUNT(t.ten_tenant_id) as total
+                FROM seguridad_tenants t
+                LEFT JOIN seguridad_planes_suscripcion p ON t.ten_plan_id = p.sus_plan_id
+                WHERE t.ten_estado = 'A'
+                GROUP BY p.sus_plan_id, p.sus_nombre
+                ORDER BY total DESC
+            ");
+            $data['tenants_por_plan'] = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        } catch (\Exception $e) {
+            $data['tenants_por_plan'] = [];
+        }
+
+        try {
+            // Top módulos más asignados
+            $stmt = $this->db->query("
+                SELECT m.mod_nombre as nombre, COUNT(tm.tmo_tenant_id) as asignaciones
+                FROM seguridad_modulos_sistema m
+                LEFT JOIN seguridad_tenant_modulos tm ON m.mod_modulo_id = tm.tmo_modulo_id AND tm.tmo_activo = 1
+                WHERE m.mod_activo = 1
+                GROUP BY m.mod_modulo_id, m.mod_nombre
+                ORDER BY asignaciones DESC
+                LIMIT 8
+            ");
+            $data['modulos_mas_usados'] = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        } catch (\Exception $e) {
+            $data['modulos_mas_usados'] = [];
+        }
+
+        return $data;
+    }
+
     /**
      * Obtener items del menú
      */
