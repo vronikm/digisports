@@ -174,13 +174,29 @@ class ModuloController extends \App\Controllers\ModuleController {
     public function index() {
         $this->authorize('ver', 'modulos');
         try {
-            $modulos = $this->db->query("SELECT mod_id, mod_codigo, mod_nombre, mod_descripcion, mod_icono, mod_color_fondo, mod_orden, mod_activo, mod_es_externo, mod_url_externa, mod_ruta_modulo, mod_ruta_controller, mod_ruta_action, mod_requiere_licencia FROM seguridad_modulos ORDER BY mod_orden")
-            ->fetchAll(\PDO::FETCH_ASSOC);
+            $modulos = $this->db->query("
+                SELECT m.mod_id, m.mod_codigo, m.mod_nombre, m.mod_descripcion, m.mod_icono, 
+                       m.mod_color_fondo, m.mod_orden, m.mod_activo, m.mod_es_externo, 
+                       m.mod_url_externa, m.mod_ruta_modulo, m.mod_ruta_controller, 
+                       m.mod_ruta_action, m.mod_requiere_licencia,
+                       COALESCE((SELECT COUNT(*) FROM seguridad_tenant_modulos tm 
+                                 WHERE tm.tmo_modulo_id = m.mod_id AND tm.tmo_activo = 1), 0) as mod_tenants_activos
+                FROM seguridad_modulos m 
+                ORDER BY m.mod_orden, m.mod_nombre
+            ")->fetchAll(\PDO::FETCH_ASSOC);
         } catch (\Exception $e) {
             $modulos = [];
         }
+        // Estadísticas generales
+        $statsModulos = [
+            'total' => count($modulos),
+            'activos' => count(array_filter($modulos, fn($m) => $m['mod_activo'])),
+            'externos' => count(array_filter($modulos, fn($m) => $m['mod_es_externo'] == 1)),
+            'con_tenants' => count(array_filter($modulos, fn($m) => ($m['mod_tenants_activos'] ?? 0) > 0))
+        ];
         $this->renderModule('modulo/index', [
             'modulos' => $modulos,
+            'statsModulos' => $statsModulos,
             'pageTitle' => 'Módulos del sistema'
         ]);
     }
