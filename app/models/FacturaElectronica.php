@@ -30,45 +30,45 @@ class FacturaElectronica {
     public function crear($datos) {
         try {
             $sql = "INSERT INTO {$this->table} (
-                tenant_id, factura_id, clave_acceso, tipo_comprobante,
-                establecimiento, punto_emision, secuencial,
-                fecha_emision, cliente_id, cliente_identificacion,
-                cliente_razon_social, subtotal, iva, total,
-                estado_sri, xml_generado, xml_firmado, xml_autorizado,
-                numero_autorizacion, fecha_autorizacion,
+                fac_ten_id, fac_factura_id, fac_clave_acceso, fac_tipo_comprobante,
+                fac_establecimiento, fac_punto_emision, fac_secuencial,
+                fac_fecha_emision, fac_cli_cliente_id, fac_cli_identificacion,
+                fac_cli_razon_social, fac_subtotal, fac_iva, fac_total,
+                fac_estado_sri, fac_xml_generado, fac_xml_firmado, fac_xml_autorizado,
+                fac_numero_autorizacion, fac_fecha_autorizacion,
                 created_at, updated_at
             ) VALUES (
-                :tenant_id, :factura_id, :clave_acceso, :tipo_comprobante,
-                :establecimiento, :punto_emision, :secuencial,
-                :fecha_emision, :cliente_id, :cliente_identificacion,
-                :cliente_razon_social, :subtotal, :iva, :total,
-                :estado_sri, :xml_generado, :xml_firmado, :xml_autorizado,
-                :numero_autorizacion, :fecha_autorizacion,
+                :fac_ten_id, :fac_factura_id, :fac_clave_acceso, :fac_tipo_comprobante,
+                :fac_establecimiento, :fac_punto_emision, :fac_secuencial,
+                :fac_fecha_emision, :fac_cli_cliente_id, :fac_cli_identificacion,
+                :fac_cli_razon_social, :fac_subtotal, :fac_iva, :fac_total,
+                :fac_estado_sri, :fac_xml_generado, :fac_xml_firmado, :fac_xml_autorizado,
+                :fac_numero_autorizacion, :fac_fecha_autorizacion,
                 NOW(), NOW()
             )";
             
             $stmt = $this->db->prepare($sql);
             $stmt->execute([
-                ':tenant_id' => $datos['tenant_id'],
-                ':factura_id' => $datos['factura_id'] ?? null,
-                ':clave_acceso' => $datos['clave_acceso'],
-                ':tipo_comprobante' => $datos['tipo_comprobante'] ?? '01',
-                ':establecimiento' => $datos['establecimiento'] ?? '001',
-                ':punto_emision' => $datos['punto_emision'] ?? '001',
-                ':secuencial' => $datos['secuencial'],
-                ':fecha_emision' => $datos['fecha_emision'],
-                ':cliente_id' => $datos['cliente_id'] ?? null,
-                ':cliente_identificacion' => $datos['cliente_identificacion'],
-                ':cliente_razon_social' => $datos['cliente_razon_social'],
-                ':subtotal' => $datos['subtotal'],
-                ':iva' => $datos['iva'],
-                ':total' => $datos['total'],
-                ':estado_sri' => $datos['estado_sri'] ?? 'PENDIENTE',
-                ':xml_generado' => $datos['xml_generado'] ?? null,
-                ':xml_firmado' => $datos['xml_firmado'] ?? null,
-                ':xml_autorizado' => $datos['xml_autorizado'] ?? null,
-                ':numero_autorizacion' => $datos['numero_autorizacion'] ?? null,
-                ':fecha_autorizacion' => $datos['fecha_autorizacion'] ?? null,
+                ':fac_ten_id' => $datos['fac_ten_id'],
+                ':fac_factura_id' => $datos['fac_factura_id'] ?? null,
+                ':fac_clave_acceso' => $datos['fac_clave_acceso'],
+                ':fac_tipo_comprobante' => $datos['fac_tipo_comprobante'] ?? '01',
+                ':fac_establecimiento' => $datos['fac_establecimiento'] ?? '001',
+                ':fac_punto_emision' => $datos['fac_punto_emision'] ?? '001',
+                ':fac_secuencial' => $datos['fac_secuencial'],
+                ':fac_fecha_emision' => $datos['fac_fecha_emision'],
+                ':fac_cli_cliente_id' => $datos['fac_cli_cliente_id'] ?? null,
+                ':fac_cli_identificacion' => $datos['fac_cli_identificacion'],
+                ':fac_cli_razon_social' => $datos['fac_cli_razon_social'],
+                ':fac_subtotal' => $datos['fac_subtotal'],
+                ':fac_iva' => $datos['fac_iva'],
+                ':fac_total' => $datos['fac_total'],
+                ':fac_estado_sri' => $datos['fac_estado_sri'] ?? 'PENDIENTE',
+                ':fac_xml_generado' => $datos['fac_xml_generado'] ?? null,
+                ':fac_xml_firmado' => $datos['fac_xml_firmado'] ?? null,
+                ':fac_xml_autorizado' => $datos['fac_xml_autorizado'] ?? null,
+                ':fac_numero_autorizacion' => $datos['fac_numero_autorizacion'] ?? null,
+                ':fac_fecha_autorizacion' => $datos['fac_fecha_autorizacion'] ?? null,
             ]);
             
             return $this->db->lastInsertId();
@@ -117,7 +117,7 @@ class FacturaElectronica {
                 $params[':mensaje_error'] = $datos['mensaje_error'];
             }
             
-            $sql = "UPDATE {$this->table} SET " . implode(', ', $campos) . " WHERE id = :id";
+                    $sql = "UPDATE {$this->table} SET " . implode(', ', $campos) . " WHERE fac_id = :id";
             $stmt = $this->db->prepare($sql);
             
             return $stmt->execute($params);
@@ -136,7 +136,7 @@ class FacturaElectronica {
      */
     public function obtenerPorClaveAcceso($claveAcceso) {
         try {
-            $stmt = $this->db->prepare("SELECT * FROM {$this->table} WHERE clave_acceso = ?");
+                    $stmt = $this->db->prepare("SELECT * FROM {$this->table} WHERE fac_clave_acceso = ?");
             $stmt->execute([$claveAcceso]);
             return $stmt->fetch(\PDO::FETCH_ASSOC) ?: null;
         } catch (\PDOException $e) {
@@ -152,7 +152,7 @@ class FacturaElectronica {
      */
     public function obtenerPorId($id) {
         try {
-            $stmt = $this->db->prepare("SELECT * FROM {$this->table} WHERE id = ?");
+                    $stmt = $this->db->prepare("SELECT * FROM {$this->table} WHERE fac_id = ?");
             $stmt->execute([$id]);
             return $stmt->fetch(\PDO::FETCH_ASSOC) ?: null;
         } catch (\PDOException $e) {
@@ -171,7 +171,7 @@ class FacturaElectronica {
      */
     public function listar($tenantId, $filtros = [], $limite = 50, $offset = 0) {
         try {
-            $where = ['tenant_id = :tenant_id'];
+                    $where = ['fac_ten_id = :fac_ten_id'];
             $params = [':tenant_id' => $tenantId];
             
             if (!empty($filtros['estado_sri'])) {
@@ -223,7 +223,7 @@ class FacturaElectronica {
      */
     public function contar($tenantId, $filtros = []) {
         try {
-            $where = ['tenant_id = :tenant_id'];
+                    $where = ['fac_ten_id = :fac_ten_id'];
             $params = [':tenant_id' => $tenantId];
             
             if (!empty($filtros['estado_sri'])) {
@@ -262,7 +262,7 @@ class FacturaElectronica {
     public function obtenerPendientes($tenantId, $limite = 100) {
         try {
             $sql = "SELECT * FROM {$this->table} 
-                    WHERE tenant_id = ? 
+                            WHERE fac_ten_id = ? 
                     AND estado_sri IN ('PENDIENTE', 'RECIBIDA', 'EN_PROCESO')
                     ORDER BY created_at ASC
                     LIMIT ?";
@@ -326,12 +326,7 @@ class FacturaElectronica {
      */
     public function obtenerUltima($tenantId) {
         try {
-            $stmt = $this->db->prepare("
-                SELECT * FROM {$this->table}
-                WHERE tenant_id = ?
-                ORDER BY id DESC
-                LIMIT 1
-            ");
+                    $stmt = $this->db->prepare("SELECT * FROM {$this->table} WHERE fac_ten_id = ? ORDER BY fac_id DESC LIMIT 1");
             $stmt->execute([$tenantId]);
             return $stmt->fetch(\PDO::FETCH_ASSOC) ?: null;
         } catch (\PDOException $e) {

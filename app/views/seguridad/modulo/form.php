@@ -36,47 +36,47 @@ $esEdicion = !empty($modulo);
                             <div class="row">
                                 <div class="col-md-4">
                                     <div class="form-group">
-                                        <label>Código <span class="text-danger">*</span></label>
-                                        <input type="text" name="codigo" class="form-control" required
-                                               value="<?= htmlspecialchars($modulo['codigo'] ?? '') ?>"
-                                               style="text-transform: uppercase;">
-                                        <small class="text-muted">Identificador único (ej: FUTBOL, STORE)</small>
+                                             <label>Código <span class="text-danger">*</span></label>
+                                             <input type="text" name="mod_codigo" class="form-control" required
+                                                 value="<?= htmlspecialchars($modulo['mod_codigo'] ?? '') ?>"
+                                                 style="text-transform: uppercase;">
+                                             <small class="text-muted">Identificador único (ej: FUTBOL, STORE)</small>
                                     </div>
                                 </div>
                                 <div class="col-md-8">
                                     <div class="form-group">
-                                        <label>Nombre <span class="text-danger">*</span></label>
-                                        <input type="text" name="nombre" class="form-control" required
-                                               value="<?= htmlspecialchars($modulo['nombre'] ?? '') ?>">
+                                             <label>Nombre <span class="text-danger">*</span></label>
+                                             <input type="text" name="mod_nombre" class="form-control" required
+                                                 value="<?= htmlspecialchars($modulo['mod_nombre'] ?? '') ?>">
                                     </div>
                                 </div>
                             </div>
                             <div class="form-group">
                                 <label>Descripción</label>
-                                <textarea name="descripcion" class="form-control" rows="3"><?= htmlspecialchars($modulo['descripcion'] ?? '') ?></textarea>
+                                <textarea name="mod_descripcion" class="form-control" rows="3"><?= htmlspecialchars($modulo['mod_descripcion'] ?? '') ?></textarea>
                             </div>
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label>URL Base</label>
-                                        <input type="text" name="url_base" class="form-control"
-                                               value="<?= htmlspecialchars($modulo['url_base'] ?? '') ?>"
-                                               placeholder="/modulo/">
+                                             <label>URL Base</label>
+                                             <input type="text" name="mod_url_base" class="form-control"
+                                                 value="<?= htmlspecialchars($modulo['mod_url_base'] ?? '') ?>"
+                                                 placeholder="/modulo/">
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="form-group">
-                                        <label>Orden</label>
-                                        <input type="number" name="orden_visualizacion" class="form-control"
-                                               value="<?= $modulo['orden_visualizacion'] ?? 0 ?>">
+                                             <label>Orden</label>
+                                             <input type="number" name="mod_orden_visualizacion" class="form-control"
+                                                 value="<?= $modulo['mod_orden_visualizacion'] ?? 0 ?>">
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="form-group">
                                         <label>Estado</label>
-                                        <select name="estado" class="form-control">
-                                            <option value="A" <?= ($modulo['estado'] ?? 'A') == 'A' ? 'selected' : '' ?>>Activo</option>
-                                            <option value="I" <?= ($modulo['estado'] ?? '') == 'I' ? 'selected' : '' ?>>Inactivo</option>
+                                        <select name="mod_estado" class="form-control">
+                                            <option value="A" <?= ($modulo['mod_estado'] ?? 'A') == 'A' ? 'selected' : '' ?>>Activo</option>
+                                            <option value="I" <?= ($modulo['mod_estado'] ?? '') == 'I' ? 'selected' : '' ?>>Inactivo</option>
                                         </select>
                                     </div>
                                 </div>
@@ -92,26 +92,26 @@ $esEdicion = !empty($modulo);
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 <div class="custom-control custom-switch">
-                                                    <input type="checkbox" class="custom-control-input" id="es_externo" name="es_externo"
-                                                           <?= ($modulo['es_externo'] ?? 'N') == 'S' ? 'checked' : '' ?>>
-                                                    <label class="custom-control-label" for="es_externo">Es Sistema Externo</label>
+                                                       <input type="checkbox" class="custom-control-input" id="mod_es_externo" name="mod_es_externo"
+                                                           <?= ($modulo['mod_es_externo'] ?? 'N') == 'S' ? 'checked' : '' ?>>
+                                                       <label class="custom-control-label" for="mod_es_externo">Es Sistema Externo</label>
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                <label>Base de Datos Externa</label>
-                                                <input type="text" name="base_datos_externa" class="form-control"
-                                                       value="<?= htmlspecialchars($modulo['base_datos_externa'] ?? '') ?>"
-                                                       placeholder="digisports_legacy">
+                                                      <label>Base de Datos Externa</label>
+                                                      <input type="text" name="mod_base_datos_externa" class="form-control"
+                                                          value="<?= htmlspecialchars($modulo['mod_base_datos_externa'] ?? '') ?>"
+                                                          placeholder="digisports_legacy">
                                             </div>
                                         </div>
                                     </div>
                                     <div class="form-group mb-0">
                                         <div class="custom-control custom-switch">
-                                            <input type="checkbox" class="custom-control-input" id="requiere_suscripcion" name="requiere_suscripcion"
-                                                   <?= ($modulo['requiere_suscripcion'] ?? 'S') == 'S' ? 'checked' : '' ?>>
-                                            <label class="custom-control-label" for="requiere_suscripcion">Requiere Suscripción</label>
+                                              <input type="checkbox" class="custom-control-input" id="mod_requiere_suscripcion" name="mod_requiere_suscripcion"
+                                                  <?= ($modulo['mod_requiere_suscripcion'] ?? 'S') == 'S' ? 'checked' : '' ?>>
+                                              <label class="custom-control-label" for="mod_requiere_suscripcion">Requiere Suscripción</label>
                                         </div>
                                     </div>
                                 </div>
@@ -128,11 +128,11 @@ $esEdicion = !empty($modulo);
                         </div>
                         <div class="card-body text-center" id="preview-card">
                             <div class="mb-3">
-                                <i class="fas <?= $modulo['icono'] ?? 'fa-puzzle-piece' ?> fa-5x" id="preview-icon"
-                                   style="color: <?= $modulo['color'] ?? '#007bff' ?>;"></i>
+                                <i class="fas <?= $modulo['mod_icono'] ?? 'fa-puzzle-piece' ?> fa-5x" id="preview-icon"
+                                   style="color: <?= $modulo['mod_color'] ?? '#007bff' ?>;"></i>
                             </div>
-                            <h4 id="preview-nombre"><?= htmlspecialchars($modulo['nombre'] ?? 'Nombre del Módulo') ?></h4>
-                            <span class="badge badge-light" id="preview-codigo"><?= $modulo['codigo'] ?? 'CODIGO' ?></span>
+                            <h4 id="preview-nombre"><?= htmlspecialchars($modulo['mod_nombre'] ?? 'Nombre del Módulo') ?></h4>
+                            <span class="badge badge-light" id="preview-codigo"><?= $modulo['mod_codigo'] ?? 'CODIGO' ?></span>
                         </div>
                     </div>
                     
@@ -142,7 +142,7 @@ $esEdicion = !empty($modulo);
                             <h3 class="card-title"><i class="fas fa-icons mr-2"></i>Icono</h3>
                         </div>
                         <div class="card-body">
-                            <input type="hidden" name="icono" id="icono-input" value="<?= $modulo['icono'] ?? 'fa-puzzle-piece' ?>">
+                            <input type="hidden" name="mod_icono" id="icono-input" value="<?= $modulo['mod_icono'] ?? 'fa-puzzle-piece' ?>">
                             <div class="icon-selector" style="max-height: 200px; overflow-y: auto;">
                                 <?php foreach ($iconos as $categoria => $icons): ?>
                                 <small class="text-muted d-block mt-2 mb-1"><?= $categoria ?></small>
@@ -163,7 +163,7 @@ $esEdicion = !empty($modulo);
                             <h3 class="card-title"><i class="fas fa-palette mr-2"></i>Color</h3>
                         </div>
                         <div class="card-body">
-                            <input type="hidden" name="color" id="color-input" value="<?= $modulo['color'] ?? '#007bff' ?>">
+                            <input type="hidden" name="mod_color" id="color-input" value="<?= $modulo['mod_color'] ?? '#007bff' ?>">
                             <div class="color-selector">
                                 <?php foreach ($colores as $hex => $nombre): ?>
                                 <button type="button" class="btn m-1 color-btn <?= ($modulo['color'] ?? '#007bff') == $hex ? 'active' : '' ?>"
@@ -176,8 +176,8 @@ $esEdicion = !empty($modulo);
                                 <?php endforeach; ?>
                             </div>
                             <div class="mt-2">
-                                <input type="color" id="color-custom" class="form-control form-control-sm" 
-                                       value="<?= $modulo['color'] ?? '#007bff' ?>" style="width: 100px;">
+                                    <input type="color" id="color-custom" class="form-control form-control-sm" 
+                                        value="<?= $modulo['mod_color'] ?? '#007bff' ?>" style="width: 100px;">
                                 <small class="text-muted">Color personalizado</small>
                             </div>
                         </div>

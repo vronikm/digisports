@@ -372,24 +372,32 @@ $title = $title ?? 'DigiSports Hub';
         
         <!-- Grid de módulos -->
         <div class="modules-grid">
+            <pre style="background:#fff;color:#333;padding:10px;border-radius:6px;margin-bottom:20px;max-height:200px;overflow:auto;">DEBUG MODULOS:
+    <?= print_r($modulos, true) ?>
+    </pre>
             <?php foreach ($modulos as $modulo): 
                 // Generar URL encriptada para cada módulo
-                $urlModulo = url('core', 'hub', 'acceder', ['modulo' => $modulo['codigo']]);
-                $iconClass = trim($modulo['icono']);
+                $codigo = isset($modulo['codigo']) ? $modulo['codigo'] : '';
+                $urlModulo = url('core', 'hub', 'acceder', ['modulo' => $codigo]);
+                $icono = isset($modulo['icono']) ? $modulo['icono'] : '';
+                $iconClass = trim((string)$icono);
                 // Forzar siempre el prefijo 'fas' para FontAwesome 5
                 if (strpos($iconClass, 'fas ') !== 0 && strpos($iconClass, 'fa-') === 0) {
                     $iconClass = 'fas ' . $iconClass;
                 }
+                $color = isset($modulo['color_fondo']) ? $modulo['color_fondo'] : '#1e40af';
+                $nombre = isset($modulo['nombre']) ? $modulo['nombre'] : 'Módulo';
+                $descripcion = isset($modulo['descripcion']) ? $modulo['descripcion'] : '';
             ?>
             <div class="module-card" 
-                 style="--module-color: <?= htmlspecialchars($modulo['color_fondo']) ?>;"
-                 data-url="<?= htmlspecialchars($urlModulo) ?>"
+                 style="--module-color: <?= htmlspecialchars((string)$color) ?>;"
+                 data-url="<?= htmlspecialchars((string)$urlModulo) ?>"
                  onclick="accederModulo(this)">
-                <div class="module-icon" style="background: <?= htmlspecialchars($modulo['color_fondo']) ?>;">
-                    <i class="<?= htmlspecialchars($iconClass) ?>"></i>
+                <div class="module-icon" style="background: <?= htmlspecialchars((string)$color) ?>;">
+                    <i class="<?= htmlspecialchars((string)$iconClass) ?>"></i>
                 </div>
-                <h3 class="module-name"><?= htmlspecialchars($modulo['nombre']) ?></h3>
-                <p class="module-description"><?= htmlspecialchars($modulo['descripcion']) ?></p>
+                <h3 class="module-name"><?= htmlspecialchars((string)$nombre) ?></h3>
+                <p class="module-description"><?= htmlspecialchars((string)$descripcion) ?></p>
             </div>
             <?php endforeach; ?>
         </div>

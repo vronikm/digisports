@@ -11,6 +11,7 @@ namespace App\Controllers\Core;
 
 require_once BASE_PATH . '/app/controllers/BaseController.php';
 require_once BASE_PATH . '/config/security.php';
+require_once BASE_PATH . '/config/app.php';
 
 class AuthController extends \BaseController {
     
@@ -99,19 +100,18 @@ class AuthController extends \BaseController {
             $stmt = $this->db->prepare("
                 SELECT 
                     u.*,
-                    t.estado_suscripcion,
-                    t.fecha_vencimiento,
-                    r.codigo as rol_codigo,
-                    r.permisos,
-                    r.nivel_acceso
-                FROM usuarios u
-                INNER JOIN tenants t ON u.tenant_id = t.tenant_id
-                INNER JOIN roles r ON u.rol_id = r.rol_id
-                WHERE (u.username = ? OR u.email = ?)
-                AND u.estado = 'A'
-                AND t.estado IN ('ACTIVO', 'PRUEBA', 'A')
+                    t.ten_estado_suscripcion,
+                    t.ten_fecha_vencimiento,
+                    r.rol_codigo,
+                    r.rol_permisos,
+                    r.rol_nivel_acceso
+                FROM seguridad_usuarios u
+                INNER JOIN seguridad_tenants t ON u.usu_tenant_id = t.ten_tenant_id
+                INNER JOIN seguridad_roles r ON u.usu_rol_id = r.rol_rol_id
+                WHERE (u.usu_username = ? OR u.usu_email = ?)
+                AND u.usu_estado = 'A'
+                AND t.ten_estado IN ('A', 'ACTIVO', 'PRUEBA')
             ");
-            
             $stmt->execute([$username, $username]);
             $user = $stmt->fetch();
             
@@ -120,19 +120,19 @@ class AuthController extends \BaseController {
             }
             
             // Verificar si está bloqueado
-            if ($user['bloqueado_hasta'] && strtotime($user['bloqueado_hasta']) > time()) {
-                $tiempoRestante = ceil((strtotime($user['bloqueado_hasta']) - time()) / 60);
+            if ($user['usu_bloqueado_hasta'] && strtotime($user['usu_bloqueado_hasta']) > time()) {
+                $tiempoRestante = ceil((strtotime($user['usu_bloqueado_hasta']) - time()) / 60);
                 $this->handleFailedLogin($username, "Usuario bloqueado. Intente en {$tiempoRestante} minutos");
             }
             
             // Verificar contraseña
-            if (!\Security::verifyPassword($password, $user['password'])) {
-                $this->handleFailedLogin($username, 'Contraseña incorrecta', $user['usuario_id']);
+            if (!\Security::verifyPassword($password, $user['usu_password'])) {
+                $this->handleFailedLogin($username, 'Contraseña incorrecta', $user['usu_usuario_id']);
             }
             
             // Verificar expiración de contraseña
-            if ($user['password_expira'] && strtotime($user['password_expira']) < time()) {
-                $_SESSION['temp_user_id'] = $user['usuario_id'];
+            if ($user['usu_password_expira'] && strtotime($user['usu_password_expira']) < time()) {
+                $_SESSION['temp_user_id'] = $user['usu_usuario_id'];
                 $_SESSION['debe_cambiar_password'] = true;
                 $this->success([
                     'require_password_change' => true,
@@ -141,7 +141,7 @@ class AuthController extends \BaseController {
             }
             
             // Verificar si requiere 2FA
-            if ($user['requiere_2fa'] === 'S') {
+            if ($user['usu_requiere_2fa'] === 'S') {
                 $this->initiate2FA($user);
             } else {
                 // Login directo sin 2FA
@@ -164,15 +164,14 @@ class AuthController extends \BaseController {
         if ($userId) {
             // Incrementar intentos fallidos
             $stmt = $this->db->prepare("
-                UPDATE usuarios 
-                SET intentos_fallidos = intentos_fallidos + 1,
-                    bloqueado_hasta = CASE 
-                        WHEN intentos_fallidos >= 4 THEN DATE_ADD(NOW(), INTERVAL 15 MINUTE)
-                        ELSE bloqueado_hasta
+                UPDATE seguridad_usuarios 
+                SET usu_intentos_fallidos = usu_intentos_fallidos + 1,
+                    usu_bloqueado_hasta = CASE 
+                        WHEN usu_intentos_fallidos >= 4 THEN DATE_ADD(NOW(), INTERVAL 15 MINUTE)
+                        ELSE usu_bloqueado_hasta
                     END
-                WHERE usuario_id = ?
+                WHERE usu_usuario_id = ?
             ");
-            
             $stmt->execute([$userId]);
         }
         
@@ -189,20 +188,19 @@ class AuthController extends \BaseController {
         
         // Guardar código en BD
         $stmt = $this->db->prepare("
-            UPDATE usuarios 
-            SET codigo_2fa = ?,
-                codigo_2fa_expira = ?,
-                intentos_2fa = 0
-            WHERE usuario_id = ?
+            UPDATE seguridad_usuarios 
+            SET usu_codigo_2fa = ?,
+                usu_codigo_2fa_expira = ?,
+                usu_intentos_2fa = 0
+            WHERE usu_usuario_id = ?
         ");
-        
-        $stmt->execute([$codigo, $expira, $user['usuario_id']]);
+        $stmt->execute([$codigo, $expira, $user['usu_usuario_id']]);
         
         // Enviar código por email
-        $this->send2FAEmail($user['email'], $codigo, $user['nombres']);
+        $this->send2FAEmail($user['usu_email'], $codigo, $user['usu_nombres']);
         
         // Guardar temporalmente el usuario en sesión
-        $_SESSION['temp_user_id'] = $user['usuario_id'];
+        $_SESSION['temp_user_id'] = $user['usu_usuario_id'];
         $_SESSION['temp_2fa_required'] = true;
         
         $this->success([
@@ -249,14 +247,13 @@ class AuthController extends \BaseController {
             $stmt = $this->db->prepare("
                 SELECT 
                     u.*,
-                    r.codigo as rol_codigo,
-                    r.permisos,
-                    r.nivel_acceso
-                FROM usuarios u
-                INNER JOIN roles r ON u.rol_id = r.rol_id
-                WHERE u.usuario_id = ?
+                    r.rol_codigo,
+                    r.rol_permisos,
+                    r.rol_nivel_acceso
+                FROM seguridad_usuarios u
+                INNER JOIN seguridad_roles r ON u.usu_rol_id = r.rol_rol_id
+                WHERE u.usu_usuario_id = ?
             ");
-            
             $stmt->execute([$_SESSION['temp_user_id']]);
             $user = $stmt->fetch();
             
@@ -265,21 +262,21 @@ class AuthController extends \BaseController {
             }
             
             // Verificar código
-            if ($user['codigo_2fa'] !== $codigo) {
+            if ($user['usu_codigo_2fa'] !== $codigo) {
                 // Incrementar intentos
                 $this->db->prepare("
-                    UPDATE usuarios 
-                    SET intentos_2fa = intentos_2fa + 1 
-                    WHERE usuario_id = ?
-                ")->execute([$user['usuario_id']]);
+                    UPDATE seguridad_usuarios 
+                    SET usu_intentos_2fa = usu_intentos_2fa + 1 
+                    WHERE usu_usuario_id = ?
+                ")->execute([$user['usu_usuario_id']]);
                 
                 // Si supera 3 intentos, bloquear
-                if ($user['intentos_2fa'] >= 2) {
+                if ($user['usu_intentos_2fa'] >= 2) {
                     $this->db->prepare("
-                        UPDATE usuarios 
-                        SET bloqueado_hasta = DATE_ADD(NOW(), INTERVAL 15 MINUTE)
-                        WHERE usuario_id = ?
-                    ")->execute([$user['usuario_id']]);
+                        UPDATE seguridad_usuarios 
+                        SET usu_bloqueado_hasta = DATE_ADD(NOW(), INTERVAL 15 MINUTE)
+                        WHERE usu_usuario_id = ?
+                    ")->execute([$user['usu_usuario_id']]);
                     
                     unset($_SESSION['temp_user_id']);
                     unset($_SESSION['temp_2fa_required']);
@@ -287,11 +284,11 @@ class AuthController extends \BaseController {
                     $this->error('Demasiados intentos fallidos. Usuario bloqueado por 15 minutos', 403);
                 }
                 
-                $this->error('Código incorrecto. Intento ' . ($user['intentos_2fa'] + 1) . ' de 3');
+                $this->error('Código incorrecto. Intento ' . ($user['usu_intentos_2fa'] + 1) . ' de 3');
             }
             
             // Verificar expiración
-            if (strtotime($user['codigo_2fa_expira']) < time()) {
+            if (strtotime($user['usu_codigo_2fa_expira']) < time()) {
                 $this->error('El código ha expirado. Solicite uno nuevo');
             }
             
@@ -316,7 +313,7 @@ class AuthController extends \BaseController {
         }
         
         try {
-            $stmt = $this->db->prepare("SELECT * FROM usuarios WHERE usuario_id = ?");
+            $stmt = $this->db->prepare("SELECT * FROM core_usuarios WHERE usuario_id = ?");
             $stmt->execute([$_SESSION['temp_user_id']]);
             $user = $stmt->fetch();
             
@@ -329,12 +326,11 @@ class AuthController extends \BaseController {
             $expira = date('Y-m-d H:i:s', strtotime('+10 minutes'));
             
             $stmt = $this->db->prepare("
-                UPDATE usuarios 
+                UPDATE core_usuarios 
                 SET codigo_2fa = ?,
                     codigo_2fa_expira = ?
                 WHERE usuario_id = ?
             ");
-            
             $stmt->execute([$codigo, $expira, $user['usuario_id']]);
             
             // Enviar email
@@ -355,19 +351,18 @@ class AuthController extends \BaseController {
         try {
             // Resetear intentos fallidos
             $stmt = $this->db->prepare("
-                UPDATE usuarios 
-                SET intentos_fallidos = 0,
-                    bloqueado_hasta = NULL,
-                    ultimo_login = NOW(),
-                    ip_ultimo_login = ?,
-                    debe_cambiar_password = 'N'
-                WHERE usuario_id = ?
+                UPDATE seguridad_usuarios 
+                SET usu_intentos_fallidos = 0,
+                    usu_bloqueado_hasta = NULL,
+                    usu_ultimo_login = NOW(),
+                    usu_ip_ultimo_login = ?,
+                    usu_debe_cambiar_password = 'N'
+                WHERE usu_usuario_id = ?
             ");
-            
-            $stmt->execute([$_SERVER['REMOTE_ADDR'] ?? 'UNKNOWN', $user['usuario_id']]);
+            $stmt->execute([$_SERVER['REMOTE_ADDR'] ?? 'UNKNOWN', $user['usu_usuario_id']]);
             
             // Cargar permisos y módulos
-            $permisos = json_decode($user['permisos'], true) ?? [];
+            $permisos = json_decode($user['rol_permisos'], true) ?? [];
             $modulos = $this->getUserModules($user['tenant_id']);
             
             // Iniciar sesión segura
@@ -378,18 +373,18 @@ class AuthController extends \BaseController {
             session_regenerate_id(true);
             
             // Variables de sesión
-            $_SESSION['user_id'] = (int)$user['usuario_id'];
-            $_SESSION['tenant_id'] = (int)$user['tenant_id'];
-            $_SESSION['rol_id'] = isset($user['rol_id']) ? (int)$user['rol_id'] : null;
-            $_SESSION['username'] = $user['username'];
-            $_SESSION['nombres'] = $user['nombres'];
-            $_SESSION['apellidos'] = $user['apellidos'];
-            $_SESSION['email'] = $user['email'];
+            $_SESSION['user_id'] = (int)$user['usu_usuario_id'];
+            $_SESSION['tenant_id'] = (int)$user['usu_tenant_id'];
+            $_SESSION['rol_id'] = isset($user['usu_rol_id']) ? (int)$user['usu_rol_id'] : null;
+            $_SESSION['username'] = $user['usu_username'];
+            $_SESSION['nombres'] = $user['usu_nombres'];
+            $_SESSION['apellidos'] = $user['usu_apellidos'];
+            $_SESSION['email'] = $user['usu_email'];
             $_SESSION['role'] = $user['rol_codigo'];
             $_SESSION['permissions'] = $permisos;
             $_SESSION['modules'] = $modulos;
-            $_SESSION['avatar'] = $user['avatar'] ?? null;
-            $_SESSION['nivel_acceso'] = $user['nivel_acceso'] ?? 1;
+            $_SESSION['avatar'] = $user['usu_avatar'] ?? null;
+            $_SESSION['nivel_acceso'] = $user['rol_nivel_acceso'] ?? 1;
             $_SESSION['created_at'] = time();
             $_SESSION['LAST_ACTIVITY'] = time();
             
@@ -399,13 +394,13 @@ class AuthController extends \BaseController {
                 $expira = date('Y-m-d H:i:s', strtotime('+30 days'));
                 
                 $stmt = $this->db->prepare("
-                    UPDATE usuarios 
-                    SET token_sesion = ?,
-                        token_sesion_expira = ?
-                    WHERE usuario_id = ?
+                    UPDATE seguridad_usuarios 
+                    SET usu_token_sesion = ?,
+                        usu_token_sesion_expira = ?
+                    WHERE usu_usuario_id = ?
                 ");
                 
-                $stmt->execute([$token, $expira, $user['usuario_id']]);
+                $stmt->execute([$token, $expira, $user['usu_usuario_id']]);
                 
                 setcookie(
                     'remember_token',
@@ -463,29 +458,14 @@ class AuthController extends \BaseController {
         try {
             // Primero intentar con la nueva tabla 'modulos'
             $stmt = $this->db->prepare("
-                SELECT m.codigo 
-                FROM modulos m
-                INNER JOIN tenant_modulos tm ON m.id = tm.modulo_id
-                WHERE tm.tenant_id = ? AND tm.estado = 'ACTIVO'
+                SELECT m.mod_codigo 
+                FROM seguridad_modulos m
+                INNER JOIN seguridad_tenant_modulos tm ON m.mod_id = tm.tmo_modulo_id
+                WHERE tm.tmo_tenant_id = ? AND tm.tmo_activo = 'S'
             ");
-            
             $stmt->execute([$tenantId]);
-            $modulos = array_column($stmt->fetchAll(), 'codigo');
-            
-            if (!empty($modulos)) {
-                return $modulos;
-            }
-            
-            // Fallback: intentar con modulos_sistema (tabla antigua)
-            $stmt = $this->db->prepare("
-                SELECT m.codigo 
-                FROM modulos_sistema m
-                INNER JOIN tenant_modulos tm ON m.modulo_id = tm.modulo_id
-                WHERE tm.tenant_id = ? AND tm.estado = 'ACTIVO'
-            ");
-            
-            $stmt->execute([$tenantId]);
-            return array_column($stmt->fetchAll(), 'codigo');
+            $modulos = array_column($stmt->fetchAll(), 'mod_codigo');
+            return $modulos;
             
         } catch (\Exception $e) {
             // Si hay error, devolver array vacío en lugar de fallar

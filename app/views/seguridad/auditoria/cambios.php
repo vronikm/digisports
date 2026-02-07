@@ -26,12 +26,12 @@
         <tbody>
             <?php foreach ($logs as $log): ?>
             <tr>
-                <td><?= htmlspecialchars($log['fecha'] ?? '') ?></td>
-                <td><?= htmlspecialchars($log['usuario'] ?? '') ?></td>
-                <td><?= htmlspecialchars($log['entidad'] ?? '') ?></td>
-                <td><?= htmlspecialchars($log['accion'] ?? '') ?></td>
-                <td><pre><?= htmlspecialchars($log['antes'] ?? '') ?></pre></td>
-                <td><pre><?= htmlspecialchars($log['despues'] ?? '') ?></pre></td>
+                <td><?= htmlspecialchars($log['aud_fecha'] ?? '') ?></td>
+                <td><?= htmlspecialchars($log['aud_usuario'] ?? '') ?></td>
+                <td><?= htmlspecialchars($log['aud_entidad'] ?? '') ?></td>
+                <td><?= htmlspecialchars($log['aud_accion'] ?? '') ?></td>
+                <td><pre><?= htmlspecialchars($log['aud_antes'] ?? '') ?></pre></td>
+                <td><pre><?= htmlspecialchars($log['aud_despues'] ?? '') ?></pre></td>
             </tr>
             <?php endforeach; ?>
         </tbody>

@@ -41,15 +41,15 @@ class TenantController extends \App\Controllers\ModuleController {
                     // Obtener destinatarios según tipo
                     if ($tipo === 'por_vencer') {
                         $stmt = $this->db->query("
-                            SELECT tenant_id, email, nombre_comercial, razon_social, fecha_vencimiento
-                            FROM tenants
-                            WHERE estado = 'A' AND fecha_vencimiento BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 7 DAY)
+                            SELECT ten_id, ten_email, ten_nombre_comercial, ten_razon_social, ten_fecha_vencimiento
+                            FROM core_tenants
+                            WHERE ten_estado = 'A' AND ten_fecha_vencimiento BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 7 DAY)
                         ");
                     } else {
                         $stmt = $this->db->query("
-                            SELECT tenant_id, email, nombre_comercial, razon_social, fecha_vencimiento
-                            FROM tenants
-                            WHERE fecha_vencimiento < CURDATE()
+                            SELECT ten_id, ten_email, ten_nombre_comercial, ten_razon_social, ten_fecha_vencimiento
+                            FROM core_tenants
+                            WHERE ten_fecha_vencimiento < CURDATE()
                         ");
                     }
                     $destinatarios = $stmt->fetchAll(\PDO::FETCH_ASSOC);

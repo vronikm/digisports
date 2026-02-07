@@ -125,180 +125,180 @@ $totalPaginas = $totalPaginas ?? 1;
                             </td>
                         </tr>
                         <?php else: ?>
-                        <?php foreach ($tenants as $t): ?>
-                        <tr>
-                            <td>
-                                <strong><?= htmlspecialchars($t['nombre_comercial'] ?: $t['razon_social']) ?></strong>
-                                <br><small class="text-muted">RUC: <?= $t['ruc'] ?></small>
-                            </td>
-                            <td>
-                                <span class="badge badge-info"><?= htmlspecialchars($t['plan_nombre'] ?? 'Sin plan') ?></span>
-                            </td>
-                            <td>
-                                <i class="fas fa-users mr-1"></i>
-                                <?= $t['usuarios_count'] ?? 0 ?>/<?= $t['usuarios_permitidos'] ?>
-                            </td>
-                            <td>
-                                <i class="fas fa-puzzle-piece mr-1"></i>
-                                <?= $t['modulos_count'] ?? 0 ?>
-                            </td>
-                            <td>
-                                <?php 
-                                $dias = $t['dias_restantes'] ?? 0;
-                                $badgeClass = $dias > 30 ? 'success' : ($dias > 0 ? 'warning' : 'danger');
-                                ?>
-                                <span class="badge badge-<?= $badgeClass ?>">
-                                    <?php if ($dias > 0): ?>
-                                    <?= $dias ?> días
-                                    <?php elseif ($dias == 0): ?>
-                                    Hoy
-                                    <?php else: ?>
-                                    Vencido (<?= abs($dias) ?>d)
-                                    <?php endif; ?>
-                                </span>
-                                <br><small><?= date('d/m/Y', strtotime($t['fecha_vencimiento'])) ?></small>
-                            </td>
-                            <td>
-                                <?php 
-                                $estadoClass = match($t['estado']) {
-                                    'A' => 'success',
-                                    'S' => 'warning',
-                                    'I' => 'secondary',
-                                    default => 'secondary'
-                                };
-                                $estadoText = match($t['estado']) {
-                                    'A' => 'Activo',
-                                    'S' => 'Suspendido',
-                                    'I' => 'Inactivo',
-                                    default => 'Desconocido'
-                                };
-                                ?>
-                                <span class="badge badge-<?= $estadoClass ?>"><?= $estadoText ?></span>
-                            </td>
-                            <td>
-                                <div class="btn-group btn-group-sm">
-                                    <a href="<?= url('seguridad', 'tenant', 'ver', ['id' => $t['tenant_id']]) ?>" class="btn btn-info" title="Ver">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                    <a href="<?= url('seguridad', 'tenant', 'editar', ['id' => $t['tenant_id']]) ?>" class="btn btn-primary" title="Editar">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    <?php if ($t['estado'] == 'A'): ?>
-                                    <a href="#" class="btn btn-warning btn-suspender" data-url="<?= url('seguridad', 'tenant', 'suspender', ['id' => $t['tenant_id']]) ?>" title="Suspender">
-                                        <i class="fas fa-pause"></i>
-                                    </a>
-                                    <?php /* SweetAlert2 para suspender tenant */ ?>
-                                    <script>
-                                    document.addEventListener('DOMContentLoaded', function() {
-                                        document.querySelectorAll('.btn-suspender').forEach(function(btn) {
-                                            btn.addEventListener('click', function(e) {
-                                                e.preventDefault();
-                                                const url = btn.getAttribute('data-url');
-                                                Swal.fire({
-                                                    title: '¿Suspender tenant?',
-                                                    text: 'Esta acción suspenderá el acceso del tenant. ¿Desea continuar?',
-                                                    icon: 'warning',
-                                                    showCancelButton: true,
-                                                    confirmButtonColor: '#d33',
-                                                    cancelButtonColor: '#3085d6',
-                                                    confirmButtonText: 'Sí, suspender',
-                                                    cancelButtonText: 'Cancelar'
-                                                }).then((result) => {
-                                                    if (result.isConfirmed) {
-                                                        fetch(url, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-                                                            .then(response => response.json())
-                                                            .then(data => {
-                                                                if (data.success) {
-                                                                    Swal.fire({
-                                                                        toast: true,
-                                                                        position: 'top-end',
-                                                                        icon: 'success',
-                                                                        title: 'Tenant suspendido correctamente',
-                                                                        showConfirmButton: false,
-                                                                        timer: 2000
-                                                                    });
-                                                                    setTimeout(function() { location.reload(); }, 1200);
-                                                                } else {
-                                                                    Swal.fire({
-                                                                        icon: 'error',
-                                                                        title: 'Error',
-                                                                        text: data.message || 'No se pudo suspender el tenant.'
-                                                                    });
-                                                                }
-                                                            })
-                                                            .catch(() => {
-                                                                Swal.fire({
-                                                                    icon: 'error',
-                                                                    title: 'Error',
-                                                                    text: 'No se pudo conectar con el servidor.'
-                                                                });
-                                                            });
-                                                    }
-                                                });
-                                            });
-                                        });
-                                    });
-                                    </script>
-                                    <?php else: ?>
-                                    <a href="#" class="btn btn-success btn-reactivar" data-url="<?= url('seguridad', 'tenant', 'reactivar', ['id' => $t['tenant_id']]) ?>" title="Reactivar">
-                                        <i class="fas fa-play"></i>
-                                    </a>
-                                    <script>
-                                    document.addEventListener('DOMContentLoaded', function() {
-                                        document.querySelectorAll('.btn-reactivar').forEach(function(btn) {
-                                            btn.addEventListener('click', function(e) {
-                                                e.preventDefault();
-                                                const url = btn.getAttribute('data-url');
-                                                Swal.fire({
-                                                    title: '¿Reactivar tenant?',
-                                                    text: 'Esta acción reactivará el acceso del tenant. ¿Desea continuar?',
-                                                    icon: 'question',
-                                                    showCancelButton: true,
-                                                    confirmButtonColor: '#28a745',
-                                                    cancelButtonColor: '#3085d6',
-                                                    confirmButtonText: 'Sí, reactivar',
-                                                    cancelButtonText: 'Cancelar'
-                                                }).then((result) => {
-                                                    if (result.isConfirmed) {
-                                                        fetch(url, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-                                                            .then(response => response.json())
-                                                            .then(data => {
-                                                                if (data.success) {
-                                                                    Swal.fire({
-                                                                        toast: true,
-                                                                        position: 'top-end',
-                                                                        icon: 'success',
-                                                                        title: 'Tenant reactivado correctamente',
-                                                                        showConfirmButton: false,
-                                                                        timer: 1800
-                                                                    });
-                                                                    setTimeout(function() { location.reload(); }, 1800);
-                                                                } else {
+                            <?php foreach ($tenants as $t): ?>
+                            <tr>
+                                <td>
+                                    <strong><?= htmlspecialchars($t['ten_nombre_comercial'] ?: $t['ten_razon_social']) ?></strong>
+                                    <br><small class="text-muted">RUC: <?= $t['ruc'] ?></small>
+                                </td>
+                                <td>
+                                    <span class="badge badge-info"><?= htmlspecialchars($t['plan_nombre'] ?? 'Sin plan') ?></span>
+                                </td>
+                                <td>
+                                    <i class="fas fa-users mr-1"></i>
+                                    <?= $t['usuarios_count'] ?? 0 ?>/<?= $t['usuarios_permitidos'] ?>
+                                </td>
+                                <td>
+                                    <i class="fas fa-puzzle-piece mr-1"></i>
+                                    <?= $t['modulos_count'] ?? 0 ?>
+                                </td>
+                                <td>
+                                    <?php 
+                                    $dias = $t['dias_restantes'] ?? 0;
+                                    $badgeClass = $dias > 30 ? 'success' : ($dias > 0 ? 'warning' : 'danger');
+                                    ?>
+                                    <span class="badge badge-<?= $badgeClass ?>">
+                                        <?php if ($dias > 0): ?>
+                                        <?= $dias ?> días
+                                        <?php elseif ($dias == 0): ?>
+                                        Hoy
+                                        <?php else: ?>
+                                        Vencido (<?= abs($dias) ?>d)
+                                        <?php endif; ?>
+                                    </span>
+                                    <br><small><?= date('d/m/Y', strtotime($t['ten_fecha_vencimiento'])) ?></small>
+                                </td>
+                                <td>
+                                    <?php 
+                                    $estadoClass = match($t['ten_estado']) {
+                                        'A' => 'success',
+                                        'S' => 'warning',
+                                        'I' => 'secondary',
+                                        default => 'secondary'
+                                    };
+                                    $estadoText = match($t['ten_estado']) {
+                                        'A' => 'Activo',
+                                        'S' => 'Suspendido',
+                                        'I' => 'Inactivo',
+                                        default => 'Desconocido'
+                                    };
+                                    ?>
+                                    <span class="badge badge-<?= $estadoClass ?>"><?= $estadoText ?></span>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="<?= url('seguridad', 'tenant', 'ver', ['id' => $t['tenant_id']]) ?>" class="btn btn-info" title="Ver">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="<?= url('seguridad', 'tenant', 'editar', ['id' => $t['tenant_id']]) ?>" class="btn btn-primary" title="Editar">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <?php if ($t['ten_estado'] == 'A'): ?>
+                                        <a href="#" class="btn btn-warning btn-suspender" data-url="<?= url('seguridad', 'tenant', 'suspender', ['id' => $t['tenant_id']]) ?>" title="Suspender">
+                                            <i class="fas fa-pause"></i>
+                                        </a>
+                                        <?php /* SweetAlert2 para suspender tenant */ ?>
+                                        <script>
+                                        document.addEventListener('DOMContentLoaded', function() {
+                                            document.querySelectorAll('.btn-suspender').forEach(function(btn) {
+                                                btn.addEventListener('click', function(e) {
+                                                    e.preventDefault();
+                                                    const url = btn.getAttribute('data-url');
+                                                    Swal.fire({
+                                                        title: '¿Suspender tenant?',
+                                                        text: 'Esta acción suspenderá el acceso del tenant. ¿Desea continuar?',
+                                                        icon: 'warning',
+                                                        showCancelButton: true,
+                                                        confirmButtonColor: '#d33',
+                                                        cancelButtonColor: '#3085d6',
+                                                        confirmButtonText: 'Sí, suspender',
+                                                        cancelButtonText: 'Cancelar'
+                                                    }).then((result) => {
+                                                        if (result.isConfirmed) {
+                                                            fetch(url, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                                                                .then(response => response.json())
+                                                                .then(data => {
+                                                                    if (data.success) {
+                                                                        Swal.fire({
+                                                                            toast: true,
+                                                                            position: 'top-end',
+                                                                            icon: 'success',
+                                                                            title: 'Tenant suspendido correctamente',
+                                                                            showConfirmButton: false,
+                                                                            timer: 2000
+                                                                        });
+                                                                        setTimeout(function() { location.reload(); }, 1200);
+                                                                    } else {
+                                                                        Swal.fire({
+                                                                            icon: 'error',
+                                                                            title: 'Error',
+                                                                            text: data.message || 'No se pudo suspender el tenant.'
+                                                                        });
+                                                                    }
+                                                                })
+                                                                .catch(() => {
                                                                     Swal.fire({
                                                                         icon: 'error',
                                                                         title: 'Error',
-                                                                        text: data.message || 'No se pudo reactivar el tenant.'
+                                                                        text: 'No se pudo conectar con el servidor.'
                                                                     });
-                                                                }
-                                                            })
-                                                            .catch(() => {
-                                                                Swal.fire({
-                                                                    icon: 'error',
-                                                                    title: 'Error',
-                                                                    text: 'No se pudo conectar con el servidor.'
                                                                 });
-                                                            });
-                                                    }
+                                                        }
+                                                    });
                                                 });
                                             });
                                         });
-                                    });
-                                    </script>
-                                    <?php endif; ?>
-                                </div>
-                            </td>
-                        </tr>
-                        <?php endforeach; ?>
+                                        </script>
+                                        <?php else: ?>
+                                        <a href="#" class="btn btn-success btn-reactivar" data-url="<?= url('seguridad', 'tenant', 'reactivar', ['id' => $t['tenant_id']]) ?>" title="Reactivar">
+                                            <i class="fas fa-play"></i>
+                                        </a>
+                                        <script>
+                                        document.addEventListener('DOMContentLoaded', function() {
+                                            document.querySelectorAll('.btn-reactivar').forEach(function(btn) {
+                                                btn.addEventListener('click', function(e) {
+                                                    e.preventDefault();
+                                                    const url = btn.getAttribute('data-url');
+                                                    Swal.fire({
+                                                        title: '¿Reactivar tenant?',
+                                                        text: 'Esta acción reactivará el acceso del tenant. ¿Desea continuar?',
+                                                        icon: 'question',
+                                                        showCancelButton: true,
+                                                        confirmButtonColor: '#28a745',
+                                                        cancelButtonColor: '#3085d6',
+                                                        confirmButtonText: 'Sí, reactivar',
+                                                        cancelButtonText: 'Cancelar'
+                                                    }).then((result) => {
+                                                        if (result.isConfirmed) {
+                                                            fetch(url, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                                                                .then(response => response.json())
+                                                                .then(data => {
+                                                                    if (data.success) {
+                                                                        Swal.fire({
+                                                                            toast: true,
+                                                                            position: 'top-end',
+                                                                            icon: 'success',
+                                                                            title: 'Tenant reactivado correctamente',
+                                                                            showConfirmButton: false,
+                                                                            timer: 1800
+                                                                        });
+                                                                        setTimeout(function() { location.reload(); }, 1800);
+                                                                    } else {
+                                                                        Swal.fire({
+                                                                            icon: 'error',
+                                                                            title: 'Error',
+                                                                            text: data.message || 'No se pudo reactivar el tenant.'
+                                                                        });
+                                                                    }
+                                                                })
+                                                                .catch(() => {
+                                                                    Swal.fire({
+                                                                        icon: 'error',
+                                                                        title: 'Error',
+                                                                        text: 'No se pudo conectar con el servidor.'
+                                                                    });
+                                                                });
+                                                        }
+                                                    });
+                                                });
+                                            });
+                                        });
+                                        </script>
+                                        <?php endif; ?>
+                                    </div>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
                         <?php endif; ?>
                     </tbody>
                 </table>

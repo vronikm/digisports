@@ -92,11 +92,11 @@ $colores = $colores ?? [];
                 <div class="row">
                     <?php foreach ($modulos as $m): ?>
                     <div class="col-lg-2 col-md-3 col-sm-4 col-6 mb-3">
-                        <div class="card h-100 modulo-card" data-id="<?= $m['modulo_id'] ?>" style="cursor: pointer; border: 2px solid <?= $m['color'] ?>;">
+                        <div class="card h-100 modulo-card" data-id="<?= $m['mod_id'] ?>" style="cursor: pointer; border: 2px solid <?= $m['mod_color'] ?>;">
                             <div class="card-body text-center p-2">
-                                <i class="fas <?= $m['icono'] ?> fa-2x mb-2" style="color: <?= $m['color'] ?>;"></i>
-                                <div class="small font-weight-bold"><?= htmlspecialchars($m['nombre']) ?></div>
-                                <div class="badge badge-light"><?= $m['codigo'] ?></div>
+                                <i class="fas <?= $m['mod_icono'] ?> fa-2x mb-2" style="color: <?= $m['mod_color'] ?>;"></i>
+                                <div class="small font-weight-bold"><?= htmlspecialchars($m['mod_nombre']) ?></div>
+                                <div class="badge badge-light"><?= $m['mod_codigo'] ?></div>
                             </div>
                         </div>
                     </div>
@@ -321,19 +321,21 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
-</script>
 document.addEventListener('DOMContentLoaded', function() {
+
     const iconSelect = document.getElementById('preview-icon-select');
     const colorSelect = document.getElementById('preview-color-select');
     const previewSection = document.querySelector('.preview-interactivo-row');
+    const resultIcon = document.getElementById('preview-result-icon');
+    const codeBlock = document.getElementById('preview-code');
     // Solo ejecutar si todos los elementos existen y hay opciones
-    if (iconSelect && colorSelect && iconSelect.options.length > 0 && colorSelect.options.length > 0) {
+    if (iconSelect && colorSelect && resultIcon && codeBlock && iconSelect.options.length > 0 && colorSelect.options.length > 0) {
         function updatePreview() {
             const icon = iconSelect.value;
             const color = colorSelect.value;
             resultIcon.className = 'fas ' + icon + ' fa-5x mb-3';
             resultIcon.style.color = color;
-            codeBlock.innerHTML = `.modulo-icon {\n    color: ${color};\n}\n\n<i class="fas ${icon}"></i>`;
+            codeBlock.innerHTML = `.modulo-icon {\n    color: ${color};\n}\n`;
         }
         iconSelect.addEventListener('change', updatePreview);
         colorSelect.addEventListener('change', updatePreview);
@@ -359,4 +361,44 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
-</script>
+
+// --- Preview Interactivo de Iconos y Colores ---
+document.addEventListener('DOMContentLoaded', function() {
+    const iconSelect = document.getElementById('preview-icon-select');
+    const colorSelect = document.getElementById('preview-color-select');
+    const previewSection = document.querySelector('.preview-interactivo-row');
+    const resultIcon = document.getElementById('preview-result-icon');
+    const codeBlock = document.getElementById('preview-code');
+    // Solo ejecutar si todos los elementos existen y hay opciones
+    if (iconSelect && colorSelect && resultIcon && codeBlock && iconSelect.options.length > 0 && colorSelect.options.length > 0) {
+        function updatePreview() {
+            const icon = iconSelect.value;
+            const color = colorSelect.value;
+            resultIcon.className = 'fas ' + icon + ' fa-5x mb-3';
+            resultIcon.style.color = color;
+            codeBlock.innerHTML = `.modulo-icon {\n    color: ${color};\n}\n`;
+        }
+        iconSelect.addEventListener('change', updatePreview);
+        colorSelect.addEventListener('change', updatePreview);
+        updatePreview();
+    } else {
+        // Oculta el preview si no hay datos
+        if (previewSection) previewSection.style.display = 'none';
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'warning',
+            title: 'No hay iconos o colores disponibles para el preview',
+            showConfirmButton: false,
+            timer: 3000
+        });
+    }
+
+    // Click en módulo para editar
+    document.querySelectorAll('.modulo-card').forEach(card => {
+        card.addEventListener('click', function() {
+            const id = this.dataset.id;
+            window.location.href = '<?= url('seguridad', 'modulo', 'editar') ?>&id=' + id;
+        });
+    });
+});

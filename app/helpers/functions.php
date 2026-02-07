@@ -8,12 +8,12 @@
  * @param array $userData Datos mínimos requeridos para sesión cruzada
  */
 function initSSOSession($userData) {
-    $_SESSION['user_id'] = $userData['user_id'];
-    $_SESSION['tenant_id'] = $userData['tenant_id'];
-    $_SESSION['role'] = $userData['role'];
-    $_SESSION['username'] = $userData['username'];
-    if (isset($userData['email'])) {
-        $_SESSION['email'] = $userData['email'];
+    $_SESSION['usr_id'] = $userData['usr_id'];
+    $_SESSION['usr_tenant_id'] = $userData['usr_tenant_id'];
+    $_SESSION['usr_role'] = $userData['usr_role'];
+    $_SESSION['usr_username'] = $userData['usr_username'];
+    if (isset($userData['usr_email'])) {
+        $_SESSION['usr_email'] = $userData['usr_email'];
     }
     if (isset($userData['permissions'])) {
         $_SESSION['permissions'] = $userData['permissions'];
@@ -91,14 +91,14 @@ function getCurrentUser() {
     }
     
     return [
-        'user_id' => $_SESSION['user_id'],
-        'tenant_id' => $_SESSION['tenant_id'],
-        'username' => $_SESSION['username'] ?? '',
-        'nombres' => $_SESSION['nombres'] ?? '',
-        'apellidos' => $_SESSION['apellidos'] ?? '',
-        'email' => $_SESSION['email'] ?? '',
-        'role' => $_SESSION['role'] ?? '',
-        'avatar' => $_SESSION['avatar'] ?? null
+        'usu_usuario_id' => $_SESSION['usu_usuario_id'] ?? null,
+        'usu_tenant_id' => $_SESSION['usu_tenant_id'] ?? null,
+        'usu_username' => $_SESSION['usu_username'] ?? '',
+        'usu_nombres' => $_SESSION['usu_nombres'] ?? '',
+        'usu_apellidos' => $_SESSION['usu_apellidos'] ?? '',
+        'usu_email' => $_SESSION['usu_email'] ?? '',
+        'usu_rol_id' => $_SESSION['usu_rol_id'] ?? null,
+        // ...otros campos según nueva estructura
     ];
 }
 

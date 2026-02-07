@@ -24,11 +24,11 @@
         <tbody>
             <?php foreach ($logs as $log): ?>
             <tr>
-                <td><?= htmlspecialchars($log['fecha'] ?? '') ?></td>
-                <td><?= htmlspecialchars($log['usuario'] ?? '') ?></td>
-                <td><?= htmlspecialchars($log['ip'] ?? '') ?></td>
-                <td><?= htmlspecialchars($log['accion'] ?? '') ?></td>
-                <td><?= htmlspecialchars($log['resultado'] ?? '') ?></td>
+                <td><?= htmlspecialchars($log['aud_fecha'] ?? '') ?></td>
+                <td><?= htmlspecialchars($log['aud_usuario'] ?? '') ?></td>
+                <td><?= htmlspecialchars($log['aud_ip'] ?? '') ?></td>
+                <td><?= htmlspecialchars($log['aud_accion'] ?? '') ?></td>
+                <td><?= htmlspecialchars($log['aud_resultado'] ?? '') ?></td>
             </tr>
             <?php endforeach; ?>
         </tbody>

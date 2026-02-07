@@ -93,27 +93,23 @@ class RolController extends \App\Controllers\ModuleController {
         
         $where = "WHERE 1=1";
         $params = [];
-        
         if ($tenantId) {
-            $where .= " AND (r.tenant_id = ? OR r.tenant_id IS NULL)";
+            $where .= " AND (r.rol_tenant_id = ? OR r.rol_tenant_id IS NULL)";
             $params[] = $tenantId;
         }
-        
         try {
             $sql = "
-                SELECT r.*, t.nombre_comercial as tenant_nombre,
-                       (SELECT COUNT(*) FROM usuarios WHERE rol_id = r.rol_id) as usuarios_count
-                FROM roles r
-                LEFT JOIN tenants t ON r.tenant_id = t.tenant_id
+                SELECT r.*, t.ten_nombre_comercial as tenant_nombre,
+                       (SELECT COUNT(*) FROM seguridad_usuarios WHERE usr_rol_id = r.rol_id) as usuarios_count
+                FROM seguridad_roles r
+                LEFT JOIN core_tenants t ON r.rol_tenant_id = t.ten_id
                 $where
-                ORDER BY r.nivel_acceso DESC, r.nombre ASC
+                ORDER BY r.rol_nivel_acceso DESC, r.rol_nombre ASC
             ";
             $stmt = $this->db->prepare($sql);
             $stmt->execute($params);
             $roles = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-            
-            $tenants = $this->db->query("SELECT tenant_id, nombre_comercial FROM tenants WHERE estado = 'A' ORDER BY nombre_comercial")->fetchAll(\PDO::FETCH_ASSOC);
-            
+            $tenants = $this->db->query("SELECT ten_id, ten_nombre_comercial FROM core_tenants WHERE ten_estado = 'A' ORDER BY ten_nombre_comercial")->fetchAll(\PDO::FETCH_ASSOC);
         } catch (\Exception $e) {
             $roles = [];
             $tenants = [];
@@ -147,7 +143,7 @@ class RolController extends \App\Controllers\ModuleController {
             return;
         }
         
-        $tenants = $this->db->query("SELECT tenant_id, nombre_comercial FROM tenants WHERE estado = 'A' ORDER BY nombre_comercial")->fetchAll(\PDO::FETCH_ASSOC);
+        $tenants = $this->db->query("SELECT ten_id, ten_nombre_comercial FROM core_tenants WHERE ten_estado = 'A' ORDER BY ten_nombre_comercial")->fetchAll(\PDO::FETCH_ASSOC);
         
         $this->renderModule('rol/form', [
             'rol' => [],

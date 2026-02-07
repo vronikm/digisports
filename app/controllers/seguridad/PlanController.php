@@ -38,21 +38,19 @@ class PlanController extends \App\Controllers\ModuleController {
         try {
             $sql = "
                 SELECT p.*,
-                       (SELECT COUNT(*) FROM tenants WHERE plan_id = p.plan_id AND estado = 'A') as tenants_activos,
-                       (SELECT SUM(monto_mensual) FROM tenants WHERE plan_id = p.plan_id AND estado = 'A') as ingresos_mensuales
-                FROM planes_suscripcion p
-                ORDER BY p.orden_visualizacion ASC, p.precio_mensual ASC
+                       (SELECT COUNT(*) FROM core_tenants WHERE ten_plan_id = p.plan_id AND ten_estado = 'A') as tenants_activos,
+                       (SELECT SUM(ten_monto_mensual) FROM core_tenants WHERE ten_plan_id = p.plan_id AND ten_estado = 'A') as ingresos_mensuales
+                FROM core_planes_suscripcion p
+                ORDER BY p.plan_orden_visualizacion ASC, p.plan_precio_mensual ASC
             ";
             $planes = $this->db->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
-            
             // Decodificar módulos incluidos
             foreach ($planes as &$plan) {
-                $plan['modulos_array'] = !empty($plan['modulos_incluidos']) ? json_decode($plan['modulos_incluidos'], true) : [];
-                $plan['caracteristicas_array'] = !empty($plan['caracteristicas']) ? json_decode($plan['caracteristicas'], true) : [];
+                $plan['modulos_array'] = !empty($plan['plan_modulos_incluidos']) ? json_decode($plan['plan_modulos_incluidos'], true) : [];
+                $plan['caracteristicas_array'] = !empty($plan['plan_caracteristicas']) ? json_decode($plan['plan_caracteristicas'], true) : [];
             }
-            
             // Obtener nombres de módulos
-            $modulos = $this->db->query("SELECT codigo, nombre FROM modulos_sistema WHERE estado = 'A'")->fetchAll(\PDO::FETCH_KEY_PAIR);
+            $modulos = $this->db->query("SELECT mod_codigo, mod_nombre FROM core_modulos_sistema WHERE mod_estado = 'A'")->fetchAll(\PDO::FETCH_KEY_PAIR);
             
         } catch (\Exception $e) {
             $planes = [];

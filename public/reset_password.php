@@ -81,7 +81,7 @@ echo "<p><strong>Hash generado:</strong> <code style='word-break:break-all;'>{$h
 
 // Actualizar en base de datos
 try {
-    $stmt = $pdo->prepare("UPDATE usuarios SET password = ?, intentos_fallidos = 0, bloqueado_hasta = NULL WHERE username = ?");
+    $stmt = $pdo->prepare("UPDATE seguridad_usuarios SET usu_password = ?, usu_intentos_fallidos = 0, usu_bloqueado_hasta = NULL WHERE usu_username = ?");
     $resultado = $stmt->execute([$hash, $username]);
     
     if ($stmt->rowCount() > 0) {
@@ -90,16 +90,16 @@ try {
         echo "<p><strong>Nueva contraseña:</strong> {$nuevaPassword}</p>";
     } else {
         // Verificar si el usuario existe
-        $check = $pdo->prepare("SELECT usuario_id, username FROM usuarios WHERE username = ?");
+        $check = $pdo->prepare("SELECT usu_usuario_id, usu_username FROM seguridad_usuarios WHERE usu_username = ?");
         $check->execute([$username]);
         $user = $check->fetch();
         
         if (!$user) {
             echo "<h3>⚠️ Usuario '{$username}' no encontrado</h3>";
             echo "<p>Usuarios disponibles:</p><ul>";
-            $todos = $pdo->query("SELECT username, email FROM usuarios LIMIT 10")->fetchAll();
+            $todos = $pdo->query("SELECT usu_username, usu_email FROM seguridad_usuarios LIMIT 10")->fetchAll();
             foreach ($todos as $u) {
-                echo "<li>{$u['username']} ({$u['email']})</li>";
+                echo "<li>{$u['usu_username']} ({$u['usu_email']})</li>";
             }
             echo "</ul>";
         } else {

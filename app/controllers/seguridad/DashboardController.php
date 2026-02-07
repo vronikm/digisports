@@ -39,17 +39,17 @@ class DashboardController extends \App\Controllers\ModuleController {
         ];
         $where = [];
         $params = [];
-        if ($filtros['usuario_id']) { $where[] = 'a.usuario_id = ?'; $params[] = $filtros['usuario_id']; }
-        if ($filtros['tenant_id']) { $where[] = 'a.tenant_id = ?'; $params[] = $filtros['tenant_id']; }
-        if ($filtros['accion']) { $where[] = 'a.accion = ?'; $params[] = $filtros['accion']; }
-        if ($filtros['entidad']) { $where[] = 'a.entidad = ?'; $params[] = $filtros['entidad']; }
-        if ($filtros['fecha_desde']) { $where[] = 'a.fecha >= ?'; $params[] = $filtros['fecha_desde']; }
-        if ($filtros['fecha_hasta']) { $where[] = 'a.fecha <= ?'; $params[] = $filtros['fecha_hasta']; }
-        $sql = "SELECT a.*, u.nombres, u.apellidos, t.nombre_comercial FROM auditoria_acciones a
-                LEFT JOIN usuarios u ON a.usuario_id = u.usuario_id
-                LEFT JOIN tenants t ON a.tenant_id = t.tenant_id
-                " . (count($where) ? "WHERE " . implode(' AND ', $where) : '') . "
-                ORDER BY a.fecha DESC LIMIT 100";
+        if ($filtros['usuario_id']) { $where[] = 'a.aud_usr_id = ?'; $params[] = $filtros['usuario_id']; }
+        if ($filtros['tenant_id']) { $where[] = 'a.aud_ten_id = ?'; $params[] = $filtros['tenant_id']; }
+        if ($filtros['accion']) { $where[] = 'a.aud_accion = ?'; $params[] = $filtros['accion']; }
+        if ($filtros['entidad']) { $where[] = 'a.aud_entidad = ?'; $params[] = $filtros['entidad']; }
+        if ($filtros['fecha_desde']) { $where[] = 'a.aud_fecha >= ?'; $params[] = $filtros['fecha_desde']; }
+        if ($filtros['fecha_hasta']) { $where[] = 'a.aud_fecha <= ?'; $params[] = $filtros['fecha_hasta']; }
+        $sql = "SELECT a.*, u.usr_nombres, u.usr_apellidos, t.ten_nombre_comercial FROM seguridad_auditoria_acciones a
+            LEFT JOIN seguridad_usuarios u ON a.aud_usr_id = u.usr_id
+            LEFT JOIN core_tenants t ON a.aud_ten_id = t.ten_id
+            " . (count($where) ? "WHERE " . implode(' AND ', $where) : '') . "
+            ORDER BY a.aud_fecha DESC LIMIT 100";
         $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
         $logs = $stmt->fetchAll(\PDO::FETCH_ASSOC);

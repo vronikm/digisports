@@ -36,26 +36,26 @@ class AsignacionController extends \App\Controllers\ModuleController {
         try {
             // Todos los tenants
             $tenants = $this->db->query("
-                SELECT t.tenant_id, t.nombre_comercial, t.ruc, p.nombre as plan_nombre
-                FROM tenants t
-                LEFT JOIN planes_suscripcion p ON t.plan_id = p.plan_id
-                WHERE t.estado = 'A'
-                ORDER BY t.nombre_comercial
+                SELECT t.ten_id, t.ten_nombre_comercial, t.ten_ruc, p.plan_nombre
+                FROM core_tenants t
+                LEFT JOIN core_planes_suscripcion p ON t.ten_plan_id = p.plan_id
+                WHERE t.ten_estado = 'A'
+                ORDER BY t.ten_nombre_comercial
             ")->fetchAll(\PDO::FETCH_ASSOC);
 
             // Todos los módulos
             $modulos = $this->db->query("
-                SELECT * FROM modulos_sistema WHERE estado = 'A' ORDER BY orden_visualizacion
+                SELECT * FROM core_modulos_sistema WHERE mod_estado = 'A' ORDER BY mod_orden_visualizacion
             ")->fetchAll(\PDO::FETCH_ASSOC);
 
             // Si hay tenant seleccionado, obtener sus módulos
             $modulosAsignados = [];
             if ($tenantId) {
                 $stmt = $this->db->prepare("
-                    SELECT tm.*, m.nombre, m.icono, m.color
-                    FROM tenant_modulos tm
-                    JOIN modulos_sistema m ON tm.modulo_id = m.modulo_id
-                    WHERE tm.tenant_id = ?
+                    SELECT tm.*, m.mod_nombre, m.mod_icono, m.mod_color
+                    FROM core_tenant_modulos tm
+                    JOIN core_modulos_sistema m ON tm.tm_modulo_id = m.mod_id
+                    WHERE tm.tm_tenant_id = ?
                 ");
                 $stmt->execute([$tenantId]);
                 $modulosAsignados = $stmt->fetchAll(\PDO::FETCH_ASSOC);

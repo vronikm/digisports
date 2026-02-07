@@ -7,7 +7,7 @@ $cliente = $cliente ?? [];
 $tiposCliente = $tiposCliente ?? [];
 $tiposIdentificacion = $tiposIdentificacion ?? [];
 $errores = $errores ?? [];
-$esEdicion = !empty($cliente['cliente_id']);
+$esEdicion = !empty($cliente['cli_cliente_id']);
 $titulo = $esEdicion ? 'Editar Cliente' : 'Nuevo Cliente';
 ?>
 
@@ -51,7 +51,7 @@ $titulo = $esEdicion ? 'Editar Cliente' : 'Nuevo Cliente';
         <form method="POST" action="<?= url('clientes', 'cliente', $esEdicion ? 'actualizar' : 'guardar') ?>" id="formCliente">
             <input type="hidden" name="csrf_token" value="<?= \Security::generateCsrfToken() ?>">
             <?php if ($esEdicion): ?>
-            <input type="hidden" name="cliente_id" value="<?= $cliente['cliente_id'] ?>">
+            <input type="hidden" name="cli_cliente_id" value="<?= $cliente['cli_cliente_id'] ?>">
             <?php endif; ?>
             
             <div class="row">
@@ -68,10 +68,10 @@ $titulo = $esEdicion ? 'Editar Cliente' : 'Nuevo Cliente';
                                 <div class="col-md-4">
                                     <div class="form-group">
                                         <label>Tipo Identificación <span class="text-danger">*</span></label>
-                                        <select name="tipo_identificacion" class="form-control" required>
+                                        <select name="cli_tipo_identificacion" class="form-control" required>
                                             <option value="">Seleccione...</option>
                                             <?php foreach ($tiposIdentificacion as $key => $label): ?>
-                                            <option value="<?= $key ?>" <?= ($cliente['tipo_identificacion'] ?? '') === $key ? 'selected' : '' ?>>
+                                            <option value="<?= $key ?>" <?= ($cliente['cli_tipo_identificacion'] ?? '') === $key ? 'selected' : '' ?>>
                                                 <?= $label ?>
                                             </option>
                                             <?php endforeach; ?>
@@ -81,18 +81,18 @@ $titulo = $esEdicion ? 'Editar Cliente' : 'Nuevo Cliente';
                                 <div class="col-md-4">
                                     <div class="form-group">
                                         <label>Identificación <span class="text-danger">*</span></label>
-                                        <input type="text" name="identificacion" class="form-control" required
-                                               maxlength="20"
-                                               value="<?= htmlspecialchars($cliente['identificacion'] ?? '') ?>"
-                                               placeholder="Número de documento">
+                                             <input type="text" name="cli_identificacion" class="form-control" required
+                                                 maxlength="20"
+                                                 value="<?= htmlspecialchars($cliente['cli_identificacion'] ?? '') ?>"
+                                                 placeholder="Número de documento">
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="form-group">
                                         <label>Tipo de Cliente <span class="text-danger">*</span></label>
-                                        <select name="tipo_cliente" class="form-control" required>
+                                        <select name="cli_tipo_cliente" class="form-control" required>
                                             <?php foreach ($tiposCliente as $key => $label): ?>
-                                            <option value="<?= $key ?>" <?= ($cliente['tipo_cliente'] ?? 'CLIENTE') === $key ? 'selected' : '' ?>>
+                                            <option value="<?= $key ?>" <?= ($cliente['cli_tipo_cliente'] ?? 'CLIENTE') === $key ? 'selected' : '' ?>>
                                                 <?= $label ?>
                                             </option>
                                             <?php endforeach; ?>
@@ -105,19 +105,19 @@ $titulo = $esEdicion ? 'Editar Cliente' : 'Nuevo Cliente';
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>Nombres <span class="text-danger">*</span></label>
-                                        <input type="text" name="nombres" class="form-control" required
-                                               maxlength="150"
-                                               value="<?= htmlspecialchars($cliente['nombres'] ?? '') ?>"
-                                               placeholder="Nombres completos">
+                                             <input type="text" name="cli_nombres" class="form-control" required
+                                                 maxlength="150"
+                                                 value="<?= htmlspecialchars($cliente['cli_nombres'] ?? '') ?>"
+                                                 placeholder="Nombres completos">
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>Apellidos <span class="text-danger">*</span></label>
-                                        <input type="text" name="apellidos" class="form-control" required
-                                               maxlength="150"
-                                               value="<?= htmlspecialchars($cliente['apellidos'] ?? '') ?>"
-                                               placeholder="Apellidos completos">
+                                             <input type="text" name="cli_apellidos" class="form-control" required
+                                                 maxlength="150"
+                                                 value="<?= htmlspecialchars($cliente['cli_apellidos'] ?? '') ?>"
+                                                 placeholder="Apellidos completos">
                                     </div>
                                 </div>
                             </div>
@@ -136,45 +136,45 @@ $titulo = $esEdicion ? 'Editar Cliente' : 'Nuevo Cliente';
                                 <div class="col-md-4">
                                     <div class="form-group">
                                         <label>Email</label>
-                                        <input type="email" name="email" class="form-control"
-                                               maxlength="100"
-                                               value="<?= htmlspecialchars($cliente['email'] ?? '') ?>"
-                                               placeholder="correo@ejemplo.com">
+                                             <input type="email" name="cli_email" class="form-control"
+                                                 maxlength="100"
+                                                 value="<?= htmlspecialchars($cliente['cli_email'] ?? '') ?>"
+                                                 placeholder="correo@ejemplo.com">
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="form-group">
                                         <label>Teléfono</label>
-                                        <input type="tel" name="telefono" class="form-control"
-                                               maxlength="15"
-                                               value="<?= htmlspecialchars($cliente['telefono'] ?? '') ?>"
-                                               placeholder="Teléfono fijo">
+                                             <input type="tel" name="cli_telefono" class="form-control"
+                                                 maxlength="15"
+                                                 value="<?= htmlspecialchars($cliente['cli_telefono'] ?? '') ?>"
+                                                 placeholder="Teléfono fijo">
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="form-group">
                                         <label>Celular</label>
-                                        <input type="tel" name="celular" class="form-control"
-                                               maxlength="15"
-                                               value="<?= htmlspecialchars($cliente['celular'] ?? '') ?>"
-                                               placeholder="Número celular">
+                                             <input type="tel" name="cli_celular" class="form-control"
+                                                 maxlength="15"
+                                                 value="<?= htmlspecialchars($cliente['cli_celular'] ?? '') ?>"
+                                                 placeholder="Número celular">
                                     </div>
                                 </div>
                             </div>
                             
                             <div class="form-group">
                                 <label>Dirección</label>
-                                <textarea name="direccion" class="form-control" rows="2"
+                                <textarea name="cli_direccion" class="form-control" rows="2"
                                           maxlength="400"
-                                          placeholder="Dirección completa"><?= htmlspecialchars($cliente['direccion'] ?? '') ?></textarea>
+                                          placeholder="Dirección completa"><?= htmlspecialchars($cliente['cli_direccion'] ?? '') ?></textarea>
                             </div>
                             
                             <div class="row">
                                 <div class="col-md-4">
                                     <div class="form-group">
                                         <label>Fecha de Nacimiento</label>
-                                        <input type="date" name="fecha_nacimiento" class="form-control"
-                                               value="<?= htmlspecialchars($cliente['fecha_nacimiento'] ?? '') ?>">
+                                             <input type="date" name="cli_fecha_nacimiento" class="form-control"
+                                                 value="<?= htmlspecialchars($cliente['cli_fecha_nacimiento'] ?? '') ?>">
                                     </div>
                                 </div>
                             </div>
@@ -193,11 +193,11 @@ $titulo = $esEdicion ? 'Editar Cliente' : 'Nuevo Cliente';
                         <div class="card-body">
                             <div class="form-group">
                                 <label>Estado del Cliente</label>
-                                <select name="estado" class="form-control">
-                                    <option value="A" <?= ($cliente['estado'] ?? 'A') === 'A' ? 'selected' : '' ?>>
+                                <select name="cli_estado" class="form-control">
+                                    <option value="A" <?= ($cliente['cli_estado'] ?? 'A') === 'A' ? 'selected' : '' ?>>
                                         Activo
                                     </option>
-                                    <option value="I" <?= ($cliente['estado'] ?? '') === 'I' ? 'selected' : '' ?>>
+                                    <option value="I" <?= ($cliente['cli_estado'] ?? '') === 'I' ? 'selected' : '' ?>>
                                         Inactivo
                                     </option>
                                 </select>
@@ -211,7 +211,7 @@ $titulo = $esEdicion ? 'Editar Cliente' : 'Nuevo Cliente';
                                         <span class="input-group-text">$</span>
                                     </div>
                                     <input type="text" class="form-control text-right" readonly
-                                           value="<?= number_format($cliente['saldo_abono'] ?? 0, 2) ?>">
+                                           value="<?= number_format($cliente['cli_saldo_abono'] ?? 0, 2) ?>">
                                 </div>
                                 <small class="text-muted">El saldo se gestiona desde el módulo de Abonos</small>
                             </div>
@@ -219,7 +219,7 @@ $titulo = $esEdicion ? 'Editar Cliente' : 'Nuevo Cliente';
                             <div class="form-group">
                                 <label>Fecha de Registro</label>
                                 <input type="text" class="form-control" readonly
-                                       value="<?= date('d/m/Y H:i', strtotime($cliente['fecha_registro'] ?? 'now')) ?>">
+                                       value="<?= date('d/m/Y H:i', strtotime($cliente['cli_fecha_registro'] ?? 'now')) ?>">
                             </div>
                             <?php endif; ?>
                         </div>
@@ -248,9 +248,9 @@ $titulo = $esEdicion ? 'Editar Cliente' : 'Nuevo Cliente';
 document.addEventListener('DOMContentLoaded', function() {
     // Validación del formulario
     document.getElementById('formCliente').addEventListener('submit', function(e) {
-        const identificacion = document.querySelector('[name="identificacion"]').value;
-        const nombres = document.querySelector('[name="nombres"]').value;
-        const apellidos = document.querySelector('[name="apellidos"]').value;
+        const identificacion = document.querySelector('[name="cli_identificacion"]').value;
+        const nombres = document.querySelector('[name="cli_nombres"]').value;
+        const apellidos = document.querySelector('[name="cli_apellidos"]').value;
         
         if (!identificacion.trim() || !nombres.trim() || !apellidos.trim()) {
             e.preventDefault();
@@ -260,8 +260,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Validación de cédula ecuatoriana
-    document.querySelector('[name="identificacion"]').addEventListener('blur', function() {
-        const tipo = document.querySelector('[name="tipo_identificacion"]').value;
+    document.querySelector('[name="cli_identificacion"]').addEventListener('blur', function() {
+        const tipo = document.querySelector('[name="cli_tipo_identificacion"]').value;
         const cedula = this.value;
         
         if (tipo === 'CED' && cedula.length === 10) {

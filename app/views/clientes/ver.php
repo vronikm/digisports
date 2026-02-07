@@ -42,12 +42,12 @@ $abonos = $abonos ?? [];
                         <div class="text-center">
                             <div class="profile-user-img img-fluid img-circle bg-primary text-white d-flex align-items-center justify-content-center mx-auto" 
                                  style="width: 100px; height: 100px; font-size: 2.5rem;">
-                                <?= strtoupper(substr($cliente['nombres'] ?? 'C', 0, 1) . substr($cliente['apellidos'] ?? '', 0, 1)) ?>
+                                <?= strtoupper(substr($cliente['cli_nombres'] ?? 'C', 0, 1) . substr($cliente['cli_apellidos'] ?? '', 0, 1)) ?>
                             </div>
                         </div>
 
                         <h3 class="profile-username text-center mt-3">
-                            <?= htmlspecialchars($cliente['nombres'] . ' ' . $cliente['apellidos']) ?>
+                            <?= htmlspecialchars(($cliente['cli_nombres'] ?? '') . ' ' . ($cliente['cli_apellidos'] ?? '')) ?>
                         </h3>
 
                         <p class="text-muted text-center">
@@ -59,10 +59,10 @@ $abonos = $abonos ?? [];
                                 'INVITADO' => ['label' => 'Invitado', 'badge' => 'badge-secondary'],
                                 'PUBLICO' => ['label' => 'Público', 'badge' => 'badge-light']
                             ];
-                            $tipo = $tiposCliente[$cliente['tipo_cliente']] ?? ['label' => $cliente['tipo_cliente'], 'badge' => 'badge-secondary'];
+                            $tipo = $tiposCliente[$cliente['cli_tipo_cliente']] ?? ['label' => $cliente['cli_tipo_cliente'] ?? '', 'badge' => 'badge-secondary'];
                             ?>
                             <span class="badge <?= $tipo['badge'] ?>"><?= $tipo['label'] ?></span>
-                            <?php if ($cliente['estado'] === 'A'): ?>
+                            <?php if (($cliente['cli_estado'] ?? 'A') === 'A'): ?>
                             <span class="badge badge-success">Activo</span>
                             <?php else: ?>
                             <span class="badge badge-danger">Inactivo</span>
@@ -72,40 +72,40 @@ $abonos = $abonos ?? [];
                         <ul class="list-group list-group-unbordered mb-3">
                             <li class="list-group-item">
                                 <b><i class="fas fa-id-card mr-2"></i>Identificación</b>
-                                <a class="float-right"><?= htmlspecialchars($cliente['tipo_identificacion'] . ': ' . $cliente['identificacion']) ?></a>
+                                <a class="float-right"><?= htmlspecialchars(($cliente['cli_tipo_identificacion'] ?? '') . ': ' . ($cliente['cli_identificacion'] ?? '')) ?></a>
                             </li>
                             <li class="list-group-item">
                                 <b><i class="fas fa-envelope mr-2"></i>Email</b>
-                                <a class="float-right"><?= htmlspecialchars($cliente['email'] ?? 'No registrado') ?></a>
+                                <a class="float-right"><?= htmlspecialchars($cliente['cli_email'] ?? 'No registrado') ?></a>
                             </li>
                             <li class="list-group-item">
                                 <b><i class="fas fa-phone mr-2"></i>Teléfono</b>
-                                <a class="float-right"><?= htmlspecialchars($cliente['telefono'] ?? $cliente['celular'] ?? 'No registrado') ?></a>
+                                <a class="float-right"><?= htmlspecialchars($cliente['cli_telefono'] ?? $cliente['cli_celular'] ?? 'No registrado') ?></a>
                             </li>
                             <li class="list-group-item">
                                 <b><i class="fas fa-calendar mr-2"></i>F. Nacimiento</b>
-                                <a class="float-right"><?= $cliente['fecha_nacimiento'] ? date('d/m/Y', strtotime($cliente['fecha_nacimiento'])) : 'No registrado' ?></a>
+                                <a class="float-right"><?= !empty($cliente['cli_fecha_nacimiento']) ? date('d/m/Y', strtotime($cliente['cli_fecha_nacimiento'])) : 'No registrado' ?></a>
                             </li>
                             <li class="list-group-item">
                                 <b><i class="fas fa-wallet mr-2"></i>Saldo a Favor</b>
-                                <a class="float-right text-success font-weight-bold">$<?= number_format($cliente['saldo_abono'] ?? 0, 2) ?></a>
+                                <a class="float-right text-success font-weight-bold">$<?= number_format($cliente['cli_saldo_abono'] ?? 0, 2) ?></a>
                             </li>
                         </ul>
 
-                        <a href="<?= url('clientes', 'cliente', 'editar', ['id' => $cliente['cliente_id']]) ?>" class="btn btn-primary btn-block">
+                        <a href="<?= url('clientes', 'cliente', 'editar', ['id' => $cliente['cli_cliente_id']]) ?>" class="btn btn-primary btn-block">
                             <i class="fas fa-edit"></i> Editar Cliente
                         </a>
                     </div>
                 </div>
                 
                 <!-- Dirección -->
-                <?php if (!empty($cliente['direccion'])): ?>
+                <?php if (!empty($cliente['cli_direccion'])): ?>
                 <div class="card card-info card-outline">
                     <div class="card-header">
                         <h3 class="card-title"><i class="fas fa-map-marker-alt"></i> Dirección</h3>
                     </div>
                     <div class="card-body">
-                        <?= nl2br(htmlspecialchars($cliente['direccion'])) ?>
+                        <?= nl2br(htmlspecialchars($cliente['cli_direccion'])) ?>
                     </div>
                 </div>
                 <?php endif; ?>

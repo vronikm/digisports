@@ -17,20 +17,36 @@ class HubController extends \BaseController {
      * Vista principal del Hub - Selección de módulos
      */
     public function index() {
-        $rolId = $_SESSION['rol_id'] ?? null;
+        $rolId = $_SESSION['usu_rol_id'] ?? null;
         if ($rolId === 1 || $rolId === '1') {
             // Super admin: acceso a todos los módulos activos
-            $stmt = $this->db->query("SELECT codigo, nombre, descripcion, icono, color as color_fondo, url_base FROM modulos_sistema WHERE estado = 'A' ORDER BY orden_visualizacion ASC");
-            $modulos = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+            $stmt = $this->db->query("SELECT mod_id, mod_codigo, mod_nombre, mod_descripcion, mod_icono, mod_color_fondo, mod_orden, mod_ruta_modulo, mod_ruta_controller, mod_ruta_action, mod_es_externo, mod_url_externa, mod_activo FROM seguridad_modulos WHERE mod_activo = 1 ORDER BY mod_orden ASC");
+            $modulosRaw = $stmt->fetchAll(\PDO::FETCH_ASSOC);
         } else {
             // Resto de usuarios: lógica de permisos (puedes mejorar aquí si tienes reglas más complejas)
-            $tenantId = $_SESSION['tenant_id'] ?? 1;
-            $modulos = $this->obtenerModulosAccesibles($tenantId, $rolId);
+            $tenantId = $_SESSION['usu_tenant_id'] ?? 1;
+            $modulosRaw = $this->obtenerModulosAccesibles($tenantId, $rolId);
         }
+        // Mapear campos a los esperados por la vista
+        $modulos = array_map(function($m) {
+            return [
+                'codigo' => isset($m['mod_codigo']) ? $m['mod_codigo'] : '',
+                'nombre' => isset($m['mod_nombre']) ? $m['mod_nombre'] : '',
+                'descripcion' => isset($m['mod_descripcion']) ? $m['mod_descripcion'] : '',
+                'icono' => isset($m['mod_icono']) ? $m['mod_icono'] : '',
+                'color_fondo' => isset($m['mod_color_fondo']) && $m['mod_color_fondo'] !== null ? $m['mod_color_fondo'] : '#1e40af',
+                'ruta_modulo' => isset($m['mod_ruta_modulo']) ? $m['mod_ruta_modulo'] : '',
+                'ruta_controller' => isset($m['mod_ruta_controller']) ? $m['mod_ruta_controller'] : '',
+                'ruta_action' => isset($m['mod_ruta_action']) ? $m['mod_ruta_action'] : '',
+                'es_externo' => isset($m['mod_es_externo']) ? $m['mod_es_externo'] : 0,
+                'url_externa' => isset($m['mod_url_externa']) ? $m['mod_url_externa'] : null,
+                'activo' => isset($m['mod_activo']) ? $m['mod_activo'] : 1,
+            ];
+        }, $modulosRaw);
         $this->viewData['modulos'] = $modulos;
         $this->viewData['modulos_organizados'] = array_chunk($modulos, 4);
-        $this->viewData['usuario'] = $_SESSION['user_name'] ?? 'Usuario';
-        $this->viewData['tenant_nombre'] = $_SESSION['tenant_name'] ?? 'DigiSports';
+        $this->viewData['usuario'] = $_SESSION['usu_nombres'] ?? 'Usuario';
+        $this->viewData['tenant_nombre'] = $_SESSION['tenant_nombre'] ?? 'DigiSports';
         $this->viewData['title'] = 'DigiSports - Selecciona tu módulo';
         $this->renderHub('core/hub/index', $this->viewData);
     }
@@ -42,31 +58,32 @@ class HubController extends \BaseController {
         try {
             $sql = "
                 SELECT DISTINCT
-                    m.id,
-                    m.codigo,
-                    m.nombre,
-                    m.descripcion,
-                    m.icono,
-                    m.color_fondo,
-                    m.orden,
-                    m.ruta_modulo,
-                    m.ruta_controller,
-                    m.ruta_action,
-                    m.es_externo,
-                    m.url_externa,
-                    COALESCE(rm.puede_ver, 0) AS puede_ver,
-                    COALESCE(rm.puede_crear, 0) AS puede_crear,
-                    COALESCE(rm.puede_editar, 0) AS puede_editar,
-                    COALESCE(rm.puede_eliminar, 0) AS puede_eliminar
-                FROM modulos m
-                INNER JOIN tenant_modulos tm ON m.id = tm.modulo_id 
-                    AND tm.tenant_id = ? 
-                    AND tm.estado = 'ACTIVO'
-                    AND (tm.fecha_fin IS NULL OR tm.fecha_fin >= CURDATE())
-                LEFT JOIN rol_modulos rm ON m.id = rm.modulo_id AND rm.rol_id = ?
-                WHERE m.activo = 1
-                    AND (rm.puede_ver = 1 OR ? = 1)
-                ORDER BY m.orden ASC
+                    m.mod_id,
+                    m.mod_codigo,
+                    m.mod_nombre,
+                    m.mod_descripcion,
+                    m.mod_icono,
+                    m.mod_color_fondo,
+                    m.mod_orden,
+                    m.mod_ruta_modulo,
+                    m.mod_ruta_controller,
+                    m.mod_ruta_action,
+                    m.mod_es_externo,
+                    m.mod_url_externa,
+                    m.mod_activo,
+                    COALESCE(rm.rm_puede_ver, 0) AS puede_ver,
+                    COALESCE(rm.rm_puede_crear, 0) AS puede_crear,
+                    COALESCE(rm.rm_puede_editar, 0) AS puede_editar,
+                    COALESCE(rm.rm_puede_eliminar, 0) AS puede_eliminar
+                FROM seguridad_modulos m
+                INNER JOIN seguridad_tenant_modulos tm ON m.mod_id = tm.tm_modulo_id 
+                    AND tm.tm_tenant_id = ? 
+                    AND tm.tm_estado = 'ACTIVO'
+                    AND (tm.tm_fecha_fin IS NULL OR tm.tm_fecha_fin >= CURDATE())
+                LEFT JOIN seguridad_rol_modulos rm ON m.mod_id = rm.rm_modulo_id AND rm.rm_rol_id = ?
+                WHERE m.mod_activo = 1
+                    AND (rm.rm_puede_ver = 1 OR ? = 1)
+                ORDER BY m.mod_orden ASC
             ";
             $stmt = $this->db->prepare($sql);
             $stmt->execute([$tenantId, $rolId, $rolId]);

@@ -42,9 +42,9 @@ class WelcomeController extends \BaseController {
     private function getModulosSistema(): array {
         try {
             $stmt = $this->db->query("
-                SELECT codigo, nombre, descripcion, icono, color, url_base, orden_visualizacion
+                    SELECT mod_codigo, mod_nombre, mod_descripcion, mod_icono, mod_color, mod_url_base, mod_orden_visualizacion
                 FROM modulos_sistema 
-                WHERE estado = 'A' 
+                    WHERE mod_estado = 'A' 
                 ORDER BY orden_visualizacion ASC
             ");
             return $stmt->fetchAll(\PDO::FETCH_ASSOC);

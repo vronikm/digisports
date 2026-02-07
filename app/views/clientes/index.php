@@ -180,7 +180,7 @@ $tiposCliente = $tiposCliente ?? [];
                                         <i class="fas fa-edit"></i>
                                     </a>
                                     <button type="button" class="btn btn-danger" title="Eliminar"
-                                            onclick="eliminarCliente(<?= $cliente['cliente_id'] ?>, '<?= htmlspecialchars($cliente['nombres']) ?>')">
+                                            onclick="eliminarCliente(<?= $cliente['cli_cliente_id'] ?>, '<?= htmlspecialchars($cliente['cli_nombres']) ?>')">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </div>

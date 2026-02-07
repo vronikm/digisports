@@ -128,7 +128,7 @@ class TenantController extends \BaseController {
         }
         
         // Cargar planes
-        $stmt = $this->db->query("SELECT * FROM planes_suscripcion WHERE estado = 'A' ORDER BY precio_mensual ASC");
+            $stmt = $this->db->query("SELECT * FROM core_planes_suscripcion WHERE plan_estado = 'A' ORDER BY plan_precio_mensual ASC");
         $planes = $stmt->fetchAll();
         
         $this->viewData['planes'] = $planes;
@@ -251,7 +251,7 @@ class TenantController extends \BaseController {
             $tenantId = $this->db->lastInsertId();
             
             // Asignar módulos incluidos en el plan
-            $modulosIncluidos = json_decode($plan['modulos_incluidos'], true);
+                $modulosIncluidos = json_decode($plan['plan_modulos_incluidos'], true);
             
             foreach ($modulosIncluidos as $codigoModulo) {
                 $stmt = $this->db->prepare("SELECT modulo_id FROM modulos_sistema WHERE codigo = ?");

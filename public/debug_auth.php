@@ -21,17 +21,17 @@ try {
     $stmt = $db->prepare("
         SELECT 
             u.*,
-            t.estado_suscripcion,
-            t.fecha_vencimiento,
-            r.codigo as rol_codigo,
-            r.permisos,
-            r.nivel_acceso
-        FROM usuarios u
-        INNER JOIN tenants t ON u.tenant_id = t.tenant_id
-        INNER JOIN roles r ON u.rol_id = r.rol_id
-        WHERE (u.username = ? OR u.email = ?)
-        AND u.estado = 'A'
-        AND t.estado IN ('ACTIVO', 'PRUEBA', 'A')
+            t.ten_estado_suscripcion,
+            t.ten_fecha_vencimiento,
+            r.rol_codigo,
+            r.rol_permisos,
+            r.rol_nivel_acceso
+        FROM seguridad_usuarios u
+        INNER JOIN seguridad_tenants t ON u.usu_tenant_id = t.ten_tenant_id
+        INNER JOIN seguridad_roles r ON u.usu_rol_id = r.rol_rol_id
+        WHERE (u.usu_username = ? OR u.usu_email = ?)
+        AND u.usu_estado = 'A'
+        AND t.ten_estado IN ('A', 'ACTIVO', 'PRUEBA')
     ");
     
     $stmt->execute([$username, $username]);
@@ -40,17 +40,17 @@ try {
     if ($user) {
         echo "<p class='success'>✓ Usuario encontrado</p>";
         echo "<pre>";
-        echo "usuario_id: {$user['usuario_id']}\n";
-        echo "username: {$user['username']}\n";
-        echo "email: {$user['email']}\n";
-        echo "estado: {$user['estado']}\n";
-        echo "tenant_id: {$user['tenant_id']}\n";
-        echo "rol_id: {$user['rol_id']}\n";
+        echo "usu_usuario_id: {$user['usu_usuario_id']}\n";
+        echo "usu_username: {$user['usu_username']}\n";
+        echo "usu_email: {$user['usu_email']}\n";
+        echo "usu_estado: {$user['usu_estado']}\n";
+        echo "usu_tenant_id: {$user['usu_tenant_id']}\n";
+        echo "usu_rol_id: {$user['usu_rol_id']}\n";
         echo "rol_codigo: {$user['rol_codigo']}\n";
-        echo "estado_suscripcion: {$user['estado_suscripcion']}\n";
-        echo "nivel_acceso: {$user['nivel_acceso']}\n";
-        echo "bloqueado_hasta: " . ($user['bloqueado_hasta'] ?? 'NULL') . "\n";
-        echo "password (hash): " . substr($user['password'], 0, 20) . "...\n";
+        echo "ten_estado_suscripcion: {$user['ten_estado_suscripcion']}\n";
+        echo "rol_nivel_acceso: {$user['rol_nivel_acceso']}\n";
+        echo "usu_bloqueado_hasta: " . ($user['usu_bloqueado_hasta'] ?? 'NULL') . "\n";
+        echo "usu_password (hash): " . substr($user['usu_password'], 0, 20) . "...\n";
         echo "</pre>";
         
         // 2. Verificar contraseña

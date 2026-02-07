@@ -20,7 +20,8 @@ class AuditoriaController extends \App\Controllers\ModuleController {
         $this->moduloColor = '#F59E0B';
     }
     public function accesos() {
-        $logs = [];
+        $stmt = $this->db->query("SELECT * FROM seguridad_auditoria_acciones WHERE aud_accion = 'acceso' ORDER BY aud_fecha DESC LIMIT 100");
+        $logs = $stmt->fetchAll();
         $this->renderModule('seguridad/auditoria/accesos', [
             'logs' => $logs,
             'pageTitle' => 'Logs de Acceso'
@@ -28,7 +29,8 @@ class AuditoriaController extends \App\Controllers\ModuleController {
     }
 
     public function cambios() {
-        $logs = [];
+        $stmt = $this->db->query("SELECT * FROM seguridad_auditoria_acciones WHERE aud_accion = 'cambio' ORDER BY aud_fecha DESC LIMIT 100");
+        $logs = $stmt->fetchAll();
         $this->renderModule('seguridad/auditoria/cambios', [
             'logs' => $logs,
             'pageTitle' => 'Logs de Cambios'
@@ -36,7 +38,8 @@ class AuditoriaController extends \App\Controllers\ModuleController {
     }
 
     public function alertas() {
-        $alertas = [];
+        $stmt = $this->db->query("SELECT * FROM seguridad_auditoria_acciones WHERE aud_accion = 'alerta' ORDER BY aud_fecha DESC LIMIT 100");
+        $alertas = $stmt->fetchAll();
         $this->renderModule('seguridad/auditoria/alertas', [
             'alertas' => $alertas,
             'pageTitle' => 'Alertas de Seguridad'

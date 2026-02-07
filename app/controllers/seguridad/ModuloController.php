@@ -153,7 +153,7 @@ class ModuloController extends \App\Controllers\ModuleController {
     public function index() {
         $this->authorize('ver', 'modulos');
         try {
-            $modulos = $this->db->query("SELECT * FROM modulos_sistema ORDER BY orden_visualizacion")
+                $modulos = $this->db->query("SELECT * FROM seguridad_modulos ORDER BY mod_orden_visualizacion")
                 ->fetchAll(\PDO::FETCH_ASSOC);
         } catch (\Exception $e) {
             $modulos = [];
@@ -176,7 +176,7 @@ class ModuloController extends \App\Controllers\ModuleController {
             header('Location: ' . url('seguridad', 'modulo', 'index'));
             exit;
         }
-        $stmt = $this->db->prepare("SELECT * FROM modulos_sistema WHERE modulo_id = ?");
+            $stmt = $this->db->prepare("SELECT * FROM seguridad_modulos WHERE mod_id = ?");
         $stmt->execute([$id]);
         $modulo = $stmt->fetch(\PDO::FETCH_ASSOC);
         if (!$modulo) {
@@ -210,32 +210,32 @@ class ModuloController extends \App\Controllers\ModuleController {
             exit;
         }
         try {
-            $stmt = $this->db->prepare("SELECT * FROM modulos_sistema WHERE codigo = ?");
+                $stmt = $this->db->prepare("SELECT * FROM seguridad_modulos WHERE mod_codigo = ?");
             $stmt->execute([$codigo]);
             $moduloSis = $stmt->fetch(\PDO::FETCH_ASSOC);
             if (!$moduloSis) {
                 echo json_encode(['success' => false, 'message' => 'Módulo no encontrado en catálogo del sistema']);
                 exit;
             }
-            $stmt = $this->db->prepare("SELECT * FROM modulos WHERE codigo = ?");
+                $stmt = $this->db->prepare("SELECT * FROM seguridad_modulos WHERE mod_codigo = ?");
             $stmt->execute([$codigo]);
             if ($stmt->fetch()) {
                 echo json_encode(['success' => false, 'message' => 'El módulo ya está activo en el sistema']);
                 exit;
             }
-            $sql = "INSERT INTO modulos (codigo, nombre, descripcion, icono, color, url_base, es_externo, base_datos_externa, orden_visualizacion, requiere_suscripcion, estado) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                $sql = "INSERT INTO seguridad_modulos (mod_codigo, mod_nombre, mod_descripcion, mod_icono, mod_color, mod_url_base, mod_es_externo, mod_base_datos_externa, mod_orden_visualizacion, mod_requiere_suscripcion, mod_estado) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             $params = [
-                $moduloSis['codigo'],
-                $moduloSis['nombre'],
-                $moduloSis['descripcion'],
-                $moduloSis['icono'],
-                $moduloSis['color'],
-                $moduloSis['url_base'],
-                $moduloSis['es_externo'],
-                $moduloSis['base_datos_externa'],
-                $moduloSis['orden_visualizacion'],
-                $moduloSis['requiere_suscripcion'],
-                $moduloSis['estado']
+                    $moduloSis['mod_codigo'],
+                    $moduloSis['mod_nombre'],
+                    $moduloSis['mod_descripcion'],
+                    $moduloSis['mod_icono'],
+                    $moduloSis['mod_color'],
+                    $moduloSis['mod_url_base'],
+                    $moduloSis['mod_es_externo'],
+                    $moduloSis['mod_base_datos_externa'],
+                    $moduloSis['mod_orden_visualizacion'],
+                    $moduloSis['mod_requiere_suscripcion'],
+                    $moduloSis['mod_estado']
             ];
             $stmt = $this->db->prepare($sql);
             $stmt->execute($params);
@@ -255,7 +255,7 @@ class ModuloController extends \App\Controllers\ModuleController {
 
     public function iconos() {
         try {
-            $modulos = $this->db->query("SELECT * FROM modulos_sistema ORDER BY orden_visualizacion")->fetchAll(\PDO::FETCH_ASSOC);
+                $modulos = $this->db->query("SELECT * FROM seguridad_modulos ORDER BY mod_orden_visualizacion")->fetchAll(\PDO::FETCH_ASSOC);
         } catch (\Exception $e) {
             $modulos = [];
         }
@@ -279,16 +279,16 @@ class ModuloController extends \App\Controllers\ModuleController {
             $updates = [];
             $params = [];
             if ($icono) {
-                $updates[] = "icono = ?";
+                    $updates[] = "mod_icono = ?";
                 $params[] = $icono;
             }
             if ($color) {
-                $updates[] = "color = ?";
+                    $updates[] = "mod_color = ?";
                 $params[] = $color;
             }
             if (!empty($updates)) {
                 $params[] = $id;
-                $sql = "UPDATE modulos_sistema SET " . implode(', ', $updates) . " WHERE modulo_id = ?";
+                    $sql = "UPDATE seguridad_modulos SET " . implode(', ', $updates) . " WHERE mod_id = ?";
                 $stmt = $this->db->prepare($sql);
                 $stmt->execute($params);
             }

@@ -37,7 +37,7 @@ try {
     echo "=== ACTUALIZAR BASE DE DATOS ===\n\n";
     
     // Actualizar el usuario
-    $stmt = $pdo->prepare("UPDATE usuarios SET password = ? WHERE username = 'superadmin'");
+    $stmt = $pdo->prepare("UPDATE seguridad_usuarios SET usu_password = ? WHERE usu_username = 'superadmin'");
     $result = $stmt->execute([$hash]);
     
     if ($result) {
@@ -50,17 +50,17 @@ try {
     }
     
     // Verificar que se actualizó
-    $stmt = $pdo->query("SELECT usuario_id, username, password FROM usuarios WHERE username = 'superadmin'");
+    $stmt = $pdo->query("SELECT usu_usuario_id, usu_username, usu_password FROM seguridad_usuarios WHERE usu_username = 'superadmin'");
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
     
     if ($user) {
         echo "=== VERIFICACIÓN ===\n";
-        echo "Usuario ID: {$user['usuario_id']}\n";
-        echo "Username: {$user['username']}\n";
-        echo "Password hash (primeros 50 chars): " . substr($user['password'], 0, 50) . "...\n";
+        echo "Usuario ID: {$user['usu_usuario_id']}\n";
+        echo "Username: {$user['usu_username']}\n";
+        echo "Password hash (primeros 50 chars): " . substr($user['usu_password'], 0, 50) . "...\n";
         
         // Verificar que funciona
-        $verify2 = password_verify('Admin@2024', $user['password']);
+        $verify2 = password_verify('Admin@2024', $user['usu_password']);
         echo "Verificación de password: " . ($verify2 ? "✓ OK" : "✗ FALLO") . "\n";
     }
     

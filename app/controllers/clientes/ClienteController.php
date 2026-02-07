@@ -31,22 +31,22 @@ class ClienteController extends \BaseController {
         
         try {
             // Construir consulta
-            $where = ["c.tenant_id = ?"];
+            $where = ["c.cli_tenant_id = ?"];
             $params = [$tenantId];
             
             if ($buscar) {
-                $where[] = "(c.nombres LIKE ? OR c.apellidos LIKE ? OR c.identificacion LIKE ? OR c.email LIKE ?)";
+                $where[] = "(c.cli_nombres LIKE ? OR c.cli_apellidos LIKE ? OR c.cli_identificacion LIKE ? OR c.cli_email LIKE ?)";
                 $buscarLike = "%{$buscar}%";
                 $params = array_merge($params, [$buscarLike, $buscarLike, $buscarLike, $buscarLike]);
             }
-            
+
             if ($tipo) {
-                $where[] = "c.tipo_cliente = ?";
+                $where[] = "c.cli_tipo_cliente = ?";
                 $params[] = $tipo;
             }
-            
+
             if ($estado) {
-                $where[] = "c.estado = ?";
+                $where[] = "c.cli_estado = ?";
                 $params[] = $estado;
             }
             
@@ -61,11 +61,11 @@ class ClienteController extends \BaseController {
             $sql = "
                 SELECT 
                     c.*,
-                    c.saldo_abono as saldo_favor,
+                    c.cli_saldo_abono as saldo_favor,
                     0 as total_reservas
                 FROM clientes c
                 WHERE {$whereClause}
-                ORDER BY c.apellidos ASC, c.nombres ASC
+                ORDER BY c.cli_apellidos ASC, c.cli_nombres ASC
                 LIMIT {$perPage} OFFSET {$offset}
             ";
             
@@ -150,8 +150,8 @@ class ClienteController extends \BaseController {
         try {
             // Verificar si ya existe
             $stmt = $this->db->prepare("
-                SELECT cliente_id FROM clientes 
-                WHERE tenant_id = ? AND identificacion = ?
+                SELECT cli_cliente_id FROM clientes 
+                WHERE cli_tenant_id = ? AND cli_identificacion = ?
             ");
             $stmt->execute([$tenantId, $data['identificacion']]);
             
@@ -168,14 +168,13 @@ class ClienteController extends \BaseController {
             // Insertar cliente
             $sql = "
                 INSERT INTO clientes (
-                    tenant_id, tipo_identificacion, identificacion, 
-                    nombres, apellidos, email, telefono, celular,
-                    direccion, tipo_cliente, fecha_nacimiento, estado
+                    cli_tenant_id, cli_tipo_identificacion, cli_identificacion, 
+                    cli_nombres, cli_apellidos, cli_email, cli_telefono, cli_celular,
+                    cli_direccion, cli_tipo_cliente, cli_fecha_nacimiento, cli_estado
                 ) VALUES (
                     ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'A'
                 )
             ";
-            
             $stmt = $this->db->prepare($sql);
             $stmt->execute([
                 $tenantId,
@@ -325,20 +324,19 @@ class ClienteController extends \BaseController {
         try {
             $sql = "
                 UPDATE clientes SET
-                    tipo_identificacion = ?,
-                    identificacion = ?,
-                    nombres = ?,
-                    apellidos = ?,
-                    email = ?,
-                    telefono = ?,
-                    celular = ?,
-                    direccion = ?,
-                    tipo_cliente = ?,
-                    fecha_nacimiento = ?,
-                    estado = ?
-                WHERE cliente_id = ? AND tenant_id = ?
+                    cli_tipo_identificacion = ?,
+                    cli_identificacion = ?,
+                    cli_nombres = ?,
+                    cli_apellidos = ?,
+                    cli_email = ?,
+                    cli_telefono = ?,
+                    cli_celular = ?,
+                    cli_direccion = ?,
+                    cli_tipo_cliente = ?,
+                    cli_fecha_nacimiento = ?,
+                    cli_estado = ?
+                WHERE cli_cliente_id = ? AND cli_tenant_id = ?
             ";
-            
             $stmt = $this->db->prepare($sql);
             $stmt->execute([
                 $data['tipo_identificacion'],
@@ -398,8 +396,8 @@ class ClienteController extends \BaseController {
         try {
             // Verificar si tiene reservas activas
             $stmt = $this->db->prepare("
-                SELECT COUNT(*) FROM reservas 
-                WHERE cliente_id = ? AND estado IN ('PENDIENTE', 'CONFIRMADA')
+                SELECT COUNT(*) FROM instalaciones_reservas 
+                WHERE res_cliente_id = ? AND res_estado IN ('PENDIENTE', 'CONFIRMADA')
             ");
             $stmt->execute([$id]);
             
@@ -410,8 +408,8 @@ class ClienteController extends \BaseController {
             
             // Cambiar estado a inactivo
             $stmt = $this->db->prepare("
-                UPDATE clientes SET estado = 'I', fecha_actualizacion = NOW() 
-                WHERE cliente_id = ? AND tenant_id = ?
+                UPDATE clientes SET cli_estado = 'I', cli_fecha_registro = NOW() 
+                WHERE cli_cliente_id = ? AND cli_tenant_id = ?
             ");
             $stmt->execute([$id, $_SESSION['tenant_id']]);
             
@@ -443,24 +441,23 @@ class ClienteController extends \BaseController {
         try {
             $sql = "
                 SELECT 
-                    cliente_id as id,
-                    CONCAT(nombres, ' ', apellidos) as text,
-                    identificacion,
-                    email,
-                    tipo_cliente
+                    cli_cliente_id as id,
+                    CONCAT(cli_nombres, ' ', cli_apellidos) as text,
+                    cli_identificacion,
+                    cli_email,
+                    cli_tipo_cliente
                 FROM clientes
-                WHERE tenant_id = ?
-                AND estado = 'A'
+                WHERE cli_tenant_id = ?
+                AND cli_estado = 'A'
                 AND (
-                    nombres LIKE ? OR 
-                    apellidos LIKE ? OR 
-                    identificacion LIKE ? OR
-                    CONCAT(nombres, ' ', apellidos) LIKE ?
+                    cli_nombres LIKE ? OR 
+                    cli_apellidos LIKE ? OR 
+                    cli_identificacion LIKE ? OR
+                    CONCAT(cli_nombres, ' ', cli_apellidos) LIKE ?
                 )
-                ORDER BY apellidos, nombres
+                ORDER BY cli_apellidos, cli_nombres
                 LIMIT ?
             ";
-            
             $like = "%{$termino}%";
             $stmt = $this->db->prepare($sql);
             $stmt->execute([
@@ -485,7 +482,7 @@ class ClienteController extends \BaseController {
     private function getCliente($id) {
         $stmt = $this->db->prepare("
             SELECT * FROM clientes 
-            WHERE cliente_id = ? AND tenant_id = ?
+            WHERE cli_cliente_id = ? AND cli_tenant_id = ?
         ");
         $stmt->execute([$id, $_SESSION['tenant_id']]);
         return $stmt->fetch(\PDO::FETCH_ASSOC);

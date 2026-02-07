@@ -25,9 +25,9 @@ class UsuarioController extends \App\Controllers\ModuleController {
      * Registrar acción en auditoría
      */
     private function registrarAuditoria($accion, $entidad, $entidadId, $datosAntes = null, $datosDespues = null, $resultado = 'exito', $mensaje = '') {
-        $usuarioId = $_SESSION['usuario_id'] ?? null;
-        $tenantId = $_SESSION['tenant_id'] ?? null;
-        $sql = "INSERT INTO auditoria_acciones (usuario_id, tenant_id, accion, entidad, entidad_id, datos_antes, datos_despues, ip, resultado, mensaje) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        $usuarioId = $_SESSION['usr_id'] ?? null;
+        $tenantId = $_SESSION['ten_id'] ?? null;
+        $sql = "INSERT INTO seguridad_auditoria_acciones (aud_usr_id, aud_ten_id, aud_accion, aud_entidad, aud_entidad_id, aud_datos_antes, aud_datos_despues, aud_ip, aud_resultado, aud_mensaje) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         $params = [
             $usuarioId,
             $tenantId,
@@ -62,38 +62,35 @@ class UsuarioController extends \App\Controllers\ModuleController {
 
         $where = "WHERE 1=1";
         $params = [];
-
         if ($tenantId) {
-            $where .= " AND u.tenant_id = ?";
+            $where .= " AND u.usr_tenant_id = ?";
             $params[] = $tenantId;
         }
-        
         if ($estado) {
-            $where .= " AND u.estado = ?";
+            $where .= " AND u.usr_estado = ?";
             $params[] = $estado;
         }
-        
         if ($buscar) {
-            $where .= " AND (u.nombres LIKE ? OR u.apellidos LIKE ? OR u.email LIKE ? OR u.username LIKE ?)";
+            $where .= " AND (u.usr_nombres LIKE ? OR u.usr_apellidos LIKE ? OR u.usr_email LIKE ? OR u.usr_username LIKE ?)";
             $buscarLike = "%$buscar%";
             $params = array_merge($params, [$buscarLike, $buscarLike, $buscarLike, $buscarLike]);
         }
         
         try {
             // Total de registros
-            $countSql = "SELECT COUNT(*) FROM usuarios u $where";
+            $countSql = "SELECT COUNT(*) FROM seguridad_usuarios u $where";
             $stmt = $this->db->prepare($countSql);
             $stmt->execute($params);
             $total = $stmt->fetchColumn();
             
             // Obtener usuarios
             $sql = "
-                SELECT u.*, r.nombre as rol_nombre, t.nombre_comercial as tenant_nombre
-                FROM usuarios u
-                LEFT JOIN roles r ON u.rol_id = r.rol_id
-                LEFT JOIN tenants t ON u.tenant_id = t.tenant_id
+                SELECT u.*, r.rol_nombre, t.ten_nombre_comercial as tenant_nombre
+                FROM seguridad_usuarios u
+                LEFT JOIN seguridad_roles r ON u.usr_rol_id = r.rol_id
+                LEFT JOIN core_tenants t ON u.usr_tenant_id = t.ten_id
                 $where
-                ORDER BY u.fecha_registro DESC
+                ORDER BY u.usr_fecha_registro DESC
                 LIMIT $porPagina OFFSET $offset
             ";
             $stmt = $this->db->prepare($sql);
@@ -101,7 +98,7 @@ class UsuarioController extends \App\Controllers\ModuleController {
             $usuarios = $stmt->fetchAll(\PDO::FETCH_ASSOC);
             
             // Obtener tenants para filtro
-            $tenants = $this->db->query("SELECT tenant_id, nombre_comercial FROM tenants WHERE estado = 'A' ORDER BY nombre_comercial")->fetchAll(\PDO::FETCH_ASSOC);
+            $tenants = $this->db->query("SELECT ten_id, ten_nombre_comercial FROM core_tenants WHERE ten_estado = 'A' ORDER BY ten_nombre_comercial")->fetchAll(\PDO::FETCH_ASSOC);
             
         } catch (\Exception $e) {
             $usuarios = [];
@@ -131,8 +128,8 @@ class UsuarioController extends \App\Controllers\ModuleController {
             return;
         }
         
-        $tenants = $this->db->query("SELECT tenant_id, nombre_comercial FROM tenants WHERE estado = 'A' ORDER BY nombre_comercial")->fetchAll(\PDO::FETCH_ASSOC);
-        $roles = $this->db->query("SELECT rol_id, nombre, codigo FROM roles WHERE estado = 'A' ORDER BY nombre")->fetchAll(\PDO::FETCH_ASSOC);
+        $tenants = $this->db->query("SELECT ten_id, ten_nombre_comercial FROM core_tenants WHERE ten_estado = 'A' ORDER BY ten_nombre_comercial")->fetchAll(\PDO::FETCH_ASSOC);
+        $roles = $this->db->query("SELECT rol_id, rol_nombre, rol_codigo FROM seguridad_roles WHERE rol_estado = 'A' ORDER BY rol_nombre")->fetchAll(\PDO::FETCH_ASSOC);
         
         $this->renderModule('usuario/form', [
             'usuario' => null,
@@ -156,14 +153,14 @@ class UsuarioController extends \App\Controllers\ModuleController {
             if (!$id || !is_numeric($id)) {
                 throw new \Exception('ID de usuario inválido');
             }
-            $stmt = $this->db->prepare("SELECT * FROM usuarios WHERE usuario_id = ?");
+            $stmt = $this->db->prepare("SELECT * FROM seguridad_usuarios WHERE usr_id = ?");
             $stmt->execute([$id]);
             $usuario = $stmt->fetch(\PDO::FETCH_ASSOC);
             if (!$usuario) {
                 throw new \Exception('Usuario no encontrado');
             }
-            $tenants = $this->db->query("SELECT tenant_id, nombre_comercial FROM tenants WHERE estado = 'A' ORDER BY nombre_comercial")->fetchAll(\PDO::FETCH_ASSOC);
-            $roles = $this->db->query("SELECT rol_id, nombre, codigo FROM roles WHERE estado = 'A' ORDER BY nombre")->fetchAll(\PDO::FETCH_ASSOC);
+            $tenants = $this->db->query("SELECT ten_id, ten_nombre_comercial FROM core_tenants WHERE ten_estado = 'A' ORDER BY ten_nombre_comercial")->fetchAll(\PDO::FETCH_ASSOC);
+            $roles = $this->db->query("SELECT rol_id, rol_nombre, rol_codigo FROM seguridad_roles WHERE rol_estado = 'A' ORDER BY rol_nombre")->fetchAll(\PDO::FETCH_ASSOC);
             $this->renderModule('usuario/form', [
                 'usuario' => $usuario,
                 'tenants' => $tenants,
@@ -180,40 +177,40 @@ class UsuarioController extends \App\Controllers\ModuleController {
      */
     private function guardar($id = null) {
         $data = [
-            'tenant_id' => $_POST['tenant_id'],
-            'identificacion' => $_POST['identificacion'] ?? null,
-            'nombres' => $_POST['nombres'],
-            'apellidos' => $_POST['apellidos'],
-            'email' => $_POST['email'],
-            'telefono' => $_POST['telefono'] ?? null,
-            'celular' => $_POST['celular'] ?? null,
-            'username' => $_POST['username'],
-            'rol_id' => $_POST['rol_id'],
-            'requiere_2fa' => isset($_POST['requiere_2fa']) ? 'S' : 'N',
-            'estado' => $_POST['estado'] ?? 'A'
+            'usr_tenant_id' => $_POST['usr_tenant_id'],
+            'usr_identificacion' => $_POST['usr_identificacion'] ?? null,
+            'usr_nombres' => $_POST['usr_nombres'],
+            'usr_apellidos' => $_POST['usr_apellidos'],
+            'usr_email' => $_POST['usr_email'],
+            'usr_telefono' => $_POST['usr_telefono'] ?? null,
+            'usr_celular' => $_POST['usr_celular'] ?? null,
+            'usr_username' => $_POST['usr_username'],
+            'usr_rol_id' => $_POST['usr_rol_id'],
+            'usr_requiere_2fa' => isset($_POST['usr_requiere_2fa']) ? 'S' : 'N',
+            'usr_estado' => $_POST['usr_estado'] ?? 'A'
         ];
         
         try {
             if ($id) {
                 // Estado previo
-                $stmtPrev = $this->db->prepare("SELECT * FROM usuarios WHERE usuario_id = ?");
+                $stmtPrev = $this->db->prepare("SELECT * FROM seguridad_usuarios WHERE usr_id = ?");
                 $stmtPrev->execute([$id]);
                 $datosAntes = $stmtPrev->fetch(\PDO::FETCH_ASSOC);
                 // Actualizar
-                $sql = "UPDATE usuarios SET 
-                    tenant_id = ?, identificacion = ?, nombres = ?, apellidos = ?,
-                    email = ?, telefono = ?, celular = ?, username = ?,
-                    rol_id = ?, requiere_2fa = ?, estado = ?, fecha_actualizacion = NOW()
-                    WHERE usuario_id = ?";
+                $sql = "UPDATE seguridad_usuarios SET 
+                    usr_tenant_id = ?, usr_identificacion = ?, usr_nombres = ?, usr_apellidos = ?,
+                    usr_email = ?, usr_telefono = ?, usr_celular = ?, usr_username = ?,
+                    usr_rol_id = ?, usr_requiere_2fa = ?, usr_estado = ?, usr_fecha_actualizacion = NOW()
+                    WHERE usr_id = ?";
                 $params = array_values($data);
                 $params[] = $id;
                 // Si hay nueva contraseña
                 if (!empty($_POST['password'])) {
-                    $sql = "UPDATE usuarios SET 
-                        tenant_id = ?, identificacion = ?, nombres = ?, apellidos = ?,
-                        email = ?, telefono = ?, celular = ?, username = ?,
-                        rol_id = ?, requiere_2fa = ?, estado = ?, password = ?, fecha_actualizacion = NOW()
-                        WHERE usuario_id = ?";
+                    $sql = "UPDATE seguridad_usuarios SET 
+                        usr_tenant_id = ?, usr_identificacion = ?, usr_nombres = ?, usr_apellidos = ?,
+                        usr_email = ?, usr_telefono = ?, usr_celular = ?, usr_username = ?,
+                        usr_rol_id = ?, usr_requiere_2fa = ?, usr_estado = ?, usr_password = ?, usr_fecha_actualizacion = NOW()
+                        WHERE usr_id = ?";
                     $params = array_values($data);
                     $params[] = password_hash($_POST['password'], PASSWORD_ARGON2ID);
                     $params[] = $id;
@@ -221,7 +218,7 @@ class UsuarioController extends \App\Controllers\ModuleController {
                 $stmt = $this->db->prepare($sql);
                 $stmt->execute($params);
                 // Estado posterior
-                $stmtPost = $this->db->prepare("SELECT * FROM usuarios WHERE usuario_id = ?");
+                $stmtPost = $this->db->prepare("SELECT * FROM seguridad_usuarios WHERE usr_id = ?");
                 $stmtPost->execute([$id]);
                 $datosDespues = $stmtPost->fetch(\PDO::FETCH_ASSOC);
                 $this->registrarAuditoria('editar_usuario', 'usuario', $id, $datosAntes, $datosDespues);
@@ -236,13 +233,13 @@ class UsuarioController extends \App\Controllers\ModuleController {
                     redirect('seguridad', 'usuario', 'crear');
                     return;
                 }
-                $data['password'] = password_hash($_POST['password'], PASSWORD_ARGON2ID);
-                $sql = "INSERT INTO usuarios (tenant_id, identificacion, nombres, apellidos, email, telefono, celular, username, rol_id, requiere_2fa, estado, password)
+                $data['usr_password'] = password_hash($_POST['password'], PASSWORD_ARGON2ID);
+                $sql = "INSERT INTO seguridad_usuarios (usr_tenant_id, usr_identificacion, usr_nombres, usr_apellidos, usr_email, usr_telefono, usr_celular, usr_username, usr_rol_id, usr_requiere_2fa, usr_estado, usr_password)
                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                 $params = [
-                    $data['tenant_id'], $data['identificacion'], $data['nombres'], $data['apellidos'],
-                    $data['email'], $data['telefono'], $data['celular'], $data['username'],
-                    $data['rol_id'], $data['requiere_2fa'], $data['estado'], $data['password']
+                    $data['usr_tenant_id'], $data['usr_identificacion'], $data['usr_nombres'], $data['usr_apellidos'],
+                    $data['usr_email'], $data['usr_telefono'], $data['usr_celular'], $data['usr_username'],
+                    $data['usr_rol_id'], $data['usr_requiere_2fa'], $data['usr_estado'], $data['usr_password']
                 ];
                 $stmt = $this->db->prepare($sql);
                 $stmt->execute($params);
@@ -270,10 +267,10 @@ class UsuarioController extends \App\Controllers\ModuleController {
         $id = $_GET['id'] ?? 0;
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             try {
-                $stmtPrev = $this->db->prepare("SELECT * FROM usuarios WHERE usuario_id = ?");
+                $stmtPrev = $this->db->prepare("SELECT * FROM seguridad_usuarios WHERE usr_id = ?");
                 $stmtPrev->execute([$id]);
                 $datosAntes = $stmtPrev->fetch(\PDO::FETCH_ASSOC);
-                $stmt = $this->db->prepare("UPDATE usuarios SET estado = 'E' WHERE usuario_id = ?");
+                $stmt = $this->db->prepare("UPDATE seguridad_usuarios SET usr_estado = 'E' WHERE usr_id = ?");
                 $stmt->execute([$id]);
                 $this->registrarAuditoria('eliminar_usuario', 'usuario', $id, $datosAntes, null);
                 setFlashMessage('success', 'Usuario eliminado correctamente');
@@ -298,7 +295,7 @@ class UsuarioController extends \App\Controllers\ModuleController {
         $id = $_GET['id'] ?? 0;
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             try {
-                $stmt = $this->db->prepare("UPDATE usuarios SET intentos_fallidos = 0, bloqueado_hasta = NULL WHERE usuario_id = ?");
+                $stmt = $this->db->prepare("UPDATE seguridad_usuarios SET usr_intentos_fallidos = 0, usr_bloqueado_hasta = NULL WHERE usr_id = ?");
                 $stmt->execute([$id]);
                 setFlashMessage('success', 'Usuario desbloqueado');
             } catch (\Exception $e) {

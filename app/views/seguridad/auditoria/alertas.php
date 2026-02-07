@@ -24,11 +24,11 @@
         <tbody>
             <?php foreach ($alertas as $alerta): ?>
             <tr>
-                <td><?= htmlspecialchars($alerta['fecha'] ?? '') ?></td>
-                <td><?= htmlspecialchars($alerta['tipo'] ?? '') ?></td>
-                <td><?= htmlspecialchars($alerta['descripcion'] ?? '') ?></td>
-                <td><?= htmlspecialchars($alerta['usuario'] ?? '') ?></td>
-                <td><?= htmlspecialchars($alerta['accion'] ?? '') ?></td>
+                <td><?= htmlspecialchars($alerta['aud_fecha'] ?? '') ?></td>
+                <td><?= htmlspecialchars($alerta['aud_tipo'] ?? '') ?></td>
+                <td><?= htmlspecialchars($alerta['aud_descripcion'] ?? '') ?></td>
+                <td><?= htmlspecialchars($alerta['aud_usuario'] ?? '') ?></td>
+                <td><?= htmlspecialchars($alerta['aud_accion'] ?? '') ?></td>
             </tr>
             <?php endforeach; ?>
         </tbody>

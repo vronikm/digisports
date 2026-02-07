@@ -22,7 +22,7 @@ $db = Database::getInstance()->getConnection();
 
 // Simular datos de POST
 $username = 'superadmin';
-$password = 'admin123';
+$password = 'Admin@2024';
 
 echo "<h2>1. Datos de entrada</h2>";
 echo "<pre>Username: $username\nPassword: $password</pre>";
@@ -33,17 +33,17 @@ try {
     $stmt = $db->prepare("
         SELECT 
             u.*,
-            t.estado_suscripcion,
-            t.fecha_vencimiento,
-            r.codigo as rol_codigo,
-            r.permisos,
-            r.nivel_acceso
-        FROM usuarios u
-        INNER JOIN tenants t ON u.tenant_id = t.tenant_id
-        INNER JOIN roles r ON u.rol_id = r.rol_id
-        WHERE (u.username = ? OR u.email = ?)
-        AND u.estado = 'A'
-        AND t.estado IN ('ACTIVO', 'PRUEBA', 'A')
+            t.ten_estado_suscripcion,
+            t.ten_fecha_vencimiento,
+            r.rol_codigo,
+            r.rol_permisos,
+            r.rol_nivel_acceso
+        FROM seguridad_usuarios u
+        INNER JOIN seguridad_tenants t ON u.usu_tenant_id = t.ten_tenant_id
+        INNER JOIN seguridad_roles r ON u.usu_rol_id = r.rol_rol_id
+        WHERE (u.usu_username = ? OR u.usu_email = ?)
+        AND u.usu_estado = 'A'
+        AND t.ten_estado IN ('A', 'ACTIVO', 'PRUEBA')
     ");
     
     $stmt->execute([$username, $username]);
