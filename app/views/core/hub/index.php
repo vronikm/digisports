@@ -372,9 +372,6 @@ $title = $title ?? 'DigiSports Hub';
         
         <!-- Grid de módulos -->
         <div class="modules-grid">
-            <pre style="background:#fff;color:#333;padding:10px;border-radius:6px;margin-bottom:20px;max-height:200px;overflow:auto;">DEBUG MODULOS:
-    <?= print_r($modulos, true) ?>
-    </pre>
             <?php foreach ($modulos as $modulo): 
                 // Generar URL encriptada para cada módulo
                 $codigo = isset($modulo['codigo']) ? $modulo['codigo'] : '';

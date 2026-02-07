@@ -22,13 +22,13 @@ abstract class ModuleController extends \BaseController {
      */
     protected function loadModuleBranding() {
         if (!empty($this->moduloCodigo) && isset($this->db)) {
-            $stmt = $this->db->prepare("SELECT nombre, color, icono FROM modulos_sistema WHERE codigo = ? AND estado = 'A' LIMIT 1");
+            $stmt = $this->db->prepare("SELECT sis_nombre, sis_color, sis_icono FROM seguridad_modulos_sistema WHERE sis_codigo = ? AND sis_estado = 'A' LIMIT 1");
             $stmt->execute([$this->moduloCodigo]);
             $branding = $stmt->fetch(\PDO::FETCH_ASSOC);
             if ($branding) {
-                if (!empty($branding['nombre'])) $this->moduloNombre = $branding['nombre'];
-                if (!empty($branding['color'])) $this->moduloColor = $branding['color'];
-                if (!empty($branding['icono'])) $this->moduloIcono = $branding['icono'];
+                if (!empty($branding['sis_nombre'])) $this->moduloNombre = $branding['sis_nombre'];
+                if (!empty($branding['sis_color'])) $this->moduloColor = $branding['sis_color'];
+                if (!empty($branding['sis_icono'])) $this->moduloIcono = $branding['sis_icono'];
             }
         }
     }

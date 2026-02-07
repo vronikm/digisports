@@ -71,18 +71,19 @@ class HubController extends \BaseController {
                     m.mod_es_externo,
                     m.mod_url_externa,
                     m.mod_activo,
-                    COALESCE(rm.rm_puede_ver, 0) AS puede_ver,
-                    COALESCE(rm.rm_puede_crear, 0) AS puede_crear,
-                    COALESCE(rm.rm_puede_editar, 0) AS puede_editar,
-                    COALESCE(rm.rm_puede_eliminar, 0) AS puede_eliminar
+                    COALESCE(rm.rmo_rol_puede_ver, 0) AS puede_ver,
+                    COALESCE(rm.rmo_rol_puede_crear, 0) AS puede_crear,
+                    COALESCE(rm.rmo_rol_puede_editar, 0) AS puede_editar,
+                    COALESCE(rm.rmo_rol_puede_eliminar, 0) AS puede_eliminar
                 FROM seguridad_modulos m
-                INNER JOIN seguridad_tenant_modulos tm ON m.mod_id = tm.tm_modulo_id 
-                    AND tm.tm_tenant_id = ? 
-                    AND tm.tm_estado = 'ACTIVO'
-                    AND (tm.tm_fecha_fin IS NULL OR tm.tm_fecha_fin >= CURDATE())
-                LEFT JOIN seguridad_rol_modulos rm ON m.mod_id = rm.rm_modulo_id AND rm.rm_rol_id = ?
+                INNER JOIN seguridad_tenant_modulos tm ON m.mod_id = tm.tmo_modulo_id 
+                    AND tm.tmo_tenant_id = ? 
+                    AND tm.tmo_estado = 'ACTIVO'
+                    AND tm.tmo_activo = 'S'
+                    AND (tm.tmo_fecha_fin IS NULL OR tm.tmo_fecha_fin >= CURDATE())
+                LEFT JOIN seguridad_rol_modulos rm ON m.mod_id = rm.rmo_rol_modulo_id AND rm.rmo_rol_rol_id = ?
                 WHERE m.mod_activo = 1
-                    AND (rm.rm_puede_ver = 1 OR ? = 1)
+                    AND (rm.rmo_rol_puede_ver = 1 OR rm.rmo_rol_puede_ver IS NULL OR ? = 1)
                 ORDER BY m.mod_orden ASC
             ";
             $stmt = $this->db->prepare($sql);
@@ -201,26 +202,57 @@ class HubController extends \BaseController {
         try {
             $sql = "
                 SELECT 
-                    m.*,
-                    COALESCE(rm.puede_ver, 0) AS puede_ver,
-                    COALESCE(rm.puede_crear, 0) AS puede_crear,
-                    COALESCE(rm.puede_editar, 0) AS puede_editar,
-                    COALESCE(rm.puede_eliminar, 0) AS puede_eliminar
-                FROM modulos m
-                INNER JOIN tenant_modulos tm ON m.id = tm.modulo_id 
-                    AND tm.tenant_id = ? 
-                    AND tm.estado = 'ACTIVO'
-                LEFT JOIN rol_modulos rm ON m.id = rm.modulo_id AND rm.rol_id = ?
-                WHERE m.codigo = ? 
-                    AND m.activo = 1
-                    AND (rm.puede_ver = 1 OR ? = 1)
+                    m.mod_id,
+                    m.mod_codigo,
+                    m.mod_nombre,
+                    m.mod_descripcion,
+                    m.mod_icono,
+                    m.mod_color_fondo,
+                    m.mod_orden,
+                    m.mod_ruta_modulo,
+                    m.mod_ruta_controller,
+                    m.mod_ruta_action,
+                    m.mod_es_externo,
+                    m.mod_url_externa,
+                    m.mod_activo,
+                    COALESCE(rm.rmo_rol_puede_ver, 0) AS puede_ver,
+                    COALESCE(rm.rmo_rol_puede_crear, 0) AS puede_crear,
+                    COALESCE(rm.rmo_rol_puede_editar, 0) AS puede_editar,
+                    COALESCE(rm.rmo_rol_puede_eliminar, 0) AS puede_eliminar
+                FROM seguridad_modulos m
+                INNER JOIN seguridad_tenant_modulos tm ON m.mod_id = tm.tmo_modulo_id 
+                    AND tm.tmo_tenant_id = ? 
+                    AND tm.tmo_estado = 'ACTIVO'
+                    AND tm.tmo_activo = 'S'
+                    AND (tm.tmo_fecha_fin IS NULL OR tm.tmo_fecha_fin >= CURDATE())
+                LEFT JOIN seguridad_rol_modulos rm ON m.mod_id = rm.rmo_rol_modulo_id AND rm.rmo_rol_rol_id = ?
+                WHERE m.mod_codigo = ? 
+                    AND m.mod_activo = 1
+                    AND (rm.rmo_rol_puede_ver = 1 OR rm.rmo_rol_puede_ver IS NULL OR ? = 1)
                 LIMIT 1
             ";
-            
             $stmt = $this->db->prepare($sql);
             $stmt->execute([$tenantId, $rolId, $codigo, $rolId]);
-            return $stmt->fetch(\PDO::FETCH_ASSOC);
-            
+            $modulo = $stmt->fetch(\PDO::FETCH_ASSOC);
+            if (!$modulo) return null;
+            // Mapear a los nombres esperados por la vista y sesión
+            return [
+                'codigo' => $modulo['mod_codigo'],
+                'nombre' => $modulo['mod_nombre'],
+                'descripcion' => $modulo['mod_descripcion'],
+                'icono' => $modulo['mod_icono'],
+                'color_fondo' => $modulo['mod_color_fondo'],
+                'ruta_modulo' => $modulo['mod_ruta_modulo'],
+                'ruta_controller' => $modulo['mod_ruta_controller'],
+                'ruta_action' => $modulo['mod_ruta_action'],
+                'es_externo' => $modulo['mod_es_externo'],
+                'url_externa' => $modulo['mod_url_externa'],
+                'activo' => $modulo['mod_activo'],
+                'puede_ver' => $modulo['puede_ver'],
+                'puede_crear' => $modulo['puede_crear'],
+                'puede_editar' => $modulo['puede_editar'],
+                'puede_eliminar' => $modulo['puede_eliminar'],
+            ];
         } catch (\Exception $e) {
             error_log("Error verificando acceso: " . $e->getMessage());
             return null;
