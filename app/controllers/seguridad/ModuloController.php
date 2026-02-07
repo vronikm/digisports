@@ -247,6 +247,15 @@ class ModuloController extends \App\Controllers\ModuleController {
         exit;
     }
 
+    /**
+     * Configuración del sistema
+     */
+    public function configuracion() {
+        $this->renderModule('modulo/configuracion', [
+            'pageTitle' => 'Configuración de Seguridad'
+        ]);
+    }
+
     protected function getMenuItems() {
         require_once BASE_PATH . '/app/controllers/seguridad/DashboardController.php';
         $dashboard = new \App\Controllers\Seguridad\DashboardController();
@@ -306,20 +315,21 @@ class ModuloController extends \App\Controllers\ModuleController {
     }
 
     private function registrarAuditoria($accion, $entidad, $entidadId, $datosAntes = null, $datosDespues = null, $resultado = 'exito', $mensaje = '') {
-        $usuarioId = $_SESSION['usuario_id'] ?? null;
-        $tenantId = $_SESSION['tenant_id'] ?? null;
-        $sql = "INSERT INTO auditoria_acciones (usuario_id, tenant_id, accion, entidad, entidad_id, datos_antes, datos_despues, ip, resultado, mensaje) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        $usuarioId = $_SESSION['usr_id'] ?? null;
+        $tenantId = $_SESSION['ten_id'] ?? null;
+        $sql = "INSERT INTO seguridad_auditoria (aud_tenant_id, aud_usuario_id, aud_modulo, aud_tabla, aud_registro_id, aud_operacion, aud_valores_anteriores, aud_valores_nuevos, aud_ip, aud_url, aud_metodo) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         $params = [
-            $usuarioId,
             $tenantId,
-            $accion,
+            $usuarioId,
+            'seguridad',
             $entidad,
             $entidadId,
+            $accion,
             $datosAntes ? json_encode($datosAntes) : null,
             $datosDespues ? json_encode($datosDespues) : null,
             $_SERVER['REMOTE_ADDR'] ?? '',
-            $resultado,
-            $mensaje
+            $_SERVER['REQUEST_URI'] ?? '',
+            $_SERVER['REQUEST_METHOD'] ?? 'POST'
         ];
         try {
             $stmt = $this->db->prepare($sql);

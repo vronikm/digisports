@@ -20,8 +20,17 @@ class AuditoriaController extends \App\Controllers\ModuleController {
         $this->moduloColor = '#F59E0B';
     }
     public function accesos() {
-        $stmt = $this->db->query("SELECT * FROM seguridad_auditoria_acciones WHERE aud_accion = 'acceso' ORDER BY aud_fecha DESC LIMIT 100");
-        $logs = $stmt->fetchAll();
+        try {
+            $stmt = $this->db->query("
+                SELECT l.*, u.usu_nombres, u.usu_apellidos, u.usu_username
+                FROM seguridad_log_accesos l
+                LEFT JOIN seguridad_usuarios u ON l.acc_usuario_id = u.usu_usuario_id
+                ORDER BY l.acc_fecha DESC LIMIT 100
+            ");
+            $logs = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        } catch (\Exception $e) {
+            $logs = [];
+        }
         $this->renderModule('seguridad/auditoria/accesos', [
             'logs' => $logs,
             'pageTitle' => 'Logs de Acceso'
@@ -29,8 +38,17 @@ class AuditoriaController extends \App\Controllers\ModuleController {
     }
 
     public function cambios() {
-        $stmt = $this->db->query("SELECT * FROM seguridad_auditoria_acciones WHERE aud_accion = 'cambio' ORDER BY aud_fecha DESC LIMIT 100");
-        $logs = $stmt->fetchAll();
+        try {
+            $stmt = $this->db->query("
+                SELECT a.*, u.usu_nombres, u.usu_apellidos, u.usu_username
+                FROM seguridad_auditoria a
+                LEFT JOIN seguridad_usuarios u ON a.aud_usuario_id = u.usu_usuario_id
+                ORDER BY a.aud_fecha_operacion DESC LIMIT 100
+            ");
+            $logs = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        } catch (\Exception $e) {
+            $logs = [];
+        }
         $this->renderModule('seguridad/auditoria/cambios', [
             'logs' => $logs,
             'pageTitle' => 'Logs de Cambios'
@@ -38,8 +56,18 @@ class AuditoriaController extends \App\Controllers\ModuleController {
     }
 
     public function alertas() {
-        $stmt = $this->db->query("SELECT * FROM seguridad_auditoria_acciones WHERE aud_accion = 'alerta' ORDER BY aud_fecha DESC LIMIT 100");
-        $alertas = $stmt->fetchAll();
+        try {
+            $stmt = $this->db->query("
+                SELECT l.*, u.usu_nombres, u.usu_apellidos, u.usu_username
+                FROM seguridad_log_accesos l
+                LEFT JOIN seguridad_usuarios u ON l.acc_usuario_id = u.usu_usuario_id
+                WHERE l.acc_tipo = 'LOGIN_FAILED' OR l.acc_exito = 'N'
+                ORDER BY l.acc_fecha DESC LIMIT 100
+            ");
+            $alertas = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        } catch (\Exception $e) {
+            $alertas = [];
+        }
         $this->renderModule('seguridad/auditoria/alertas', [
             'alertas' => $alertas,
             'pageTitle' => 'Alertas de Seguridad'

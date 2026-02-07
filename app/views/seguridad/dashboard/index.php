@@ -159,21 +159,21 @@ $moduloIcono = $modulo_actual['icono'] ?? 'fas fa-shield-alt';
                                 <?php else: ?>
                                 <?php foreach ($recentActivity as $log): ?>
                                 <tr>
-                                    <td><small><?= date('d/m H:i', strtotime($log['fecha'] ?? 'now')) ?></small></td>
-                                    <td><?= htmlspecialchars($log['username'] ?? 'Sistema') ?></td>
+                                    <td><small><?= !empty($log['acc_fecha']) ? date('d/m H:i', strtotime($log['acc_fecha'])) : '--' ?></small></td>
+                                    <td><?= htmlspecialchars($log['usu_username'] ?? 'Sistema') ?></td>
                                     <td>
                                         <?php 
-                                        $tipo = $log['tipo'] ?? 'INFO';
-                                        $badgeClass = match($tipo) {
-                                            'LOGIN' => 'success',
-                                            'LOGOUT' => 'info',
-                                            'LOGIN_FAILED' => 'danger',
-                                            default => 'secondary'
-                                        };
+                                        $tipo = $log['acc_tipo'] ?? 'INFO';
+                                        switch ($tipo) {
+                                            case 'LOGIN': $badgeClass = 'success'; break;
+                                            case 'LOGOUT': $badgeClass = 'info'; break;
+                                            case 'LOGIN_FAILED': $badgeClass = 'danger'; break;
+                                            default: $badgeClass = 'secondary'; break;
+                                        }
                                         ?>
                                         <span class="badge badge-<?= $badgeClass ?>"><?= $tipo ?></span>
                                     </td>
-                                    <td><code><?= $log['ip'] ?? '127.0.0.1' ?></code></td>
+                                    <td><code><?= $log['acc_ip'] ?? '127.0.0.1' ?></code></td>
                                 </tr>
                                 <?php endforeach; ?>
                                 <?php endif; ?>

@@ -47,7 +47,7 @@ class RolController extends \App\Controllers\ModuleController {
                 $params[] = $tenantId;
             }
             try {
-                $sql = "SELECT r.*, t.ten_nombre_comercial as tenant_nombre, (SELECT COUNT(*) FROM seguridad_usuarios WHERE usr_rol_id = r.rol_id) as usuarios_count FROM seguridad_roles r LEFT JOIN seguridad_tenants t ON r.rol_tenant_id = t.ten_tenant_id $where ORDER BY r.rol_nivel_acceso DESC, r.rol_nombre ASC";
+                $sql = "SELECT r.*, t.ten_nombre_comercial as tenant_nombre, (SELECT COUNT(*) FROM seguridad_usuarios WHERE usu_rol_id = r.rol_rol_id) as usuarios_count FROM seguridad_roles r LEFT JOIN seguridad_tenants t ON r.rol_tenant_id = t.ten_tenant_id $where ORDER BY r.rol_nivel_acceso DESC, r.rol_nombre ASC";
                 $stmt = $this->db->prepare($sql);
                 $stmt->execute($params);
                 $roles = $stmt->fetchAll(\PDO::FETCH_ASSOC);
@@ -62,7 +62,7 @@ class RolController extends \App\Controllers\ModuleController {
                 }
                 unset($rol);
             }
-            $this->renderModule('rol/index', [
+            $this->renderModule('seguridad/rol/index', [
                 'roles' => $roles,
                 'tenants' => $tenants,
                 'filtros' => ['tenant_id' => $tenantId],
@@ -78,7 +78,7 @@ class RolController extends \App\Controllers\ModuleController {
                 return;
             }
             $tenants = $this->db->query("SELECT ten_tenant_id, ten_nombre_comercial FROM seguridad_tenants WHERE ten_estado = 'A' ORDER BY ten_nombre_comercial")->fetchAll(\PDO::FETCH_ASSOC);
-            $this->renderModule('rol/form', [
+            $this->renderModule('seguridad/rol/form', [
                 'rol' => [],
                 'tenants' => $tenants,
                 'permisosDisponibles' => $this->permisosDisponibles,
@@ -93,7 +93,7 @@ class RolController extends \App\Controllers\ModuleController {
                 $this->guardar($id);
                 return;
             }
-            $stmt = $this->db->prepare("SELECT * FROM seguridad_roles WHERE rol_id = ?");
+            $stmt = $this->db->prepare("SELECT * FROM seguridad_roles WHERE rol_rol_id = ?");
             $stmt->execute([$id]);
             $rol = $stmt->fetch(\PDO::FETCH_ASSOC);
             if (!$rol) {
@@ -103,7 +103,7 @@ class RolController extends \App\Controllers\ModuleController {
             }
             $rol['permisos_array'] = json_decode($rol['rol_permisos'], true) ?: [];
             $tenants = $this->db->query("SELECT ten_tenant_id, ten_nombre_comercial FROM seguridad_tenants WHERE ten_estado = 'A' ORDER BY ten_nombre_comercial")->fetchAll(\PDO::FETCH_ASSOC);
-            $this->renderModule('rol/form', [
+            $this->renderModule('seguridad/rol/form', [
                 'rol' => $rol,
                 'tenants' => $tenants,
                 'permisosDisponibles' => $this->permisosDisponibles,
@@ -132,15 +132,15 @@ class RolController extends \App\Controllers\ModuleController {
             ];
             try {
                 if ($id) {
-                    $stmtPrev = $this->db->prepare("SELECT * FROM seguridad_roles WHERE rol_id = ?");
+                    $stmtPrev = $this->db->prepare("SELECT * FROM seguridad_roles WHERE rol_rol_id = ?");
                     $stmtPrev->execute([$id]);
                     $datosAntes = $stmtPrev->fetch(\PDO::FETCH_ASSOC);
-                    $sql = "UPDATE seguridad_roles SET rol_tenant_id = ?, rol_codigo = ?, rol_nombre = ?, rol_descripcion = ?, rol_permisos = ?, rol_es_admin_tenant = ?, rol_puede_modificar_permisos = ?, rol_nivel_acceso = ?, rol_estado = ? WHERE rol_id = ?";
+                    $sql = "UPDATE seguridad_roles SET rol_tenant_id = ?, rol_codigo = ?, rol_nombre = ?, rol_descripcion = ?, rol_permisos = ?, rol_es_admin_tenant = ?, rol_puede_modificar_permisos = ?, rol_nivel_acceso = ?, rol_estado = ? WHERE rol_rol_id = ?";
                     $params = array_values($data);
                     $params[] = $id;
                     $stmt = $this->db->prepare($sql);
                     $stmt->execute($params);
-                    $stmtPost = $this->db->prepare("SELECT * FROM seguridad_roles WHERE rol_id = ?");
+                    $stmtPost = $this->db->prepare("SELECT * FROM seguridad_roles WHERE rol_rol_id = ?");
                     $stmtPost->execute([$id]);
                     $datosDespues = $stmtPost->fetch(\PDO::FETCH_ASSOC);
                     if (function_exists('registrarAuditoria')) registrarAuditoria('editar_rol', 'rol', $id, $datosAntes, $datosDespues);
@@ -166,10 +166,10 @@ class RolController extends \App\Controllers\ModuleController {
             $this->authorize('eliminar', 'roles');
             $id = $_GET['id'] ?? 0;
             try {
-                $stmtPrev = $this->db->prepare("SELECT * FROM seguridad_roles WHERE rol_id = ?");
+                $stmtPrev = $this->db->prepare("SELECT * FROM seguridad_roles WHERE rol_rol_id = ?");
                 $stmtPrev->execute([$id]);
                 $datosAntes = $stmtPrev->fetch(\PDO::FETCH_ASSOC);
-                $stmt = $this->db->prepare("SELECT COUNT(*) FROM seguridad_usuarios WHERE usr_rol_id = ?");
+                $stmt = $this->db->prepare("SELECT COUNT(*) FROM seguridad_usuarios WHERE usu_rol_id = ?");
                 $stmt->execute([$id]);
                 if ($stmt->fetchColumn() > 0) {
                     if (function_exists('registrarAuditoria')) registrarAuditoria('eliminar_rol', 'rol', $id, $datosAntes, null, 'denegado', 'No se puede eliminar: hay usuarios con este rol');
@@ -177,7 +177,7 @@ class RolController extends \App\Controllers\ModuleController {
                     redirect('seguridad', 'rol', 'index');
                     return;
                 }
-                $stmt = $this->db->prepare("UPDATE seguridad_roles SET rol_estado = 'E' WHERE rol_id = ?");
+                $stmt = $this->db->prepare("UPDATE seguridad_roles SET rol_estado = 'E' WHERE rol_rol_id = ?");
                 $stmt->execute([$id]);
                 if (function_exists('registrarAuditoria')) registrarAuditoria('eliminar_rol', 'rol', $id, $datosAntes, null);
                 setFlashMessage('success', 'Rol eliminado correctamente');
@@ -194,7 +194,7 @@ class RolController extends \App\Controllers\ModuleController {
             $rol = [];
             $permisosActuales = [];
             try {
-                $stmt = $this->db->prepare("SELECT * FROM seguridad_roles WHERE rol_id = ?");
+                $stmt = $this->db->prepare("SELECT * FROM seguridad_roles WHERE rol_rol_id = ?");
                 $stmt->execute([$id]);
                 $rol = $stmt->fetch(\PDO::FETCH_ASSOC) ?: [];
                 $permisosActuales = isset($rol['rol_permisos']) ? json_decode($rol['rol_permisos'], true) : [];
@@ -202,7 +202,7 @@ class RolController extends \App\Controllers\ModuleController {
                 $rol = [];
                 $permisosActuales = [];
             }
-            $this->renderModule('rol/permisos', [
+            $this->renderModule('seguridad/rol/permisos', [
                 'rol' => $rol,
                 'permisosDisponibles' => $this->permisosDisponibles,
                 'permisosActuales' => $permisosActuales,
@@ -214,4 +214,3 @@ class RolController extends \App\Controllers\ModuleController {
             return (new DashboardController())->getMenuItems();
         }
     }
-                $stmtPrev = $this->db->prepare("SELECT * FROM roles WHERE rol_id = ?");

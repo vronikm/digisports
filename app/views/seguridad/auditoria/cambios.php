@@ -17,8 +17,8 @@
             <tr>
                 <th>Fecha</th>
                 <th>Usuario</th>
-                <th>Entidad</th>
-                <th>Acción</th>
+                <th>Tabla</th>
+                <th>Operación</th>
                 <th>Antes</th>
                 <th>Después</th>
             </tr>
@@ -26,12 +26,27 @@
         <tbody>
             <?php foreach ($logs as $log): ?>
             <tr>
-                <td><?= htmlspecialchars($log['aud_fecha'] ?? '') ?></td>
-                <td><?= htmlspecialchars($log['aud_usuario'] ?? '') ?></td>
-                <td><?= htmlspecialchars($log['aud_entidad'] ?? '') ?></td>
-                <td><?= htmlspecialchars($log['aud_accion'] ?? '') ?></td>
-                <td><pre><?= htmlspecialchars($log['aud_antes'] ?? '') ?></pre></td>
-                <td><pre><?= htmlspecialchars($log['aud_despues'] ?? '') ?></pre></td>
+                <td><?= !empty($log['aud_fecha_operacion']) ? date('d/m/Y H:i:s', strtotime($log['aud_fecha_operacion'])) : '' ?></td>
+                <td><?= htmlspecialchars(($log['usu_nombres'] ?? '') . ' ' . ($log['usu_apellidos'] ?? '')) ?></td>
+                <td><code><?= htmlspecialchars($log['aud_tabla'] ?? '') ?></code>
+                    <?php if (!empty($log['aud_registro_id'])): ?>
+                        <br><small>ID: <?= $log['aud_registro_id'] ?></small>
+                    <?php endif; ?>
+                </td>
+                <td>
+                    <?php
+                    $op = $log['aud_operacion'] ?? '';
+                    switch ($op) {
+                        case 'INSERT': $badge = 'success'; break;
+                        case 'UPDATE': $badge = 'warning'; break;
+                        case 'DELETE': $badge = 'danger'; break;
+                        default: $badge = 'secondary'; break;
+                    }
+                    ?>
+                    <span class="badge badge-<?= $badge ?>"><?= htmlspecialchars($op) ?></span>
+                </td>
+                <td><pre class="mb-0" style="max-height:100px;overflow:auto;font-size:11px"><?= htmlspecialchars($log['aud_valores_anteriores'] ?? '-') ?></pre></td>
+                <td><pre class="mb-0" style="max-height:100px;overflow:auto;font-size:11px"><?= htmlspecialchars($log['aud_valores_nuevos'] ?? '-') ?></pre></td>
             </tr>
             <?php endforeach; ?>
         </tbody>

@@ -33,7 +33,7 @@ $esEdicion = !empty($usuario);
 
 <section class="content">
     <div class="container-fluid">
-        <form method="POST" action="<?= $esEdicion ? url('seguridad', 'usuario', 'editar', ['id' => $usuario['usuario_id']]) : url('seguridad', 'usuario', 'crear') ?>">
+        <form method="POST" action="<?= $esEdicion ? url('seguridad', 'usuario', 'editar', ['id' => $usuario['usu_usuario_id']]) : url('seguridad', 'usuario', 'crear') ?>">
             <div class="row">
                 <div class="col-md-8">
                     <!-- Datos personales -->
@@ -46,15 +46,15 @@ $esEdicion = !empty($usuario);
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>Nombres <span class="text-danger">*</span></label>
-                                        <input type="text" name="nombres" class="form-control" required
-                                               value="<?= htmlspecialchars($usuario['nombres'] ?? '') ?>">
+                                        <input type="text" name="usu_nombres" class="form-control" required
+                                               value="<?= htmlspecialchars($usuario['usu_nombres'] ?? '') ?>">
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>Apellidos <span class="text-danger">*</span></label>
-                                        <input type="text" name="apellidos" class="form-control" required
-                                               value="<?= htmlspecialchars($usuario['apellidos'] ?? '') ?>">
+                                        <input type="text" name="usu_apellidos" class="form-control" required
+                                               value="<?= htmlspecialchars($usuario['usu_apellidos'] ?? '') ?>">
                                     </div>
                                 </div>
                             </div>
@@ -62,22 +62,22 @@ $esEdicion = !empty($usuario);
                                 <div class="col-md-4">
                                     <div class="form-group">
                                         <label>Identificación</label>
-                                        <input type="text" name="identificacion" class="form-control"
-                                               value="<?= htmlspecialchars($usuario['identificacion'] ?? '') ?>">
+                                        <input type="text" name="usu_identificacion" class="form-control"
+                                               value="<?= htmlspecialchars($usuario['usu_identificacion'] ?? '') ?>">
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="form-group">
                                         <label>Teléfono</label>
-                                        <input type="text" name="telefono" class="form-control"
-                                               value="<?= htmlspecialchars($usuario['telefono'] ?? '') ?>">
+                                        <input type="text" name="usu_telefono" class="form-control"
+                                               value="<?= htmlspecialchars($usuario['usu_telefono'] ?? '') ?>">
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="form-group">
                                         <label>Celular</label>
-                                        <input type="text" name="celular" class="form-control"
-                                               value="<?= htmlspecialchars($usuario['celular'] ?? '') ?>">
+                                        <input type="text" name="usu_celular" class="form-control"
+                                               value="<?= htmlspecialchars($usuario['usu_celular'] ?? '') ?>">
                                     </div>
                                 </div>
                             </div>
@@ -94,8 +94,8 @@ $esEdicion = !empty($usuario);
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>Email <span class="text-danger">*</span></label>
-                                        <input type="email" name="email" class="form-control" required
-                                               value="<?= htmlspecialchars($usuario['email'] ?? '') ?>">
+                                        <input type="email" name="usu_email" class="form-control" required
+                                               value="<?= htmlspecialchars($usuario['usu_email'] ?? '') ?>">
                                     </div>
                                 </div>
                                 <div class="col-md-6">
@@ -105,8 +105,8 @@ $esEdicion = !empty($usuario);
                                             <div class="input-group-prepend">
                                                 <span class="input-group-text">@</span>
                                             </div>
-                                            <input type="text" name="username" class="form-control" required
-                                                   value="<?= htmlspecialchars($usuario['username'] ?? '') ?>">
+                                            <input type="text" name="usu_username" class="form-control" required
+                                                   value="<?= htmlspecialchars($usuario['usu_username'] ?? '') ?>">
                                         </div>
                                     </div>
                                 </div>
@@ -140,22 +140,22 @@ $esEdicion = !empty($usuario);
                         <div class="card-body">
                             <div class="form-group">
                                 <label>Tenant <span class="text-danger">*</span></label>
-                                <select name="tenant_id" class="form-control select2" required>
+                                <select name="usu_tenant_id" class="form-control select2" required>
                                     <option value="">-- Seleccionar --</option>
                                     <?php foreach ($tenants as $t): ?>
-                                    <option value="<?= $t['tenant_id'] ?>" <?= ($usuario['tenant_id'] ?? '') == $t['tenant_id'] ? 'selected' : '' ?>>
-                                        <?= htmlspecialchars($t['nombre_comercial']) ?>
+                                    <option value="<?= $t['ten_tenant_id'] ?>" <?= ($usuario['usu_tenant_id'] ?? '') == $t['ten_tenant_id'] ? 'selected' : '' ?>>
+                                        <?= htmlspecialchars($t['ten_nombre_comercial']) ?>
                                     </option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
                             <div class="form-group">
                                 <label>Rol <span class="text-danger">*</span></label>
-                                <select name="rol_id" class="form-control" required>
+                                <select name="usu_rol_id" class="form-control" required>
                                     <option value="">-- Seleccionar --</option>
                                     <?php foreach ($roles as $r): ?>
-                                    <option value="<?= $r['rol_id'] ?>" <?= ($usuario['rol_id'] ?? '') == $r['rol_id'] ? 'selected' : '' ?>>
-                                        <?= htmlspecialchars($r['nombre']) ?> (<?= $r['codigo'] ?>)
+                                    <option value="<?= $r['rol_rol_id'] ?>" <?= ($usuario['usu_rol_id'] ?? '') == $r['rol_rol_id'] ? 'selected' : '' ?>>
+                                        <?= htmlspecialchars($r['rol_nombre']) ?> (<?= $r['rol_codigo'] ?>)
                                     </option>
                                     <?php endforeach; ?>
                                 </select>
@@ -171,15 +171,15 @@ $esEdicion = !empty($usuario);
                         <div class="card-body">
                             <div class="form-group">
                                 <label>Estado</label>
-                                <select name="estado" class="form-control">
-                                    <option value="A" <?= ($usuario['estado'] ?? 'A') == 'A' ? 'selected' : '' ?>>Activo</option>
-                                    <option value="I" <?= ($usuario['estado'] ?? '') == 'I' ? 'selected' : '' ?>>Inactivo</option>
+                                <select name="usu_estado" class="form-control">
+                                    <option value="A" <?= ($usuario['usu_estado'] ?? 'A') == 'A' ? 'selected' : '' ?>>Activo</option>
+                                    <option value="I" <?= ($usuario['usu_estado'] ?? '') == 'I' ? 'selected' : '' ?>>Inactivo</option>
                                 </select>
                             </div>
                             <div class="form-group">
                                 <div class="custom-control custom-switch">
-                                    <input type="checkbox" class="custom-control-input" id="requiere_2fa" name="requiere_2fa"
-                                           <?= ($usuario['requiere_2fa'] ?? 'S') == 'S' ? 'checked' : '' ?>>
+                                    <input type="checkbox" class="custom-control-input" id="requiere_2fa" name="usu_requiere_2fa"
+                                           <?= ($usuario['usu_requiere_2fa'] ?? 'S') == 'S' ? 'checked' : '' ?>>
                                     <label class="custom-control-label" for="requiere_2fa">Requiere 2FA</label>
                                 </div>
                             </div>

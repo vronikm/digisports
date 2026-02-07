@@ -17,18 +17,40 @@
                 <th>Fecha</th>
                 <th>Usuario</th>
                 <th>IP</th>
-                <th>Acción</th>
+                <th>Tipo</th>
                 <th>Resultado</th>
             </tr>
         </thead>
         <tbody>
             <?php foreach ($logs as $log): ?>
             <tr>
-                <td><?= htmlspecialchars($log['aud_fecha'] ?? '') ?></td>
-                <td><?= htmlspecialchars($log['aud_usuario'] ?? '') ?></td>
-                <td><?= htmlspecialchars($log['aud_ip'] ?? '') ?></td>
-                <td><?= htmlspecialchars($log['aud_accion'] ?? '') ?></td>
-                <td><?= htmlspecialchars($log['aud_resultado'] ?? '') ?></td>
+                <td><?= !empty($log['acc_fecha']) ? date('d/m/Y H:i:s', strtotime($log['acc_fecha'])) : '' ?></td>
+                <td><?= htmlspecialchars(($log['usu_nombres'] ?? '') . ' ' . ($log['usu_apellidos'] ?? '')) ?>
+                    <br><small class="text-muted">@<?= htmlspecialchars($log['usu_username'] ?? '') ?></small>
+                </td>
+                <td><code><?= htmlspecialchars($log['acc_ip'] ?? '') ?></code></td>
+                <td>
+                    <?php
+                    $tipo = $log['acc_tipo'] ?? '';
+                    switch ($tipo) {
+                        case 'LOGIN': $badge = 'success'; break;
+                        case 'LOGOUT': $badge = 'info'; break;
+                        case 'LOGIN_FAILED': $badge = 'danger'; break;
+                        default: $badge = 'secondary'; break;
+                    }
+                    ?>
+                    <span class="badge badge-<?= $badge ?>"><?= htmlspecialchars($tipo) ?></span>
+                </td>
+                <td>
+                    <?php if (($log['acc_exito'] ?? 'S') === 'S'): ?>
+                        <span class="badge badge-success">Éxito</span>
+                    <?php else: ?>
+                        <span class="badge badge-danger">Fallido</span>
+                    <?php endif; ?>
+                    <?php if (!empty($log['acc_mensaje'])): ?>
+                        <br><small><?= htmlspecialchars($log['acc_mensaje']) ?></small>
+                    <?php endif; ?>
+                </td>
             </tr>
             <?php endforeach; ?>
         </tbody>

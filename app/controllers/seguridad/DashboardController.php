@@ -39,20 +39,24 @@ class DashboardController extends \App\Controllers\ModuleController {
         ];
         $where = [];
         $params = [];
-        if ($filtros['usuario_id']) { $where[] = 'a.aud_usr_id = ?'; $params[] = $filtros['usuario_id']; }
-        if ($filtros['tenant_id']) { $where[] = 'a.aud_ten_id = ?'; $params[] = $filtros['tenant_id']; }
-        if ($filtros['accion']) { $where[] = 'a.aud_accion = ?'; $params[] = $filtros['accion']; }
-        if ($filtros['entidad']) { $where[] = 'a.aud_entidad = ?'; $params[] = $filtros['entidad']; }
-        if ($filtros['fecha_desde']) { $where[] = 'a.aud_fecha >= ?'; $params[] = $filtros['fecha_desde']; }
-        if ($filtros['fecha_hasta']) { $where[] = 'a.aud_fecha <= ?'; $params[] = $filtros['fecha_hasta']; }
-        $sql = "SELECT a.*, u.usr_nombres, u.usr_apellidos, t.ten_nombre_comercial FROM seguridad_auditoria_acciones a
-            LEFT JOIN seguridad_usuarios u ON a.aud_usr_id = u.usr_id
-            LEFT JOIN core_tenants t ON a.aud_ten_id = t.ten_id
-            " . (count($where) ? "WHERE " . implode(' AND ', $where) : '') . "
-            ORDER BY a.aud_fecha DESC LIMIT 100";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute($params);
-        $logs = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        if ($filtros['usuario_id']) { $where[] = 'a.aud_usuario_id = ?'; $params[] = $filtros['usuario_id']; }
+        if ($filtros['tenant_id']) { $where[] = 'a.aud_tenant_id = ?'; $params[] = $filtros['tenant_id']; }
+        if ($filtros['accion']) { $where[] = 'a.aud_operacion = ?'; $params[] = $filtros['accion']; }
+        if ($filtros['entidad']) { $where[] = 'a.aud_tabla = ?'; $params[] = $filtros['entidad']; }
+        if ($filtros['fecha_desde']) { $where[] = 'a.aud_fecha_operacion >= ?'; $params[] = $filtros['fecha_desde']; }
+        if ($filtros['fecha_hasta']) { $where[] = 'a.aud_fecha_operacion <= ?'; $params[] = $filtros['fecha_hasta']; }
+        try {
+            $sql = "SELECT a.*, u.usu_nombres, u.usu_apellidos, t.ten_nombre_comercial FROM seguridad_auditoria a
+                LEFT JOIN seguridad_usuarios u ON a.aud_usuario_id = u.usu_usuario_id
+                LEFT JOIN seguridad_tenants t ON a.aud_tenant_id = t.ten_tenant_id
+                " . (count($where) ? "WHERE " . implode(' AND ', $where) : '') . "
+                ORDER BY a.aud_fecha_operacion DESC LIMIT 100";
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($params);
+            $logs = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        } catch (\Exception $e) {
+            $logs = [];
+        }
         $this->renderModule('seguridad/dashboard/auditoria', [
             'logs' => $logs,
             'filtros' => $filtros,
@@ -98,27 +102,22 @@ class DashboardController extends \App\Controllers\ModuleController {
         
         try {
             // Total tenants
-            $stmt = $this->db->query("SELECT COUNT(*) FROM tenants WHERE estado = 'A'");
             $stmt = $this->db->query("SELECT COUNT(*) FROM seguridad_tenants WHERE ten_estado = 'A'");
             $stats['tenants_activos'] = $stmt->fetchColumn();
             
             // Total usuarios
-            $stmt = $this->db->query("SELECT COUNT(*) FROM usuarios WHERE estado = 'A'");
-            $stmt = $this->db->query("SELECT COUNT(*) FROM seguridad_usuarios WHERE usr_estado = 'A'");
+            $stmt = $this->db->query("SELECT COUNT(*) FROM seguridad_usuarios WHERE usu_estado = 'A'");
             $stats['usuarios_activos'] = $stmt->fetchColumn();
             
             // Total módulos
-            $stmt = $this->db->query("SELECT COUNT(*) FROM modulos_sistema WHERE estado = 'A'");
             $stmt = $this->db->query("SELECT COUNT(*) FROM seguridad_modulos_sistema WHERE sis_estado = 'A'");
             $stats['modulos_activos'] = $stmt->fetchColumn();
             
             // Usuarios online (último login < 30 min)
-            $stmt = $this->db->query("SELECT COUNT(*) FROM usuarios WHERE ultimo_login >= DATE_SUB(NOW(), INTERVAL 30 MINUTE)");
-            $stmt = $this->db->query("SELECT COUNT(*) FROM seguridad_usuarios WHERE usr_ultimo_login >= DATE_SUB(NOW(), INTERVAL 30 MINUTE)");
+            $stmt = $this->db->query("SELECT COUNT(*) FROM seguridad_usuarios WHERE usu_ultimo_login >= DATE_SUB(NOW(), INTERVAL 30 MINUTE)");
             $stats['usuarios_online'] = $stmt->fetchColumn();
             
             // Intentos de login fallidos hoy
-            $stmt = $this->db->query("SELECT COUNT(*) FROM log_accesos WHERE fecha >= CURDATE() AND tipo = 'LOGIN_FAILED'");
             $stmt = $this->db->query("SELECT COUNT(*) FROM seguridad_log_accesos WHERE acc_fecha >= CURDATE() AND acc_tipo = 'LOGIN_FAILED'");
             $stats['login_fallidos_hoy'] = $stmt->fetchColumn() ?: 0;
             
@@ -141,29 +140,25 @@ class DashboardController extends \App\Controllers\ModuleController {
     private function getKPIs() {
         try {
             // Tenants activos
-            $stmt = $this->db->query("SELECT COUNT(*) FROM tenants WHERE estado = 'A'");
             $stmt = $this->db->query("SELECT COUNT(*) FROM seguridad_tenants WHERE ten_estado = 'A'");
             $tenants = $stmt->fetchColumn();
             // Usuarios totales
-            $stmt = $this->db->query("SELECT COUNT(*) FROM usuarios WHERE estado = 'A'");
-            $stmt = $this->db->query("SELECT COUNT(*) FROM seguridad_usuarios WHERE usr_estado = 'A'");
+            $stmt = $this->db->query("SELECT COUNT(*) FROM seguridad_usuarios WHERE usu_estado = 'A'");
             $usuarios = $stmt->fetchColumn();
             // Módulos del sistema
-            $stmt = $this->db->query("SELECT COUNT(*) FROM modulos_sistema WHERE estado = 'A'");
             $stmt = $this->db->query("SELECT COUNT(*) FROM seguridad_modulos_sistema WHERE sis_estado = 'A'");
             $modulos = $stmt->fetchColumn();
             // Roles definidos
-            $stmt = $this->db->query("SELECT COUNT(*) FROM roles WHERE estado = 'A'");
             $stmt = $this->db->query("SELECT COUNT(*) FROM seguridad_roles WHERE rol_estado = 'A'");
             $roles = $stmt->fetchColumn();
             // Suscripciones por vencer (30 días)
-            $stmt = $this->db->query("SELECT COUNT(*) FROM tenants WHERE fecha_vencimiento BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 30 DAY)");
+            $stmt = $this->db->query("SELECT COUNT(*) FROM seguridad_tenants WHERE ten_fecha_vencimiento BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 30 DAY)");
             $porVencer = $stmt->fetchColumn();
             // Logs de hoy
-            $stmt = $this->db->query("SELECT COUNT(*) FROM log_accesos WHERE fecha >= CURDATE()");
+            $stmt = $this->db->query("SELECT COUNT(*) FROM seguridad_log_accesos WHERE acc_fecha >= CURDATE()");
             $logsHoy = $stmt->fetchColumn() ?: 0;
             // Logins fallidos hoy
-            $stmt = $this->db->query("SELECT COUNT(*) FROM log_accesos WHERE fecha >= CURDATE() AND tipo = 'LOGIN_FAILED'");
+            $stmt = $this->db->query("SELECT COUNT(*) FROM seguridad_log_accesos WHERE acc_fecha >= CURDATE() AND acc_tipo = 'LOGIN_FAILED'");
             $loginFallidosHoy = $stmt->fetchColumn() ?: 0;
         } catch (\Exception $e) {
             $tenants = $usuarios = $modulos = $roles = $porVencer = $logsHoy = $loginFallidosHoy = 0;
@@ -234,10 +229,10 @@ class DashboardController extends \App\Controllers\ModuleController {
     private function getRecentActivity() {
         try {
             $stmt = $this->db->query("
-                SELECT l.*, u.nombres, u.apellidos, u.username
-                FROM log_accesos l
-                LEFT JOIN usuarios u ON l.usuario_id = u.usuario_id
-                ORDER BY l.fecha DESC
+                SELECT l.*, u.usu_nombres, u.usu_apellidos, u.usu_username
+                FROM seguridad_log_accesos l
+                LEFT JOIN seguridad_usuarios u ON l.acc_usuario_id = u.usu_usuario_id
+                ORDER BY l.acc_fecha DESC
                 LIMIT 10
             ");
             return $stmt->fetchAll(\PDO::FETCH_ASSOC);
@@ -254,7 +249,7 @@ class DashboardController extends \App\Controllers\ModuleController {
         
         try {
             // Usuarios con muchos intentos fallidos
-            $stmt = $this->db->query("SELECT COUNT(*) FROM usuarios WHERE intentos_fallidos >= 3");
+            $stmt = $this->db->query("SELECT COUNT(*) FROM seguridad_usuarios WHERE usu_intentos_fallidos >= 3");
             $bloqueados = $stmt->fetchColumn();
             if ($bloqueados > 0) {
                 $alerts[] = [
@@ -265,7 +260,7 @@ class DashboardController extends \App\Controllers\ModuleController {
             }
             
             // Suscripciones vencidas
-            $stmt = $this->db->query("SELECT COUNT(*) FROM tenants WHERE fecha_vencimiento < CURDATE() AND estado = 'A'");
+            $stmt = $this->db->query("SELECT COUNT(*) FROM seguridad_tenants WHERE ten_fecha_vencimiento < CURDATE() AND ten_estado = 'A'");
             $vencidas = $stmt->fetchColumn();
             if ($vencidas > 0) {
                 $alerts[] = [
@@ -275,13 +270,17 @@ class DashboardController extends \App\Controllers\ModuleController {
                 ];
             }
             
-            // Certificados SRI por vencer
-            $stmt = $this->db->query("
-                SELECT COUNT(*) FROM tenants 
-                WHERE estado = 'A' 
-                AND tenant_id IN (SELECT tenant_id FROM configuracion_sri WHERE certificado_vencimiento BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 30 DAY))
-            ");
-            $certVencer = $stmt->fetchColumn() ?: 0;
+            // Certificados SRI por vencer (consulta defensiva)
+            try {
+                $stmt = $this->db->query("
+                    SELECT COUNT(*) FROM seguridad_tenants 
+                    WHERE ten_estado = 'A' 
+                    AND ten_tenant_id IN (SELECT tenant_id FROM configuracion_sri WHERE certificado_vencimiento BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 30 DAY))
+                ");
+                $certVencer = $stmt->fetchColumn() ?: 0;
+            } catch (\Exception $e2) {
+                $certVencer = 0;
+            }
             if ($certVencer > 0) {
                 $alerts[] = [
                     'type' => 'info',
@@ -339,9 +338,6 @@ class DashboardController extends \App\Controllers\ModuleController {
                 [ 'label' => 'Tenants', 'icon' => 'fas fa-building', 'url' => '#', 'submenu' => [
                     [ 'label' => 'Lista de Tenants', 'url' => url('seguridad', 'tenant', 'index'), 'active' => $isTenantListActive ],
                     [ 'label' => 'Nuevo Tenant', 'url' => url('seguridad', 'tenant', 'crear'), 'active' => ($controller === 'tenant' && $action === 'crear') ],
-                    [ 'label' => 'Suspender Tenant', 'url' => url('seguridad', 'tenant', 'suspender'), 'active' => ($controller === 'tenant' && $action === 'suspender') ],
-                    [ 'label' => 'Reactivar Tenant', 'url' => url('seguridad', 'tenant', 'reactivar'), 'active' => ($controller === 'tenant' && $action === 'reactivar') ],
-                    [ 'label' => 'Renovar Tenant', 'url' => url('seguridad', 'tenant', 'renovar'), 'active' => ($controller === 'tenant' && $action === 'renovar') ],
                     [ 'label' => 'Suscripciones', 'url' => url('seguridad', 'tenant', 'suscripciones'), 'active' => ($controller === 'tenant' && $action === 'suscripciones') ]
                 ]],
                 [ 'label' => 'Usuarios', 'icon' => 'fas fa-users', 'url' => '#', 'submenu' => [

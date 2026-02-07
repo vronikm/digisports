@@ -16,19 +16,21 @@
             <tr>
                 <th>Fecha</th>
                 <th>Tipo</th>
-                <th>Descripción</th>
+                <th>Mensaje</th>
                 <th>Usuario</th>
-                <th>Acción</th>
+                <th>IP</th>
             </tr>
         </thead>
         <tbody>
             <?php foreach ($alertas as $alerta): ?>
             <tr>
-                <td><?= htmlspecialchars($alerta['aud_fecha'] ?? '') ?></td>
-                <td><?= htmlspecialchars($alerta['aud_tipo'] ?? '') ?></td>
-                <td><?= htmlspecialchars($alerta['aud_descripcion'] ?? '') ?></td>
-                <td><?= htmlspecialchars($alerta['aud_usuario'] ?? '') ?></td>
-                <td><?= htmlspecialchars($alerta['aud_accion'] ?? '') ?></td>
+                <td><?= !empty($alerta['acc_fecha']) ? date('d/m/Y H:i:s', strtotime($alerta['acc_fecha'])) : '' ?></td>
+                <td><span class="badge badge-danger"><?= htmlspecialchars($alerta['acc_tipo'] ?? '') ?></span></td>
+                <td><?= htmlspecialchars($alerta['acc_mensaje'] ?? 'Intento fallido') ?></td>
+                <td><?= htmlspecialchars(($alerta['usu_nombres'] ?? '') . ' ' . ($alerta['usu_apellidos'] ?? '')) ?>
+                    <br><small class="text-muted">@<?= htmlspecialchars($alerta['usu_username'] ?? 'desconocido') ?></small>
+                </td>
+                <td><code><?= htmlspecialchars($alerta['acc_ip'] ?? '') ?></code></td>
             </tr>
             <?php endforeach; ?>
         </tbody>

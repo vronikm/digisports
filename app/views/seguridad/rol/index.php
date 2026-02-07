@@ -48,39 +48,41 @@ $total = $total ?? 0;
                 <div class="row">
                     <?php foreach ($roles as $rol): ?>
                     <div class="col-lg-4 col-md-6 mb-4">
-                        <div class="card h-100 <?= isset($rol['es_sistema']) && $rol['es_sistema'] ? 'card-outline card-primary' : '' ?>">
+                        <div class="card h-100 <?= ($rol['rol_es_super_admin'] ?? 'N') === 'S' ? 'card-outline card-primary' : '' ?>">
                             <div class="card-header">
                                 <h3 class="card-title">
-                                    <i class="fas fa-user-shield mr-2" style="color: <?= $rol['color'] ?? '#6c757d' ?>"></i>
-                                    <?= htmlspecialchars($rol['nombre']) ?>
+                                    <i class="fas fa-user-shield mr-2"></i>
+                                    <?= htmlspecialchars($rol['rol_nombre'] ?? '') ?>
                                 </h3>
-                                <?php if (isset($rol['es_sistema']) && $rol['es_sistema']): ?>
-                                <span class="badge badge-primary float-right">Sistema</span>
-                                <?php endif; ?>
+                                <span class="badge badge-secondary float-right"><?= htmlspecialchars($rol['rol_codigo'] ?? '') ?></span>
                             </div>
                             <div class="card-body">
-                                <p class="text-muted"><?= htmlspecialchars($rol['descripcion'] ?? 'Sin descripción') ?></p>
+                                <p class="text-muted"><?= htmlspecialchars($rol['rol_descripcion'] ?? 'Sin descripción') ?></p>
                                 
+                                <?php 
+                                    $permisosArr = json_decode($rol['rol_permisos'] ?? '[]', true) ?: [];
+                                    $permisosCount = count($permisosArr);
+                                ?>
                                 <div class="row text-center mb-3">
                                     <div class="col-6">
                                         <h4 class="mb-0"><?= $rol['usuarios_count'] ?? 0 ?></h4>
                                         <small class="text-muted">Usuarios</small>
                                     </div>
                                     <div class="col-6">
-                                        <h4 class="mb-0"><?= $rol['permisos_count'] ?? 0 ?></h4>
+                                        <h4 class="mb-0"><?= $permisosCount ?></h4>
                                         <small class="text-muted">Permisos</small>
                                     </div>
                                 </div>
                                 
-                                <?php if (!empty($rol['permisos_preview'])): ?>
+                                <?php if (!empty($permisosArr)): ?>
                                 <div class="mb-3">
                                     <small class="text-muted">Permisos principales:</small>
                                     <div>
-                                        <?php foreach (array_slice($rol['permisos_preview'], 0, 5) as $perm): ?>
+                                        <?php foreach (array_slice($permisosArr, 0, 5) as $perm): ?>
                                         <span class="badge badge-secondary mr-1"><?= htmlspecialchars($perm) ?></span>
                                         <?php endforeach; ?>
-                                        <?php if (count($rol['permisos_preview']) > 5): ?>
-                                        <span class="badge badge-light">+<?= count($rol['permisos_preview']) - 5 ?></span>
+                                        <?php if ($permisosCount > 5): ?>
+                                        <span class="badge badge-light">+<?= $permisosCount - 5 ?></span>
                                         <?php endif; ?>
                                     </div>
                                 </div>
@@ -88,14 +90,14 @@ $total = $total ?? 0;
                             </div>
                             <div class="card-footer bg-white">
                                 <div class="btn-group btn-group-sm w-100">
-                                    <a href="<?= url('seguridad', 'rol', 'permisos', ['id' => $rol['rol_id']]) ?>" class="btn btn-info flex-fill" title="Permisos">
+                                    <a href="<?= url('seguridad', 'rol', 'permisos', ['id' => $rol['rol_rol_id']]) ?>" class="btn btn-info flex-fill" title="Permisos">
                                         <i class="fas fa-key"></i> Permisos
                                     </a>
-                                    <a href="<?= url('seguridad', 'rol', 'editar', ['id' => $rol['rol_id']]) ?>" class="btn btn-primary flex-fill" title="Editar">
+                                    <a href="<?= url('seguridad', 'rol', 'editar', ['id' => $rol['rol_rol_id']]) ?>" class="btn btn-primary flex-fill" title="Editar">
                                         <i class="fas fa-edit"></i> Editar
                                     </a>
-                                    <?php if (!$rol['es_sistema']): ?>
-                                    <a href="<?= url('seguridad', 'rol', 'eliminar', ['id' => $rol['rol_id']]) ?>" class="btn btn-danger flex-fill" title="Eliminar" onclick="return confirm('¿Eliminar este rol?')">
+                                    <?php if (($rol['rol_es_super_admin'] ?? 'N') !== 'S'): ?>
+                                    <a href="<?= url('seguridad', 'rol', 'eliminar', ['id' => $rol['rol_rol_id']]) ?>" class="btn btn-danger flex-fill" title="Eliminar" onclick="return confirm('¿Eliminar este rol?')">
                                         <i class="fas fa-trash"></i>
                                     </a>
                                     <?php endif; ?>

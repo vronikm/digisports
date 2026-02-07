@@ -53,8 +53,8 @@ $totalPaginas = $totalPaginas ?? 1;
                                 <select name="tenant_id" class="form-control select2">
                                     <option value="">-- Todos --</option>
                                     <?php foreach ($tenants as $t): ?>
-                                    <option value="<?= $t['tenant_id'] ?>" <?= ($filtros['tenant_id'] ?? '') == $t['tenant_id'] ? 'selected' : '' ?>>
-                                        <?= htmlspecialchars($t['nombre_comercial']) ?>
+                                    <option value="<?= $t['ten_tenant_id'] ?>" <?= ($filtros['tenant_id'] ?? '') == $t['ten_tenant_id'] ? 'selected' : '' ?>>
+                                        <?= htmlspecialchars($t['ten_nombre_comercial']) ?>
                                     </option>
                                     <?php endforeach; ?>
                                 </select>
@@ -128,18 +128,18 @@ $totalPaginas = $totalPaginas ?? 1;
                         <?php else: ?>
                         <?php foreach ($usuarios as $u): ?>
                         <tr>
-                            <td><?= $u['usuario_id'] ?></td>
+                            <td><?= $u['usu_usuario_id'] ?></td>
                             <td>
                                 <div class="d-flex align-items-center">
-                                    <img src="<?= $u['avatar'] ?: 'https://ui-avatars.com/api/?name=' . urlencode($u['nombres']) . '&background=6366F1&color=fff&size=32' ?>" 
+                                    <img src="<?= $u['usu_avatar'] ?: 'https://ui-avatars.com/api/?name=' . urlencode($u['usu_nombres'] ?? '') . '&background=6366F1&color=fff&size=32' ?>" 
                                          class="rounded-circle mr-2" width="32" height="32">
                                     <div>
-                                        <strong><?= htmlspecialchars($u['nombres'] . ' ' . $u['apellidos']) ?></strong>
-                                        <br><small class="text-muted">@<?= htmlspecialchars($u['username']) ?></small>
+                                        <strong><?= htmlspecialchars(($u['usu_nombres'] ?? '') . ' ' . ($u['usu_apellidos'] ?? '')) ?></strong>
+                                        <br><small class="text-muted">@<?= htmlspecialchars($u['usu_username'] ?? '') ?></small>
                                     </div>
                                 </div>
                             </td>
-                            <td><?= htmlspecialchars($u['email']) ?></td>
+                            <td><?= htmlspecialchars($u['usu_email'] ?? '') ?></td>
                             <td>
                                 <small><?= htmlspecialchars($u['tenant_nombre'] ?? 'N/A') ?></small>
                             </td>
@@ -147,49 +147,44 @@ $totalPaginas = $totalPaginas ?? 1;
                                 <span class="badge badge-info"><?= htmlspecialchars($u['rol_nombre'] ?? 'Sin rol') ?></span>
                             </td>
                             <td>
-                                <?php if ($u['ultimo_login']): ?>
-                                <small><?= date('d/m/Y H:i', strtotime($u['ultimo_login'])) ?></small>
+                                <?php if (!empty($u['usu_ultimo_login'])): ?>
+                                <small><?= date('d/m/Y H:i', strtotime($u['usu_ultimo_login'])) ?></small>
                                 <?php else: ?>
                                 <small class="text-muted">Nunca</small>
                                 <?php endif; ?>
                             </td>
                             <td>
                                 <?php 
-                                $estadoClass = match($u['estado']) {
-                                    'A' => 'success',
-                                    'I' => 'warning',
-                                    'E' => 'danger',
-                                    default => 'secondary'
-                                };
-                                $estadoText = match($u['estado']) {
-                                    'A' => 'Activo',
-                                    'I' => 'Inactivo',
-                                    'E' => 'Eliminado',
-                                    default => 'Desconocido'
-                                };
+                                $uEstado = $u['usu_estado'] ?? '';
+                                switch ($uEstado) {
+                                    case 'A': $estadoClass = 'success'; $estadoText = 'Activo'; break;
+                                    case 'I': $estadoClass = 'warning'; $estadoText = 'Inactivo'; break;
+                                    case 'E': $estadoClass = 'danger'; $estadoText = 'Eliminado'; break;
+                                    default:  $estadoClass = 'secondary'; $estadoText = 'Desconocido'; break;
+                                }
                                 ?>
                                 <span class="badge badge-<?= $estadoClass ?>"><?= $estadoText ?></span>
-                                <?php if ($u['intentos_fallidos'] >= 3): ?>
+                                <?php if (($u['usu_intentos_fallidos'] ?? 0) >= 3): ?>
                                 <span class="badge badge-danger"><i class="fas fa-lock"></i></span>
                                 <?php endif; ?>
                             </td>
                             <td>
                                 <div class="btn-group btn-group-sm">
-                                    <a href="<?= url('seguridad', 'usuario', 'editar', ['id' => $u['usuario_id']]) ?>" 
+                                    <a href="<?= url('seguridad', 'usuario', 'editar', ['id' => $u['usu_usuario_id']]) ?>" 
                                        class="btn btn-info" title="Editar">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <?php if ($u['intentos_fallidos'] >= 3): ?>
-                                    <a href="<?= url('seguridad', 'usuario', 'desbloquear', ['id' => $u['usuario_id']]) ?>" 
+                                    <?php if (($u['usu_intentos_fallidos'] ?? 0) >= 3): ?>
+                                    <a href="<?= url('seguridad', 'usuario', 'desbloquear', ['id' => $u['usu_usuario_id']]) ?>" 
                                        class="btn btn-warning" title="Desbloquear">
                                         <i class="fas fa-unlock"></i>
                                     </a>
                                     <?php endif; ?>
-                                    <a href="<?= url('seguridad', 'usuario', 'resetPassword', ['id' => $u['usuario_id']]) ?>" 
+                                    <a href="<?= url('seguridad', 'usuario', 'resetPassword', ['id' => $u['usu_usuario_id']]) ?>" 
                                        class="btn btn-secondary" title="Reset Password" onclick="return confirm('¿Resetear contraseña?')">
                                         <i class="fas fa-key"></i>
                                     </a>
-                                    <a href="<?= url('seguridad', 'usuario', 'eliminar', ['id' => $u['usuario_id']]) ?>" 
+                                    <a href="<?= url('seguridad', 'usuario', 'eliminar', ['id' => $u['usu_usuario_id']]) ?>" 
                                        class="btn btn-danger" title="Eliminar" onclick="return confirm('¿Eliminar usuario?')">
                                         <i class="fas fa-trash"></i>
                                     </a>
