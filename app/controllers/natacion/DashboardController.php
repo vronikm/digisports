@@ -33,37 +33,4 @@ class DashboardController extends \App\Controllers\ModuleController {
         $this->renderModule('natacion/dashboard/index');
     }
     
-    protected function getMenuItems() {
-        return [
-            ['header' => 'Principal'],
-            ['items' => [
-                ['label' => 'Dashboard', 'icon' => 'fas fa-tachometer-alt', 'url' => url('natacion', 'dashboard', 'index'), 'active' => true],
-                ['label' => 'Horarios', 'icon' => 'fas fa-clock', 'url' => url('natacion', 'horario', 'index')]
-            ]],
-            ['header' => 'Instalaciones'],
-            ['items' => [
-                ['label' => 'Piscinas', 'icon' => 'fas fa-water', 'url' => '#', 'submenu' => [
-                    ['label' => 'Ver Piscinas', 'url' => url('natacion', 'piscina', 'index')],
-                    ['label' => 'Carriles', 'url' => url('natacion', 'carril', 'index')],
-                    ['label' => 'Mantenimiento', 'url' => url('natacion', 'mantenimiento', 'index')]
-                ]],
-                ['label' => 'Reservas Libre', 'icon' => 'fas fa-calendar-check', 'url' => url('natacion', 'reserva', 'index')]
-            ]],
-            ['header' => 'Academia'],
-            ['items' => [
-                ['label' => 'Escuelas', 'icon' => 'fas fa-graduation-cap', 'url' => '#', 'submenu' => [
-                    ['label' => 'Mis Escuelas', 'url' => url('natacion', 'escuela', 'index')],
-                    ['label' => 'Niveles', 'url' => url('natacion', 'nivel', 'index')],
-                    ['label' => 'Grupos', 'url' => url('natacion', 'grupo', 'index')]
-                ]],
-                ['label' => 'Alumnos', 'icon' => 'fas fa-user-graduate', 'url' => url('natacion', 'alumno', 'index')],
-                ['label' => 'Instructores', 'icon' => 'fas fa-chalkboard-teacher', 'url' => url('natacion', 'instructor', 'index')]
-            ]],
-            ['header' => 'Competencias'],
-            ['items' => [
-                ['label' => 'Eventos', 'icon' => 'fas fa-medal', 'url' => url('natacion', 'evento', 'index')],
-                ['label' => 'Marcas/Tiempos', 'icon' => 'fas fa-stopwatch', 'url' => url('natacion', 'marca', 'index')]
-            ]]
-        ];
-    }
 }

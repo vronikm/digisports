@@ -11,29 +11,19 @@ $pagina = $pagina ?? 1;
 $totalPaginas = $totalPaginas ?? 1;
 ?>
 
-<!-- Content Header -->
-<div class="content-header">
+<section class="content pt-3">
     <div class="container-fluid">
-        <div class="row mb-2">
-            <div class="col-sm-6">
-                <h1 class="m-0">
-                    <i class="fas fa-users mr-2"></i>
-                    Gestión de Usuarios
-                </h1>
-            </div>
-            <div class="col-sm-6">
-                <div class="float-sm-right">
-                    <a href="<?= url('seguridad', 'usuario', 'crear') ?>" class="btn btn-primary">
-                        <i class="fas fa-plus mr-1"></i> Nuevo Usuario
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 
-<section class="content">
-    <div class="container-fluid">
+<!-- Header Premium -->
+<?php
+$headerTitle    = 'Gestión de Usuarios';
+$headerSubtitle = 'Administración de cuentas de usuario del sistema';
+$headerIcon     = 'fas fa-users';
+$headerButtons  = [
+    ['url' => url('seguridad', 'usuario', 'crear'), 'label' => 'Nuevo Usuario', 'icon' => 'fas fa-plus', 'solid' => true],
+];
+include __DIR__ . '/../partials/header.php';
+?>
         <!-- Filtros -->
         <div class="card card-outline card-primary">
             <div class="card-header">

@@ -1,41 +1,313 @@
 <?php
 /**
- * Dashboard de Instalaciones - Branding dinámico
- * Variables disponibles: $modulo_actual (nombre, color, icono)
+ * DigiSports Arena - Vista Dashboard
+ * Dashboard premium con KPIs, gráficos y resumen operativo
  */
+
+$kpis            = $kpis ?? [];
+$canchas         = $canchas ?? [];
+$reservasHoy     = $reservas_hoy ?? [];
+$chartReservas   = $chart_reservas ?? ['labels' => [], 'data' => []];
+$moduloColor     = $modulo_actual['color'] ?? '#3B82F6';
+$moduloIcono     = $modulo_actual['icono'] ?? 'fas fa-building';
+$moduloNombre    = $modulo_actual['nombre_personalizado'] ?? $modulo_actual['nombre'] ?? 'DigiSports Arena';
 ?>
 
-<div class="container-fluid py-4">
-    <div class="row mb-4">
-        <div class="col-md-8">
-            <h2 class="h3 fw-bold">
-                <i class="<?= $modulo_actual['icono'] ?>" style="color: <?= $modulo_actual['color'] ?>;"></i>
-                <?= htmlspecialchars($modulo_actual['nombre']) ?>
-            </h2>
-        </div>
-    </div>
-    <div class="alert alert-info">
-        Bienvenido al módulo de <b><?= htmlspecialchars($modulo_actual['nombre']) ?></b>.
-    </div>
-
-    <!-- Menú lateral personalizado -->
-    <div class="row">
-        <div class="col-md-3">
-            <div class="list-group">
-                <?php if (!empty($menu_items)): ?>
-                    <?php foreach ($menu_items as $item): ?>
-                        <a href="<?= $item['url'] ?>" class="list-group-item list-group-item-action d-flex align-items-center">
-                            <i class="<?= $item['icon'] ?> mr-2" style="color: <?= $item['color'] ?>;"></i>
-                            <span><?= htmlspecialchars($item['label']) ?></span>
-                        </a>
-                    <?php endforeach; ?>
-                <?php else: ?>
-                    <span class="text-muted">No hay accesos configurados.</span>
-                <?php endif; ?>
+<!-- Content Header -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">
+                    <i class="<?= $moduloIcono ?> mr-2" style="color: <?= $moduloColor ?>"></i>
+                    <?= htmlspecialchars($moduloNombre) ?>
+                </h1>
+            </div>
+            <div class="col-sm-6">
+                <div class="float-sm-right quick-actions">
+                    <a href="<?= url('reservas', 'reserva', 'crear') ?>" class="btn" style="background: <?= $moduloColor ?>; color: white;">
+                        <i class="fas fa-calendar-plus mr-1"></i> Nueva Reserva
+                    </a>
+                    <a href="<?= url('instalaciones', 'cancha', 'index') ?>" class="btn btn-outline-secondary">
+                        <i class="fas fa-futbol mr-1"></i> Ver Canchas
+                    </a>
+                </div>
             </div>
         </div>
-        <div class="col-md-9">
-            <!-- Aquí puedes agregar KPIs, accesos rápidos, etc. -->
-        </div>
     </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+
+        <!-- KPI Cards -->
+        <div class="row">
+            <?php foreach ($kpis as $kpi): ?>
+            <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+                <div class="card kpi-card h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="kpi-icon" style="background: <?= $kpi['color'] ?>20; color: <?= $kpi['color'] ?>;">
+                                <i class="<?= $kpi['icon'] ?>"></i>
+                            </div>
+                            <?php if (!empty($kpi['trend'])): ?>
+                            <span class="kpi-trend <?= $kpi['trend_type'] ?> ml-auto">
+                                <i class="fas fa-arrow-<?= $kpi['trend_type'] ?>"></i>
+                                <?= $kpi['trend'] ?>
+                            </span>
+                            <?php endif; ?>
+                        </div>
+                        <div class="kpi-value"><?= $kpi['value'] ?></div>
+                        <div class="kpi-label"><?= $kpi['label'] ?></div>
+                    </div>
+                </div>
+            </div>
+            <?php endforeach; ?>
+        </div>
+
+        <div class="row">
+            <!-- Reservas de Hoy + Gráfico -->
+            <div class="col-lg-8">
+                <!-- Reservas de Hoy -->
+                <div class="card">
+                    <div class="card-header border-0">
+                        <h3 class="card-title">
+                            <i class="fas fa-calendar-day mr-2" style="color: <?= $moduloColor ?>"></i>
+                            Reservas de Hoy
+                        </h3>
+                        <div class="card-tools">
+                            <a href="<?= url('reservas', 'reserva', 'index') ?>" class="btn btn-sm btn-outline-secondary">
+                                Ver todas <i class="fas fa-arrow-right ml-1"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <?php if (!empty($reservasHoy)): ?>
+                        <table class="table table-striped mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Horario</th>
+                                    <th>Cancha</th>
+                                    <th>Cliente</th>
+                                    <th>Total</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($reservasHoy as $r): ?>
+                                <tr>
+                                    <td>
+                                        <i class="far fa-clock text-muted mr-1"></i>
+                                        <?= htmlspecialchars(substr($r['hora_inicio'] ?? '', 0, 5)) ?> - <?= htmlspecialchars(substr($r['hora_fin'] ?? '', 0, 5)) ?>
+                                    </td>
+                                    <td>
+                                        <i class="fas fa-map-marker-alt mr-1" style="color: <?= $moduloColor ?>"></i>
+                                        <?= htmlspecialchars($r['cancha_nombre'] ?? '-') ?>
+                                    </td>
+                                    <td><?= htmlspecialchars($r['cliente_nombre'] ?? '-') ?></td>
+                                    <td><strong class="text-success">$<?= number_format((float)($r['total'] ?? 0), 2) ?></strong></td>
+                                    <td>
+                                        <?php
+                                        $estadoClass = match (strtoupper($r['estado'] ?? '')) {
+                                            'CONFIRMADA' => 'badge-success',
+                                            'PENDIENTE'  => 'badge-warning',
+                                            'CANCELADA'  => 'badge-danger',
+                                            default      => 'badge-secondary',
+                                        };
+                                        ?>
+                                        <span class="badge <?= $estadoClass ?>"><?= htmlspecialchars($r['estado'] ?? '-') ?></span>
+                                    </td>
+                                </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                        <?php else: ?>
+                        <div class="text-center py-4 text-muted">
+                            <i class="fas fa-calendar-times fa-3x mb-3" style="opacity:.3"></i>
+                            <p class="mb-0">No hay reservas programadas para hoy</p>
+                        </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+
+                <!-- Gráfico Reservas últimos 7 días -->
+                <div class="card">
+                    <div class="card-header border-0">
+                        <h3 class="card-title">
+                            <i class="fas fa-chart-bar mr-2" style="color: <?= $moduloColor ?>"></i>
+                            Reservas — Últimos 7 días
+                        </h3>
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container" style="position:relative; height:260px;">
+                            <canvas id="chartReservas7d"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar derecho -->
+            <div class="col-lg-4">
+                <!-- Canchas -->
+                <div class="card">
+                    <div class="card-header border-0">
+                        <h3 class="card-title">
+                            <i class="fas fa-futbol mr-2" style="color: <?= $moduloColor ?>"></i>
+                            Canchas
+                        </h3>
+                        <div class="card-tools">
+                            <a href="<?= url('instalaciones', 'cancha', 'index') ?>" class="btn btn-sm btn-outline-secondary">
+                                Gestionar <i class="fas fa-arrow-right ml-1"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <?php if (!empty($canchas)): ?>
+                        <ul class="list-group list-group-flush">
+                            <?php foreach ($canchas as $idx => $c): ?>
+                            <li class="list-group-item d-flex align-items-center">
+                                <span class="badge mr-3" style="background:<?= $moduloColor ?>; color:#fff; width:28px; height:28px; display:flex; align-items:center; justify-content:center; border-radius:50%; font-size:.8rem;">
+                                    <?= $idx + 1 ?>
+                                </span>
+                                <div class="flex-grow-1">
+                                    <strong><?= htmlspecialchars($c['nombre'] ?? '') ?></strong>
+                                    <br>
+                                    <small class="text-muted">
+                                        <?= htmlspecialchars($c['tipo_instalacion'] ?? 'General') ?>
+                                        · $<?= number_format((float)($c['precio_hora'] ?? 0), 2) ?>/h
+                                    </small>
+                                </div>
+                                <div class="text-right">
+                                    <span class="badge badge-info" title="Reservas hoy">
+                                        <i class="fas fa-calendar-check mr-1"></i><?= (int)($c['reservas_hoy'] ?? 0) ?>
+                                    </span>
+                                </div>
+                            </li>
+                            <?php endforeach; ?>
+                        </ul>
+                        <?php else: ?>
+                        <div class="text-center py-4 text-muted">
+                            <i class="fas fa-futbol fa-3x mb-3" style="opacity:.3"></i>
+                            <p class="mb-0">No hay canchas registradas</p>
+                            <a href="<?= url('instalaciones', 'cancha', 'crear') ?>" class="btn btn-sm mt-2" style="background:<?= $moduloColor ?>; color:#fff;">
+                                <i class="fas fa-plus mr-1"></i> Crear Cancha
+                            </a>
+                        </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+
+                <!-- Acciones rápidas -->
+                <div class="card">
+                    <div class="card-header border-0">
+                        <h3 class="card-title">
+                            <i class="fas fa-bolt mr-2 text-warning"></i>
+                            Acciones Rápidas
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <a href="<?= url('reservas', 'reserva', 'crear') ?>" class="btn btn-block mb-2" style="background: <?= $moduloColor ?>15; color: <?= $moduloColor ?>; border:1px solid <?= $moduloColor ?>40; text-align:left;">
+                                <i class="fas fa-calendar-plus mr-2"></i> Nueva Reserva
+                            </a>
+                            <a href="<?= url('instalaciones', 'cancha', 'crear') ?>" class="btn btn-block mb-2" style="background: #10B98115; color: #10B981; border:1px solid #10B98140; text-align:left;">
+                                <i class="fas fa-plus-circle mr-2"></i> Agregar Cancha
+                            </a>
+                            <a href="<?= url('instalaciones', 'mantenimiento', 'index') ?>" class="btn btn-block mb-2" style="background: #EF444415; color: #EF4444; border:1px solid #EF444440; text-align:left;">
+                                <i class="fas fa-tools mr-2"></i> Mantenimientos
+                            </a>
+                            <a href="<?= url('reportes', 'kpi', 'index') ?>" class="btn btn-block mb-2" style="background: #8B5CF615; color: #8B5CF6; border:1px solid #8B5CF640; text-align:left;">
+                                <i class="fas fa-chart-bar mr-2"></i> Reportes
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hora actual -->
+                <div class="card text-center" style="border-top: 3px solid <?= $moduloColor ?>;">
+                    <div class="card-body">
+                        <div id="arenaLiveClock" style="font-size: 2rem; font-weight: 700; color: <?= $moduloColor ?>;">--:--:--</div>
+                        <small class="text-muted" id="arenaLiveDate"></small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<!-- Estilos KPI -->
+<style>
+.kpi-card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,.06);
+    transition: transform .2s, box-shadow .2s;
+}
+.kpi-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0,0,0,.1);
+}
+.kpi-icon {
+    width: 44px; height: 44px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem;
+}
+.kpi-value { font-size: 1.5rem; font-weight: 700; line-height: 1.2; }
+.kpi-label { font-size: .82rem; color: #6b7280; margin-top: 2px; }
+.kpi-trend { font-size: .75rem; font-weight: 600; }
+.kpi-trend.up   { color: #10B981; }
+.kpi-trend.down { color: #EF4444; }
+.quick-actions .btn { border-radius: 8px; font-weight: 500; }
+</style>
+
+<!-- Chart.js + Reloj -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // ─── Gráfico Reservas 7 días ───
+    const ctx = document.getElementById('chartReservas7d');
+    if (ctx) {
+        const color = '<?= $moduloColor ?>';
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: <?= json_encode($chartReservas['labels']) ?>,
+                datasets: [{
+                    label: 'Reservas',
+                    data: <?= json_encode($chartReservas['data']) ?>,
+                    backgroundColor: color + '60',
+                    borderColor: color,
+                    borderWidth: 2,
+                    borderRadius: 8,
+                    barPercentage: 0.6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, ticks: { stepSize: 1, precision: 0 } }
+                }
+            }
+        });
+    }
+
+    // ─── Reloj en vivo ───
+    function updateClock() {
+        const now = new Date();
+        document.getElementById('arenaLiveClock').textContent =
+            now.toLocaleTimeString('es-EC', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        document.getElementById('arenaLiveDate').textContent =
+            now.toLocaleDateString('es-EC', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+});
 </div>

@@ -15,19 +15,10 @@ require_once BASE_PATH . '/app/controllers/ModuleController.php';
 
 class AsignacionController extends \App\Controllers\ModuleController {
     // Métodos y propiedades válidos aquí
-    protected $moduloCodigo = 'seguridad';
+    protected $moduloCodigo = 'SEGURIDAD';
     protected $moduloNombre = 'Seguridad';
     protected $moduloIcono = 'fas fa-shield-alt';
     protected $moduloColor = '#F59E0B';
-    /**
-     * Menú lateral del módulo Seguridad (idéntico al dashboard)
-     */
-    protected function getMenuItems() {
-        require_once BASE_PATH . '/app/controllers/seguridad/DashboardController.php';
-        $dashboard = new \App\Controllers\Seguridad\DashboardController();
-        return $dashboard->getMenuItems();
-    }
-
     /**
      * Gestión de módulos por tenant
      */

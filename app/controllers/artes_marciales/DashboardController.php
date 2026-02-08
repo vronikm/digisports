@@ -36,35 +36,4 @@ class DashboardController extends \App\Controllers\ModuleController {
         $this->renderModule('artes_marciales/dashboard/index');
     }
     
-    protected function getMenuItems() {
-        return [
-            ['header' => 'Principal'],
-            ['items' => [
-                ['label' => 'Dashboard', 'icon' => 'fas fa-tachometer-alt', 'url' => url('artes_marciales', 'dashboard', 'index'), 'active' => true],
-                ['label' => 'Calendario', 'icon' => 'fas fa-calendar-alt', 'url' => url('artes_marciales', 'calendario', 'index')]
-            ]],
-            ['header' => 'Academia'],
-            ['items' => [
-                ['label' => 'Disciplinas', 'icon' => 'fas fa-yin-yang', 'url' => '#', 'submenu' => [
-                    ['label' => 'Karate', 'url' => url('artes_marciales', 'disciplina', 'ver', ['tipo' => 'karate'])],
-                    ['label' => 'Taekwondo', 'url' => url('artes_marciales', 'disciplina', 'ver', ['tipo' => 'taekwondo'])],
-                    ['label' => 'Judo', 'url' => url('artes_marciales', 'disciplina', 'ver', ['tipo' => 'judo'])],
-                    ['label' => 'Jiu-Jitsu', 'url' => url('artes_marciales', 'disciplina', 'ver', ['tipo' => 'jiujitsu'])]
-                ]],
-                ['label' => 'Alumnos', 'icon' => 'fas fa-users', 'url' => url('artes_marciales', 'alumno', 'index')],
-                ['label' => 'Instructores', 'icon' => 'fas fa-user-ninja', 'url' => url('artes_marciales', 'instructor', 'index')]
-            ]],
-            ['header' => 'Grados y Exámenes'],
-            ['items' => [
-                ['label' => 'Cinturones/Grados', 'icon' => 'fas fa-award', 'url' => url('artes_marciales', 'grado', 'index')],
-                ['label' => 'Exámenes', 'icon' => 'fas fa-clipboard-check', 'url' => url('artes_marciales', 'examen', 'index')],
-                ['label' => 'Promociones', 'icon' => 'fas fa-level-up-alt', 'url' => url('artes_marciales', 'promocion', 'index')]
-            ]],
-            ['header' => 'Competencias'],
-            ['items' => [
-                ['label' => 'Torneos', 'icon' => 'fas fa-trophy', 'url' => url('artes_marciales', 'torneo', 'index')],
-                ['label' => 'Kata/Formas', 'icon' => 'fas fa-fist-raised', 'url' => url('artes_marciales', 'kata', 'index')]
-            ]]
-        ];
-    }
 }

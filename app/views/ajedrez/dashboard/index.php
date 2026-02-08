@@ -21,7 +21,7 @@ $moduloIcono = $modulo_actual['icono'] ?? 'fas fa-chess';
             </div>
             <div class="col-sm-6">
                 <div class="float-sm-right quick-actions">
-                    <a href="<?= url('ajedrez', 'partida', 'crear') ?>" class="btn btn-dark">
+                    <a href="<?= url('ajedrez', 'partida', 'crear') ?>" class="btn" style="background: <?= $moduloColor ?>; color: white;">
                         <i class="fas fa-plus mr-1"></i> Nueva Partida
                     </a>
                     <a href="<?= url('ajedrez', 'torneo', 'crear') ?>" class="btn btn-outline-secondary">
@@ -210,7 +210,7 @@ $moduloIcono = $modulo_actual['icono'] ?? 'fas fa-chess';
                         <p>
                             <i class="fas fa-chess-board mr-1"></i> 20 tableros disponibles
                         </p>
-                        <a href="<?= url('ajedrez', 'simultanea', 'inscribir') ?>" class="btn btn-dark">
+                        <a href="<?= url('ajedrez', 'simultanea', 'inscribir') ?>" class="btn" style="background: <?= $moduloColor ?>; color: white;">
                             Inscribirse
                         </a>
                     </div>

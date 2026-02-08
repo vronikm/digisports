@@ -16,7 +16,7 @@ require_once BASE_PATH . '/app/controllers/ModuleController.php';
 require_once BASE_PATH . '/app/controllers/seguridad/DashboardController.php';
 
 class UsuarioController extends \App\Controllers\ModuleController {
-    protected $moduloCodigo = 'seguridad';
+    protected $moduloCodigo = 'SEGURIDAD';
     protected $moduloNombre = 'Seguridad';
     protected $moduloIcono = 'fas fa-shield-alt';
     protected $moduloColor = '#F59E0B';
@@ -360,13 +360,5 @@ class UsuarioController extends \App\Controllers\ModuleController {
         ]);
     }
     
-    /**
-     * Obtener items del menú
-     */
-    protected function getMenuItems() {
-        // Forzar menú de seguridad
-        require_once BASE_PATH . '/app/controllers/seguridad/DashboardController.php';
-        $dashboard = new DashboardController();
-        return $dashboard->getMenuItems();
-    }
 }
+

@@ -4,7 +4,7 @@ namespace App\Controllers\Seguridad;
 require_once BASE_PATH . '/app/controllers/ModuleController.php';
 
 class ModuloController extends \App\Controllers\ModuleController {
-    protected $moduloCodigo = 'seguridad';
+    protected $moduloCodigo = 'SEGURIDAD';
     protected $moduloNombre = 'Seguridad';
     protected $moduloIcono = 'fas fa-shield-alt';
     protected $moduloColor = '#F59E0B';
@@ -180,7 +180,7 @@ class ModuloController extends \App\Controllers\ModuleController {
                        m.mod_url_externa, m.mod_ruta_modulo, m.mod_ruta_controller, 
                        m.mod_ruta_action, m.mod_requiere_licencia,
                        COALESCE((SELECT COUNT(*) FROM seguridad_tenant_modulos tm 
-                                 WHERE tm.tmo_modulo_id = m.mod_id AND tm.tmo_activo = 1), 0) as mod_tenants_activos
+                                 WHERE tm.tmo_modulo_id = m.mod_id AND tm.tmo_activo = 'S'), 0) as mod_tenants_activos
                 FROM seguridad_modulos m 
                 ORDER BY m.mod_orden, m.mod_nombre
             ")->fetchAll(\PDO::FETCH_ASSOC);
@@ -203,7 +203,101 @@ class ModuloController extends \App\Controllers\ModuleController {
 
     public function crear() {
         $this->authorize('crear', 'modulos');
-        // Método pendiente de implementación
+        // Cargar iconos y colores desde storage/iconos_colores.json
+        $jsonData = $this->cargarIconosColores();
+        $this->renderModule('modulo/form', [
+            'modulo' => null,
+            'iconos' => $jsonData['iconos'] ?? [],
+            'colores' => $jsonData['colores'] ?? [],
+            'pageTitle' => 'Nuevo Módulo'
+        ]);
+    }
+
+    /**
+     * Endpoint AJAX para crear un nuevo módulo
+     */
+    public function store() {
+        header('Content-Type: application/json');
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Método no permitido']);
+            exit;
+        }
+
+        $this->authorize('crear', 'modulos');
+
+        // Validar campos obligatorios
+        $codigo = trim($_POST['mod_codigo'] ?? '');
+        $nombre = trim($_POST['mod_nombre'] ?? '');
+        if ($codigo === '' || $nombre === '') {
+            echo json_encode(['success' => false, 'message' => 'Código y Nombre son obligatorios']);
+            exit;
+        }
+
+        try {
+            // Verificar que el código no esté duplicado
+            $stmt = $this->db->prepare("SELECT mod_id FROM seguridad_modulos WHERE mod_codigo = ?");
+            $stmt->execute([strtoupper($codigo)]);
+            if ($stmt->fetch()) {
+                echo json_encode(['success' => false, 'message' => 'Ya existe un módulo con el código \"' . strtoupper($codigo) . '\"']);
+                exit;
+            }
+
+            // Preparar datos
+            $descripcion = trim($_POST['mod_descripcion'] ?? '');
+            $urlExterna = trim($_POST['mod_url_externa'] ?? '');
+            $orden = intval($_POST['mod_orden'] ?? 0);
+            $activo = intval($_POST['mod_activo'] ?? 1);
+            $esExterno = isset($_POST['mod_es_externo']) ? 1 : 0;
+            $requiereLicencia = isset($_POST['mod_requiere_licencia']) ? 1 : 0;
+            $icono = trim($_POST['mod_icono'] ?? 'fa-puzzle-piece');
+            $colorFondo = trim($_POST['mod_color_fondo'] ?? '#007bff');
+
+            // Asegurar prefijo fas en icono
+            if (!preg_match('/^(fas|far|fab|fal|fad) /', $icono)) {
+                $icono = 'fas ' . $icono;
+            }
+
+            $sql = "INSERT INTO seguridad_modulos 
+                        (mod_codigo, mod_nombre, mod_descripcion, mod_icono, mod_color_fondo, 
+                         mod_orden, mod_activo, mod_es_externo, mod_url_externa, mod_requiere_licencia, mod_created_at) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
+
+            $params = [
+                strtoupper($codigo),
+                $nombre,
+                $descripcion,
+                $icono,
+                $colorFondo,
+                $orden,
+                $activo,
+                $esExterno,
+                $urlExterna ?: null,
+                $requiereLicencia
+            ];
+
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($params);
+            $newId = $this->db->lastInsertId();
+
+            // Auditoría
+            $this->registrarAuditoria('crear_modulo', 'seguridad_modulos', $newId, null, [
+                'mod_codigo' => strtoupper($codigo),
+                'mod_nombre' => $nombre
+            ]);
+
+            echo json_encode([
+                'success' => true,
+                'message' => 'Módulo \"' . $nombre . '\" creado correctamente',
+                'id' => $newId
+            ]);
+        } catch (\Exception $e) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Error al crear: ' . $e->getMessage()
+            ]);
+        }
+        exit;
     }
 
     public function editar() {
@@ -230,9 +324,199 @@ class ModuloController extends \App\Controllers\ModuleController {
         ]);
     }
 
-    private function guardar($id = null) {
-        $this->authorize($id ? 'editar' : 'crear', 'modulos');
-        // Método pendiente de implementación
+    /**
+     * Endpoint AJAX para actualizar un módulo existente
+     */
+    public function update() {
+        header('Content-Type: application/json');
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Método no permitido']);
+            exit;
+        }
+
+        $this->authorize('editar', 'modulos');
+
+        $id = $_POST['mod_id'] ?? null;
+        if (!$id) {
+            echo json_encode(['success' => false, 'message' => 'ID de módulo requerido']);
+            exit;
+        }
+
+        // Validar campos obligatorios
+        $codigo = trim($_POST['mod_codigo'] ?? '');
+        $nombre = trim($_POST['mod_nombre'] ?? '');
+        if ($codigo === '' || $nombre === '') {
+            echo json_encode(['success' => false, 'message' => 'Código y Nombre son obligatorios']);
+            exit;
+        }
+
+        try {
+            // Obtener datos anteriores para auditoría
+            $stmt = $this->db->prepare("SELECT * FROM seguridad_modulos WHERE mod_id = ?");
+            $stmt->execute([$id]);
+            $datosAntes = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+            if (!$datosAntes) {
+                echo json_encode(['success' => false, 'message' => 'Módulo no encontrado']);
+                exit;
+            }
+
+            // Verificar que el código no esté duplicado (excluyendo el módulo actual)
+            $stmt = $this->db->prepare("SELECT mod_id FROM seguridad_modulos WHERE mod_codigo = ? AND mod_id != ?");
+            $stmt->execute([strtoupper($codigo), $id]);
+            if ($stmt->fetch()) {
+                echo json_encode(['success' => false, 'message' => 'Ya existe otro módulo con el código "' . strtoupper($codigo) . '"']);
+                exit;
+            }
+
+            // Preparar datos
+            $descripcion = trim($_POST['mod_descripcion'] ?? '');
+            $urlExterna = trim($_POST['mod_url_externa'] ?? '');
+            $orden = intval($_POST['mod_orden'] ?? 0);
+            $activo = intval($_POST['mod_activo'] ?? 1);
+            $esExterno = isset($_POST['mod_es_externo']) ? 1 : 0;
+            $requiereLicencia = isset($_POST['mod_requiere_licencia']) ? 1 : 0;
+            $icono = trim($_POST['mod_icono'] ?? 'fa-puzzle-piece');
+            $colorFondo = trim($_POST['mod_color_fondo'] ?? '#007bff');
+
+            $sql = "UPDATE seguridad_modulos SET 
+                        mod_codigo = ?, 
+                        mod_nombre = ?, 
+                        mod_descripcion = ?, 
+                        mod_icono = ?, 
+                        mod_color_fondo = ?, 
+                        mod_orden = ?, 
+                        mod_activo = ?, 
+                        mod_es_externo = ?, 
+                        mod_url_externa = ?, 
+                        mod_requiere_licencia = ?,
+                        mod_updated_at = NOW()
+                    WHERE mod_id = ?";
+
+            $params = [
+                strtoupper($codigo),
+                $nombre,
+                $descripcion,
+                $icono,
+                $colorFondo,
+                $orden,
+                $activo,
+                $esExterno,
+                $urlExterna ?: null,
+                $requiereLicencia,
+                $id
+            ];
+
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($params);
+
+            // Auditoría
+            $datosDespues = [
+                'mod_codigo' => strtoupper($codigo),
+                'mod_nombre' => $nombre,
+                'mod_descripcion' => $descripcion,
+                'mod_icono' => $icono,
+                'mod_color_fondo' => $colorFondo,
+                'mod_orden' => $orden,
+                'mod_activo' => $activo,
+                'mod_es_externo' => $esExterno,
+                'mod_url_externa' => $urlExterna,
+                'mod_requiere_licencia' => $requiereLicencia
+            ];
+            $this->registrarAuditoria('editar_modulo', 'seguridad_modulos', $id, $datosAntes, $datosDespues);
+
+            echo json_encode([
+                'success' => true,
+                'message' => 'Módulo "' . $nombre . '" actualizado correctamente'
+            ]);
+        } catch (\Exception $e) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Error al actualizar: ' . $e->getMessage()
+            ]);
+        }
+        exit;
+    }
+
+    /**
+     * Endpoint AJAX para eliminar un módulo
+     * Valida que no tenga asignaciones activas a tenants antes de eliminar
+     */
+    public function eliminar() {
+        header('Content-Type: application/json');
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Método no permitido']);
+            exit;
+        }
+
+        $this->authorize('eliminar', 'modulos');
+
+        $input = json_decode(file_get_contents('php://input'), true);
+        $id = $input['id'] ?? null;
+
+        if (!$id) {
+            echo json_encode(['success' => false, 'message' => 'ID de módulo requerido']);
+            exit;
+        }
+
+        try {
+            // Verificar que el módulo existe
+            $stmt = $this->db->prepare("SELECT * FROM seguridad_modulos WHERE mod_id = ?");
+            $stmt->execute([$id]);
+            $modulo = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+            if (!$modulo) {
+                echo json_encode(['success' => false, 'message' => 'Módulo no encontrado']);
+                exit;
+            }
+
+            // Validar que no tenga asignaciones activas a tenants
+            $stmt = $this->db->prepare("SELECT COUNT(*) as total FROM seguridad_tenant_modulos WHERE tmo_modulo_id = ? AND tmo_activo = 'S'");
+            $stmt->execute([$id]);
+            $asignaciones = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+            if ((int)($asignaciones['total'] ?? 0) > 0) {
+                $total = $asignaciones['total'];
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'No se puede eliminar el módulo "' . $modulo['mod_nombre'] . '" porque tiene ' . $total . ' tenant(s) asignado(s). Debe desasignar los tenants primero.'
+                ]);
+                exit;
+            }
+
+            // Verificar asignaciones en permisos de roles
+            $stmtRoles = $this->db->prepare("SELECT COUNT(*) as total FROM seguridad_rol_modulos WHERE rmo_rol_modulo_id = ?");
+            $stmtRoles->execute([$id]);
+            $roles = $stmtRoles->fetch(\PDO::FETCH_ASSOC);
+
+            if ((int)($roles['total'] ?? 0) > 0) {
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'No se puede eliminar el módulo "' . $modulo['mod_nombre'] . '" porque tiene ' . $roles['total'] . ' rol(es) asignado(s). Debe eliminar las asignaciones de roles primero.'
+                ]);
+                exit;
+            }
+
+            // Eliminar el módulo
+            $stmt = $this->db->prepare("DELETE FROM seguridad_modulos WHERE mod_id = ?");
+            $stmt->execute([$id]);
+
+            // Auditoría
+            $this->registrarAuditoria('eliminar_modulo', 'seguridad_modulos', $id, $modulo, null);
+
+            echo json_encode([
+                'success' => true,
+                'message' => 'Módulo "' . $modulo['mod_nombre'] . '" eliminado correctamente'
+            ]);
+        } catch (\Exception $e) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Error al eliminar: ' . $e->getMessage()
+            ]);
+        }
+        exit;
     }
 
     public function activar() {
@@ -291,12 +575,6 @@ class ModuloController extends \App\Controllers\ModuleController {
         $this->renderModule('modulo/configuracion', [
             'pageTitle' => 'Configuración de Seguridad'
         ]);
-    }
-
-    protected function getMenuItems() {
-        require_once BASE_PATH . '/app/controllers/seguridad/DashboardController.php';
-        $dashboard = new \App\Controllers\Seguridad\DashboardController();
-        return $dashboard->getMenuItems();
     }
 
     public function iconos() {

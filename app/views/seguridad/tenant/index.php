@@ -11,32 +11,19 @@ $pagina = $pagina ?? 1;
 $totalPaginas = $totalPaginas ?? 1;
 ?>
 
-<!-- Content Header -->
-<div class="content-header">
+<!-- Header Premium -->
+ <section class="content pt-3">
     <div class="container-fluid">
-        <div class="row mb-2">
-            <div class="col-sm-6">
-                <h1 class="m-0">
-                    <i class="fas fa-building mr-2"></i>
-                    Gestión de Tenants
-                </h1>
-            </div>
-            <div class="col-sm-6">
-                <div class="float-sm-right">
-                    <a href="<?= url('seguridad', 'tenant', 'crear') ?>" class="btn btn-primary">
-                        <i class="fas fa-plus mr-1"></i> Nuevo Tenant
-                    </a>
-                    <a href="<?= url('seguridad', 'tenant', 'suscripciones') ?>" class="btn btn-outline-warning">
-                        <i class="fas fa-calendar-alt mr-1"></i> Suscripciones
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<section class="content">
-    <div class="container-fluid">
+<?php
+$headerTitle    = 'Gestión de Tenants';
+$headerSubtitle = 'Administración de empresas y suscripciones';
+$headerIcon     = 'fas fa-building';
+$headerButtons  = [
+    ['url' => url('seguridad', 'tenant', 'crear'), 'label' => 'Nuevo Tenant', 'icon' => 'fas fa-plus', 'solid' => true],
+    ['url' => url('seguridad', 'tenant', 'suscripciones'), 'label' => 'Suscripciones', 'icon' => 'fas fa-calendar-alt', 'solid' => false],
+];
+include __DIR__ . '/../partials/header.php';
+?>
         <!-- Filtros -->
         <div class="card card-outline card-primary collapsed-card">
             <div class="card-header">

@@ -42,13 +42,22 @@ class WelcomeController extends \BaseController {
     private function getModulosSistema(): array {
         try {
             $stmt = $this->db->query("
-                    SELECT mod_codigo, mod_nombre, mod_descripcion, mod_icono, mod_color, mod_url_base, mod_orden_visualizacion
-                FROM modulos_sistema 
-                    WHERE mod_estado = 'A' 
-                ORDER BY orden_visualizacion ASC
+                SELECT mod_codigo as codigo, 
+                       mod_nombre as nombre, 
+                       mod_descripcion as descripcion, 
+                       mod_icono as icono, 
+                       mod_color_fondo as color, 
+                       mod_ruta_modulo as ruta_modulo,
+                       mod_orden as orden,
+                       mod_es_externo as es_externo,
+                       mod_requiere_licencia as requiere_licencia
+                FROM seguridad_modulos 
+                WHERE mod_activo = 1 
+                ORDER BY mod_orden ASC
             ");
             return $stmt->fetchAll(\PDO::FETCH_ASSOC);
         } catch (\Exception $e) {
+            error_log('Error cargando módulos sistema: ' . $e->getMessage());
             return [];
         }
     }

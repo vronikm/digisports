@@ -47,47 +47,4 @@ class DashboardController extends \App\Controllers\ModuleController {
         $this->renderModule('store/dashboard/index');
     }
     
-    protected function getMenuItems() {
-        return [
-            ['header' => 'Principal'],
-            ['items' => [
-                ['label' => 'Dashboard', 'icon' => 'fas fa-tachometer-alt', 'url' => url('store', 'dashboard', 'index'), 'active' => true],
-                ['label' => 'Punto de Venta', 'icon' => 'fas fa-cash-register', 'url' => url('store', 'pos', 'index'), 'badge' => 'POS', 'badge_type' => 'success']
-            ]],
-            ['header' => 'Catálogo'],
-            ['items' => [
-                ['label' => 'Productos', 'icon' => 'fas fa-box', 'url' => '#', 'submenu' => [
-                    ['label' => 'Listado', 'url' => url('store', 'producto', 'index')],
-                    ['label' => 'Nuevo Producto', 'url' => url('store', 'producto', 'crear')],
-                    ['label' => 'Importar', 'url' => url('store', 'producto', 'importar')]
-                ]],
-                ['label' => 'Categorías', 'icon' => 'fas fa-tags', 'url' => url('store', 'categoria', 'index')],
-                ['label' => 'Marcas', 'icon' => 'fas fa-trademark', 'url' => url('store', 'marca', 'index')]
-            ]],
-            ['header' => 'Inventario'],
-            ['items' => [
-                ['label' => 'Stock', 'icon' => 'fas fa-warehouse', 'url' => '#', 'submenu' => [
-                    ['label' => 'Ver Stock', 'url' => url('store', 'stock', 'index')],
-                    ['label' => 'Ajustes', 'url' => url('store', 'stock', 'ajuste')],
-                    ['label' => 'Transferencias', 'url' => url('store', 'stock', 'transferencia')]
-                ]],
-                ['label' => 'Alertas Stock', 'icon' => 'fas fa-exclamation-triangle', 'url' => url('store', 'alerta', 'index'), 'badge' => '8', 'badge_type' => 'warning']
-            ]],
-            ['header' => 'Ventas'],
-            ['items' => [
-                ['label' => 'Ventas', 'icon' => 'fas fa-shopping-cart', 'url' => '#', 'submenu' => [
-                    ['label' => 'Historial', 'url' => url('store', 'venta', 'index')],
-                    ['label' => 'Devoluciones', 'url' => url('store', 'devolucion', 'index')]
-                ]],
-                ['label' => 'Clientes', 'icon' => 'fas fa-users', 'url' => url('store', 'cliente', 'index')],
-                ['label' => 'Promociones', 'icon' => 'fas fa-percentage', 'url' => url('store', 'promocion', 'index')]
-            ]],
-            ['header' => 'Reportes'],
-            ['items' => [
-                ['label' => 'Ventas', 'icon' => 'fas fa-chart-line', 'url' => url('store', 'reporte', 'ventas')],
-                ['label' => 'Inventario', 'icon' => 'fas fa-chart-pie', 'url' => url('store', 'reporte', 'inventario')],
-                ['label' => 'Productos Top', 'icon' => 'fas fa-star', 'url' => url('store', 'reporte', 'top')]
-            ]]
-        ];
-    }
 }

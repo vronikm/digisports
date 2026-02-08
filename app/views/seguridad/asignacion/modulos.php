@@ -9,32 +9,20 @@ $asignados = $asignados ?? [];
 ?>
 
 
-<!-- Content Header -->
-<div class="content-header">
+<section class="content pt-3">
     <div class="container-fluid">
-        <div class="row mb-2">
-            <div class="col-sm-6">
-                <h1 class="m-0">
-                    <i class="<?= htmlspecialchars($moduloIcono ?? 'fas fa-shield-alt') ?> mr-2" style="color: <?= htmlspecialchars($moduloColor ?? '#F59E0B') ?>"></i>
-                    <?= htmlspecialchars($moduloNombre ?? 'Seguridad') ?> - Asignar Módulos: <?php
-                        $nombre = isset($tenant['ten_nombre_comercial']) && $tenant['ten_nombre_comercial'] ? $tenant['ten_nombre_comercial'] : (isset($tenant['ten_razon_social']) && $tenant['ten_razon_social'] ? $tenant['ten_razon_social'] : '');
-                        echo htmlspecialchars($nombre);
-                    ?>
-                </h1>
-            </div>
-            <div class="col-sm-6">
-                <ol class="breadcrumb float-sm-right">
-                    <li class="breadcrumb-item"><a href="<?= url('seguridad', 'dashboard') ?>">Seguridad</a></li>
-                    <li class="breadcrumb-item"><a href="<?= url('seguridad', 'tenant') ?>">Tenants</a></li>
-                    <li class="breadcrumb-item active">Asignar Módulos</li>
-                </ol>
-            </div>
-        </div>
-    </div>
-</div>
 
-<section class="content">
-    <div class="container-fluid">
+<!-- Header Premium -->
+<?php
+$_tenantNombreAsig = $tenant['ten_nombre_comercial'] ?? $tenant['ten_razon_social'] ?? '';
+$headerTitle    = 'Asignar Módulos: ' . $_tenantNombreAsig;
+$headerSubtitle = 'Seleccione los módulos disponibles para este tenant';
+$headerIcon     = $moduloIcono ?? 'fas fa-shield-alt';
+$headerButtons  = [
+    ['url' => url('seguridad', 'tenant'), 'label' => 'Volver a Tenants', 'icon' => 'fas fa-arrow-left', 'solid' => false],
+];
+include __DIR__ . '/../partials/header.php';
+?>
         <form method="POST" action="<?= url('seguridad', 'asignacion', 'guardarModulos') ?>">
             <input type="hidden" name="tenant_id" value="<?= isset($tenant['ten_tenant_id']) ? htmlspecialchars($tenant['ten_tenant_id']) : '' ?>">
             

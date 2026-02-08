@@ -337,14 +337,6 @@ if (!is_string($moduloIcono) || trim($moduloIcono) === '') {
             <nav class="mt-2">
                 <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
                     
-                    <!-- Menú fijo: Planes de Suscripción -->
-                    <li class="nav-item">
-                        <a href="<?= url('seguridad', 'plan', 'index') ?>" class="nav-link">
-                            <i class="fas fa-crown nav-icon"></i>
-                            <p>Planes de Suscripción</p>
-                        </a>
-                    </li>
-
                     <?php foreach ($menuItems as $section): ?>
 
                     <?php if (isset($section['header'])): ?>

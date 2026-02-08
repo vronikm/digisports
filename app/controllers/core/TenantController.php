@@ -91,13 +91,13 @@ class TenantController extends \BaseController {
             // Obtener módulos activos
             $stmt = $this->db->prepare("
                 SELECT 
-                    m.nombre,
-                    m.codigo,
-                    tm.activo,
-                    tm.fecha_activacion
-                FROM tenant_modulos tm
-                INNER JOIN modulos_sistema m ON tm.modulo_id = m.modulo_id
-                WHERE tm.tenant_id = ?
+                    m.mod_nombre as nombre,
+                    m.mod_codigo as codigo,
+                    tm.tmo_activo as activo,
+                    tm.tmo_fecha_inicio as fecha_activacion
+                FROM seguridad_tenant_modulos tm
+                INNER JOIN seguridad_modulos m ON tm.tmo_modulo_id = m.mod_id
+                WHERE tm.tmo_tenant_id = ?
             ");
             
             $stmt->execute([$tenantId]);
@@ -254,17 +254,17 @@ class TenantController extends \BaseController {
                 $modulosIncluidos = json_decode($plan['plan_modulos_incluidos'], true);
             
             foreach ($modulosIncluidos as $codigoModulo) {
-                $stmt = $this->db->prepare("SELECT modulo_id FROM modulos_sistema WHERE codigo = ?");
+                $stmt = $this->db->prepare("SELECT mod_id FROM seguridad_modulos WHERE mod_codigo = ? AND mod_activo = 1");
                 $stmt->execute([$codigoModulo]);
                 $modulo = $stmt->fetch();
                 
                 if ($modulo) {
                     $stmt = $this->db->prepare("
-                        INSERT INTO tenant_modulos (tenant_id, modulo_id, activo, fecha_activacion)
+                        INSERT INTO seguridad_tenant_modulos (tmo_tenant_id, tmo_modulo_id, tmo_activo, tmo_fecha_inicio)
                         VALUES (?, ?, 'S', CURDATE())
                     ");
                     
-                    $stmt->execute([$tenantId, $modulo['modulo_id']]);
+                    $stmt->execute([$tenantId, $modulo['mod_id']]);
                 }
             }
             

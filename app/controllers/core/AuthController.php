@@ -845,10 +845,10 @@ class AuthController extends \BaseController {
                 
                 // 2. Asignar módulos por defecto al tenant
                 $stmt = $this->db->prepare("
-                    INSERT INTO tenant_modulos (tenant_id, modulo_id, activo)
-                    SELECT ?, modulo_id, 'S'
-                    FROM modulos_sistema
-                    WHERE activo = 'S' AND es_default = 'S'
+                    INSERT INTO seguridad_tenant_modulos (tmo_tenant_id, tmo_modulo_id, tmo_activo, tmo_fecha_inicio)
+                    SELECT ?, mod_id, 'S', CURDATE()
+                    FROM seguridad_modulos
+                    WHERE mod_activo = 1
                 ");
                 
                 $stmt->execute([$tenantId]);

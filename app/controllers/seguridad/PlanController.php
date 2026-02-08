@@ -20,7 +20,7 @@ class PlanController extends \App\Controllers\ModuleController {
 
     public function __construct() {
         parent::__construct();
-        $this->moduloCodigo = 'seguridad';
+        $this->moduloCodigo = 'SEGURIDAD';
         $this->moduloNombre = 'Seguridad';
         $this->moduloIcono = 'fas fa-shield-alt';
         $this->moduloColor = '#F59E0B';
@@ -218,10 +218,5 @@ class PlanController extends \App\Controllers\ModuleController {
         ]);
     }
     
-    /**
-     * Obtener items del menú
-     */
-    protected function getMenuItems() {
-        return (new \App\Controllers\Seguridad\DashboardController())->getMenuItems();
-    }
 }
+

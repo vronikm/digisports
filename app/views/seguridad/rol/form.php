@@ -27,29 +27,19 @@ $colores = [
 ];
 ?>
 
-<!-- Content Header -->
-<div class="content-header">
+<section class="content pt-3">
     <div class="container-fluid">
-        <div class="row mb-2">
-            <div class="col-sm-6">
-                <h1 class="m-0">
-                    <i class="fas fa-<?= $esEdicion ? 'edit' : 'plus' ?> mr-2"></i>
-                    <?= $titulo ?>
-                </h1>
-            </div>
-            <div class="col-sm-6">
-                <ol class="breadcrumb float-sm-right">
-                    <li class="breadcrumb-item"><a href="<?= url('seguridad', 'dashboard', 'index') ?>">Seguridad</a></li>
-                    <li class="breadcrumb-item"><a href="<?= url('seguridad', 'rol') ?>">Roles</a></li>
-                    <li class="breadcrumb-item active"><?= $titulo ?></li>
-                </ol>
-            </div>
-        </div>
-    </div>
-</div>
 
-<section class="content">
-    <div class="container-fluid">
+<!-- Header Premium -->
+<?php
+$headerTitle    = $titulo;
+$headerSubtitle = $esEdicion ? 'Modificar configuración del rol' : 'Crear un nuevo rol de usuario';
+$headerIcon     = 'fas fa-' . ($esEdicion ? 'edit' : 'plus');
+$headerButtons  = [
+    ['url' => url('seguridad', 'rol'), 'label' => 'Volver a Roles', 'icon' => 'fas fa-arrow-left', 'solid' => false],
+];
+include __DIR__ . '/../partials/header.php';
+?>
         <form method="POST" action="<?= url('seguridad', 'rol', $esEdicion ? 'actualizar' : 'guardar') ?>">
             <?php if ($esEdicion): ?>
             <input type="hidden" name="rol_id" value="<?= $rol['rol_rol_id'] ?>">

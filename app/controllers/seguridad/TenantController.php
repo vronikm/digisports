@@ -307,7 +307,7 @@ class TenantController extends \App\Controllers\ModuleController {
             $stmt = $this->db->prepare("DELETE FROM seguridad_tenant_modulos WHERE tmo_tenant_id = ?");
             $stmt->execute([$id]);
             // Insertar todos los módulos activos con el estado correcto y fecha_inicio actual
-            $modulosSistema = $this->db->query("SELECT sis_modulo_id FROM seguridad_modulos_sistema WHERE sis_estado = 'A'")->fetchAll(\PDO::FETCH_COLUMN);
+            $modulosSistema = $this->db->query("SELECT mod_id FROM seguridad_modulos WHERE mod_activo = 1")->fetchAll(\PDO::FETCH_COLUMN);
             $modulosSeleccionados = isset($_POST['modulos']) && is_array($_POST['modulos']) ? array_map('intval', $_POST['modulos']) : [];
             $fechaHoy = date('Y-m-d');
             foreach ($modulosSistema as $modulo_id) {
@@ -353,7 +353,7 @@ class TenantController extends \App\Controllers\ModuleController {
 // ...resto del código del controlador, asegurando que todo esté dentro de la clase...
     public function __construct() {
         parent::__construct();
-        $this->moduloCodigo = 'seguridad';
+        $this->moduloCodigo = 'SEGURIDAD';
         $this->moduloNombre = 'Seguridad';
         $this->moduloIcono = 'fas fa-shield-alt';
         $this->moduloColor = '#F59E0B';
@@ -869,10 +869,5 @@ class TenantController extends \App\Controllers\ModuleController {
         ]);
     }
     
-    /**
-     * Obtener items del menú
-     */
-    protected function getMenuItems() {
-        return (new \App\Controllers\Seguridad\DashboardController())->getMenuItems();
-    }
 }
+

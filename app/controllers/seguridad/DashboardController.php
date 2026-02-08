@@ -19,7 +19,7 @@ require_once BASE_PATH . '/app/helpers/functions.php';
 class DashboardController extends \App\Controllers\ModuleController {
     public function __construct() {
         parent::__construct();
-        $this->moduloCodigo = 'seguridad';
+        $this->moduloCodigo = 'SEGURIDAD';
         $this->moduloNombre = 'Seguridad';
         $this->moduloIcono = 'fas fa-shield-alt';
         $this->moduloColor = '#F59E0B';
@@ -112,7 +112,7 @@ class DashboardController extends \App\Controllers\ModuleController {
             $stats['usuarios_activos'] = $stmt->fetchColumn();
             
             // Total módulos
-            $stmt = $this->db->query("SELECT COUNT(*) FROM seguridad_modulos_sistema WHERE sis_estado = 'A'");
+            $stmt = $this->db->query("SELECT COUNT(*) FROM seguridad_modulos WHERE mod_activo = 1");
             $stats['modulos_activos'] = $stmt->fetchColumn();
             
             // Usuarios online (último login < 30 min)
@@ -148,7 +148,7 @@ class DashboardController extends \App\Controllers\ModuleController {
             $stmt = $this->db->query("SELECT COUNT(*) FROM seguridad_usuarios WHERE usu_estado = 'A'");
             $usuarios = $stmt->fetchColumn();
             // Módulos del sistema
-            $stmt = $this->db->query("SELECT COUNT(*) FROM seguridad_modulos_sistema WHERE sis_estado = 'A'");
+            $stmt = $this->db->query("SELECT COUNT(*) FROM seguridad_modulos WHERE mod_activo = 1");
             $modulos = $stmt->fetchColumn();
             // Roles definidos
             $stmt = $this->db->query("SELECT COUNT(*) FROM seguridad_roles WHERE rol_estado = 'A'");
@@ -417,10 +417,10 @@ class DashboardController extends \App\Controllers\ModuleController {
             // Top módulos más asignados
             $stmt = $this->db->query("
                 SELECT m.mod_nombre as nombre, COUNT(tm.tmo_tenant_id) as asignaciones
-                FROM seguridad_modulos_sistema m
-                LEFT JOIN seguridad_tenant_modulos tm ON m.mod_modulo_id = tm.tmo_modulo_id AND tm.tmo_activo = 1
+                FROM seguridad_modulos m
+                LEFT JOIN seguridad_tenant_modulos tm ON m.mod_id = tm.tmo_modulo_id AND tm.tmo_activo = 'S'
                 WHERE m.mod_activo = 1
-                GROUP BY m.mod_modulo_id, m.mod_nombre
+                GROUP BY m.mod_id, m.mod_nombre
                 ORDER BY asignaciones DESC
                 LIMIT 8
             ");
@@ -432,92 +432,4 @@ class DashboardController extends \App\Controllers\ModuleController {
         return $data;
     }
 
-    /**
-     * Obtener items del menú
-     */
-    public function getMenuItems() {
-        // Detectar controlador y acción actual compatible con URLs encriptadas
-        $controller = '';
-        $action = '';
-        if (isset($_GET['r'])) {
-            $data = null;
-            if (class_exists('Security') && method_exists('Security', 'decodeSecureUrl')) {
-                $data = \Security::decodeSecureUrl($_GET['r']);
-            } else if (function_exists('decodeSecureUrl')) {
-                $data = decodeSecureUrl($_GET['r']);
-            }
-            if (is_array($data)) {
-                $controller = isset($data['c']) ? strtolower($data['c']) : '';
-                $action = isset($data['a']) ? strtolower($data['a']) : '';
-            }
-        } else {
-            $controller = isset($_GET['controller']) ? strtolower($_GET['controller']) : (isset($_GET['c']) ? strtolower($_GET['c']) : '');
-            $action = isset($_GET['action']) ? strtolower($_GET['action']) : (isset($_GET['a']) ? strtolower($_GET['a']) : '');
-        }
-        // Forzar activo en 'Lista de Tenants' si acción es 'ver' o 'editar'
-        $isTenantListActive = ($controller === 'tenant' && in_array($action, ['index', 'ver', 'editar']));
-        $menu = [
-            [ 'header' => 'Principal' ],
-            [ 'items' => [
-                [ 'label' => 'Dashboard', 'icon' => 'fas fa-tachometer-alt', 'url' => url('seguridad', 'dashboard', 'index'), 'active' => ($controller === 'dashboard' && $action === 'index') ]
-            ]],
-            [ 'header' => 'Administración' ],
-            [ 'items' => [
-                [ 'label' => 'Tenants', 'icon' => 'fas fa-building', 'url' => '#', 'submenu' => [
-                    [ 'label' => 'Lista de Tenants', 'url' => url('seguridad', 'tenant', 'index'), 'active' => $isTenantListActive ],
-                    [ 'label' => 'Nuevo Tenant', 'url' => url('seguridad', 'tenant', 'crear'), 'active' => ($controller === 'tenant' && $action === 'crear') ],
-                    [ 'label' => 'Suscripciones', 'url' => url('seguridad', 'tenant', 'suscripciones'), 'active' => ($controller === 'tenant' && $action === 'suscripciones') ]
-                ]],
-                [ 'label' => 'Usuarios', 'icon' => 'fas fa-users', 'url' => '#', 'submenu' => [
-                    [ 'label' => 'Lista de Usuarios', 'url' => url('seguridad', 'usuario', 'index'), 'active' => ($controller === 'usuario' && $action === 'index') ],
-                    [ 'label' => 'Nuevo Usuario', 'url' => url('seguridad', 'usuario', 'crear'), 'active' => ($controller === 'usuario' && $action === 'crear') ],
-                    [ 'label' => 'Editar Usuario', 'url' => url('seguridad', 'usuario', 'editar'), 'active' => ($controller === 'usuario' && $action === 'editar') ],
-                    [ 'label' => 'Eliminar Usuario', 'url' => url('seguridad', 'usuario', 'eliminar'), 'active' => ($controller === 'usuario' && $action === 'eliminar') ],
-                    [ 'label' => 'Desbloquear Usuario', 'url' => url('seguridad', 'usuario', 'desbloquear'), 'active' => ($controller === 'usuario' && $action === 'desbloquear') ],
-                    [ 'label' => 'Usuarios Bloqueados', 'url' => url('seguridad', 'usuario', 'bloqueados'), 'active' => ($controller === 'usuario' && $action === 'bloqueados') ],
-                    [ 'label' => 'Resetear Contraseña', 'url' => url('seguridad', 'usuario', 'resetPassword'), 'active' => ($controller === 'usuario' && ($action === 'resetpassword' || $action === 'resetPassword')) ]
-                ]],
-                [ 'label' => 'Roles y Permisos', 'icon' => 'fas fa-user-shield', 'url' => '#', 'submenu' => [
-                    [ 'label' => 'Lista de Roles', 'url' => url('seguridad', 'rol', 'index'), 'active' => ($controller === 'rol' && $action === 'index') ],
-                    [ 'label' => 'Nuevo Rol', 'url' => url('seguridad', 'rol', 'crear'), 'active' => ($controller === 'rol' && $action === 'crear') ],
-                    [ 'label' => 'Editar Rol', 'url' => url('seguridad', 'rol', 'editar'), 'active' => ($controller === 'rol' && $action === 'editar') ],
-                    [ 'label' => 'Matriz de Permisos', 'url' => url('seguridad', 'rol', 'permisos'), 'active' => ($controller === 'rol' && $action === 'permisos') ]
-                ]]
-            ]],
-            [ 'header' => 'Módulos y Apps' ],
-            [ 'items' => [
-                [ 'label' => 'Módulos del Sistema', 'icon' => 'fas fa-puzzle-piece', 'url' => '#', 'submenu' => [
-                    [ 'label' => 'Lista de Módulos', 'url' => url('seguridad', 'modulo', 'index'), 'active' => ($controller === 'modulo' && $action === 'index') ],
-                    [ 'label' => 'Nuevo Módulo', 'url' => url('seguridad', 'modulo', 'crear'), 'active' => ($controller === 'modulo' && $action === 'crear') ],
-                    [ 'label' => 'Editar Módulo', 'url' => url('seguridad', 'modulo', 'editar'), 'active' => ($controller === 'modulo' && $action === 'editar') ],
-                    [ 'label' => 'Duplicar Módulo', 'url' => url('seguridad', 'modulo', 'duplicar'), 'active' => ($controller === 'modulo' && $action === 'duplicar') ],
-                    [ 'label' => 'Iconos y Colores', 'url' => url('seguridad', 'modulo', 'iconos'), 'active' => ($controller === 'modulo' && $action === 'iconos') ],
-                    [ 'label' => 'Actualizar Icono', 'url' => url('seguridad', 'modulo', 'actualizarIcono'), 'active' => ($controller === 'modulo' && $action === 'actualizaricono') ]
-                ]],
-                [ 'label' => 'Asignación', 'icon' => 'fas fa-link', 'url' => '#', 'submenu' => [
-                    [ 'label' => 'Módulos por Tenant', 'url' => url('seguridad', 'asignacion', 'modulos'), 'active' => ($controller === 'asignacion' && $action === 'modulos') ],
-                    [ 'label' => 'Guardar Módulos', 'url' => url('seguridad', 'asignacion', 'guardarmodulos'), 'active' => ($controller === 'asignacion' && $action === 'guardarmodulos') ],
-                    [ 'label' => 'Asignación Masiva', 'url' => url('seguridad', 'asignacion', 'masiva'), 'active' => ($controller === 'asignacion' && $action === 'masiva') ],
-                    [ 'label' => 'Guardar Masiva', 'url' => url('seguridad', 'asignacion', 'guardarmasiva'), 'active' => ($controller === 'asignacion' && $action === 'guardarmasiva') ],
-                    [ 'label' => 'Planes', 'url' => url('seguridad', 'plan', 'index'), 'active' => ($controller === 'plan' && $action === 'index') ],
-                    [ 'label' => 'Nuevo Plan', 'url' => url('seguridad', 'plan', 'crear'), 'active' => ($controller === 'plan' && $action === 'crear') ],
-                    [ 'label' => 'Editar Plan', 'url' => url('seguridad', 'plan', 'editar'), 'active' => ($controller === 'plan' && $action === 'editar') ],
-                    [ 'label' => 'Eliminar Plan', 'url' => url('seguridad', 'plan', 'eliminar'), 'active' => ($controller === 'plan' && $action === 'eliminar') ],
-                    [ 'label' => 'Comparativa', 'url' => url('seguridad', 'plan', 'comparativa'), 'active' => ($controller === 'plan' && $action === 'comparativa') ]
-                ]]
-            ]],
-            [ 'header' => 'Auditoría' ],
-            [ 'items' => [
-                [ 'label' => 'Logs de Acceso', 'icon' => 'fas fa-history', 'url' => url('seguridad', 'auditoria', 'accesos'), 'active' => ($controller === 'auditoria' && $action === 'accesos') ],
-                [ 'label' => 'Logs de Cambios', 'icon' => 'fas fa-file-alt', 'url' => url('seguridad', 'auditoria', 'cambios'), 'active' => ($controller === 'auditoria' && $action === 'cambios') ],
-                [ 'label' => 'Alertas', 'icon' => 'fas fa-bell', 'url' => url('seguridad', 'auditoria', 'alertas'), 'active' => ($controller === 'auditoria' && $action === 'alertas'), 'badge' => '!', 'badge_type' => 'danger' ]
-            ]],
-            [ 'header' => 'Configuración' ],
-            [ 'items' => [
-                [ 'label' => 'Sistema', 'icon' => 'fas fa-cogs', 'url' => url('seguridad', 'modulo', 'configuracion'), 'active' => ($controller === 'modulo' && $action === 'configuracion') ],
-                // Puedes agregar más opciones aquí si tienes más acciones de configuración
-            ]]
-        ];
-        return $menu;
-    }
 }

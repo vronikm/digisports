@@ -9,23 +9,23 @@ $colores = $colores ?? [];
 $esEdicion = !empty($modulo);
 ?>
 
-<!-- Content Header -->
-<div class="content-header">
+<section class="content pt-3">
     <div class="container-fluid">
-        <div class="row mb-2">
-            <div class="col-sm-6">
-                <h1 class="m-0">
-                    <i class="fas fa-puzzle-piece mr-2"></i>
-                    <?= $esEdicion ? 'Editar' : 'Nuevo' ?> Módulo
-                </h1>
-            </div>
-        </div>
-    </div>
-</div>
 
-<section class="content">
-    <div class="container-fluid">
-        <form method="POST">
+<!-- Header Premium -->
+<?php
+$headerTitle    = ($esEdicion ? 'Editar' : 'Nuevo') . ' Módulo';
+$headerSubtitle = $esEdicion ? 'Modificar configuración del módulo' : 'Registrar un nuevo módulo en el sistema';
+$headerIcon     = 'fas fa-puzzle-piece';
+$headerButtons  = [
+    ['url' => url('seguridad', 'modulo', 'index'), 'label' => 'Volver a Módulos', 'icon' => 'fas fa-arrow-left', 'solid' => false],
+];
+include __DIR__ . '/../partials/header.php';
+?>
+        <form method="POST" id="formModulo" action="<?= $esEdicion ? url('seguridad', 'modulo', 'update') : url('seguridad', 'modulo', 'store') ?>">
+            <?php if ($esEdicion): ?>
+            <input type="hidden" name="mod_id" value="<?= $modulo['mod_id'] ?>">
+            <?php endif; ?>
             <div class="row">
                 <div class="col-md-8">
                     <div class="card card-primary card-outline">
@@ -203,7 +203,9 @@ $esEdicion = !empty($modulo);
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // =============================================
     // Selector de iconos
+    // =============================================
     document.querySelectorAll('.icon-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             document.querySelectorAll('.icon-btn').forEach(b => b.classList.remove('active'));
@@ -214,7 +216,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
+    // =============================================
     // Selector de colores
+    // =============================================
     document.querySelectorAll('.color-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             document.querySelectorAll('.color-btn').forEach(b => {
@@ -250,6 +254,105 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelector('input[name="mod_codigo"]').addEventListener('input', function() {
         document.getElementById('preview-codigo').textContent = this.value.toUpperCase() || 'CODIGO';
     });
+
+    // =============================================
+    // Interceptar submit → SweetAlert2 + AJAX + Toast
+    // =============================================
+    const form = document.getElementById('formModulo');
+    const btnSubmit = form.querySelector('button[type="submit"]');
+
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        // Validación HTML5 nativa
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+
+        const esEdicion = <?= $esEdicion ? 'true' : 'false' ?>;
+        const nombreModulo = form.querySelector('input[name="mod_nombre"]').value.trim();
+
+        Swal.fire({
+            title: esEdicion ? '¿Actualizar módulo?' : '¿Crear módulo?',
+            html: esEdicion 
+                ? `Se guardarán los cambios del módulo <strong>${nombreModulo}</strong>.`
+                : `Se creará el nuevo módulo <strong>${nombreModulo}</strong>.`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: '<i class="fas fa-save mr-1"></i> Sí, guardar',
+            cancelButtonText: '<i class="fas fa-times mr-1"></i> No, cancelar',
+            reverseButtons: true,
+            customClass: {
+                confirmButton: 'btn btn-primary px-4',
+                cancelButton: 'btn btn-secondary px-4'
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                enviarFormulario();
+            }
+        });
+    });
+
+    function enviarFormulario() {
+        // Deshabilitar botón para evitar doble envío
+        const textoOriginal = btnSubmit.innerHTML;
+        btnSubmit.disabled = true;
+        btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Guardando...';
+
+        const formData = new FormData(form);
+
+        fetch(form.action, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Error de red: ' + response.status);
+            return response.json();
+        })
+        .then(data => {
+            // Toast SweetAlert2 en la esquina superior derecha
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3500,
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                    toast.addEventListener('mouseenter', Swal.stopTimer);
+                    toast.addEventListener('mouseleave', Swal.resumeTimer);
+                }
+            });
+
+            if (data.success) {
+                Toast.fire({
+                    icon: 'success',
+                    title: data.message || 'Módulo guardado correctamente'
+                });
+            } else {
+                Toast.fire({
+                    icon: 'error',
+                    title: data.message || 'Error al guardar el módulo'
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error de comunicación',
+                text: 'No se pudo conectar con el servidor. Intenta de nuevo.',
+                confirmButtonColor: '#d33'
+            });
+        })
+        .finally(() => {
+            // Rehabilitar botón
+            btnSubmit.disabled = false;
+            btnSubmit.innerHTML = textoOriginal;
+        });
+    }
 });
 </script>
 

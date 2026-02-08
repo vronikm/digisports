@@ -21,7 +21,7 @@ $moduloIcono = $modulo_actual['icono'] ?? 'fas fa-hand-rock';
             </div>
             <div class="col-sm-6">
                 <div class="float-sm-right quick-actions">
-                    <a href="<?= url('artes_marciales', 'alumno', 'crear') ?>" class="btn btn-danger">
+                    <a href="<?= url('artes_marciales', 'alumno', 'crear') ?>" class="btn" style="background: <?= $moduloColor ?>; color: white;">
                         <i class="fas fa-user-plus mr-1"></i> Nuevo Alumno
                     </a>
                     <a href="<?= url('artes_marciales', 'examen', 'crear') ?>" class="btn btn-outline-secondary">

@@ -3,8 +3,18 @@
  * Vista: Logs de Acceso
  */
 ?>
-<div class="container-fluid">
-    <h2 class="mb-4"><i class="fas fa-history"></i> Logs de Acceso</h2>
+
+<section class="content pt-3">
+    <div class="container-fluid">
+
+<!-- Header Premium -->
+<?php
+$headerTitle    = 'Logs de Acceso';
+$headerSubtitle = 'Historial de accesos al sistema';
+$headerIcon     = 'fas fa-history';
+$headerButtons  = [];
+include __DIR__ . '/../partials/header.php';
+?>
     <form class="form-inline mb-3">
         <input type="text" name="usuario" class="form-control mr-2" placeholder="Usuario">
         <input type="date" name="fecha_desde" class="form-control mr-2">
@@ -67,4 +77,5 @@
         });
         </script>
     <?php endif; ?>
-</div>
+    </div>
+</section>

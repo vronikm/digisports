@@ -20,7 +20,7 @@ $moduloIcono = $modulo_actual['icono'] ?? 'fas fa-basketball-ball';
             </div>
             <div class="col-sm-6">
                 <div class="float-sm-right quick-actions">
-                    <a href="<?= url('basket', 'reserva', 'crear') ?>" class="btn btn-warning">
+                    <a href="<?= url('basket', 'reserva', 'crear') ?>" class="btn" style="background: <?= $moduloColor ?>; color: white;">
                         <i class="fas fa-plus mr-1"></i> Nueva Reserva
                     </a>
                     <a href="<?= url('basket', 'calendario', 'index') ?>" class="btn btn-outline-secondary">

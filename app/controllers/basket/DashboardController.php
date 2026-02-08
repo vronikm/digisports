@@ -33,33 +33,4 @@ class DashboardController extends \App\Controllers\ModuleController {
         $this->renderModule('basket/dashboard/index');
     }
     
-    protected function getMenuItems() {
-        return [
-            ['header' => 'Principal'],
-            ['items' => [
-                ['label' => 'Dashboard', 'icon' => 'fas fa-tachometer-alt', 'url' => url('basket', 'dashboard', 'index'), 'active' => true],
-                ['label' => 'Calendario', 'icon' => 'fas fa-calendar-alt', 'url' => url('basket', 'calendario', 'index')]
-            ]],
-            ['header' => 'Gestión'],
-            ['items' => [
-                ['label' => 'Canchas', 'icon' => 'fas fa-basketball-ball', 'url' => '#', 'submenu' => [
-                    ['label' => 'Listado', 'url' => url('basket', 'cancha', 'index')],
-                    ['label' => 'Tarifas', 'url' => url('basket', 'tarifa', 'index')]
-                ]],
-                ['label' => 'Reservas', 'icon' => 'fas fa-calendar-check', 'url' => url('basket', 'reserva', 'index')],
-                ['label' => 'Equipos', 'icon' => 'fas fa-users', 'url' => url('basket', 'equipo', 'index')]
-            ]],
-            ['header' => 'Competencias'],
-            ['items' => [
-                ['label' => 'Torneos', 'icon' => 'fas fa-trophy', 'url' => url('basket', 'torneo', 'index')],
-                ['label' => 'Ligas', 'icon' => 'fas fa-list-ol', 'url' => url('basket', 'liga', 'index')],
-                ['label' => 'Estadísticas', 'icon' => 'fas fa-chart-bar', 'url' => url('basket', 'estadistica', 'index')]
-            ]],
-            ['header' => 'Academia'],
-            ['items' => [
-                ['label' => 'Escuelas', 'icon' => 'fas fa-graduation-cap', 'url' => url('basket', 'escuela', 'index')],
-                ['label' => 'Alumnos', 'icon' => 'fas fa-user-graduate', 'url' => url('basket', 'alumno', 'index')]
-            ]]
-        ];
-    }
 }

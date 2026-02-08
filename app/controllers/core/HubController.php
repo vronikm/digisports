@@ -272,7 +272,8 @@ class HubController extends \BaseController {
         ];
         
         $token = base64_encode(json_encode($datos));
-        $signature = hash_hmac('sha256', $token, ENCRYPTION_KEY ?? 'digisports_secret');
+        $key = defined('ENCRYPTION_KEY') ? ENCRYPTION_KEY : (defined('\ENCRYPTION_KEY') ? \ENCRYPTION_KEY : 'digisports_secret');
+        $signature = hash_hmac('sha256', $token, $key);
         
         return $token . '.' . $signature;
     }

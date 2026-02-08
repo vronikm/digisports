@@ -10,21 +10,6 @@ $moduloIcono = $moduloIcono ?? $modulo_actual['icono'] ?? 'fas fa-shield-alt';
 
 <style>
 /* ═══ Módulos del Sistema — Estilos Premium ═══ */
-.mod-header {
-    background: linear-gradient(135deg, <?= $moduloColor ?> 0%, <?= $moduloColor ?>cc 100%);
-    border-radius: 16px; padding: 1.5rem 2rem; margin-bottom: 1.5rem;
-    color: white; position: relative; overflow: hidden;
-}
-.mod-header::before {
-    content: ''; position: absolute; top: -40%; right: -8%;
-    width: 250px; height: 250px; background: rgba(255,255,255,0.07); border-radius: 50%;
-}
-.mod-header h1 { font-size: 1.5rem; font-weight: 700; margin: 0; position: relative; z-index: 1; }
-.mod-header .header-sub { opacity: 0.85; font-size: 0.85rem; margin-top: 4px; position: relative; z-index: 1; }
-.mod-header .btn-h { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; border-radius: 10px; padding: 0.45rem 1.1rem; font-weight: 500; font-size: 0.82rem; transition: all 0.3s; }
-.mod-header .btn-h:hover { background: rgba(255,255,255,0.35); color: white; text-decoration: none; transform: translateY(-1px); }
-.mod-header .btn-h-solid { background: white; color: <?= $moduloColor ?>; border: none; font-weight: 600; }
-.mod-header .btn-h-solid:hover { background: #f1f5f9; color: <?= $moduloColor ?>; }
 
 /* Mini KPIs */
 .mini-kpi { background: white; border-radius: 12px; padding: 1rem 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.06); text-align: center; transition: all 0.3s; }
@@ -157,8 +142,6 @@ $moduloIcono = $moduloIcono ?? $modulo_actual['icono'] ?? 'fas fa-shield-alt';
 .mod-col:nth-child(n+9) .mod-card { animation-delay: 0.27s; }
 
 @media (max-width: 768px) {
-    .mod-header { padding: 1rem 1.25rem; }
-    .mod-header h1 { font-size: 1.2rem; }
     .mini-kpi .mk-val { font-size: 1.3rem; }
 }
 </style>
@@ -167,25 +150,16 @@ $moduloIcono = $moduloIcono ?? $modulo_actual['icono'] ?? 'fas fa-shield-alt';
 <div class="container-fluid">
 
 <!-- ═══ HEADER ═══ -->
-<div class="mod-header">
-    <div class="row align-items-center">
-        <div class="col-lg-6 col-md-5">
-            <h1><i class="<?= htmlspecialchars($moduloIcono) ?> mr-2"></i> Módulos del Sistema</h1>
-            <div class="header-sub">
-                <i class="fas fa-puzzle-piece mr-1"></i>
-                Gestión de subsistemas y aplicaciones de la plataforma
-            </div>
-        </div>
-        <div class="col-lg-6 col-md-7 text-md-right mt-3 mt-md-0" style="position: relative; z-index:1;">
-            <a href="<?= url('seguridad', 'modulo', 'crear') ?>" class="btn btn-h btn-h-solid mr-2">
-                <i class="fas fa-plus mr-1"></i> Nuevo Módulo
-            </a>
-            <a href="<?= url('seguridad', 'modulo', 'iconos') ?>" class="btn btn-h">
-                <i class="fas fa-icons mr-1"></i> Iconos y Colores
-            </a>
-        </div>
-    </div>
-</div>
+<?php
+$headerTitle    = 'Módulos del Sistema';
+$headerSubtitle = 'Gestión de subsistemas y aplicaciones de la plataforma';
+$headerIcon     = $moduloIcono ?? 'fas fa-puzzle-piece';
+$headerButtons  = [
+    ['url' => url('seguridad', 'modulo', 'crear'), 'label' => 'Nuevo Módulo', 'icon' => 'fas fa-plus', 'solid' => true],
+    ['url' => url('seguridad', 'modulo', 'iconos'), 'label' => 'Iconos y Colores', 'icon' => 'fas fa-icons', 'solid' => false],
+];
+include __DIR__ . '/../partials/header.php';
+?>
 
 <!-- ═══ MINI KPIs ═══ -->
 <div class="row mb-3">
@@ -374,12 +348,14 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // ─── Eliminar con SweetAlert ───
+    // ─── Eliminar con SweetAlert + AJAX ───
     document.querySelectorAll('.act-del').forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.preventDefault();
             const name = this.dataset.name;
             const id = this.dataset.id;
+            const card = this.closest('.mod-col');
+
             Swal.fire({
                 title: '¿Eliminar módulo?',
                 html: `Se eliminará <strong>${name}</strong> del sistema.<br><small class="text-muted">Esta acción no se puede deshacer.</small>`,
@@ -388,10 +364,47 @@ document.addEventListener('DOMContentLoaded', function() {
                 confirmButtonColor: '#EF4444',
                 confirmButtonText: '<i class="fas fa-trash-alt mr-1"></i> Sí, eliminar',
                 cancelButtonText: 'Cancelar',
-                customClass: { popup: 'rounded-lg' }
+                customClass: { popup: 'rounded-lg' },
+                showLoaderOnConfirm: true,
+                preConfirm: () => {
+                    return fetch('<?= url('seguridad', 'modulo', 'eliminar') ?>', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id: id })
+                    })
+                    .then(response => {
+                        if (!response.ok) throw new Error('Error de red');
+                        return response.json();
+                    })
+                    .catch(error => {
+                        Swal.showValidationMessage('Error de comunicación con el servidor');
+                    });
+                },
+                allowOutsideClick: () => !Swal.isLoading()
             }).then(result => {
-                if (result.isConfirmed) {
-                    window.location.href = '<?= url('seguridad', 'modulo', 'eliminar') ?>&id=' + id;
+                if (result.isConfirmed && result.value) {
+                    const Toast = Swal.mixin({
+                        toast: true, position: 'top-end',
+                        showConfirmButton: false, timer: 3500,
+                        timerProgressBar: true,
+                        didOpen: (toast) => {
+                            toast.addEventListener('mouseenter', Swal.stopTimer);
+                            toast.addEventListener('mouseleave', Swal.resumeTimer);
+                        }
+                    });
+
+                    if (result.value.success) {
+                        Toast.fire({ icon: 'success', title: result.value.message });
+                        // Animar y remover la tarjeta
+                        if (card) {
+                            card.style.transition = 'all 0.4s ease';
+                            card.style.transform = 'scale(0.8)';
+                            card.style.opacity = '0';
+                            setTimeout(() => card.remove(), 400);
+                        }
+                    } else {
+                        Toast.fire({ icon: 'error', title: result.value.message });
+                    }
                 }
             });
         });

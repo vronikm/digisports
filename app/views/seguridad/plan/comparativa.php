@@ -6,29 +6,19 @@
 $planes = $planes ?? [];
 ?>
 
-<!-- Content Header -->
-<div class="content-header">
+<section class="content pt-3">
     <div class="container-fluid">
-        <div class="row mb-2">
-            <div class="col-sm-6">
-                <h1 class="m-0">
-                    <i class="fas fa-columns mr-2"></i>
-                    Comparativa de Planes
-                </h1>
-            </div>
-            <div class="col-sm-6">
-                <ol class="breadcrumb float-sm-right">
-                    <li class="breadcrumb-item"><a href="<?= url('seguridad') ?>">Seguridad</a></li>
-                    <li class="breadcrumb-item"><a href="<?= url('seguridad', 'plan') ?>">Planes</a></li>
-                    <li class="breadcrumb-item active">Comparativa</li>
-                </ol>
-            </div>
-        </div>
-    </div>
-</div>
 
-<section class="content">
-    <div class="container-fluid">
+<!-- Header Premium -->
+<?php
+$headerTitle    = 'Comparativa de Planes';
+$headerSubtitle = 'Tabla comparativa de características y precios';
+$headerIcon     = 'fas fa-columns';
+$headerButtons  = [
+    ['url' => url('seguridad', 'plan'), 'label' => 'Volver a Planes', 'icon' => 'fas fa-arrow-left', 'solid' => false],
+];
+include __DIR__ . '/../partials/header.php';
+?>
         <div class="card">
             <div class="card-body p-0">
                 <div class="table-responsive">

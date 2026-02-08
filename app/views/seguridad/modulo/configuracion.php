@@ -3,20 +3,18 @@
  * DigiSports Seguridad - Configuración
  */
 ?>
-<div class="content-header">
+
+<section class="content pt-3">
     <div class="container-fluid">
-        <div class="row mb-2">
-            <div class="col-sm-6">
-                <h1 class="m-0">
-                    <i class="fa fa-user-cog mr-2"></i>
-                    Configuración de Seguridad
-                </h1>
-            </div>
-        </div>
-    </div>
-</div>
-<section class="content">
-    <div class="container-fluid">
+
+<!-- Header Premium -->
+<?php
+$headerTitle    = 'Configuración de Seguridad';
+$headerSubtitle = 'Opciones y parámetros generales del módulo';
+$headerIcon     = 'fas fa-cogs';
+$headerButtons  = [];
+include __DIR__ . '/../partials/header.php';
+?>
         <div class="card">
             <div class="card-body">
                 <p class="lead mb-0">Aquí puedes agregar opciones de configuración específicas del módulo Seguridad.</p>

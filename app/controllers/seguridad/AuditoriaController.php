@@ -14,7 +14,7 @@ class AuditoriaController extends \App\Controllers\ModuleController {
     // Métodos y propiedades válidos aquí
     public function __construct() {
         parent::__construct();
-        $this->moduloCodigo = 'seguridad';
+        $this->moduloCodigo = 'SEGURIDAD';
         $this->moduloNombre = 'Seguridad';
         $this->moduloIcono = 'fas fa-shield-alt';
         $this->moduloColor = '#F59E0B';
@@ -74,7 +74,5 @@ class AuditoriaController extends \App\Controllers\ModuleController {
         ]);
     }
 
-    protected function getMenuItems() {
-        return (new \App\Controllers\Seguridad\DashboardController())->getMenuItems();
-    }
 }
+

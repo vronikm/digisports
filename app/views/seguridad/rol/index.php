@@ -7,29 +7,19 @@ $roles = $roles ?? [];
 $total = $total ?? 0;
 ?>
 
-<!-- Content Header -->
-<div class="content-header">
+<section class="content pt-3">
     <div class="container-fluid">
-        <div class="row mb-2">
-            <div class="col-sm-6">
-                <h1 class="m-0">
-                    <i class="fas fa-user-tag mr-2"></i>
-                    Gestión de Roles
-                </h1>
-            </div>
-            <div class="col-sm-6">
-                <div class="float-sm-right">
-                    <a href="<?= url('seguridad', 'rol', 'crear') ?>" class="btn btn-primary">
-                        <i class="fas fa-plus mr-1"></i> Nuevo Rol
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 
-<section class="content">
-    <div class="container-fluid">
+<!-- Header Premium -->
+<?php
+$headerTitle    = 'Gestión de Roles';
+$headerSubtitle = 'Configuración de roles y permisos del sistema';
+$headerIcon     = 'fas fa-user-tag';
+$headerButtons  = [
+    ['url' => url('seguridad', 'rol', 'crear'), 'label' => 'Nuevo Rol', 'icon' => 'fas fa-plus', 'solid' => true],
+];
+include __DIR__ . '/../partials/header.php';
+?>
         <div class="card">
             <div class="card-header">
                 <h3 class="card-title">Roles del Sistema (<?= $total ?>)</h3>

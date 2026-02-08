@@ -9,32 +9,20 @@ $modulos = $modulos ?? [];
 $actividad = $actividad ?? [];
 ?>
 
-<!-- Content Header -->
-<div class="content-header">
+<section class="content pt-3">
     <div class="container-fluid">
-        <div class="row mb-2">
-            <div class="col-sm-6">
-                <h1 class="m-0">
-                    <i class="fas fa-building mr-2"></i>
-                    <?= htmlspecialchars($tenant['ten_nombre_comercial'] ?? $tenant['ten_razon_social'] ?? '-') ?>
-                </h1>
-            </div>
-            <div class="col-sm-6">
-                <div class="float-sm-right">
-                    <a href="<?= url('seguridad', 'tenant', 'editar', ['id' => $tenant['ten_tenant_id']]) ?>" class="btn btn-primary">
-                        <i class="fas fa-edit mr-1"></i> Editar
-                    </a>
-                    <a href="<?= url('seguridad', 'tenant') ?>" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left mr-1"></i> Volver
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 
-<section class="content">
-    <div class="container-fluid">
+<!-- Header Premium -->
+<?php
+$headerTitle    = $tenant['ten_nombre_comercial'] ?? $tenant['ten_razon_social'] ?? '-';
+$headerSubtitle = 'Detalle y configuración del tenant';
+$headerIcon     = 'fas fa-building';
+$headerButtons  = [
+    ['url' => url('seguridad', 'tenant', 'editar', ['id' => $tenant['ten_tenant_id']]), 'label' => 'Editar', 'icon' => 'fas fa-edit', 'solid' => true],
+    ['url' => url('seguridad', 'tenant'), 'label' => 'Volver', 'icon' => 'fas fa-arrow-left', 'solid' => false],
+];
+include __DIR__ . '/../partials/header.php';
+?>
         <div class="row">
             <!-- Información Principal -->
             <div class="col-md-4">

@@ -24,7 +24,7 @@ $torneosActivos = $torneos_activos ?? [];
             <div class="col-sm-6">
                 <div class="float-sm-right">
                     <div class="btn-group quick-actions">
-                        <a href="<?= url('futbol', 'reserva', 'crear') ?>" class="btn btn-success">
+                        <a href="<?= url('futbol', 'reserva', 'crear') ?>" class="btn" style="background: <?= $modulo_actual['color'] ?? '#22C55E' ?>; color: white;">
                             <i class="fas fa-plus mr-1"></i> Nueva Reserva
                         </a>
                         <a href="<?= url('futbol', 'calendario', 'index') ?>" class="btn btn-outline-secondary">

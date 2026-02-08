@@ -20,7 +20,7 @@ $moduloIcono = $modulo_actual['icono'] ?? 'fas fa-swimmer';
             </div>
             <div class="col-sm-6">
                 <div class="float-sm-right quick-actions">
-                    <a href="<?= url('natacion', 'alumno', 'crear') ?>" class="btn btn-info">
+                    <a href="<?= url('natacion', 'alumno', 'crear') ?>" class="btn" style="background: <?= $moduloColor ?>; color: white;">
                         <i class="fas fa-user-plus mr-1"></i> Nuevo Alumno
                     </a>
                     <a href="<?= url('natacion', 'horario', 'index') ?>" class="btn btn-outline-secondary">

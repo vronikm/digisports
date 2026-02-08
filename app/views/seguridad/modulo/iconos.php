@@ -15,30 +15,19 @@ $urlAjaxDelete   = url('seguridad', 'modulo', 'iconos_admin_delete');
 $urlAjaxEdit     = url('seguridad', 'modulo', 'iconos_admin_edit');
 ?>
 
-<!-- Content Header -->
-<div class="content-header">
+<section class="content pt-3">
     <div class="container-fluid">
-        <div class="row mb-2">
-            <div class="col-sm-6">
-                <h1 class="m-0">
-                    <i class="fas fa-icons mr-2" style="color:#F59E0B;"></i>
-                    Iconos y Colores
-                </h1>
-                <small class="text-muted">Administración visual de iconos y paleta de colores del sistema</small>
-            </div>
-            <div class="col-sm-6">
-                <ol class="breadcrumb float-sm-right">
-                    <li class="breadcrumb-item"><a href="<?= url('seguridad', 'dashboard') ?>">Seguridad</a></li>
-                    <li class="breadcrumb-item"><a href="<?= url('seguridad', 'modulo', 'index') ?>">Módulos</a></li>
-                    <li class="breadcrumb-item active">Iconos y Colores</li>
-                </ol>
-            </div>
-        </div>
-    </div>
-</div>
 
-<section class="content">
-    <div class="container-fluid">
+<!-- Header Premium -->
+<?php
+$headerTitle    = 'Iconos y Colores';
+$headerSubtitle = 'Administración visual de iconos y paleta de colores del sistema';
+$headerIcon     = 'fas fa-icons';
+$headerButtons  = [
+    ['url' => url('seguridad', 'modulo', 'index'), 'label' => 'Volver a Módulos', 'icon' => 'fas fa-arrow-left', 'solid' => false],
+];
+include __DIR__ . '/../partials/header.php';
+?>
 
         <!-- ═══════════════════════════════════════════════════════════════
              SECCIÓN 1: Módulos Actuales - Vista Rápida

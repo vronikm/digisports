@@ -33,37 +33,4 @@ class DashboardController extends \App\Controllers\ModuleController {
         $this->renderModule('ajedrez/dashboard/index');
     }
     
-    protected function getMenuItems() {
-        return [
-            ['header' => 'Principal'],
-            ['items' => [
-                ['label' => 'Dashboard', 'icon' => 'fas fa-tachometer-alt', 'url' => url('ajedrez', 'dashboard', 'index'), 'active' => true],
-                ['label' => 'Calendario', 'icon' => 'fas fa-calendar-alt', 'url' => url('ajedrez', 'calendario', 'index')]
-            ]],
-            ['header' => 'Club'],
-            ['items' => [
-                ['label' => 'Miembros', 'icon' => 'fas fa-users', 'url' => '#', 'submenu' => [
-                    ['label' => 'Listado', 'url' => url('ajedrez', 'miembro', 'index')],
-                    ['label' => 'Rankings', 'url' => url('ajedrez', 'ranking', 'index')],
-                    ['label' => 'Categorías', 'url' => url('ajedrez', 'categoria', 'index')]
-                ]],
-                ['label' => 'Partidas', 'icon' => 'fas fa-chess-board', 'url' => url('ajedrez', 'partida', 'index')]
-            ]],
-            ['header' => 'Competencias'],
-            ['items' => [
-                ['label' => 'Torneos', 'icon' => 'fas fa-trophy', 'url' => '#', 'submenu' => [
-                    ['label' => 'Activos', 'url' => url('ajedrez', 'torneo', 'index')],
-                    ['label' => 'Crear Torneo', 'url' => url('ajedrez', 'torneo', 'crear')],
-                    ['label' => 'Sistemas de Juego', 'url' => url('ajedrez', 'sistema', 'index')]
-                ]],
-                ['label' => 'Simultáneas', 'icon' => 'fas fa-chess-king', 'url' => url('ajedrez', 'simultanea', 'index')]
-            ]],
-            ['header' => 'Formación'],
-            ['items' => [
-                ['label' => 'Clases', 'icon' => 'fas fa-chalkboard', 'url' => url('ajedrez', 'clase', 'index')],
-                ['label' => 'Problemas', 'icon' => 'fas fa-puzzle-piece', 'url' => url('ajedrez', 'problema', 'index')],
-                ['label' => 'Aperturas', 'icon' => 'fas fa-book', 'url' => url('ajedrez', 'apertura', 'index')]
-            ]]
-        ];
-    }
 }

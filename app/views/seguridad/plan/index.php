@@ -7,31 +7,20 @@ $planes = $planes ?? [];
 $total = $total ?? 0;
 ?>
 
-<!-- Content Header -->
-
-<?php $moduloColor = $moduloColor ?? '#6366F1'; ?>
-<div class="content-header">
+<section class="content pt-3">
     <div class="container-fluid">
-        <div class="row mb-2">
-            <div class="col-sm-6">
-                <h1 class="m-0">
-                    <i class="fas fa-crown mr-2" style="color: <?= $moduloColor ?>"></i>
-                    Planes de Suscripción
-                </h1>
-            </div>
-            <div class="col-sm-6">
-                <div class="float-sm-right">
-                    <a href="<?= url('seguridad', 'plan', 'crear') ?>" class="btn" style="background: <?= $moduloColor ?>; color: white;">
-                        <i class="fas fa-plus mr-1"></i> Nuevo Plan
-                    </a>
-                    <a href="<?= url('seguridad', 'plan', 'comparativa') ?>" class="btn btn-outline-info">
-                        <i class="fas fa-columns mr-1"></i> Comparativa
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+
+<!-- Header Premium -->
+<?php
+$headerTitle    = 'Planes de Suscripción';
+$headerSubtitle = 'Configuración de planes, precios y características';
+$headerIcon     = 'fas fa-crown';
+$headerButtons  = [
+    ['url' => url('seguridad', 'plan', 'crear'), 'label' => 'Nuevo Plan', 'icon' => 'fas fa-plus', 'solid' => true],
+    ['url' => url('seguridad', 'plan', 'comparativa'), 'label' => 'Comparativa', 'icon' => 'fas fa-columns', 'solid' => false],
+];
+include __DIR__ . '/../partials/header.php';
+?>
 <div class="row">
     <?php if (empty($planes)): ?>
     <div class="col-12">

@@ -18,7 +18,7 @@ require_once BASE_PATH . '/app/helpers/auditoria_helper.php';
 use App\Controllers\Seguridad\DashboardController;
 
 class RolController extends \App\Controllers\ModuleController {
-    protected $moduloCodigo = 'seguridad';
+    protected $moduloCodigo = 'SEGURIDAD';
     protected $moduloNombre = 'Seguridad';
     protected $moduloIcono = 'fas fa-shield-alt';
     protected $moduloColor = '#F59E0B';
@@ -199,19 +199,151 @@ class RolController extends \App\Controllers\ModuleController {
                 $stmt->execute([$id]);
                 $rol = $stmt->fetch(\PDO::FETCH_ASSOC) ?: [];
                 $permisosActuales = isset($rol['rol_permisos']) ? json_decode($rol['rol_permisos'], true) : [];
+                if (!is_array($permisosActuales)) $permisosActuales = [];
             } catch (\Exception $e) {
                 $rol = [];
                 $permisosActuales = [];
             }
+
+            // Cargar módulos con sus menús desde BD
+            $modulosConMenus = $this->getModulosConMenus();
+
+            // Cargar permisos de menú (seguridad_rol_menu) del rol
+            $permisosMenu = [];
+            if ($id) {
+                try {
+                    $stmt = $this->db->prepare("
+                        SELECT srm.rme_menu_id, srm.rme_puede_ver, srm.rme_puede_acceder
+                        FROM seguridad_rol_menu srm
+                        WHERE srm.rme_rol_id = ?
+                    ");
+                    $stmt->execute([$id]);
+                    foreach ($stmt->fetchAll(\PDO::FETCH_ASSOC) as $pm) {
+                        $permisosMenu[(int)$pm['rme_menu_id']] = [
+                            'ver' => (int)$pm['rme_puede_ver'],
+                            'acceder' => (int)$pm['rme_puede_acceder']
+                        ];
+                    }
+                } catch (\Exception $e) {
+                    $permisosMenu = [];
+                }
+            }
+
             $this->renderModule('seguridad/rol/permisos', [
                 'rol' => $rol,
                 'permisosDisponibles' => $this->permisosDisponibles,
                 'permisosActuales' => $permisosActuales,
+                'modulosConMenus' => $modulosConMenus,
+                'permisosMenu' => $permisosMenu,
                 'pageTitle' => 'Permisos de Rol'
             ]);
         }
 
-        protected function getMenuItems() {
-            return (new DashboardController())->getMenuItems();
+        /**
+         * Guardar permisos del rol (POST desde la Matriz de Permisos)
+         */
+        public function guardarPermisos() {
+            $this->authorize('editar', 'roles');
+
+            $rolId = (int)($_POST['rol_id'] ?? 0);
+            if (!$rolId) {
+                if (function_exists('setFlashMessage')) setFlashMessage('error', 'Rol no válido.');
+                redirect('seguridad', 'rol', 'index');
+                return;
+            }
+
+            try {
+                $this->db->beginTransaction();
+
+                // ── 1. Guardar permisos funcionales (JSON en seguridad_roles) ──
+                $permisosFuncionales = [];
+                if (isset($_POST['permisos']) && is_array($_POST['permisos'])) {
+                    foreach ($_POST['permisos'] as $permiso) {
+                        $permiso = trim($permiso);
+                        if ($permiso) $permisosFuncionales[] = $permiso;
+                    }
+                }
+                $permisosJson = json_encode(array_unique($permisosFuncionales));
+
+                $stmt = $this->db->prepare("UPDATE seguridad_roles SET rol_permisos = ? WHERE rol_rol_id = ?");
+                $stmt->execute([$permisosJson, $rolId]);
+
+                // ── 2. Guardar permisos de menú (seguridad_rol_menu) ──
+                // Eliminar todos los permisos de menú del rol
+                $stmt = $this->db->prepare("DELETE FROM seguridad_rol_menu WHERE rme_rol_id = ?");
+                $stmt->execute([$rolId]);
+
+                // Insertar nuevos permisos de menú
+                if (isset($_POST['menu_permisos']) && is_array($_POST['menu_permisos'])) {
+                    $stmtInsert = $this->db->prepare("
+                        INSERT INTO seguridad_rol_menu (rme_rol_id, rme_menu_id, rme_puede_ver, rme_puede_acceder)
+                        VALUES (?, ?, ?, ?)
+                    ");
+                    foreach ($_POST['menu_permisos'] as $menuId => $perms) {
+                        $puedeVer = isset($perms['ver']) ? 1 : 0;
+                        $puedeAcceder = isset($perms['acceder']) ? 1 : 0;
+                        if ($puedeVer || $puedeAcceder) {
+                            $stmtInsert->execute([$rolId, (int)$menuId, $puedeVer, $puedeAcceder]);
+                        }
+                    }
+                }
+
+                $this->db->commit();
+
+                // Auditoría
+                if (function_exists('registrarAuditoria')) {
+                    registrarAuditoria('editar_permisos_rol', 'rol', $rolId, null, [
+                        'permisos_funcionales' => $permisosFuncionales,
+                        'permisos_menu_count' => count($_POST['menu_permisos'] ?? [])
+                    ]);
+                }
+
+                if (function_exists('setFlashMessage')) setFlashMessage('success', 'Permisos guardados correctamente.');
+            } catch (\Exception $e) {
+                $this->db->rollBack();
+                error_log("RolController::guardarPermisos error: " . $e->getMessage());
+                if (function_exists('setFlashMessage')) setFlashMessage('error', 'Error al guardar permisos: ' . $e->getMessage());
+            }
+
+            redirect('seguridad', 'rol', 'permisos', ['id' => $rolId]);
         }
+
+        /**
+         * Obtener módulos con sus menús organizados jerárquicamente
+         */
+        private function getModulosConMenus() {
+            $resultado = [];
+            try {
+                // Módulos activos
+                $modulos = $this->db->query("
+                    SELECT mod_id, mod_codigo, mod_nombre, mod_icono, mod_color_fondo
+                    FROM seguridad_modulos
+                    WHERE mod_activo = 1
+                    ORDER BY mod_orden
+                ")->fetchAll(\PDO::FETCH_ASSOC);
+
+                foreach ($modulos as $mod) {
+                    // Menús activos del módulo
+                    $stmt = $this->db->prepare("
+                        SELECT men_id, men_padre_id, men_tipo, men_label, men_icono,
+                               men_ruta_controller, men_ruta_action, men_orden
+                        FROM seguridad_menu
+                        WHERE men_modulo_id = ? AND men_activo = 1
+                        ORDER BY men_orden, men_id
+                    ");
+                    $stmt->execute([$mod['mod_id']]);
+                    $menus = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
+                    $resultado[] = [
+                        'modulo' => $mod,
+                        'menus' => $menus
+                    ];
+                }
+            } catch (\Exception $e) {
+                error_log("RolController::getModulosConMenus error: " . $e->getMessage());
+            }
+            return $resultado;
+        }
+
     }
+
