@@ -31,6 +31,9 @@ require_once CONFIG_PATH . '/Router.php';
 // Cargar funciones helper
 require_once APP_PATH . '/helpers/functions.php';
 
+// Cargar servicio de protección de datos (LOPDP Ecuador)
+require_once APP_PATH . '/services/DataProtection.php';
+
 // Iniciar sesión con configuración segura y forzar consistencia
 if (session_status() === PHP_SESSION_NONE) {
     $sessionName = Config::SESSION['name'] ?? 'DIGISPORTS_SESSION';

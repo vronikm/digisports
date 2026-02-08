@@ -198,6 +198,8 @@ class TenantController extends \App\Controllers\ModuleController {
             redirect('seguridad', 'tenant', 'index');
             return;
         }
+        // Descifrar datos personales del tenant
+        $tenant = \DataProtection::decryptRow('seguridad_tenants', $tenant);
         // Obtener planes activos
         $planes = $this->db->query("SELECT sus_plan_id, sus_nombre, sus_precio_mensual, sus_usuarios_incluidos FROM seguridad_planes_suscripcion WHERE sus_estado = 'A' ORDER BY sus_nombre")->fetchAll(\PDO::FETCH_ASSOC);
         // Obtener solo módulos activos y operativos
@@ -291,16 +293,37 @@ class TenantController extends \App\Controllers\ModuleController {
             $stmt->execute([$id]);
             $previo = $stmt->fetch(\PDO::FETCH_ASSOC);
             // Actualizar tenant
+            // Cifrar datos sensibles antes de guardar
+            $protectedData = \DataProtection::encryptRow('seguridad_tenants', [
+                'ten_ruc' => $data['ruc'],
+                'ten_email' => $data['email'],
+                'ten_telefono' => $data['telefono'],
+                'ten_celular' => $data['celular'],
+                'ten_representante_identificacion' => $data['representante_identificacion'],
+                'ten_representante_email' => $data['representante_email'],
+                'ten_representante_telefono' => $data['representante_telefono'],
+            ]);
             $sql = "UPDATE seguridad_tenants SET 
                 ten_ruc = ?, ten_razon_social = ?, ten_nombre_comercial = ?, ten_tipo_empresa = ?,
                 ten_direccion = ?, ten_telefono = ?, ten_celular = ?, ten_email = ?, ten_sitio_web = ?,
                 ten_representante_nombre = ?, ten_representante_identificacion = ?, ten_representante_email = ?, ten_representante_telefono = ?,
                 ten_plan_id = ?, ten_fecha_inicio = ?, ten_fecha_vencimiento = ?,
                 ten_usuarios_permitidos = ?, ten_sedes_permitidas = ?, ten_monto_mensual = ?,
-                ten_color_primario = ?, ten_color_secundario = ?, ten_estado = ?
+                ten_color_primario = ?, ten_color_secundario = ?, ten_estado = ?,
+                ten_ruc_hash = ?, ten_email_hash = ?, 
+                ten_representante_identificacion_hash = ?, ten_representante_email_hash = ?
                 WHERE ten_tenant_id = ?";
-            $params = array_values($data);
-            $params[] = $id;
+            $params = [
+                $protectedData['ten_ruc'], $data['razon_social'], $data['nombre_comercial'], $data['tipo_empresa'],
+                $data['direccion'], $protectedData['ten_telefono'], $protectedData['ten_celular'], $protectedData['ten_email'], $data['sitio_web'],
+                $data['representante_nombre'], $protectedData['ten_representante_identificacion'], $protectedData['ten_representante_email'], $protectedData['ten_representante_telefono'],
+                $data['plan_id'], $data['fecha_inicio'], $data['fecha_vencimiento'],
+                $data['usuarios_permitidos'], $data['sedes_permitidas'], $data['monto_mensual'],
+                $data['color_primario'], $data['color_secundario'], $data['estado'],
+                \DataProtection::blindIndex($data['ruc']), \DataProtection::blindIndex($data['email']),
+                \DataProtection::blindIndex($data['representante_identificacion']), \DataProtection::blindIndex($data['representante_email']),
+                $id
+            ];
             $stmt = $this->db->prepare($sql);
             $stmt->execute($params);
             // Eliminar todos los registros de módulos del tenant
@@ -385,10 +408,12 @@ class TenantController extends \App\Controllers\ModuleController {
             }
         }
         if ($buscar) {
-            $where .= " AND (t.ten_nombre_comercial LIKE ? OR t.ten_razon_social LIKE ? OR t.ten_ruc LIKE ?)";
+            // ten_ruc está cifrado, buscar por hash exacto o por nombre/razón social con LIKE
+            $rucHash = \DataProtection::blindIndex($buscar);
+            $where .= " AND (t.ten_nombre_comercial LIKE ? OR t.ten_razon_social LIKE ? OR t.ten_ruc_hash = ?)";
             $params[] = "%$buscar%";
             $params[] = "%$buscar%";
-            $params[] = "%$buscar%";
+            $params[] = $rucHash;
         }
         $countSql = "SELECT COUNT(*) FROM seguridad_tenants t $where";
         $stmt = $this->db->prepare($countSql);
@@ -407,6 +432,8 @@ class TenantController extends \App\Controllers\ModuleController {
         $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
         $tenants = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        // Descifrar datos personales de tenants
+        $tenants = \DataProtection::decryptRows('seguridad_tenants', $tenants);
         $planes = $this->db->query("SELECT sus_plan_id, sus_nombre FROM seguridad_planes_suscripcion WHERE sus_estado = 'A' ORDER BY sus_nombre")->fetchAll(\PDO::FETCH_ASSOC);
         
         // DEBUG: Log temporal para ver el contenido de $tenants
@@ -456,9 +483,28 @@ class TenantController extends \App\Controllers\ModuleController {
                     'estado' => trim($_POST['estado'] ?? 'A')
                 ];
                 $this->db->beginTransaction();
-                $sql = "INSERT INTO seguridad_tenants (ten_ruc, ten_razon_social, ten_nombre_comercial, ten_tipo_empresa, ten_direccion, ten_telefono, ten_celular, ten_email, ten_sitio_web, ten_representante_nombre, ten_representante_identificacion, ten_representante_email, ten_representante_telefono, ten_plan_id, ten_fecha_inicio, ten_fecha_vencimiento, ten_usuarios_permitidos, ten_sedes_permitidas, ten_monto_mensual, ten_color_primario, ten_color_secundario, ten_estado)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-                $params = array_values($data);
+                // Cifrar datos sensibles
+                $protectedData = \DataProtection::encryptRow('seguridad_tenants', [
+                    'ten_ruc' => $data['ruc'],
+                    'ten_email' => $data['email'],
+                    'ten_telefono' => $data['telefono'],
+                    'ten_celular' => $data['celular'],
+                    'ten_representante_identificacion' => $data['representante_identificacion'],
+                    'ten_representante_email' => $data['representante_email'],
+                    'ten_representante_telefono' => $data['representante_telefono'],
+                ]);
+                $sql = "INSERT INTO seguridad_tenants (ten_ruc, ten_razon_social, ten_nombre_comercial, ten_tipo_empresa, ten_direccion, ten_telefono, ten_celular, ten_email, ten_sitio_web, ten_representante_nombre, ten_representante_identificacion, ten_representante_email, ten_representante_telefono, ten_plan_id, ten_fecha_inicio, ten_fecha_vencimiento, ten_usuarios_permitidos, ten_sedes_permitidas, ten_monto_mensual, ten_color_primario, ten_color_secundario, ten_estado, ten_ruc_hash, ten_email_hash, ten_representante_identificacion_hash, ten_representante_email_hash)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                $params = [
+                    $protectedData['ten_ruc'], $data['razon_social'], $data['nombre_comercial'], $data['tipo_empresa'],
+                    $data['direccion'], $protectedData['ten_telefono'], $protectedData['ten_celular'], $protectedData['ten_email'], $data['sitio_web'],
+                    $data['representante_nombre'], $protectedData['ten_representante_identificacion'], $protectedData['ten_representante_email'], $protectedData['ten_representante_telefono'],
+                    $data['plan_id'], $data['fecha_inicio'], $data['fecha_vencimiento'],
+                    $data['usuarios_permitidos'], $data['sedes_permitidas'], $data['monto_mensual'],
+                    $data['color_primario'], $data['color_secundario'], $data['estado'],
+                    \DataProtection::blindIndex($data['ruc']), \DataProtection::blindIndex($data['email']),
+                    \DataProtection::blindIndex($data['representante_identificacion']), \DataProtection::blindIndex($data['representante_email'])
+                ];
                 $stmt = $this->db->prepare($sql);
                 $stmt->execute($params);
                 $id = $this->db->lastInsertId();
@@ -550,6 +596,17 @@ class TenantController extends \App\Controllers\ModuleController {
         try {
             $this->db->beginTransaction();
             
+            // Cifrar datos sensibles
+            $protectedData = \DataProtection::encryptRow('seguridad_tenants', [
+                'ten_ruc' => $data['ruc'],
+                'ten_email' => $data['email'],
+                'ten_telefono' => $data['telefono'],
+                'ten_celular' => $data['celular'],
+                'ten_representante_identificacion' => $data['representante_identificacion'],
+                'ten_representante_email' => $data['representante_email'],
+                'ten_representante_telefono' => $data['representante_telefono'],
+            ]);
+            
             if ($id) {
                 // Actualizar
                 $sql = "UPDATE seguridad_tenants SET 
@@ -558,19 +615,39 @@ class TenantController extends \App\Controllers\ModuleController {
                     ten_representante_nombre = ?, ten_representante_identificacion = ?, ten_representante_email = ?, ten_representante_telefono = ?,
                     ten_plan_id = ?, ten_fecha_inicio = ?, ten_fecha_vencimiento = ?,
                     ten_usuarios_permitidos = ?, ten_sedes_permitidas = ?, ten_monto_mensual = ?,
-                    ten_color_primario = ?, ten_color_secundario = ?, ten_estado = ?
+                    ten_color_primario = ?, ten_color_secundario = ?, ten_estado = ?,
+                    ten_ruc_hash = ?, ten_email_hash = ?,
+                    ten_representante_identificacion_hash = ?, ten_representante_email_hash = ?
                     WHERE ten_tenant_id = ?";
-                $params = array_values($data);
-                $params[] = $id;
+                $params = [
+                    $protectedData['ten_ruc'], $data['razon_social'], $data['nombre_comercial'], $data['tipo_empresa'],
+                    $data['direccion'], $protectedData['ten_telefono'], $protectedData['ten_celular'], $protectedData['ten_email'], $data['sitio_web'],
+                    $data['representante_nombre'], $protectedData['ten_representante_identificacion'], $protectedData['ten_representante_email'], $protectedData['ten_representante_telefono'],
+                    $data['plan_id'], $data['fecha_inicio'], $data['fecha_vencimiento'],
+                    $data['usuarios_permitidos'], $data['sedes_permitidas'], $data['monto_mensual'],
+                    $data['color_primario'], $data['color_secundario'], $data['estado'],
+                    \DataProtection::blindIndex($data['ruc']), \DataProtection::blindIndex($data['email']),
+                    \DataProtection::blindIndex($data['representante_identificacion']), \DataProtection::blindIndex($data['representante_email']),
+                    $id
+                ];
                 
                 $stmt = $this->db->prepare($sql);
                 $stmt->execute($params);
                 
             } else {
                 // Crear
-                $sql = "INSERT INTO seguridad_tenants (ten_ruc, ten_razon_social, ten_nombre_comercial, ten_tipo_empresa, ten_direccion, ten_telefono, ten_celular, ten_email, ten_sitio_web, ten_representante_nombre, ten_representante_identificacion, ten_representante_email, ten_representante_telefono, ten_plan_id, ten_fecha_inicio, ten_fecha_vencimiento, ten_usuarios_permitidos, ten_sedes_permitidas, ten_monto_mensual, ten_color_primario, ten_color_secundario, ten_estado)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-                $params = array_values($data);
+                $sql = "INSERT INTO seguridad_tenants (ten_ruc, ten_razon_social, ten_nombre_comercial, ten_tipo_empresa, ten_direccion, ten_telefono, ten_celular, ten_email, ten_sitio_web, ten_representante_nombre, ten_representante_identificacion, ten_representante_email, ten_representante_telefono, ten_plan_id, ten_fecha_inicio, ten_fecha_vencimiento, ten_usuarios_permitidos, ten_sedes_permitidas, ten_monto_mensual, ten_color_primario, ten_color_secundario, ten_estado, ten_ruc_hash, ten_email_hash, ten_representante_identificacion_hash, ten_representante_email_hash)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                $params = [
+                    $protectedData['ten_ruc'], $data['razon_social'], $data['nombre_comercial'], $data['tipo_empresa'],
+                    $data['direccion'], $protectedData['ten_telefono'], $protectedData['ten_celular'], $protectedData['ten_email'], $data['sitio_web'],
+                    $data['representante_nombre'], $protectedData['ten_representante_identificacion'], $protectedData['ten_representante_email'], $protectedData['ten_representante_telefono'],
+                    $data['plan_id'], $data['fecha_inicio'], $data['fecha_vencimiento'],
+                    $data['usuarios_permitidos'], $data['sedes_permitidas'], $data['monto_mensual'],
+                    $data['color_primario'], $data['color_secundario'], $data['estado'],
+                    \DataProtection::blindIndex($data['ruc']), \DataProtection::blindIndex($data['email']),
+                    \DataProtection::blindIndex($data['representante_identificacion']), \DataProtection::blindIndex($data['representante_email'])
+                ];
                 
                 $stmt = $this->db->prepare($sql);
                 $stmt->execute($params);
@@ -636,6 +713,8 @@ class TenantController extends \App\Controllers\ModuleController {
                 redirect('seguridad', 'tenant', 'index');
                 return;
             }
+            // Descifrar datos personales del tenant
+            $tenant = \DataProtection::decryptRow('seguridad_tenants', $tenant);
             
             // Usuarios del tenant
             $stmt = $this->db->prepare("
@@ -648,6 +727,8 @@ class TenantController extends \App\Controllers\ModuleController {
             ");
             $stmt->execute([$id]);
             $usuarios = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+            // Descifrar datos personales de usuarios
+            $usuarios = \DataProtection::decryptRows('seguridad_usuarios', $usuarios);
             
             // Módulos del tenant (solo sistemas principales, con icono y color reales)
             $stmt = $this->db->prepare("

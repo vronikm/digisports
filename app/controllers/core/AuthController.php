@@ -96,7 +96,8 @@ class AuthController extends \BaseController {
         }
         
         try {
-            // Buscar usuario
+            // Buscar usuario: username en texto plano, email mediante blind index
+            $emailHash = \DataProtection::blindIndex($username);
             $stmt = $this->db->prepare("
                 SELECT 
                     u.*,
@@ -108,12 +109,17 @@ class AuthController extends \BaseController {
                 FROM seguridad_usuarios u
                 INNER JOIN seguridad_tenants t ON u.usu_tenant_id = t.ten_tenant_id
                 INNER JOIN seguridad_roles r ON u.usu_rol_id = r.rol_rol_id
-                WHERE (u.usu_username = ? OR u.usu_email = ?)
+                WHERE (u.usu_username = ? OR u.usu_email_hash = ?)
                 AND u.usu_estado = 'A'
                 AND t.ten_estado IN ('A', 'ACTIVO', 'PRUEBA')
             ");
-            $stmt->execute([$username, $username]);
+            $stmt->execute([$username, $emailHash]);
             $user = $stmt->fetch();
+            
+            // Descifrar datos personales del usuario
+            if ($user) {
+                $user = \DataProtection::decryptRow('seguridad_usuarios', $user);
+            }
             
             if (!$user) {
                 $this->handleFailedLogin($username, 'Usuario o email no encontrado o inactivo');
@@ -196,8 +202,11 @@ class AuthController extends \BaseController {
         ");
         $stmt->execute([$codigo, $expira, $user['usu_usuario_id']]);
         
-        // Enviar código por email
-        $this->send2FAEmail($user['usu_email'], $codigo, $user['usu_nombres']);
+        // Enviar código por email (el email ya viene descifrado del authenticate)
+        $decryptedEmail = \DataProtection::isEncrypted($user['usu_email']) 
+            ? \DataProtection::decrypt($user['usu_email']) 
+            : $user['usu_email'];
+        $this->send2FAEmail($decryptedEmail, $codigo, $user['usu_nombres']);
         
         // Guardar temporalmente el usuario en sesión
         $_SESSION['temp_user_id'] = $user['usu_usuario_id'];
@@ -256,6 +265,11 @@ class AuthController extends \BaseController {
             ");
             $stmt->execute([$_SESSION['temp_user_id']]);
             $user = $stmt->fetch();
+            
+            // Descifrar datos personales
+            if ($user) {
+                $user = \DataProtection::decryptRow('seguridad_usuarios', $user);
+            }
             
             if (!$user) {
                 $this->error('Usuario no encontrado');
@@ -371,6 +385,11 @@ class AuthController extends \BaseController {
             }
             
             session_regenerate_id(true);
+            
+            // Descifrar datos personales si aún están cifrados
+            if (\DataProtection::isEncrypted($user['usu_email'] ?? '')) {
+                $user = \DataProtection::decryptRow('seguridad_usuarios', $user);
+            }
             
             // Variables de sesión
             $_SESSION['user_id'] = (int)$user['usu_usuario_id'];

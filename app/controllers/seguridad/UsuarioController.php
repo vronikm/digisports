@@ -96,7 +96,7 @@ class UsuarioController extends \App\Controllers\ModuleController {
             ";
             $stmt = $this->db->prepare($sql);
             $stmt->execute($params);
-            $usuarios = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+            $usuarios = \DataProtection::decryptRows('seguridad_usuarios', $stmt->fetchAll(\PDO::FETCH_ASSOC));
             
             // Obtener tenants para filtro
             $tenants = $this->db->query("SELECT ten_tenant_id, ten_nombre_comercial FROM seguridad_tenants WHERE ten_estado = 'A' ORDER BY ten_nombre_comercial")->fetchAll(\PDO::FETCH_ASSOC);
@@ -157,6 +157,9 @@ class UsuarioController extends \App\Controllers\ModuleController {
             $stmt = $this->db->prepare("SELECT * FROM seguridad_usuarios WHERE usu_usuario_id = ?");
             $stmt->execute([$id]);
             $usuario = $stmt->fetch(\PDO::FETCH_ASSOC);
+            if ($usuario) {
+                $usuario = \DataProtection::decryptRow('seguridad_usuarios', $usuario);
+            }
             if (!$usuario) {
                 throw new \Exception('Usuario no encontrado');
             }
@@ -197,22 +200,36 @@ class UsuarioController extends \App\Controllers\ModuleController {
                 $stmtPrev = $this->db->prepare("SELECT * FROM seguridad_usuarios WHERE usu_usuario_id = ?");
                 $stmtPrev->execute([$id]);
                 $datosAntes = $stmtPrev->fetch(\PDO::FETCH_ASSOC);
+                // Cifrar datos sensibles (LOPDP Ecuador)
+                $protected = \DataProtection::encryptRow('seguridad_usuarios', $data);
                 // Actualizar
                 $sql = "UPDATE seguridad_usuarios SET 
-                    usu_tenant_id = ?, usu_identificacion = ?, usu_nombres = ?, usu_apellidos = ?,
-                    usu_email = ?, usu_telefono = ?, usu_celular = ?, usu_username = ?,
+                    usu_tenant_id = ?, usu_identificacion = ?, usu_identificacion_hash = ?, usu_nombres = ?, usu_apellidos = ?,
+                    usu_email = ?, usu_email_hash = ?, usu_telefono = ?, usu_celular = ?, usu_username = ?,
                     usu_rol_id = ?, usu_requiere_2fa = ?, usu_estado = ?, usu_fecha_actualizacion = NOW()
                     WHERE usu_usuario_id = ?";
-                $params = array_values($data);
+                $params = [
+                    $protected['usu_tenant_id'], $protected['usu_identificacion'], $protected['usu_identificacion_hash'] ?? null,
+                    $protected['usu_nombres'], $protected['usu_apellidos'],
+                    $protected['usu_email'], $protected['usu_email_hash'] ?? null,
+                    $protected['usu_telefono'], $protected['usu_celular'], $protected['usu_username'],
+                    $protected['usu_rol_id'], $protected['usu_requiere_2fa'], $protected['usu_estado']
+                ];
                 $params[] = $id;
                 // Si hay nueva contraseña
                 if (!empty($_POST['password'])) {
                     $sql = "UPDATE seguridad_usuarios SET 
-                        usu_tenant_id = ?, usu_identificacion = ?, usu_nombres = ?, usu_apellidos = ?,
-                        usu_email = ?, usu_telefono = ?, usu_celular = ?, usu_username = ?,
+                        usu_tenant_id = ?, usu_identificacion = ?, usu_identificacion_hash = ?, usu_nombres = ?, usu_apellidos = ?,
+                        usu_email = ?, usu_email_hash = ?, usu_telefono = ?, usu_celular = ?, usu_username = ?,
                         usu_rol_id = ?, usu_requiere_2fa = ?, usu_estado = ?, usu_password = ?, usu_fecha_actualizacion = NOW()
                         WHERE usu_usuario_id = ?";
-                    $params = array_values($data);
+                    $params = [
+                        $protected['usu_tenant_id'], $protected['usu_identificacion'], $protected['usu_identificacion_hash'] ?? null,
+                        $protected['usu_nombres'], $protected['usu_apellidos'],
+                        $protected['usu_email'], $protected['usu_email_hash'] ?? null,
+                        $protected['usu_telefono'], $protected['usu_celular'], $protected['usu_username'],
+                        $protected['usu_rol_id'], $protected['usu_requiere_2fa'], $protected['usu_estado']
+                    ];
                     $params[] = password_hash($_POST['password'], PASSWORD_ARGON2ID);
                     $params[] = $id;
                 }
@@ -235,12 +252,16 @@ class UsuarioController extends \App\Controllers\ModuleController {
                     return;
                 }
                 $data['usu_password'] = password_hash($_POST['password'], PASSWORD_ARGON2ID);
-                $sql = "INSERT INTO seguridad_usuarios (usu_tenant_id, usu_identificacion, usu_nombres, usu_apellidos, usu_email, usu_telefono, usu_celular, usu_username, usu_rol_id, usu_requiere_2fa, usu_estado, usu_password)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                // Cifrar datos sensibles (LOPDP Ecuador)
+                $protected = \DataProtection::encryptRow('seguridad_usuarios', $data);
+                $sql = "INSERT INTO seguridad_usuarios (usu_tenant_id, usu_identificacion, usu_identificacion_hash, usu_nombres, usu_apellidos, usu_email, usu_email_hash, usu_telefono, usu_celular, usu_username, usu_rol_id, usu_requiere_2fa, usu_estado, usu_password)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                 $params = [
-                    $data['usu_tenant_id'], $data['usu_identificacion'], $data['usu_nombres'], $data['usu_apellidos'],
-                    $data['usu_email'], $data['usu_telefono'], $data['usu_celular'], $data['usu_username'],
-                    $data['usu_rol_id'], $data['usu_requiere_2fa'], $data['usu_estado'], $data['usu_password']
+                    $protected['usu_tenant_id'], $protected['usu_identificacion'], $protected['usu_identificacion_hash'] ?? null,
+                    $protected['usu_nombres'], $protected['usu_apellidos'],
+                    $protected['usu_email'], $protected['usu_email_hash'] ?? null,
+                    $protected['usu_telefono'], $protected['usu_celular'], $protected['usu_username'],
+                    $protected['usu_rol_id'], $protected['usu_requiere_2fa'], $protected['usu_estado'], $protected['usu_password']
                 ];
                 $stmt = $this->db->prepare($sql);
                 $stmt->execute($params);
@@ -325,7 +346,7 @@ class UsuarioController extends \App\Controllers\ModuleController {
                 WHERE u.usu_intentos_fallidos >= 3 OR u.usu_bloqueado_hasta > NOW()
                 ORDER BY u.usu_bloqueado_hasta DESC
             ");
-            $usuarios = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+            $usuarios = \DataProtection::decryptRows('seguridad_usuarios', $stmt->fetchAll(\PDO::FETCH_ASSOC));
         } catch (\Exception $e) {
             $usuarios = [];
         }

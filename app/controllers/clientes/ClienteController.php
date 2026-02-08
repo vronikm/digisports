@@ -71,7 +71,7 @@ class ClienteController extends \BaseController {
             
             $stmt = $this->db->prepare($sql);
             $stmt->execute($params);
-            $clientes = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+            $clientes = \DataProtection::decryptRows('clientes', $stmt->fetchAll(\PDO::FETCH_ASSOC));
             
             // Tipos de cliente para filtro
             $tiposCliente = [
@@ -148,12 +148,13 @@ class ClienteController extends \BaseController {
         }
         
         try {
-            // Verificar si ya existe
+            // Verificar si ya existe (usar blind index)
+            $idHash = \DataProtection::blindIndex($data['identificacion']);
             $stmt = $this->db->prepare("
                 SELECT cli_cliente_id FROM clientes 
-                WHERE cli_tenant_id = ? AND cli_identificacion = ?
+                WHERE cli_tenant_id = ? AND cli_identificacion_hash = ?
             ");
-            $stmt->execute([$tenantId, $data['identificacion']]);
+            $stmt->execute([$tenantId, $idHash]);
             
             if ($stmt->fetch()) {
                 if ($this->isAjax()) {
@@ -166,25 +167,36 @@ class ClienteController extends \BaseController {
             }
             
             // Insertar cliente
+            // Cifrar datos sensibles (LOPDP Ecuador)
+            $protectedData = [
+                'cli_identificacion' => $data['identificacion'],
+                'cli_email' => $data['email'] ?? null,
+                'cli_telefono' => $data['telefono'] ?? null,
+                'cli_celular' => $data['celular'] ?? null,
+            ];
+            $encrypted = \DataProtection::encryptRow('clientes', $protectedData);
+
             $sql = "
                 INSERT INTO clientes (
-                    cli_tenant_id, cli_tipo_identificacion, cli_identificacion, 
-                    cli_nombres, cli_apellidos, cli_email, cli_telefono, cli_celular,
+                    cli_tenant_id, cli_tipo_identificacion, cli_identificacion, cli_identificacion_hash,
+                    cli_nombres, cli_apellidos, cli_email, cli_email_hash, cli_telefono, cli_celular,
                     cli_direccion, cli_tipo_cliente, cli_fecha_nacimiento, cli_estado
                 ) VALUES (
-                    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'A'
+                    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'A'
                 )
             ";
             $stmt = $this->db->prepare($sql);
             $stmt->execute([
                 $tenantId,
                 $data['tipo_identificacion'],
-                $data['identificacion'],
+                $encrypted['cli_identificacion'],
+                $encrypted['cli_identificacion_hash'] ?? null,
                 $data['nombres'],
                 $data['apellidos'],
-                $data['email'] ?? null,
-                $data['telefono'] ?? null,
-                $data['celular'] ?? null,
+                $encrypted['cli_email'],
+                $encrypted['cli_email_hash'] ?? null,
+                $encrypted['cli_telefono'],
+                $encrypted['cli_celular'],
                 $data['direccion'] ?? null,
                 $data['tipo_cliente'],
                 $data['fecha_nacimiento'] ?? null
@@ -322,13 +334,24 @@ class ClienteController extends \BaseController {
         }
         
         try {
+            // Cifrar datos sensibles (LOPDP Ecuador)
+            $protectedData = [
+                'cli_identificacion' => $data['identificacion'],
+                'cli_email' => $data['email'] ?? null,
+                'cli_telefono' => $data['telefono'] ?? null,
+                'cli_celular' => $data['celular'] ?? null,
+            ];
+            $encrypted = \DataProtection::encryptRow('clientes', $protectedData);
+
             $sql = "
                 UPDATE clientes SET
                     cli_tipo_identificacion = ?,
                     cli_identificacion = ?,
+                    cli_identificacion_hash = ?,
                     cli_nombres = ?,
                     cli_apellidos = ?,
                     cli_email = ?,
+                    cli_email_hash = ?,
                     cli_telefono = ?,
                     cli_celular = ?,
                     cli_direccion = ?,
@@ -340,12 +363,14 @@ class ClienteController extends \BaseController {
             $stmt = $this->db->prepare($sql);
             $stmt->execute([
                 $data['tipo_identificacion'],
-                $data['identificacion'],
+                $encrypted['cli_identificacion'],
+                $encrypted['cli_identificacion_hash'] ?? null,
                 $data['nombres'],
                 $data['apellidos'],
-                $data['email'] ?? null,
-                $data['telefono'] ?? null,
-                $data['celular'] ?? null,
+                $encrypted['cli_email'],
+                $encrypted['cli_email_hash'] ?? null,
+                $encrypted['cli_telefono'],
+                $encrypted['cli_celular'],
                 $data['direccion'] ?? null,
                 $data['tipo_cliente'],
                 $data['fecha_nacimiento'] ?? null,
@@ -439,10 +464,13 @@ class ClienteController extends \BaseController {
         }
         
         try {
+            // Búsqueda parcial por nombre/apellido + exacta por identificación via hash
+            $idHash = \DataProtection::blindIndex($termino);
             $sql = "
                 SELECT 
                     cli_cliente_id as id,
-                    CONCAT(cli_nombres, ' ', cli_apellidos) as text,
+                    cli_nombres,
+                    cli_apellidos,
                     cli_identificacion,
                     cli_email,
                     cli_tipo_cliente
@@ -452,7 +480,7 @@ class ClienteController extends \BaseController {
                 AND (
                     cli_nombres LIKE ? OR 
                     cli_apellidos LIKE ? OR 
-                    cli_identificacion LIKE ? OR
+                    cli_identificacion_hash = ? OR
                     CONCAT(cli_nombres, ' ', cli_apellidos) LIKE ?
                 )
                 ORDER BY cli_apellidos, cli_nombres
@@ -462,11 +490,23 @@ class ClienteController extends \BaseController {
             $stmt = $this->db->prepare($sql);
             $stmt->execute([
                 $_SESSION['tenant_id'],
-                $like, $like, $like, $like,
+                $like, $like, $idHash, $like,
                 $limit
             ]);
             
-            $this->renderJson($stmt->fetchAll(\PDO::FETCH_ASSOC));
+            // Descifrar y formatear resultados
+            $rows = \DataProtection::decryptRows('clientes', $stmt->fetchAll(\PDO::FETCH_ASSOC));
+            $results = [];
+            foreach ($rows as $r) {
+                $results[] = [
+                    'id' => $r['id'],
+                    'text' => trim($r['cli_nombres'] . ' ' . $r['cli_apellidos']),
+                    'cli_identificacion' => $r['cli_identificacion'],
+                    'cli_email' => $r['cli_email'],
+                    'cli_tipo_cliente' => $r['cli_tipo_cliente'],
+                ];
+            }
+            $this->renderJson($results);
             
         } catch (\Exception $e) {
             $this->logError("Error en búsqueda de clientes: " . $e->getMessage());
@@ -485,7 +525,8 @@ class ClienteController extends \BaseController {
             WHERE cli_cliente_id = ? AND cli_tenant_id = ?
         ");
         $stmt->execute([$id, $_SESSION['tenant_id']]);
-        return $stmt->fetch(\PDO::FETCH_ASSOC);
+        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+        return $row ? \DataProtection::decryptRow('clientes', $row) : false;
     }
     
     /**
