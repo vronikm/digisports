@@ -1,17 +1,21 @@
 <?php
 /**
- * Listado de Mantenimientos
+ * Listado de Mantenimientos — DigiSports Arena
  * @var array $mantenimientos
  * @var array $canchas
  * @var string $estado
  * @var int $cancha_id
+ * @var int $totalRegistros
+ * @var int $pagina
+ * @var int $totalPaginas
  */
-$baseUrl = \Config::get('base_url');
+$urlIndex = url('instalaciones', 'mantenimiento', 'index');
+$urlCrear = url('instalaciones', 'mantenimiento', 'crear');
 $estadosColores = [
-    'PROGRAMADO' => 'primary',
+    'PROGRAMADO'  => 'primary',
     'EN_PROGRESO' => 'warning',
-    'COMPLETADO' => 'success',
-    'CANCELADO' => 'danger'
+    'COMPLETADO'  => 'success',
+    'CANCELADO'   => 'danger'
 ];
 ?>
 
@@ -23,7 +27,7 @@ $estadosColores = [
             </h2>
         </div>
         <div class="col-md-4 text-end">
-            <a href="<?php echo $baseUrl; ?>instalaciones/mantenimiento/crear" class="btn btn-primary btn-sm">
+            <a href="<?php echo $urlCrear; ?>" class="btn btn-primary btn-sm">
                 <i class="fas fa-plus"></i> Programar Mantenimiento
             </a>
         </div>
@@ -44,7 +48,11 @@ $estadosColores = [
                 <div class="card-body">
                     <h6 class="text-muted">Programados</h6>
                     <h4 class="fw-bold text-info">
-                        <?php echo array_sum(array_map(fn($m) => $m['estado'] === 'PROGRAMADO' ? 1 : 0, $mantenimientos)); ?>
+                        <?php
+                        $cnt = 0;
+                        foreach ($mantenimientos as $m) { if ($m['estado'] === 'PROGRAMADO') $cnt++; }
+                        echo $cnt;
+                        ?>
                     </h4>
                 </div>
             </div>
@@ -54,7 +62,11 @@ $estadosColores = [
                 <div class="card-body">
                     <h6 class="text-muted">En Progreso</h6>
                     <h4 class="fw-bold text-warning">
-                        <?php echo array_sum(array_map(fn($m) => $m['estado'] === 'EN_PROGRESO' ? 1 : 0, $mantenimientos)); ?>
+                        <?php
+                        $cnt = 0;
+                        foreach ($mantenimientos as $m) { if ($m['estado'] === 'EN_PROGRESO') $cnt++; }
+                        echo $cnt;
+                        ?>
                     </h4>
                 </div>
             </div>
@@ -64,7 +76,11 @@ $estadosColores = [
                 <div class="card-body">
                     <h6 class="text-muted">Completados</h6>
                     <h4 class="fw-bold text-success">
-                        <?php echo array_sum(array_map(fn($m) => $m['estado'] === 'COMPLETADO' ? 1 : 0, $mantenimientos)); ?>
+                        <?php
+                        $cnt = 0;
+                        foreach ($mantenimientos as $m) { if ($m['estado'] === 'COMPLETADO') $cnt++; }
+                        echo $cnt;
+                        ?>
                     </h4>
                 </div>
             </div>
@@ -74,7 +90,7 @@ $estadosColores = [
     <!-- Filtros -->
     <div class="card border-0 shadow-sm mb-4">
         <div class="card-body">
-            <form method="get" action="<?php echo $baseUrl; ?>instalaciones/mantenimiento/index" class="row g-3">
+            <form method="get" action="<?php echo $urlIndex; ?>" class="row g-3">
                 <div class="col-md-4">
                     <select name="cancha_id" class="form-select form-select-sm">
                         <option value="">Todas las canchas</option>
@@ -149,7 +165,11 @@ $estadosColores = [
                                 </td>
                                 <td>
                                     <div class="btn-group btn-group-sm">
-                                        <a href="<?php echo $baseUrl; ?>instalaciones/mantenimiento/editar?id=<?php echo $mnt['mantenimiento_id']; ?>" 
+                                        <a href="<?php echo url('instalaciones', 'mantenimiento', 'ver', ['id' => $mnt['mantenimiento_id']]); ?>" 
+                                           class="btn btn-outline-info" title="Ver detalle">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="<?php echo url('instalaciones', 'mantenimiento', 'editar', ['id' => $mnt['mantenimiento_id']]); ?>" 
                                            class="btn btn-outline-primary" title="Editar">
                                             <i class="fas fa-edit"></i>
                                         </a>
@@ -157,40 +177,39 @@ $estadosColores = [
                                         <?php if ($mnt['estado'] !== 'COMPLETADO' && $mnt['estado'] !== 'CANCELADO'): ?>
                                             <div class="btn-group dropup">
                                                 <button type="button" class="btn btn-outline-warning btn-sm dropdown-toggle" 
-                                                        data-bs-toggle="dropdown" aria-expanded="false">
-                                                    <i class="fas fa-check"></i>
+                                                        data-toggle="dropdown" aria-expanded="false">
+                                                    <i class="fas fa-exchange-alt"></i>
                                                 </button>
-                                                <ul class="dropdown-menu dropdown-menu-end">
+                                                <div class="dropdown-menu dropdown-menu-right">
                                                     <?php if ($mnt['estado'] !== 'EN_PROGRESO'): ?>
-                                                        <li>
-                                                            <a class="dropdown-item" 
-                                                               href="<?php echo $baseUrl; ?>instalaciones/mantenimiento/cambiarEstado?id=<?php echo $mnt['mantenimiento_id']; ?>&estado=EN_PROGRESO">
-                                                                En Progreso
-                                                            </a>
-                                                        </li>
+                                                        <a class="dropdown-item btn-cambiar-estado" 
+                                                           data-id="<?php echo $mnt['mantenimiento_id']; ?>"
+                                                           data-estado="EN_PROGRESO" href="#">
+                                                            <i class="fas fa-play text-warning mr-1"></i> En Progreso
+                                                        </a>
                                                     <?php endif; ?>
-                                                    <li>
-                                                        <a class="dropdown-item" 
-                                                           href="<?php echo $baseUrl; ?>instalaciones/mantenimiento/cambiarEstado?id=<?php echo $mnt['mantenimiento_id']; ?>&estado=COMPLETADO">
-                                                            Marcar Completado
-                                                        </a>
-                                                    </li>
-                                                    <li><hr class="dropdown-divider"></li>
-                                                    <li>
-                                                        <a class="dropdown-item text-danger" 
-                                                           href="<?php echo $baseUrl; ?>instalaciones/mantenimiento/cambiarEstado?id=<?php echo $mnt['mantenimiento_id']; ?>&estado=CANCELADO">
-                                                            Cancelar
-                                                        </a>
-                                                    </li>
-                                                </ul>
+                                                    <a class="dropdown-item btn-cambiar-estado" 
+                                                       data-id="<?php echo $mnt['mantenimiento_id']; ?>"
+                                                       data-estado="COMPLETADO" href="#">
+                                                        <i class="fas fa-check text-success mr-1"></i> Completado
+                                                    </a>
+                                                    <div class="dropdown-divider"></div>
+                                                    <a class="dropdown-item btn-cambiar-estado text-danger" 
+                                                       data-id="<?php echo $mnt['mantenimiento_id']; ?>"
+                                                       data-estado="CANCELADO" href="#">
+                                                        <i class="fas fa-times mr-1"></i> Cancelar
+                                                    </a>
+                                                </div>
                                             </div>
                                         <?php endif; ?>
                                         
-                                        <a href="<?php echo $baseUrl; ?>instalaciones/mantenimiento/eliminar?id=<?php echo $mnt['mantenimiento_id']; ?>" 
-                                           class="btn btn-outline-danger" title="Eliminar"
-                                           onclick="return confirm('¿Eliminar este mantenimiento?')">
+                                        <button type="button" class="btn btn-outline-danger btn-delete" 
+                                                data-id="<?php echo $mnt['mantenimiento_id']; ?>"
+                                                data-nombre="<?php echo htmlspecialchars($mnt['cancha_nombre'] . ' - ' . $mnt['tipo']); ?>"
+                                                data-url="<?php echo url('instalaciones', 'mantenimiento', 'eliminar', ['id' => $mnt['mantenimiento_id']]); ?>"
+                                                title="Eliminar">
                                             <i class="fas fa-trash"></i>
-                                        </a>
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
@@ -214,12 +233,12 @@ $estadosColores = [
             <ul class="pagination justify-content-center">
                 <?php if ($pagina > 1): ?>
                     <li class="page-item">
-                        <a class="page-link" href="<?php echo $baseUrl; ?>instalaciones/mantenimiento/index?pagina=1">
+                        <a class="page-link" href="<?php echo url('instalaciones', 'mantenimiento', 'index', ['pagina' => 1, 'estado' => $estado, 'cancha_id' => $cancha_id]); ?>">
                             Inicio
                         </a>
                     </li>
                     <li class="page-item">
-                        <a class="page-link" href="<?php echo $baseUrl; ?>instalaciones/mantenimiento/index?pagina=<?php echo $pagina - 1; ?>">
+                        <a class="page-link" href="<?php echo url('instalaciones', 'mantenimiento', 'index', ['pagina' => $pagina - 1, 'estado' => $estado, 'cancha_id' => $cancha_id]); ?>">
                             Anterior
                         </a>
                     </li>
@@ -227,7 +246,7 @@ $estadosColores = [
 
                 <?php for ($i = max(1, $pagina - 2); $i <= min($totalPaginas, $pagina + 2); $i++): ?>
                     <li class="page-item <?php echo $i === $pagina ? 'active' : ''; ?>">
-                        <a class="page-link" href="<?php echo $baseUrl; ?>instalaciones/mantenimiento/index?pagina=<?php echo $i; ?>">
+                        <a class="page-link" href="<?php echo url('instalaciones', 'mantenimiento', 'index', ['pagina' => $i, 'estado' => $estado, 'cancha_id' => $cancha_id]); ?>">
                             <?php echo $i; ?>
                         </a>
                     </li>
@@ -235,12 +254,12 @@ $estadosColores = [
 
                 <?php if ($pagina < $totalPaginas): ?>
                     <li class="page-item">
-                        <a class="page-link" href="<?php echo $baseUrl; ?>instalaciones/mantenimiento/index?pagina=<?php echo $pagina + 1; ?>">
+                        <a class="page-link" href="<?php echo url('instalaciones', 'mantenimiento', 'index', ['pagina' => $pagina + 1, 'estado' => $estado, 'cancha_id' => $cancha_id]); ?>">
                             Siguiente
                         </a>
                     </li>
                     <li class="page-item">
-                        <a class="page-link" href="<?php echo $baseUrl; ?>instalaciones/mantenimiento/index?pagina=<?php echo $totalPaginas; ?>">
+                        <a class="page-link" href="<?php echo url('instalaciones', 'mantenimiento', 'index', ['pagina' => $totalPaginas, 'estado' => $estado, 'cancha_id' => $cancha_id]); ?>">
                             Fin
                         </a>
                     </li>
@@ -249,3 +268,56 @@ $estadosColores = [
         </nav>
     <?php endif; ?>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Cambiar estado con confirmación
+    document.querySelectorAll('.btn-cambiar-estado').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            var id = this.dataset.id;
+            var estado = this.dataset.estado;
+            var labels = {
+                'EN_PROGRESO': 'En Progreso',
+                'COMPLETADO': 'Completado',
+                'CANCELADO': 'Cancelado'
+            };
+            
+            Swal.fire({
+                title: '¿Cambiar estado?',
+                html: '<p>Se cambiará el estado a: <strong>' + (labels[estado] || estado) + '</strong></p>',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: '<i class="fas fa-check"></i> Sí, cambiar',
+                cancelButtonText: 'Cancelar'
+            }).then(function(result) {
+                if (result.isConfirmed) {
+                    window.location.href = '<?php echo url("instalaciones", "mantenimiento", "cambiarEstado"); ?>&id=' + id + '&estado=' + estado;
+                }
+            });
+        });
+    });
+
+    // Eliminar con SweetAlert
+    document.querySelectorAll('.btn-delete').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var nombre = this.dataset.nombre;
+            var urlEliminar = this.dataset.url;
+            
+            Swal.fire({
+                title: '¿Eliminar mantenimiento?',
+                html: '<p>Estás a punto de eliminar:</p><p class="font-weight-bold text-danger">' + nombre + '</p>',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                confirmButtonText: '<i class="fas fa-trash"></i> Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then(function(result) {
+                if (result.isConfirmed) {
+                    window.location.href = urlEliminar;
+                }
+            });
+        });
+    });
+});
+</script>

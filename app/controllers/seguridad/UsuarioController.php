@@ -54,10 +54,10 @@ class UsuarioController extends \App\Controllers\ModuleController {
      */
     public function index() {
         $this->authorize('ver', 'usuarios');
-        $tenantId = $_GET['tenant_id'] ?? null;
-        $estado = $_GET['estado'] ?? 'A';
-        $buscar = $_GET['buscar'] ?? '';
-        $pagina = $_GET['pagina'] ?? 1;
+        $tenantId = $_POST['tenant_id'] ?? $_GET['tenant_id'] ?? null;
+        $estado = $_POST['estado'] ?? $_GET['estado'] ?? 'A';
+        $buscar = $_POST['buscar'] ?? $_GET['buscar'] ?? '';
+        $pagina = $_POST['pagina'] ?? $_GET['pagina'] ?? 1;
         $porPagina = 20;
         $offset = ($pagina - 1) * $porPagina;
 

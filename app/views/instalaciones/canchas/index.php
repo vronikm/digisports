@@ -1,13 +1,15 @@
 <?php
 /**
- * Listado de Canchas/Instalaciones
+ * Listado de Canchas — DigiSports Arena
  * @var array $canchas
  * @var string $buscar
  * @var string $tipo
  * @var string $estado
+ * @var int $totalRegistros
+ * @var int $pagina
+ * @var int $totalPaginas
+ * @var array $tipos
  */
-$base = baseUrl();
-// URLs encriptadas
 $urlCrear = url('instalaciones', 'cancha', 'crear');
 $urlIndex = url('instalaciones', 'cancha', 'index');
 ?>
@@ -49,7 +51,11 @@ $urlIndex = url('instalaciones', 'cancha', 'index');
                 <div class="card-body">
                     <h6 class="text-muted">Activas</h6>
                     <h4 class="fw-bold text-success">
-                        <?php echo array_sum(array_map(fn($c) => $c['estado'] === 'ACTIVO' ? 1 : 0, $canchas)); ?>
+                        <?php
+                        $cntActivas = 0;
+                        foreach ($canchas as $c) { if ($c['estado'] === 'ACTIVO') $cntActivas++; }
+                        echo $cntActivas;
+                        ?>
                     </h4>
                 </div>
             </div>
@@ -59,7 +65,7 @@ $urlIndex = url('instalaciones', 'cancha', 'index');
                 <div class="card-body">
                     <h6 class="text-muted">Inactivas</h6>
                     <h4 class="fw-bold text-warning">
-                        <?php echo array_sum(array_map(fn($c) => $c['estado'] !== 'ACTIVO' ? 1 : 0, $canchas)); ?>
+                        <?php echo count($canchas) - $cntActivas; ?>
                     </h4>
                 </div>
             </div>
@@ -69,7 +75,7 @@ $urlIndex = url('instalaciones', 'cancha', 'index');
     <!-- Filtros -->
     <div class="card border-0 shadow-sm mb-4">
         <div class="card-body">
-            <form method="get" action="<?php echo $base; ?>instalaciones/cancha/index" class="row g-3">
+            <form method="POST" action="<?php echo $urlIndex; ?>" class="row g-3">
                 <div class="col-md-4">
                     <input type="text" name="buscar" class="form-control form-control-sm" 
                            placeholder="Buscar cancha..." value="<?php echo htmlspecialchars($buscar); ?>">
@@ -123,7 +129,7 @@ $urlIndex = url('instalaciones', 'cancha', 'index');
                         <?php foreach ($canchas as $cancha): ?>
                             <tr>
                                 <td class="fw-semibold"><?php echo htmlspecialchars($cancha['nombre']); ?></td>
-                                <td><?php echo htmlspecialchars($cancha['instalacion_nombre']); ?></td>
+                                <td><?php echo htmlspecialchars($cancha['instalacion_nombre'] ?? ''); ?></td>
                                 <td>
                                     <span class="badge bg-secondary">
                                         <?php echo ucfirst($cancha['tipo']); ?>
@@ -132,7 +138,7 @@ $urlIndex = url('instalaciones', 'cancha', 'index');
                                 <td><?php echo $cancha['capacidad_maxima']; ?> personas</td>
                                 <td>
                                     <span class="badge bg-info">
-                                        <?php echo $cancha['total_reservas_hoy']; ?>
+                                        <?php echo $cancha['total_reservas_hoy'] ?? 0; ?>
                                     </span>
                                 </td>
                                 <td>
@@ -146,8 +152,12 @@ $urlIndex = url('instalaciones', 'cancha', 'index');
                                 </td>
                                 <td>
                                     <div class="btn-group btn-group-sm">
+                                        <a href="<?php echo url('instalaciones', 'cancha', 'ver', ['id' => $cancha['cancha_id']]); ?>" 
+                                           class="btn btn-outline-info" title="Ver detalle">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
                                         <a href="<?php echo url('instalaciones', 'cancha', 'tarifas', ['id' => $cancha['cancha_id']]); ?>" 
-                                           class="btn btn-outline-info" title="Tarifas">
+                                           class="btn btn-outline-success" title="Tarifas">
                                             <i class="fas fa-dollar-sign"></i>
                                         </a>
                                         <a href="<?php echo url('instalaciones', 'cancha', 'editar', ['id' => $cancha['cancha_id']]); ?>" 
@@ -184,12 +194,12 @@ $urlIndex = url('instalaciones', 'cancha', 'index');
             <ul class="pagination justify-content-center">
                 <?php if ($pagina > 1): ?>
                     <li class="page-item">
-                        <a class="page-link" href="<?php echo $base; ?>instalaciones/cancha/index?pagina=1&buscar=<?php echo urlencode($buscar); ?>">
+                        <a class="page-link" href="<?php echo url('instalaciones', 'cancha', 'index', ['pagina' => 1, 'buscar' => $buscar, 'tipo' => $tipo, 'estado' => $estado]); ?>">
                             Inicio
                         </a>
                     </li>
                     <li class="page-item">
-                        <a class="page-link" href="<?php echo $base; ?>instalaciones/cancha/index?pagina=<?php echo $pagina - 1; ?>&buscar=<?php echo urlencode($buscar); ?>">
+                        <a class="page-link" href="<?php echo url('instalaciones', 'cancha', 'index', ['pagina' => $pagina - 1, 'buscar' => $buscar, 'tipo' => $tipo, 'estado' => $estado]); ?>">
                             Anterior
                         </a>
                     </li>
@@ -197,7 +207,7 @@ $urlIndex = url('instalaciones', 'cancha', 'index');
 
                 <?php for ($i = max(1, $pagina - 2); $i <= min($totalPaginas, $pagina + 2); $i++): ?>
                     <li class="page-item <?php echo $i === $pagina ? 'active' : ''; ?>">
-                        <a class="page-link" href="<?php echo $base; ?>instalaciones/cancha/index?pagina=<?php echo $i; ?>&buscar=<?php echo urlencode($buscar); ?>">
+                        <a class="page-link" href="<?php echo url('instalaciones', 'cancha', 'index', ['pagina' => $i, 'buscar' => $buscar, 'tipo' => $tipo, 'estado' => $estado]); ?>">
                             <?php echo $i; ?>
                         </a>
                     </li>
@@ -205,12 +215,12 @@ $urlIndex = url('instalaciones', 'cancha', 'index');
 
                 <?php if ($pagina < $totalPaginas): ?>
                     <li class="page-item">
-                        <a class="page-link" href="<?php echo $base; ?>instalaciones/cancha/index?pagina=<?php echo $pagina + 1; ?>&buscar=<?php echo urlencode($buscar); ?>">
+                        <a class="page-link" href="<?php echo url('instalaciones', 'cancha', 'index', ['pagina' => $pagina + 1, 'buscar' => $buscar, 'tipo' => $tipo, 'estado' => $estado]); ?>">
                             Siguiente
                         </a>
                     </li>
                     <li class="page-item">
-                        <a class="page-link" href="<?php echo $base; ?>instalaciones/cancha/index?pagina=<?php echo $totalPaginas; ?>&buscar=<?php echo urlencode($buscar); ?>">
+                        <a class="page-link" href="<?php echo url('instalaciones', 'cancha', 'index', ['pagina' => $totalPaginas, 'buscar' => $buscar, 'tipo' => $tipo, 'estado' => $estado]); ?>">
                             Fin
                         </a>
                     </li>
@@ -225,21 +235,23 @@ document.addEventListener('DOMContentLoaded', function() {
     // Manejar eliminación con SweetAlert2
     document.querySelectorAll('.btn-delete').forEach(function(btn) {
         btn.addEventListener('click', function() {
-            const nombre = this.dataset.nombre;
-            const urlEliminar = this.dataset.url;
+            var nombre = this.dataset.nombre;
+            var urlEliminar = this.dataset.url;
             
-            DigiAlert.confirmDelete(function() {
-                // Mostrar loading
-                DigiAlert.loading('Eliminando cancha...');
-                
-                // Redirigir a la acción de eliminar
-                window.location.href = urlEliminar;
-            }, {
+            Swal.fire({
                 title: '¿Eliminar cancha?',
-                html: `<p>Estás a punto de eliminar la cancha:</p>
-                       <p class="font-weight-bold text-danger">${nombre}</p>
-                       <p class="small text-muted">Esta acción no se puede deshacer.</p>`,
-                confirmButtonText: '<i class="fas fa-trash"></i> Sí, eliminar'
+                html: '<p>Estás a punto de eliminar la cancha:</p>' +
+                       '<p class="font-weight-bold text-danger">' + nombre + '</p>' +
+                       '<p class="small text-muted">Esta acción no se puede deshacer.</p>',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                confirmButtonText: '<i class="fas fa-trash"></i> Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then(function(result) {
+                if (result.isConfirmed) {
+                    window.location.href = urlEliminar;
+                }
             });
         });
     });

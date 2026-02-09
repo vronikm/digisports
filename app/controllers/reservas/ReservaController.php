@@ -1,17 +1,26 @@
 <?php
 /**
- * DigiSports - Controlador de Reservas
+ * DigiSports Arena - Controlador de Reservas
  * Sistema completo de reserva de canchas con disponibilidad dinámica
  * 
  * @package DigiSports\Controllers\Reservas
- * @version 1.0.0
+ * @version 2.0.0
  */
 
 namespace App\Controllers\Reservas;
 
-require_once BASE_PATH . '/app/controllers/BaseController.php';
+require_once BASE_PATH . '/app/controllers/ModuleController.php';
 
-class ReservaController extends \BaseController {
+class ReservaController extends \App\Controllers\ModuleController {
+
+    protected $moduloNombre = 'DigiSports Arena';
+    protected $moduloIcono = 'fas fa-building';
+    protected $moduloColor = '#3B82F6';
+
+    public function __construct() {
+        parent::__construct();
+        $this->moduloCodigo = 'ARENA';
+    }
     
     /**
      * Búsqueda de disponibilidad y creación de reserva
@@ -25,10 +34,10 @@ class ReservaController extends \BaseController {
             
             // Obtener instalaciones del tenant
             $stmt = $this->db->prepare("
-                SELECT DISTINCT i.instalacion_id, i.nombre
+                SELECT DISTINCT i.ins_instalacion_id AS instalacion_id, i.ins_nombre AS nombre
                 FROM instalaciones i
-                WHERE i.tenant_id = ? AND i.estado = 'ACTIVO'
-                ORDER BY i.nombre
+                WHERE i.ins_tenant_id = ? AND i.ins_estado = 'ACTIVO'
+                ORDER BY i.ins_nombre
             ");
             $stmt->execute([$this->tenantId]);
             $instalaciones = $stmt->fetchAll();
@@ -165,7 +174,7 @@ class ReservaController extends \BaseController {
             $this->viewData['title'] = 'Buscar Disponibilidad';
             $this->viewData['layout'] = 'main';
             
-            $this->render('reservas/buscar', $this->viewData);
+            $this->renderModule('reservas/buscar', $this->viewData);
             
         } catch (\Exception $e) {
             // DEBUG
@@ -272,8 +281,8 @@ class ReservaController extends \BaseController {
             
             // Buscar o crear cliente
             $stmt = $this->db->prepare("
-                SELECT cliente_id FROM clientes 
-                WHERE tenant_id = ? AND email = ?
+                SELECT cli_cliente_id AS cliente_id FROM clientes 
+                WHERE cli_tenant_id = ? AND cli_email = ?
             ");
             $stmt->execute([$this->tenantId, $email_cliente]);
             $cliente = $stmt->fetch();
@@ -288,7 +297,7 @@ class ReservaController extends \BaseController {
                 
                 // Crear nuevo cliente (tipo_identificacion e identificacion son requeridos)
                 $stmt = $this->db->prepare("
-                    INSERT INTO clientes (tenant_id, tipo_identificacion, identificacion, nombres, apellidos, email, telefono, estado)
+                    INSERT INTO clientes (cli_tenant_id, cli_tipo_identificacion, cli_identificacion, cli_nombres, cli_apellidos, cli_email, cli_telefono, cli_estado)
                     VALUES (?, 'PAS', ?, ?, ?, ?, ?, 'A')
                 ");
                 // Usar email como identificación temporal si no tenemos cédula
@@ -368,10 +377,10 @@ class ReservaController extends \BaseController {
         try {
             $stmt = $this->db->prepare("
                 SELECT r.*, c.nombre as cancha_nombre, c.tipo as cancha_tipo,
-                       i.nombre as instalacion_nombre
+                       i.ins_nombre as instalacion_nombre
                 FROM reservas r
-                INNER JOIN canchas c ON r.cancha_id = c.cancha_id
-                INNER JOIN instalaciones i ON c.instalacion_id = i.instalacion_id
+                INNER JOIN canchas c ON r.instalacion_id = c.instalacion_id
+                INNER JOIN instalaciones i ON c.instalacion_id = i.ins_instalacion_id
                 WHERE r.reserva_id = ? AND r.tenant_id = ?
             ");
             $stmt->execute([$reserva_id, $this->tenantId]);
@@ -396,7 +405,7 @@ class ReservaController extends \BaseController {
             $this->viewData['title'] = 'Confirmación de Reserva';
             $this->viewData['layout'] = 'main';
             
-            $this->render('reservas/confirmacion', $this->viewData);
+            $this->renderModule('reservas/confirmacion', $this->viewData);
             
         } catch (\Exception $e) {
             $this->logError("Error al obtener confirmación: " . $e->getMessage());
@@ -409,67 +418,156 @@ class ReservaController extends \BaseController {
      */
     public function index() {
         try {
-            // Aceptar filtro desde POST o GET
+            // Filtros desde POST o GET
             $estado = $this->post('estado') ?? $this->get('estado') ?? '';
+            $estadoPago = $this->post('estado_pago') ?? $this->get('estado_pago') ?? '';
+            $buscar = trim($this->post('buscar') ?? $this->get('buscar') ?? '');
+            $fechaDesde = $this->post('fecha_desde') ?? $this->get('fecha_desde') ?? '';
+            $fechaHasta = $this->post('fecha_hasta') ?? $this->get('fecha_hasta') ?? '';
             $pagina = max(1, (int)($this->post('pagina') ?? $this->get('pagina') ?? 1));
             $perPage = 15;
             $offset = ($pagina - 1) * $perPage;
             
+            // Query principal con estado_pago, monto_pagado, saldo_pendiente
             $query = "
                 SELECT r.*, 
-                       i.nombre as instalacion_nombre,
-                       c.nombres as cliente_nombre,
-                       c.apellidos as cliente_apellidos
+                       i.ins_nombre as instalacion_nombre,
+                       c.cli_nombres as cliente_nombre,
+                       c.cli_apellidos as cliente_apellidos
                 FROM reservas r
-                INNER JOIN instalaciones i ON r.instalacion_id = i.instalacion_id
-                LEFT JOIN clientes c ON r.cliente_id = c.cliente_id
+                INNER JOIN instalaciones i ON r.instalacion_id = i.ins_instalacion_id
+                LEFT JOIN clientes c ON r.cliente_id = c.cli_cliente_id
                 WHERE r.tenant_id = ?
             ";
             
             $params = [$this->tenantId];
+            $countWhere = "WHERE tenant_id = ?";
+            $countParams = [$this->tenantId];
             
+            // Filtro estado reserva
             if (!empty($estado)) {
                 $query .= " AND r.estado = ?";
                 $params[] = $estado;
+                $countWhere .= " AND estado = ?";
+                $countParams[] = $estado;
+            }
+            
+            // Filtro estado pago
+            if (!empty($estadoPago)) {
+                $query .= " AND r.estado_pago = ?";
+                $params[] = $estadoPago;
+                $countWhere .= " AND estado_pago = ?";
+                $countParams[] = $estadoPago;
+            }
+            
+            // Filtro búsqueda (nombre cliente o ID reserva)
+            if (!empty($buscar)) {
+                $query .= " AND (c.cli_nombres LIKE ? OR c.cli_apellidos LIKE ? OR CONCAT(c.cli_nombres,' ',c.cli_apellidos) LIKE ? OR r.reserva_id = ?)";
+                $like = "%{$buscar}%";
+                $params[] = $like;
+                $params[] = $like;
+                $params[] = $like;
+                $params[] = (int)$buscar;
+                // Count no incluye JOIN; usar subquery
+                $countWhere .= " AND (cliente_id IN (SELECT cli_cliente_id FROM clientes WHERE cli_nombres LIKE ? OR cli_apellidos LIKE ?) OR reserva_id = ?)";
+                $countParams[] = $like;
+                $countParams[] = $like;
+                $countParams[] = (int)$buscar;
+            }
+            
+            // Filtro rango de fechas
+            if (!empty($fechaDesde)) {
+                $query .= " AND r.fecha_reserva >= ?";
+                $params[] = $fechaDesde;
+                $countWhere .= " AND fecha_reserva >= ?";
+                $countParams[] = $fechaDesde;
+            }
+            if (!empty($fechaHasta)) {
+                $query .= " AND r.fecha_reserva <= ?";
+                $params[] = $fechaHasta;
+                $countWhere .= " AND fecha_reserva <= ?";
+                $countParams[] = $fechaHasta;
             }
             
             $query .= " ORDER BY r.fecha_reserva DESC, r.hora_inicio DESC";
             
-            // Total
-            $countQuery = "SELECT COUNT(*) as total FROM reservas WHERE tenant_id = ?";
-            $countParams = [$this->tenantId];
-            
-            if (!empty($estado)) {
-                $countQuery .= " AND estado = ?";
-                $countParams[] = $estado;
-            }
-            
+            // Total registros con filtros
+            $countQuery = "SELECT COUNT(*) as total FROM reservas {$countWhere}";
             $stmt = $this->db->prepare($countQuery);
             $stmt->execute($countParams);
-            $totalRegistros = $stmt->fetch()['total'];
+            $totalRegistros = (int)$stmt->fetch()['total'];
             
-            // Paginación - interpolar valores seguros
+            // Paginación
             $query .= " LIMIT " . (int)$perPage . " OFFSET " . (int)$offset;
             
             $stmt = $this->db->prepare($query);
             $stmt->execute($params);
             $reservas = $stmt->fetchAll();
             
+            // ── KPIs resumen ──
+            $kpis = $this->getReservasKPIs();
+            
             $this->viewData['reservas'] = $reservas;
             $this->viewData['totalRegistros'] = $totalRegistros;
             $this->viewData['pagina'] = $pagina;
-            $this->viewData['totalPaginas'] = ceil($totalRegistros / $perPage);
+            $this->viewData['totalPaginas'] = (int)ceil($totalRegistros / $perPage);
             $this->viewData['estado'] = $estado;
+            $this->viewData['estado_pago'] = $estadoPago;
+            $this->viewData['buscar'] = $buscar;
+            $this->viewData['fecha_desde'] = $fechaDesde;
+            $this->viewData['fecha_hasta'] = $fechaHasta;
+            $this->viewData['kpis'] = $kpis;
             $this->viewData['csrf_token'] = \Security::generateCsrfToken();
             $this->viewData['title'] = 'Gestión de Reservas';
             $this->viewData['layout'] = 'main';
             
-            $this->render('reservas/index', $this->viewData);
+            $this->renderModule('reservas/index', $this->viewData);
             
         } catch (\Exception $e) {
             $this->logError("Error al listar reservas: " . $e->getMessage());
             $this->error('Error al cargar las reservas');
         }
+    }
+    
+    /**
+     * KPIs resumen para la vista index
+     */
+    private function getReservasKPIs() {
+        $hoy = date('Y-m-d');
+        $inicioMes = date('Y-m-01');
+        $kpis = [
+            'hoy' => 0,
+            'pendientes_pago' => 0,
+            'recaudado_mes' => 0,
+            'por_cobrar' => 0
+        ];
+        
+        try {
+            // Reservas de hoy
+            $stmt = $this->db->prepare("SELECT COUNT(*) FROM reservas WHERE tenant_id = ? AND fecha_reserva = ? AND estado IN ('PENDIENTE','CONFIRMADA')");
+            $stmt->execute([$this->tenantId, $hoy]);
+            $kpis['hoy'] = (int)$stmt->fetchColumn();
+            
+            // Pendientes de pago
+            $stmt = $this->db->prepare("SELECT COUNT(*) FROM reservas WHERE tenant_id = ? AND estado_pago IN ('PENDIENTE','PARCIAL') AND estado != 'CANCELADA'");
+            $stmt->execute([$this->tenantId]);
+            $kpis['pendientes_pago'] = (int)$stmt->fetchColumn();
+            
+            // Recaudado este mes (pagos reales)
+            $stmt = $this->db->prepare("SELECT COALESCE(SUM(rpa_monto),0) FROM instalaciones_reserva_pagos WHERE rpa_tenant_id = ? AND rpa_fecha >= ? AND rpa_estado = 'COMPLETADO'");
+            $stmt->execute([$this->tenantId, $inicioMes]);
+            $kpis['recaudado_mes'] = (float)$stmt->fetchColumn();
+            
+            // Saldo por cobrar total
+            $stmt = $this->db->prepare("SELECT COALESCE(SUM(saldo_pendiente),0) FROM reservas WHERE tenant_id = ? AND estado_pago IN ('PENDIENTE','PARCIAL') AND estado != 'CANCELADA'");
+            $stmt->execute([$this->tenantId]);
+            $kpis['por_cobrar'] = (float)$stmt->fetchColumn();
+            
+        } catch (\Exception $e) {
+            error_log("KPIs reservas error: " . $e->getMessage());
+        }
+        
+        return $kpis;
     }
     
     /**
@@ -485,13 +583,13 @@ class ReservaController extends \BaseController {
         try {
             $stmt = $this->db->prepare("
                 SELECT r.*, 
-                       i.nombre as instalacion_nombre,
-                       CONCAT(c.nombres, ' ', c.apellidos) as cliente_nombre,
-                       c.email as cliente_email,
-                       c.telefono as cliente_telefono
+                       i.ins_nombre as instalacion_nombre,
+                       CONCAT(c.cli_nombres, ' ', c.cli_apellidos) as cliente_nombre,
+                       c.cli_email as cliente_email,
+                       c.cli_telefono as cliente_telefono
                 FROM reservas r
-                INNER JOIN instalaciones i ON r.instalacion_id = i.instalacion_id
-                INNER JOIN clientes c ON r.cliente_id = c.cliente_id
+                INNER JOIN instalaciones i ON r.instalacion_id = i.ins_instalacion_id
+                INNER JOIN clientes c ON r.cliente_id = c.cli_cliente_id
                 WHERE r.reserva_id = ? AND r.tenant_id = ?
             ");
             $stmt->execute([$reserva_id, $this->tenantId]);
@@ -500,12 +598,32 @@ class ReservaController extends \BaseController {
             if (!$reserva) {
                 $this->error('Reserva no encontrada');
             }
+
+            // Descifrar campos sensibles del cliente (vienen con alias)
+            if (!empty($reserva['cliente_email'])) {
+                $reserva['cliente_email'] = \DataProtection::decrypt($reserva['cliente_email']);
+            }
+            if (!empty($reserva['cliente_telefono'])) {
+                $reserva['cliente_telefono'] = \DataProtection::decrypt($reserva['cliente_telefono']);
+            }
+            
+            // Obtener historial de pagos
+            $stmtPagos = $this->db->prepare("
+                SELECT rpa_pago_id, rpa_monto, rpa_metodo_pago, rpa_referencia,
+                       rpa_estado, rpa_fecha, rpa_notas
+                FROM instalaciones_reserva_pagos
+                WHERE rpa_reserva_id = ? AND rpa_tenant_id = ?
+                ORDER BY rpa_fecha DESC
+            ");
+            $stmtPagos->execute([$reserva_id, $this->tenantId]);
+            $pagos = $stmtPagos->fetchAll(\PDO::FETCH_ASSOC);
             
             $this->viewData['reserva'] = $reserva;
+            $this->viewData['pagos'] = $pagos;
             $this->viewData['title'] = 'Detalles de Reserva #' . $reserva_id;
             $this->viewData['layout'] = 'main';
             
-            $this->render('reservas/ver', $this->viewData);
+            $this->renderModule('reservas/ver', $this->viewData);
             
         } catch (\Exception $e) {
             // DEBUG
@@ -561,6 +679,58 @@ class ReservaController extends \BaseController {
         } catch (\Exception $e) {
             $this->logError("Error al confirmar reserva: " . $e->getMessage());
             $this->error('Error al confirmar la reserva');
+        }
+    }
+    
+    /**
+     * Completar reserva (marcar como finalizada)
+     */
+    public function completar() {
+        $reserva_id = (int)$this->get('id');
+        
+        if ($reserva_id < 1) {
+            $this->error('Reserva no válida');
+        }
+        
+        try {
+            $stmt = $this->db->prepare("
+                SELECT * FROM reservas
+                WHERE reserva_id = ? AND tenant_id = ?
+            ");
+            $stmt->execute([$reserva_id, $this->tenantId]);
+            $reserva = $stmt->fetch();
+            
+            if (!$reserva) {
+                $this->error('Reserva no encontrada');
+            }
+            
+            if (!in_array($reserva['estado'], ['CONFIRMADA', 'PENDIENTE'])) {
+                $this->error('Solo se pueden completar reservas confirmadas o pendientes');
+            }
+            
+            // Actualizar estado
+            $stmt = $this->db->prepare("
+                UPDATE reservas
+                SET estado = 'COMPLETADA',
+                    fecha_actualizacion = NOW()
+                WHERE reserva_id = ?
+            ");
+            $stmt->execute([$reserva_id]);
+            
+            // Auditoría
+            $this->audit('reservas', $reserva_id, 'STATUS_CHANGE',
+                        ['estado' => $reserva['estado']],
+                        ['estado' => 'COMPLETADA']);
+            
+            \Security::logSecurityEvent('RESERVA_COMPLETED', "Reserva ID: {$reserva_id}");
+            
+            $this->success([
+                'redirect' => url('reservas', 'reserva', 'ver', ['id' => $reserva_id])
+            ], 'Reserva marcada como completada');
+            
+        } catch (\Exception $e) {
+            $this->logError("Error al completar reserva: " . $e->getMessage());
+            $this->error('Error al completar la reserva');
         }
     }
     
@@ -631,6 +801,14 @@ class ReservaController extends \BaseController {
             $fechaObj = new \DateTime($fecha);
             $dia_semana = $fechaObj->format('w');
             
+            // Obtener el instalacion_id de la cancha
+            $stmtCancha = $this->db->prepare("SELECT cancha_id, instalacion_id FROM canchas WHERE cancha_id = ? AND tenant_id = ?");
+            $stmtCancha->execute([$cancha_id, $this->tenantId]);
+            $canchaInfo = $stmtCancha->fetch();
+            if (!$canchaInfo) {
+                $this->error('Cancha no encontrada');
+            }
+
             // Obtener tarifas disponibles
             $stmt = $this->db->prepare("
                 SELECT tarifa_id, hora_inicio, hora_fin, precio
@@ -643,13 +821,12 @@ class ReservaController extends \BaseController {
             
             // Obtener reservas confirmadas
             $stmt = $this->db->prepare("
-                SELECT TIME(fecha_reserva) as hora_inicio,
-                       TIME(fecha_fin_reserva) as hora_fin
+                SELECT hora_inicio, hora_fin
                 FROM reservas
-                WHERE cancha_id = ? AND DATE(fecha_reserva) = ?
-                AND estado = 'CONFIRMADA'
+                WHERE instalacion_id = ? AND fecha_reserva = ?
+                AND estado IN ('CONFIRMADA', 'PENDIENTE')
             ");
-            $stmt->execute([$cancha_id, $fecha]);
+            $stmt->execute([$canchaInfo['instalacion_id'], $fecha]);
             $reservas = $stmt->fetchAll();
             
             // Obtener mantenimientos
@@ -699,6 +876,291 @@ class ReservaController extends \BaseController {
         }
     }
     
+    /**
+     * Editar reserva (solo PENDIENTE o CONFIRMADA)
+     */
+    public function editar() {
+        $reserva_id = (int)$this->get('id');
+
+        if ($reserva_id < 1) {
+            $this->error('Reserva no válida');
+        }
+
+        try {
+            // Obtener reserva actual
+            $stmt = $this->db->prepare("
+                SELECT r.*,
+                       i.ins_nombre as instalacion_nombre,
+                       CONCAT(c.cli_nombres, ' ', c.cli_apellidos) as cliente_nombre,
+                       c.cli_email as cliente_email,
+                       c.cli_telefono as cliente_telefono,
+                       c.cli_cliente_id as cliente_id_ref
+                FROM reservas r
+                INNER JOIN instalaciones i ON r.instalacion_id = i.ins_instalacion_id
+                INNER JOIN clientes c ON r.cliente_id = c.cli_cliente_id
+                WHERE r.reserva_id = ? AND r.tenant_id = ?
+            ");
+            $stmt->execute([$reserva_id, $this->tenantId]);
+            $reserva = $stmt->fetch();
+
+            if (!$reserva) {
+                $this->error('Reserva no encontrada');
+            }
+
+            // Descifrar campos sensibles del cliente (vienen con alias)
+            if (!empty($reserva['cliente_email'])) {
+                $reserva['cliente_email'] = \DataProtection::decrypt($reserva['cliente_email']);
+            }
+            if (!empty($reserva['cliente_telefono'])) {
+                $reserva['cliente_telefono'] = \DataProtection::decrypt($reserva['cliente_telefono']);
+            }
+
+            if (!in_array($reserva['estado'], ['PENDIENTE', 'CONFIRMADA'])) {
+                $this->error('Solo se pueden editar reservas pendientes o confirmadas');
+            }
+
+            // ── Si es POST, procesar la actualización ──
+            if ($this->isPost()) {
+                if (!$this->validateCsrf()) {
+                    $this->error('Token de seguridad inválido', 403);
+                }
+
+                $fecha_reserva = $this->post('fecha_reserva');
+                $hora_inicio = $this->post('hora_inicio');
+                $hora_fin = $this->post('hora_fin');
+                $observaciones = trim($this->post('observaciones') ?? '');
+
+                // Validaciones
+                $errors = [];
+                if (empty($fecha_reserva)) {
+                    $errors[] = 'Fecha de reserva requerida';
+                }
+                if (empty($hora_inicio) || empty($hora_fin)) {
+                    $errors[] = 'Horario de inicio y fin requeridos';
+                }
+                if ($hora_inicio >= $hora_fin) {
+                    $errors[] = 'La hora de fin debe ser posterior a la de inicio';
+                }
+                if (!empty($errors)) {
+                    $this->error(implode('. ', $errors));
+                }
+
+                // Verificar que no haya conflicto de horario (excluyendo esta reserva)
+                $stmt = $this->db->prepare("
+                    SELECT COUNT(*) as total FROM reservas
+                    WHERE instalacion_id = ?
+                    AND fecha_reserva = ?
+                    AND hora_inicio < ? AND hora_fin > ?
+                    AND estado IN ('CONFIRMADA', 'PENDIENTE')
+                    AND reserva_id != ?
+                ");
+                $stmt->execute([
+                    $reserva['instalacion_id'],
+                    $fecha_reserva,
+                    $hora_fin,
+                    $hora_inicio,
+                    $reserva_id
+                ]);
+
+                if ($stmt->fetch()['total'] > 0) {
+                    $this->error('La franja horaria seleccionada tiene conflicto con otra reserva');
+                }
+
+                // Verificar conflicto con mantenimientos
+                $stmt = $this->db->prepare("
+                    SELECT COUNT(*) as total FROM mantenimientos
+                    WHERE cancha_id = (
+                        SELECT cancha_id FROM canchas WHERE instalacion_id = ? AND tenant_id = ? LIMIT 1
+                    )
+                    AND DATE(fecha_inicio) = ?
+                    AND TIME(fecha_inicio) < ? AND TIME(fecha_fin) > ?
+                    AND estado IN ('PROGRAMADO', 'EN_PROGRESO')
+                ");
+                $stmt->execute([
+                    $reserva['instalacion_id'],
+                    $this->tenantId,
+                    $fecha_reserva,
+                    $hora_fin,
+                    $hora_inicio
+                ]);
+
+                if ($stmt->fetch()['total'] > 0) {
+                    $this->error('La franja horaria tiene conflicto con un mantenimiento programado');
+                }
+
+                // Recalcular duración
+                $inicio = new \DateTime($hora_inicio);
+                $fin = new \DateTime($hora_fin);
+                $duracion_minutos = ($fin->getTimestamp() - $inicio->getTimestamp()) / 60;
+
+                // Buscar tarifa correspondiente
+                $fechaObj = new \DateTime($fecha_reserva);
+                $dia_semana = $fechaObj->format('w');
+                $stmt = $this->db->prepare("
+                    SELECT t.tarifa_id, t.precio
+                    FROM tarifas t
+                    INNER JOIN canchas ca ON t.cancha_id = ca.cancha_id
+                    WHERE ca.instalacion_id = ? AND ca.tenant_id = ?
+                    AND t.dia_semana = ? AND t.hora_inicio = ? AND t.hora_fin = ?
+                    AND t.estado = 'ACTIVO'
+                    LIMIT 1
+                ");
+                $stmt->execute([
+                    $reserva['instalacion_id'],
+                    $this->tenantId,
+                    $dia_semana,
+                    $hora_inicio,
+                    $hora_fin
+                ]);
+                $tarifa = $stmt->fetch();
+
+                $precio_total = $tarifa ? (float)$tarifa['precio'] : (float)$reserva['precio_total'];
+                $tarifa_id = $tarifa ? $tarifa['tarifa_id'] : $reserva['tarifa_aplicada_id'];
+
+                // Guardar datos anteriores para auditoría
+                $antes = [
+                    'fecha_reserva' => $reserva['fecha_reserva'],
+                    'hora_inicio' => $reserva['hora_inicio'],
+                    'hora_fin' => $reserva['hora_fin'],
+                    'observaciones' => $reserva['observaciones'],
+                    'precio_total' => $reserva['precio_total']
+                ];
+
+                // Actualizar reserva
+                $stmt = $this->db->prepare("
+                    UPDATE reservas
+                    SET fecha_reserva = ?,
+                        hora_inicio = ?,
+                        hora_fin = ?,
+                        duracion_minutos = ?,
+                        tarifa_aplicada_id = ?,
+                        precio_base = ?,
+                        precio_total = ?,
+                        saldo_pendiente = ? - COALESCE(monto_pagado, 0),
+                        observaciones = ?,
+                        fecha_actualizacion = NOW()
+                    WHERE reserva_id = ? AND tenant_id = ?
+                ");
+                $stmt->execute([
+                    $fecha_reserva,
+                    $hora_inicio,
+                    $hora_fin,
+                    $duracion_minutos,
+                    $tarifa_id,
+                    $precio_total,
+                    $precio_total,
+                    $precio_total,
+                    $observaciones,
+                    $reserva_id,
+                    $this->tenantId
+                ]);
+
+                // Auditoría
+                $despues = [
+                    'fecha_reserva' => $fecha_reserva,
+                    'hora_inicio' => $hora_inicio,
+                    'hora_fin' => $hora_fin,
+                    'observaciones' => $observaciones,
+                    'precio_total' => $precio_total
+                ];
+                $this->audit('reservas', $reserva_id, 'UPDATE', $antes, $despues);
+                \Security::logSecurityEvent('RESERVA_UPDATED', "Reserva ID: {$reserva_id}");
+
+                $this->success([
+                    'redirect' => url('reservas', 'reserva', 'ver', ['id' => $reserva_id])
+                ], 'Reserva actualizada exitosamente');
+                return;
+            }
+
+            // ── GET: mostrar formulario de edición ──
+
+            // Obtener tarifas de la instalación para el día de la reserva
+            $fechaObj = new \DateTime($reserva['fecha_reserva']);
+            $dia_semana = $fechaObj->format('w');
+
+            $stmt = $this->db->prepare("
+                SELECT DISTINCT t.tarifa_id, t.hora_inicio, t.hora_fin, t.precio
+                FROM tarifas t
+                INNER JOIN canchas ca ON t.cancha_id = ca.cancha_id
+                WHERE ca.instalacion_id = ? AND ca.tenant_id = ?
+                AND t.dia_semana = ? AND t.estado = 'ACTIVO'
+                ORDER BY t.hora_inicio
+            ");
+            $stmt->execute([$reserva['instalacion_id'], $this->tenantId, $dia_semana]);
+            $tarifas = $stmt->fetchAll();
+
+            // Obtener bloques ocupados (excluyendo esta reserva) para mostrar disponibilidad
+            $stmt = $this->db->prepare("
+                SELECT hora_inicio, hora_fin, 'RESERVA' as tipo
+                FROM reservas
+                WHERE instalacion_id = ? AND fecha_reserva = ?
+                AND estado IN ('CONFIRMADA', 'PENDIENTE')
+                AND reserva_id != ?
+                UNION ALL
+                SELECT TIME(fecha_inicio) as hora_inicio, TIME(fecha_fin) as hora_fin, 'MANTENIMIENTO' as tipo
+                FROM mantenimientos
+                WHERE cancha_id = (
+                    SELECT cancha_id FROM canchas WHERE instalacion_id = ? AND tenant_id = ? LIMIT 1
+                )
+                AND DATE(fecha_inicio) = ?
+                AND estado IN ('PROGRAMADO', 'EN_PROGRESO')
+            ");
+            $stmt->execute([
+                $reserva['instalacion_id'],
+                $reserva['fecha_reserva'],
+                $reserva_id,
+                $reserva['instalacion_id'],
+                $this->tenantId,
+                $reserva['fecha_reserva']
+            ]);
+            $bloqueos = $stmt->fetchAll();
+
+            // Marcar franjas disponibles/ocupadas
+            $franjas = [];
+            foreach ($tarifas as $tarifa) {
+                $disponible = true;
+                $razon = '';
+                foreach ($bloqueos as $bloqueo) {
+                    $it = strtotime($tarifa['hora_inicio']);
+                    $ft = strtotime($tarifa['hora_fin']);
+                    $ib = strtotime($bloqueo['hora_inicio']);
+                    $fb = strtotime($bloqueo['hora_fin']);
+                    if ($it < $fb && $ft > $ib) {
+                        $disponible = false;
+                        $razon = $bloqueo['tipo'] === 'MANTENIMIENTO' ? 'Mantenimiento' : 'Otra reserva';
+                        break;
+                    }
+                }
+                // La franja actual de la reserva se marca como disponible
+                if ($tarifa['hora_inicio'] === $reserva['hora_inicio'] && $tarifa['hora_fin'] === $reserva['hora_fin']) {
+                    $disponible = true;
+                    $razon = '';
+                }
+                $franjas[] = [
+                    'tarifa_id' => $tarifa['tarifa_id'],
+                    'hora_inicio' => $tarifa['hora_inicio'],
+                    'hora_fin' => $tarifa['hora_fin'],
+                    'precio' => $tarifa['precio'],
+                    'disponible' => $disponible,
+                    'razon' => $razon,
+                    'seleccionada' => ($tarifa['hora_inicio'] === $reserva['hora_inicio'] && $tarifa['hora_fin'] === $reserva['hora_fin'])
+                ];
+            }
+
+            $this->viewData['reserva'] = $reserva;
+            $this->viewData['franjas'] = $franjas;
+            $this->viewData['csrf_token'] = \Security::generateCsrfToken();
+            $this->viewData['title'] = 'Editar Reserva #' . $reserva_id;
+            $this->viewData['layout'] = 'main';
+
+            $this->renderModule('reservas/editar', $this->viewData);
+
+        } catch (\Exception $e) {
+            $this->logError("Error al editar reserva: " . $e->getMessage());
+            $this->error('Error al procesar la edición');
+        }
+    }
+
     /**
      * Enviar confirmación por email (stub)
      */

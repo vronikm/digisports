@@ -9,9 +9,18 @@
 
 namespace App\Controllers\Clientes;
 
-require_once BASE_PATH . '/app/controllers/BaseController.php';
+require_once BASE_PATH . '/app/controllers/ModuleController.php';
 
-class ClienteController extends \BaseController {
+class ClienteController extends \App\Controllers\ModuleController {
+
+    protected $moduloNombre = 'DigiSports Arena';
+    protected $moduloIcono = 'fas fa-building';
+    protected $moduloColor = '#3B82F6';
+
+    public function __construct() {
+        parent::__construct();
+        $this->moduloCodigo = 'ARENA';
+    }
     
     /**
      * Listado de clientes
@@ -21,11 +30,11 @@ class ClienteController extends \BaseController {
         
         $tenantId = $_SESSION['tenant_id'] ?? 1;
         
-        // Filtros
-        $buscar = $_GET['buscar'] ?? '';
-        $tipo = $_GET['tipo'] ?? '';
-        $estado = $_GET['estado'] ?? 'A';
-        $page = max(1, (int)($_GET['page'] ?? 1));
+        // Filtros (POST o GET)
+        $buscar = $this->post('buscar') ?? $this->get('buscar') ?? '';
+        $tipo = $this->post('tipo') ?? $this->get('tipo') ?? '';
+        $estado = $this->post('estado') ?? $this->get('estado') ?? 'A';
+        $page = max(1, (int)($this->post('page') ?? $this->get('page') ?? 1));
         $perPage = 20;
         $offset = ($page - 1) * $perPage;
         
@@ -92,13 +101,13 @@ class ClienteController extends \BaseController {
             $this->viewData['title'] = 'Gestión de Clientes';
             $this->viewData['layout'] = 'main';
             
-            $this->render('clientes/index', $this->viewData);
+            $this->renderModule('clientes/index', $this->viewData);
             
         } catch (\Exception $e) {
             $this->logError("Error al listar clientes: " . $e->getMessage());
             $this->viewData['error'] = 'Error al cargar los clientes';
             $this->viewData['clientes'] = [];
-            $this->render('clientes/index', $this->viewData);
+            $this->renderModule('clientes/index', $this->viewData);
         }
     }
     
@@ -114,7 +123,7 @@ class ClienteController extends \BaseController {
         $this->viewData['tiposCliente'] = $this->getTiposCliente();
         $this->viewData['tiposIdentificacion'] = $this->getTiposIdentificacion();
         
-        $this->render('clientes/form', $this->viewData);
+        $this->renderModule('clientes/form', $this->viewData);
     }
     
     /**
@@ -231,7 +240,7 @@ class ClienteController extends \BaseController {
     public function ver() {
         $this->checkPermission('ver');
         
-        $id = $_GET['id'] ?? null;
+        $id = $this->get('id');
         
         if (!$id) {
             redirect('clientes', 'cliente', 'index');
@@ -253,14 +262,18 @@ class ClienteController extends \BaseController {
         // Obtener abonos
         $abonos = $this->getAbonosCliente($id);
         
+        // Obtener entradas
+        $entradas = $this->getEntradasCliente($id);
+        
         $this->viewData['cliente'] = $cliente;
         $this->viewData['reservas'] = $reservas;
         $this->viewData['pagos'] = $pagos;
         $this->viewData['abonos'] = $abonos;
+        $this->viewData['entradas'] = $entradas;
         $this->viewData['title'] = 'Detalle de Cliente';
         $this->viewData['layout'] = 'main';
         
-        $this->render('clientes/ver', $this->viewData);
+        $this->renderModule('clientes/ver', $this->viewData);
     }
     
     /**
@@ -269,7 +282,7 @@ class ClienteController extends \BaseController {
     public function editar() {
         $this->checkPermission('editar');
         
-        $id = $_GET['id'] ?? null;
+        $id = $this->get('id');
         
         if (!$id) {
             redirect('clientes', 'cliente', 'index');
@@ -288,7 +301,7 @@ class ClienteController extends \BaseController {
         $this->viewData['tiposCliente'] = $this->getTiposCliente();
         $this->viewData['tiposIdentificacion'] = $this->getTiposIdentificacion();
         
-        $this->render('clientes/form', $this->viewData);
+        $this->renderModule('clientes/form', $this->viewData);
     }
     
     /**
@@ -411,7 +424,7 @@ class ClienteController extends \BaseController {
             return;
         }
         
-        $id = $_POST['id'] ?? $_GET['id'] ?? null;
+        $id = $_POST['id'] ?? $this->get('id');
         
         if (!$id) {
             $this->error('ID de cliente requerido');
@@ -421,8 +434,8 @@ class ClienteController extends \BaseController {
         try {
             // Verificar si tiene reservas activas
             $stmt = $this->db->prepare("
-                SELECT COUNT(*) FROM instalaciones_reservas 
-                WHERE res_cliente_id = ? AND res_estado IN ('PENDIENTE', 'CONFIRMADA')
+                SELECT COUNT(*) FROM reservas 
+                WHERE cliente_id = ? AND estado IN ('PENDIENTE', 'CONFIRMADA')
             ");
             $stmt->execute([$id]);
             
@@ -455,8 +468,8 @@ class ClienteController extends \BaseController {
     public function buscar() {
         $this->checkPermission('ver');
         
-        $termino = $_GET['q'] ?? $_GET['term'] ?? '';
-        $limit = min(20, (int)($_GET['limit'] ?? 10));
+        $termino = $this->get('q') ?? $this->get('term') ?? '';
+        $limit = min(20, (int)($this->get('limit') ?? 10));
         
         if (strlen($termino) < 2) {
             $this->renderJson([]);
@@ -534,11 +547,13 @@ class ClienteController extends \BaseController {
      */
     private function getReservasCliente($clienteId, $limit = 10) {
         $stmt = $this->db->prepare("
-            SELECT r.*, c.nombre as cancha_nombre
+            SELECT r.reserva_id, r.fecha_reserva, r.hora_inicio, r.hora_fin,
+                   r.precio_total as total, r.estado, r.estado_pago,
+                   c.nombre as cancha_nombre
             FROM reservas r
-            LEFT JOIN canchas c ON r.cancha_id = c.cancha_id
+            LEFT JOIN canchas c ON r.instalacion_id = c.cancha_id
             WHERE r.cliente_id = ?
-            ORDER BY r.fecha DESC, r.hora_inicio DESC
+            ORDER BY r.fecha_reserva DESC, r.hora_inicio DESC
             LIMIT ?
         ");
         $stmt->execute([$clienteId, $limit]);
@@ -550,11 +565,13 @@ class ClienteController extends \BaseController {
      */
     private function getPagosCliente($clienteId, $limit = 10) {
         $stmt = $this->db->prepare("
-            SELECT p.*, f.numero as factura_numero
-            FROM pagos p
-            LEFT JOIN facturas f ON p.factura_id = f.factura_id
-            WHERE p.cliente_id = ?
-            ORDER BY p.fecha_pago DESC
+            SELECT p.rpa_pago_id, p.rpa_monto, p.rpa_metodo_pago,
+                   p.rpa_fecha, p.rpa_estado, p.rpa_referencia,
+                   p.rpa_reserva_id
+            FROM instalaciones_reserva_pagos p
+            INNER JOIN instalaciones_reservas r ON p.rpa_reserva_id = r.res_reserva_id
+            WHERE r.res_cliente_id = ? AND p.rpa_estado = 'COMPLETADO'
+            ORDER BY p.rpa_fecha DESC
             LIMIT ?
         ");
         $stmt->execute([$clienteId, $limit]);
@@ -566,11 +583,29 @@ class ClienteController extends \BaseController {
      */
     private function getAbonosCliente($clienteId) {
         $stmt = $this->db->prepare("
-            SELECT * FROM abonos
-            WHERE cliente_id = ? AND estado = 'ACTIVO'
-            ORDER BY fecha_registro DESC
+            SELECT abo_abono_id, abo_saldo, abo_total_recargado,
+                   abo_total_consumido, abo_estado, abo_fecha_registro
+            FROM instalaciones_abonos
+            WHERE abo_cliente_id = ? AND abo_estado = 'ACTIVO'
+            ORDER BY abo_fecha_registro DESC
         ");
         $stmt->execute([$clienteId]);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+    
+    /**
+     * Obtener entradas compradas por el cliente
+     */
+    private function getEntradasCliente($clienteId, $limit = 10) {
+        $stmt = $this->db->prepare("
+            SELECT ent_entrada_id, ent_codigo, ent_cantidad, ent_monto_total,
+                   ent_fecha, ent_estado, ent_metodo_pago
+            FROM instalaciones_entradas
+            WHERE ent_cliente_id = ? AND ent_estado = 'ACTIVA'
+            ORDER BY ent_fecha DESC
+            LIMIT ?
+        ");
+        $stmt->execute([$clienteId, $limit]);
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
     
@@ -599,11 +634,12 @@ class ClienteController extends \BaseController {
         }
         
         // Verificar identificación única
-        $sql = "SELECT cliente_id FROM clientes WHERE tenant_id = ? AND identificacion = ?";
-        $params = [$_SESSION['tenant_id'], $data['identificacion']];
+        $idHash = \DataProtection::blindIndex($data['identificacion']);
+        $sql = "SELECT cli_cliente_id FROM clientes WHERE cli_tenant_id = ? AND cli_identificacion_hash = ?";
+        $params = [$_SESSION['tenant_id'], $idHash];
         
         if ($excludeId) {
-            $sql .= " AND cliente_id != ?";
+            $sql .= " AND cli_cliente_id != ?";
             $params[] = $excludeId;
         }
         
@@ -644,24 +680,17 @@ class ClienteController extends \BaseController {
     }
     
     /**
-     * Verificar permiso
+     * Verificar permiso del usuario actual
      */
-    private function checkPermission($accion) {
+    protected function checkPermission($accion) {
         $permisos = $_SESSION['modulo_activo']['permisos'] ?? [];
-        
-        $mapa = [
-            'ver' => 'ver',
-            'crear' => 'crear',
-            'editar' => 'editar',
-            'eliminar' => 'eliminar'
-        ];
         
         // Super admin siempre tiene acceso
         if (($_SESSION['rol_codigo'] ?? '') === 'SUPERADMIN') {
             return true;
         }
         
-        if (isset($mapa[$accion]) && empty($permisos[$mapa[$accion]])) {
+        if (empty($permisos[$accion])) {
             if ($this->isAjax()) {
                 $this->error('No tienes permiso para esta acción', 403);
             } else {

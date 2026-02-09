@@ -193,10 +193,85 @@ $badgeClass = $estadoClases[$reserva['estado']] ?? 'secondary';
                         </div>
                     </div>
 
+                    <!-- Historial de Pagos -->
+                    <?php $pagos = $pagos ?? []; ?>
+                    <?php if (!empty($pagos)): ?>
+                    <hr>
+                    <h5 class="font-weight-bold mb-3">
+                        <i class="fas fa-money-bill-wave text-success"></i> Historial de Pagos
+                    </h5>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-striped">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Método</th>
+                                    <th class="text-right">Monto</th>
+                                    <th>Referencia</th>
+                                    <th>Estado</th>
+                                    <th>Notas</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($pagos as $pago): ?>
+                                <tr>
+                                    <td><?= date('d/m/Y H:i', strtotime($pago['rpa_fecha'])) ?></td>
+                                    <td>
+                                        <?php
+                                        $iconosMetodo = [
+                                            'EFECTIVO' => 'fas fa-money-bill-wave text-success',
+                                            'TARJETA' => 'fas fa-credit-card text-primary',
+                                            'TRANSFERENCIA' => 'fas fa-university text-info',
+                                            'MONEDERO' => 'fas fa-wallet text-warning',
+                                        ];
+                                        $icono = $iconosMetodo[$pago['rpa_metodo_pago']] ?? 'fas fa-receipt text-secondary';
+                                        ?>
+                                        <i class="<?= $icono ?> mr-1"></i>
+                                        <?= htmlspecialchars($pago['rpa_metodo_pago']) ?>
+                                    </td>
+                                    <td class="text-right"><strong>$<?= number_format($pago['rpa_monto'], 2) ?></strong></td>
+                                    <td><small><?= htmlspecialchars($pago['rpa_referencia'] ?? '-') ?></small></td>
+                                    <td>
+                                        <?php
+                                        $epBadge = ['COMPLETADO' => 'success', 'ANULADO' => 'danger'][$pago['rpa_estado']] ?? 'secondary';
+                                        ?>
+                                        <span class="badge badge-<?= $epBadge ?>"><?= $pago['rpa_estado'] ?></span>
+                                    </td>
+                                    <td><small class="text-muted"><?= htmlspecialchars($pago['rpa_notas'] ?? '') ?></small></td>
+                                </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                    <?php endif; ?>
+
                 </div>
 
                 <div class="card-footer text-center">
+                    <?php
+                    $estadoPago = $reserva['estado_pago'] ?? 'PENDIENTE';
+                    $saldoPendiente = (float)($reserva['saldo_pendiente'] ?? $reserva['precio_total']);
+                    ?>
+
+                    <?php if ($reserva['estado'] !== 'CANCELADA' && $estadoPago !== 'PAGADO'): ?>
+                        <a href="<?= url('reservas', 'pago', 'checkout') ?>&id=<?= $reserva['reserva_id'] ?>"
+                           class="btn btn-warning btn-lg mr-2">
+                            <i class="fas fa-cash-register mr-1"></i> Cobrar
+                            <?php if ($saldoPendiente > 0): ?>
+                                <span class="badge badge-light ml-1">$<?= number_format($saldoPendiente, 2) ?></span>
+                            <?php endif; ?>
+                        </a>
+                    <?php elseif ($estadoPago === 'PAGADO'): ?>
+                        <span class="btn btn-success btn-lg mr-2 disabled">
+                            <i class="fas fa-check-circle mr-1"></i> Pagado
+                        </span>
+                    <?php endif; ?>
+
                     <?php if ($reserva['estado'] === 'PENDIENTE'): ?>
+                        <a href="<?= url('reservas', 'reserva', 'editar') ?>&id=<?= $reserva['reserva_id'] ?>"
+                           class="btn btn-primary btn-lg mr-2">
+                            <i class="fas fa-edit"></i> Editar Reserva
+                        </a>
                         <button type="button" class="btn btn-success btn-lg mr-2" onclick="confirmarReserva(<?= $reserva['reserva_id'] ?>)">
                             <i class="fas fa-check"></i> Confirmar Reserva
                         </button>
@@ -204,6 +279,10 @@ $badgeClass = $estadoClases[$reserva['estado']] ?? 'secondary';
                             <i class="fas fa-times"></i> Cancelar Reserva
                         </button>
                     <?php elseif ($reserva['estado'] === 'CONFIRMADA'): ?>
+                        <a href="<?= url('reservas', 'reserva', 'editar') ?>&id=<?= $reserva['reserva_id'] ?>"
+                           class="btn btn-primary btn-lg mr-2">
+                            <i class="fas fa-edit"></i> Editar Reserva
+                        </a>
                         <button type="button" class="btn btn-info btn-lg mr-2" onclick="completarReserva(<?= $reserva['reserva_id'] ?>)">
                             <i class="fas fa-flag-checkered"></i> Marcar Completada
                         </button>

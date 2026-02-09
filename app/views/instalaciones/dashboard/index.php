@@ -8,6 +8,8 @@ $kpis            = $kpis ?? [];
 $canchas         = $canchas ?? [];
 $reservasHoy     = $reservas_hoy ?? [];
 $chartReservas   = $chart_reservas ?? ['labels' => [], 'data' => []];
+$ultimosPagos    = $ultimos_pagos ?? [];
+$chartMetodos    = $chart_metodos_pago ?? ['labels' => [], 'data' => [], 'colors' => []];
 $moduloColor     = $modulo_actual['color'] ?? '#3B82F6';
 $moduloIcono     = $modulo_actual['icono'] ?? 'fas fa-building';
 $moduloNombre    = $modulo_actual['nombre_personalizado'] ?? $modulo_actual['nombre'] ?? 'DigiSports Arena';
@@ -25,7 +27,7 @@ $moduloNombre    = $modulo_actual['nombre_personalizado'] ?? $modulo_actual['nom
             </div>
             <div class="col-sm-6">
                 <div class="float-sm-right quick-actions">
-                    <a href="<?= url('reservas', 'reserva', 'crear') ?>" class="btn" style="background: <?= $moduloColor ?>; color: white;">
+                    <a href="<?= url('reservas', 'reserva', 'buscar') ?>" class="btn" style="background: <?= $moduloColor ?>; color: white;">
                         <i class="fas fa-calendar-plus mr-1"></i> Nueva Reserva
                     </a>
                     <a href="<?= url('instalaciones', 'cancha', 'index') ?>" class="btn btn-outline-secondary">
@@ -109,12 +111,13 @@ $moduloNombre    = $modulo_actual['nombre_personalizado'] ?? $modulo_actual['nom
                                     <td><strong class="text-success">$<?= number_format((float)($r['total'] ?? 0), 2) ?></strong></td>
                                     <td>
                                         <?php
-                                        $estadoClass = match (strtoupper($r['estado'] ?? '')) {
+                                        $estadoClasses = [
                                             'CONFIRMADA' => 'badge-success',
                                             'PENDIENTE'  => 'badge-warning',
                                             'CANCELADA'  => 'badge-danger',
-                                            default      => 'badge-secondary',
-                                        };
+                                            'COMPLETADA' => 'badge-info',
+                                        ];
+                                        $estadoClass = $estadoClasses[strtoupper($r['estado'] ?? '')] ?? 'badge-secondary';
                                         ?>
                                         <span class="badge <?= $estadoClass ?>"><?= htmlspecialchars($r['estado'] ?? '-') ?></span>
                                     </td>
@@ -150,6 +153,62 @@ $moduloNombre    = $modulo_actual['nombre_personalizado'] ?? $modulo_actual['nom
                         </div>
                     </div>
                 </div>
+
+                <!-- Últimos Pagos -->
+                <div class="card">
+                    <div class="card-header border-0">
+                        <h3 class="card-title">
+                            <i class="fas fa-money-bill-wave mr-2 text-success"></i>
+                            Últimos Pagos Recibidos
+                        </h3>
+                        <div class="card-tools">
+                            <a href="<?= url('reservas', 'pago', 'index') ?>" class="btn btn-sm btn-outline-secondary">
+                                Ver todos <i class="fas fa-arrow-right ml-1"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <?php if (!empty($ultimosPagos)): ?>
+                        <table class="table table-striped mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Cliente</th>
+                                    <th>Método</th>
+                                    <th class="text-right">Monto</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($ultimosPagos as $p): ?>
+                                <tr>
+                                    <td><small><?= date('d/m H:i', strtotime($p['rpa_fecha'])) ?></small></td>
+                                    <td><?= htmlspecialchars($p['cliente_nombre'] ?? '-') ?></td>
+                                    <td>
+                                        <?php
+                                        $iconosM = [
+                                            'EFECTIVO' => 'fas fa-money-bill-wave text-success',
+                                            'TARJETA' => 'fas fa-credit-card text-primary',
+                                            'TRANSFERENCIA' => 'fas fa-university text-info',
+                                            'MONEDERO' => 'fas fa-wallet text-warning',
+                                        ];
+                                        $icM = $iconosM[$p['rpa_metodo_pago']] ?? 'fas fa-receipt';
+                                        ?>
+                                        <i class="<?= $icM ?> mr-1"></i>
+                                        <small><?= $p['rpa_metodo_pago'] ?></small>
+                                    </td>
+                                    <td class="text-right"><strong class="text-success">$<?= number_format($p['rpa_monto'], 2) ?></strong></td>
+                                </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                        <?php else: ?>
+                        <div class="text-center py-3 text-muted">
+                            <i class="fas fa-inbox fa-2x mb-2" style="opacity:.3"></i>
+                            <p class="mb-0">No hay pagos registrados aún</p>
+                        </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
             </div>
 
             <!-- Sidebar derecho -->
@@ -179,8 +238,7 @@ $moduloNombre    = $modulo_actual['nombre_personalizado'] ?? $modulo_actual['nom
                                     <strong><?= htmlspecialchars($c['nombre'] ?? '') ?></strong>
                                     <br>
                                     <small class="text-muted">
-                                        <?= htmlspecialchars($c['tipo_instalacion'] ?? 'General') ?>
-                                        · $<?= number_format((float)($c['precio_hora'] ?? 0), 2) ?>/h
+                                        <?= htmlspecialchars($c['tipo'] ?? 'General') ?>
                                     </small>
                                 </div>
                                 <div class="text-right">
@@ -213,8 +271,17 @@ $moduloNombre    = $modulo_actual['nombre_personalizado'] ?? $modulo_actual['nom
                     </div>
                     <div class="card-body">
                         <div class="d-grid gap-2">
-                            <a href="<?= url('reservas', 'reserva', 'crear') ?>" class="btn btn-block mb-2" style="background: <?= $moduloColor ?>15; color: <?= $moduloColor ?>; border:1px solid <?= $moduloColor ?>40; text-align:left;">
+                            <a href="<?= url('reservas', 'reserva', 'buscar') ?>" class="btn btn-block mb-2" style="background: <?= $moduloColor ?>15; color: <?= $moduloColor ?>; border:1px solid <?= $moduloColor ?>40; text-align:left;">
                                 <i class="fas fa-calendar-plus mr-2"></i> Nueva Reserva
+                            </a>
+                            <a href="<?= url('reservas', 'pago', 'index') ?>" class="btn btn-block mb-2" style="background: #F59E0B15; color: #F59E0B; border:1px solid #F59E0B40; text-align:left;">
+                                <i class="fas fa-cash-register mr-2"></i> Historial de Pagos
+                            </a>
+                            <a href="<?= url('instalaciones', 'entrada', 'vender') ?>" class="btn btn-block mb-2" style="background: #EC489915; color: #EC4899; border:1px solid #EC489940; text-align:left;">
+                                <i class="fas fa-ticket-alt mr-2"></i> Vender Entrada
+                            </a>
+                            <a href="<?= url('reservas', 'abon', 'index') ?>" class="btn btn-block mb-2" style="background: #06B6D415; color: #06B6D4; border:1px solid #06B6D440; text-align:left;">
+                                <i class="fas fa-wallet mr-2"></i> Monedero / Abonos
                             </a>
                             <a href="<?= url('instalaciones', 'cancha', 'crear') ?>" class="btn btn-block mb-2" style="background: #10B98115; color: #10B981; border:1px solid #10B98140; text-align:left;">
                                 <i class="fas fa-plus-circle mr-2"></i> Agregar Cancha
@@ -222,9 +289,21 @@ $moduloNombre    = $modulo_actual['nombre_personalizado'] ?? $modulo_actual['nom
                             <a href="<?= url('instalaciones', 'mantenimiento', 'index') ?>" class="btn btn-block mb-2" style="background: #EF444415; color: #EF4444; border:1px solid #EF444440; text-align:left;">
                                 <i class="fas fa-tools mr-2"></i> Mantenimientos
                             </a>
-                            <a href="<?= url('reportes', 'kpi', 'index') ?>" class="btn btn-block mb-2" style="background: #8B5CF615; color: #8B5CF6; border:1px solid #8B5CF640; text-align:left;">
-                                <i class="fas fa-chart-bar mr-2"></i> Reportes
-                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Métodos de Pago (Donut) -->
+                <div class="card">
+                    <div class="card-header border-0">
+                        <h3 class="card-title">
+                            <i class="fas fa-chart-pie mr-2" style="color: <?= $moduloColor ?>"></i>
+                            Pagos por Método — Mes
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div style="position:relative; height:200px;">
+                            <canvas id="chartMetodosPago"></canvas>
                         </div>
                     </div>
                 </div>
@@ -299,6 +378,34 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // ─── Gráfico Métodos de Pago (Donut) ───
+    const ctxMetodos = document.getElementById('chartMetodosPago');
+    if (ctxMetodos) {
+        new Chart(ctxMetodos, {
+            type: 'doughnut',
+            data: {
+                labels: <?= json_encode($chartMetodos['labels']) ?>,
+                datasets: [{
+                    data: <?= json_encode($chartMetodos['data']) ?>,
+                    backgroundColor: <?= json_encode($chartMetodos['colors']) ?>,
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '60%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { boxWidth: 12, padding: 10, font: { size: 11 } }
+                    }
+                }
+            }
+        });
+    }
+
     // ─── Reloj en vivo ───
     function updateClock() {
         const now = new Date();
@@ -310,4 +417,4 @@ document.addEventListener('DOMContentLoaded', function() {
     updateClock();
     setInterval(updateClock, 1000);
 });
-</div>
+</script>

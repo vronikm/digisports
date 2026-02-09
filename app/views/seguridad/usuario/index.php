@@ -35,7 +35,7 @@ include __DIR__ . '/../partials/header.php';
                 </div>
             </div>
             <div class="card-body">
-                <form method="GET" action="<?= url('seguridad', 'usuario', 'index') ?>">
+                <form method="POST" action="<?= url('seguridad', 'usuario', 'index') ?>">
                     <div class="row">
                         <div class="col-md-3">
                             <div class="form-group">

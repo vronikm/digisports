@@ -7,7 +7,6 @@
  * @var string $csrf_token
  * @var string $modo ('editar' o vacio para crear)
  */
-$baseUrl = \Config::get('base_url');
 $modo = $modo ?? '';
 $tituloSeccion = $modo === 'editar' ? 'Editar Mantenimiento' : 'Programar Mantenimiento';
 $accion = $modo === 'editar' ? 'actualizar' : 'guardar';
@@ -25,7 +24,7 @@ $accion = $modo === 'editar' ? 'actualizar' : 'guardar';
 
                 <div class="card-body">
                     <form id="formMantenimiento" method="post" 
-                          action="<?php echo $baseUrl; ?>instalaciones/mantenimiento/<?php echo $accion; ?>">
+                          action="<?php echo url('instalaciones', 'mantenimiento', $accion); ?>">
                         
                         <!-- CSRF Token -->
                         <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrf_token); ?>">
@@ -73,7 +72,7 @@ $accion = $modo === 'editar' ? 'actualizar' : 'guardar';
                                         <option value="reparacion" <?php echo ($mantenimiento['tipo'] ?? '') === 'reparacion' ? 'selected' : ''; ?>>
                                             🛠️ Reparación
                                         </option>
-                                        <option value="inspecccion" <?php echo ($mantenimiento['tipo'] ?? '') === 'inspeccion' ? 'selected' : ''; ?>>
+                                        <option value="inspeccion" <?php echo ($mantenimiento['tipo'] ?? '') === 'inspeccion' ? 'selected' : ''; ?>>
                                             👁️ Inspección
                                         </option>
                                         <option value="otra" <?php echo ($mantenimiento['tipo'] ?? '') === 'otra' ? 'selected' : ''; ?>>
@@ -194,7 +193,7 @@ $accion = $modo === 'editar' ? 'actualizar' : 'guardar';
 
                         <!-- Botones de Acción -->
                         <div class="d-flex justify-content-between">
-                            <a href="<?php echo $baseUrl; ?>instalaciones/mantenimiento/index" class="btn btn-secondary">
+                            <a href="<?php echo url('instalaciones', 'mantenimiento', 'index'); ?>" class="btn btn-secondary">
                                 <i class="fas fa-arrow-left"></i> Cancelar
                             </a>
 

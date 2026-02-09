@@ -1,17 +1,26 @@
 <?php
 /**
- * DigiSports - Controlador de Mantenimiento de Canchas
+ * DigiSports Arena - Controlador de Mantenimiento de Canchas
  * Gestión de mantenimiento preventivo y correctivo
  * 
  * @package DigiSports\Controllers\Instalaciones
- * @version 1.0.0
+ * @version 2.0.0
  */
 
 namespace App\Controllers\Instalaciones;
 
-require_once BASE_PATH . '/app/controllers/BaseController.php';
+require_once BASE_PATH . '/app/controllers/ModuleController.php';
 
-class MantenimientoController extends \BaseController {
+class MantenimientoController extends \App\Controllers\ModuleController {
+
+    protected $moduloNombre = 'DigiSports Arena';
+    protected $moduloIcono = 'fas fa-building';
+    protected $moduloColor = '#3B82F6';
+
+    public function __construct() {
+        parent::__construct();
+        $this->moduloCodigo = 'ARENA';
+    }
     
     /**
      * Listar mantenimientos programados
@@ -30,11 +39,11 @@ class MantenimientoController extends \BaseController {
                     m.*,
                     c.nombre as cancha_nombre,
                     c.tipo as cancha_tipo,
-                    i.nombre as instalacion_nombre,
-                    u.nombre as responsable_nombre
+                    i.ins_nombre as instalacion_nombre,
+                    CONCAT(u.nombres, ' ', u.apellidos) as responsable_nombre
                 FROM mantenimientos m
                 INNER JOIN canchas c ON m.cancha_id = c.cancha_id
-                INNER JOIN instalaciones i ON c.instalacion_id = i.instalacion_id
+                INNER JOIN instalaciones i ON c.instalacion_id = i.ins_instalacion_id
                 LEFT JOIN usuarios u ON m.responsable_id = u.usuario_id
                 WHERE m.tenant_id = ?
             ";
@@ -101,11 +110,68 @@ class MantenimientoController extends \BaseController {
             $this->viewData['title'] = 'Gestión de Mantenimientos';
             $this->viewData['layout'] = 'main';
             
-            $this->render('instalaciones/mantenimientos/index', $this->viewData);
+            $this->renderModule('instalaciones/mantenimientos/index', $this->viewData);
             
         } catch (\Exception $e) {
             $this->logError("Error al listar mantenimientos: " . $e->getMessage());
             $this->error('Error al cargar los mantenimientos');
+        }
+    }
+
+    /**
+     * Ver detalle de mantenimiento
+     */
+    public function ver() {
+        $mantenimientoId = (int)$this->get('id');
+
+        if ($mantenimientoId < 1) {
+            $this->error('Mantenimiento no válido');
+        }
+
+        try {
+            $stmt = $this->db->prepare("
+                SELECT m.*,
+                       c.nombre AS cancha_nombre,
+                       c.tipo AS cancha_tipo,
+                       c.capacidad_maxima,
+                       i.ins_nombre AS instalacion_nombre,
+                       CONCAT(u.nombres, ' ', u.apellidos) AS responsable_nombre,
+                       u.email AS responsable_email
+                FROM mantenimientos m
+                INNER JOIN canchas c ON m.cancha_id = c.cancha_id
+                INNER JOIN instalaciones i ON c.instalacion_id = i.ins_instalacion_id
+                LEFT JOIN usuarios u ON m.responsable_id = u.usuario_id
+                WHERE m.mantenimiento_id = ? AND m.tenant_id = ?
+            ");
+            $stmt->execute([$mantenimientoId, $this->tenantId]);
+            $mantenimiento = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+            if (!$mantenimiento) {
+                $this->error('Mantenimiento no encontrado');
+            }
+
+            // Historial de mantenimientos de la misma cancha
+            $stmt = $this->db->prepare("
+                SELECT mantenimiento_id, tipo, fecha_inicio, fecha_fin, estado
+                FROM mantenimientos
+                WHERE cancha_id = ? AND tenant_id = ?
+                  AND mantenimiento_id != ?
+                ORDER BY fecha_inicio DESC
+                LIMIT 5
+            ");
+            $stmt->execute([$mantenimiento['cancha_id'], $this->tenantId, $mantenimientoId]);
+            $historial = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
+            $this->viewData['mantenimiento'] = $mantenimiento;
+            $this->viewData['historial'] = $historial;
+            $this->viewData['title'] = 'Detalle de Mantenimiento';
+            $this->viewData['layout'] = 'main';
+
+            $this->renderModule('instalaciones/mantenimientos/ver', $this->viewData);
+
+        } catch (\Exception $e) {
+            $this->logError("Error al ver mantenimiento: " . $e->getMessage());
+            $this->error('Error al cargar el detalle del mantenimiento');
         }
     }
     
@@ -125,10 +191,11 @@ class MantenimientoController extends \BaseController {
             
             // Obtener usuarios con rol de técnico/admin
             $stmt2 = $this->db->prepare("
-                SELECT usuario_id, nombre, email
-                FROM usuarios 
-                WHERE tenant_id = ? AND rol IN ('ADMIN', 'TECNICO')
-                ORDER BY nombre
+                SELECT u.usuario_id, CONCAT(u.nombres, ' ', u.apellidos) AS nombre, u.email
+                FROM usuarios u
+                INNER JOIN roles r ON u.rol_id = r.rol_id
+                WHERE u.tenant_id = ? AND r.codigo IN ('ADMIN', 'SUPERADMIN', 'TECNICO')
+                ORDER BY u.nombres
             ");
             $stmt2->execute([$this->tenantId]);
             
@@ -138,7 +205,7 @@ class MantenimientoController extends \BaseController {
             $this->viewData['title'] = 'Nuevo Mantenimiento';
             $this->viewData['layout'] = 'main';
             
-            $this->render('instalaciones/mantenimientos/formulario', $this->viewData);
+            $this->renderModule('instalaciones/mantenimientos/formulario', $this->viewData);
             
         } catch (\Exception $e) {
             $this->logError("Error al mostrar formulario crear: " . $e->getMessage());
@@ -294,10 +361,11 @@ class MantenimientoController extends \BaseController {
             
             // Obtener usuarios
             $stmt2 = $this->db->prepare("
-                SELECT usuario_id, nombre, email
-                FROM usuarios 
-                WHERE tenant_id = ? AND rol IN ('ADMIN', 'TECNICO')
-                ORDER BY nombre
+                SELECT u.usuario_id, CONCAT(u.nombres, ' ', u.apellidos) AS nombre, u.email
+                FROM usuarios u
+                INNER JOIN roles r ON u.rol_id = r.rol_id
+                WHERE u.tenant_id = ? AND r.codigo IN ('ADMIN', 'SUPERADMIN', 'TECNICO')
+                ORDER BY u.nombres
             ");
             $stmt2->execute([$this->tenantId]);
             
@@ -309,7 +377,7 @@ class MantenimientoController extends \BaseController {
             $this->viewData['layout'] = 'main';
             $this->viewData['modo'] = 'editar';
             
-            $this->render('instalaciones/mantenimientos/formulario', $this->viewData);
+            $this->renderModule('instalaciones/mantenimientos/formulario', $this->viewData);
             
         } catch (\Exception $e) {
             $this->logError("Error al mostrar formulario editar: " . $e->getMessage());

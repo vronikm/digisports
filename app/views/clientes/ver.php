@@ -7,6 +7,7 @@ $cliente = $cliente ?? [];
 $reservas = $reservas ?? [];
 $pagos = $pagos ?? [];
 $abonos = $abonos ?? [];
+$entradas = $entradas ?? [];
 ?>
 
 <!-- Content Header -->
@@ -128,34 +129,48 @@ $abonos = $abonos ?? [];
                                     <th>Cancha</th>
                                     <th>Horario</th>
                                     <th>Estado</th>
-                                    <th>Total</th>
+                                    <th>Pago</th>
+                                    <th class="text-right">Total</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <?php if (empty($reservas)): ?>
                                 <tr>
-                                    <td colspan="5" class="text-center text-muted py-3">
+                                    <td colspan="6" class="text-center text-muted py-3">
                                         Sin reservas registradas
                                     </td>
                                 </tr>
                                 <?php else: ?>
                                 <?php foreach ($reservas as $reserva): ?>
                                 <tr>
-                                    <td><?= date('d/m/Y', strtotime($reserva['fecha'])) ?></td>
+                                    <td><?= date('d/m/Y', strtotime($reserva['fecha_reserva'])) ?></td>
                                     <td><?= htmlspecialchars($reserva['cancha_nombre'] ?? 'N/A') ?></td>
                                     <td><?= date('H:i', strtotime($reserva['hora_inicio'])) ?> - <?= date('H:i', strtotime($reserva['hora_fin'])) ?></td>
                                     <td>
                                         <?php
-                                        $estadoClass = [
+                                        $estadoColors = [
                                             'PENDIENTE' => 'badge-warning',
                                             'CONFIRMADA' => 'badge-success',
                                             'CANCELADA' => 'badge-danger',
                                             'COMPLETADA' => 'badge-info'
-                                        ][$reserva['estado']] ?? 'badge-secondary';
+                                        ];
+                                        $estadoClass = $estadoColors[$reserva['estado']] ?? 'badge-secondary';
                                         ?>
                                         <span class="badge <?= $estadoClass ?>"><?= $reserva['estado'] ?></span>
                                     </td>
-                                    <td>$<?= number_format($reserva['total'] ?? 0, 2) ?></td>
+                                    <td>
+                                        <?php
+                                        $pagoColors = [
+                                            'PENDIENTE' => 'badge-warning',
+                                            'PARCIAL'   => 'badge-info',
+                                            'PAGADO'    => 'badge-success'
+                                        ];
+                                        $ep = $reserva['estado_pago'] ?? 'PENDIENTE';
+                                        $pagoClass = $pagoColors[$ep] ?? 'badge-secondary';
+                                        ?>
+                                        <span class="badge <?= $pagoClass ?>"><?= $ep ?></span>
+                                    </td>
+                                    <td class="text-right">$<?= number_format($reserva['total'] ?? 0, 2) ?></td>
                                 </tr>
                                 <?php endforeach; ?>
                                 <?php endif; ?>
@@ -176,7 +191,7 @@ $abonos = $abonos ?? [];
                             <thead class="thead-light">
                                 <tr>
                                     <th>Fecha</th>
-                                    <th>Concepto</th>
+                                    <th>Referencia</th>
                                     <th>Método</th>
                                     <th class="text-right">Monto</th>
                                 </tr>
@@ -191,11 +206,11 @@ $abonos = $abonos ?? [];
                                 <?php else: ?>
                                 <?php foreach ($pagos as $pago): ?>
                                 <tr>
-                                    <td><?= date('d/m/Y', strtotime($pago['fecha'])) ?></td>
-                                    <td><?= htmlspecialchars($pago['concepto'] ?? 'Pago') ?></td>
-                                    <td><?= htmlspecialchars($pago['metodo_pago'] ?? 'N/A') ?></td>
+                                    <td><?= date('d/m/Y', strtotime($pago['rpa_fecha'])) ?></td>
+                                    <td><?= htmlspecialchars($pago['rpa_referencia'] ?? '—') ?></td>
+                                    <td><?= htmlspecialchars($pago['rpa_metodo_pago'] ?? 'N/A') ?></td>
                                     <td class="text-right font-weight-bold text-success">
-                                        $<?= number_format($pago['monto'] ?? 0, 2) ?>
+                                        $<?= number_format($pago['rpa_monto'] ?? 0, 2) ?>
                                     </td>
                                 </tr>
                                 <?php endforeach; ?>
@@ -210,7 +225,7 @@ $abonos = $abonos ?? [];
                 <div class="card card-info card-outline">
                     <div class="card-header">
                         <h3 class="card-title">
-                            <i class="fas fa-piggy-bank"></i> Historial de Abonos
+                            <i class="fas fa-piggy-bank"></i> Historial de Abonos (Monedero)
                         </h3>
                     </div>
                     <div class="card-body table-responsive p-0" style="max-height: 200px;">
@@ -218,23 +233,70 @@ $abonos = $abonos ?? [];
                             <thead class="thead-light">
                                 <tr>
                                     <th>Fecha</th>
-                                    <th>Tipo</th>
-                                    <th class="text-right">Monto</th>
+                                    <th class="text-right">Saldo</th>
+                                    <th class="text-right">Recargado</th>
+                                    <th class="text-right">Consumido</th>
                                     <th>Estado</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <?php foreach ($abonos as $abono): ?>
                                 <tr>
-                                    <td><?= date('d/m/Y', strtotime($abono['fecha'])) ?></td>
-                                    <td><?= htmlspecialchars($abono['tipo'] ?? 'Abono') ?></td>
+                                    <td><?= date('d/m/Y', strtotime($abono['abo_fecha_registro'])) ?></td>
                                     <td class="text-right font-weight-bold">
-                                        $<?= number_format($abono['monto'] ?? 0, 2) ?>
+                                        $<?= number_format($abono['abo_saldo'] ?? 0, 2) ?>
+                                    </td>
+                                    <td class="text-right text-success">
+                                        $<?= number_format($abono['abo_total_recargado'] ?? 0, 2) ?>
+                                    </td>
+                                    <td class="text-right text-danger">
+                                        $<?= number_format($abono['abo_total_consumido'] ?? 0, 2) ?>
                                     </td>
                                     <td>
-                                        <span class="badge <?= $abono['estado'] === 'ACTIVO' ? 'badge-success' : 'badge-secondary' ?>">
-                                            <?= $abono['estado'] ?>
+                                        <span class="badge <?= ($abono['abo_estado'] ?? '') === 'ACTIVO' ? 'badge-success' : 'badge-secondary' ?>">
+                                            <?= $abono['abo_estado'] ?? '—' ?>
                                         </span>
+                                    </td>
+                                </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <?php endif; ?>
+                
+                <!-- Entradas compradas -->
+                <?php if (!empty($entradas)): ?>
+                <div class="card card-purple card-outline">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-ticket-alt"></i> Entradas Compradas
+                        </h3>
+                    </div>
+                    <div class="card-body table-responsive p-0" style="max-height: 200px;">
+                        <table class="table table-hover table-sm">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Código</th>
+                                    <th>Cantidad</th>
+                                    <th>Método</th>
+                                    <th class="text-right">Total</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($entradas as $entrada): ?>
+                                <tr>
+                                    <td><?= date('d/m/Y', strtotime($entrada['ent_fecha'])) ?></td>
+                                    <td><code><?= htmlspecialchars($entrada['ent_codigo'] ?? '—') ?></code></td>
+                                    <td><?= (int)($entrada['ent_cantidad'] ?? 1) ?></td>
+                                    <td><?= htmlspecialchars($entrada['ent_metodo_pago'] ?? 'N/A') ?></td>
+                                    <td class="text-right font-weight-bold text-success">
+                                        $<?= number_format($entrada['ent_monto_total'] ?? 0, 2) ?>
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-success"><?= $entrada['ent_estado'] ?? 'ACTIVA' ?></span>
                                     </td>
                                 </tr>
                                 <?php endforeach; ?>

@@ -1,28 +1,37 @@
 <?php
 /**
- * DigiSports - Controlador de Gestión de Canchas/Instalaciones
+ * DigiSports Arena - Controlador de Gestión de Canchas/Instalaciones
  * CRUD completo con validaciones de capacidad y tarifas
  * 
  * @package DigiSports\Controllers\Instalaciones
- * @version 1.0.0
+ * @version 2.0.0
  */
 
 namespace App\Controllers\Instalaciones;
 
-require_once BASE_PATH . '/app/controllers/BaseController.php';
+require_once BASE_PATH . '/app/controllers/ModuleController.php';
 
-class CanchaController extends \BaseController {
+class CanchaController extends \App\Controllers\ModuleController {
+
+    protected $moduloNombre = 'DigiSports Arena';
+    protected $moduloIcono = 'fas fa-building';
+    protected $moduloColor = '#3B82F6';
+
+    public function __construct() {
+        parent::__construct();
+        $this->moduloCodigo = 'ARENA';
+    }
     
     /**
      * Listar todas las canchas del tenant
      */
     public function index() {
         try {
-            // Obtener parámetros de búsqueda y filtros
-            $buscar = $this->get('buscar') ?? '';
-            $tipo = $this->get('tipo') ?? '';
-            $estado = $this->get('estado') ?? '';
-            $pagina = max(1, (int)($this->get('pagina') ?? 1));
+            // Obtener parámetros de búsqueda y filtros (POST o GET)
+            $buscar = $this->post('buscar') ?? $this->get('buscar') ?? '';
+            $tipo = $this->post('tipo') ?? $this->get('tipo') ?? '';
+            $estado = $this->post('estado') ?? $this->get('estado') ?? '';
+            $pagina = max(1, (int)($this->post('pagina') ?? $this->get('pagina') ?? 1));
             $perPage = 15;
             $offset = ($pagina - 1) * $perPage;
             
@@ -30,10 +39,10 @@ class CanchaController extends \BaseController {
             $query = "
                 SELECT 
                     c.*,
-                    i.nombre as instalacion_nombre,
+                    i.ins_nombre as instalacion_nombre,
                     0 as total_reservas_hoy
                 FROM canchas c
-                INNER JOIN instalaciones i ON c.instalacion_id = i.instalacion_id
+                INNER JOIN instalaciones i ON c.instalacion_id = i.ins_instalacion_id
                 WHERE c.tenant_id = ?
             ";
             
@@ -41,7 +50,7 @@ class CanchaController extends \BaseController {
             
             // Filtros
             if (!empty($buscar)) {
-                $query .= " AND (c.nombre LIKE ? OR i.nombre LIKE ?)";
+                $query .= " AND (c.nombre LIKE ? OR i.ins_nombre LIKE ?)";
                 $params[] = "%{$buscar}%";
                 $params[] = "%{$buscar}%";
             }
@@ -56,19 +65,19 @@ class CanchaController extends \BaseController {
                 $params[] = $estado;
             }
             
-            $query .= " ORDER BY i.nombre, c.nombre";
+            $query .= " ORDER BY i.ins_nombre, c.nombre";
             
             // Total de registros
             $countQuery = "
                 SELECT COUNT(DISTINCT c.cancha_id) as total
                 FROM canchas c
-                INNER JOIN instalaciones i ON c.instalacion_id = i.instalacion_id
+                INNER JOIN instalaciones i ON c.instalacion_id = i.ins_instalacion_id
                 WHERE c.tenant_id = ?
             ";
             $countParams = [$this->tenantId];
             
             if (!empty($buscar)) {
-                $countQuery .= " AND (c.nombre LIKE ? OR i.nombre LIKE ?)";
+                $countQuery .= " AND (c.nombre LIKE ? OR i.ins_nombre LIKE ?)";
                 $countParams[] = "%{$buscar}%";
                 $countParams[] = "%{$buscar}%";
             }
@@ -115,11 +124,102 @@ class CanchaController extends \BaseController {
             $stmt->execute([$this->tenantId]);
             $this->viewData['tipos'] = array_column($stmt->fetchAll(), 'tipo');
             
-            $this->render('instalaciones/canchas/index', $this->viewData);
+            $this->renderModule('instalaciones/canchas/index', $this->viewData);
             
         } catch (\Exception $e) {
             $this->logError("Error al listar canchas: " . $e->getMessage());
             $this->error('Error al cargar las canchas');
+        }
+    }
+
+    /**
+     * Ver detalle de cancha con tarifas, reservas recientes y mantenimientos
+     */
+    public function ver() {
+        $canchaId = (int)$this->get('id');
+
+        if ($canchaId < 1) {
+            $this->error('Cancha no válida');
+        }
+
+        try {
+            // Cancha + instalación
+            $stmt = $this->db->prepare("
+                SELECT c.*, i.ins_nombre AS instalacion_nombre
+                FROM canchas c
+                INNER JOIN instalaciones i ON c.instalacion_id = i.ins_instalacion_id
+                WHERE c.cancha_id = ? AND c.tenant_id = ?
+            ");
+            $stmt->execute([$canchaId, $this->tenantId]);
+            $cancha = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+            if (!$cancha) {
+                $this->error('Cancha no encontrada');
+            }
+
+            // Tarifas
+            $stmt = $this->db->prepare("
+                SELECT * FROM tarifas
+                WHERE cancha_id = ? AND estado = 'ACTIVO'
+                ORDER BY dia_semana, hora_inicio
+            ");
+            $stmt->execute([$canchaId]);
+            $tarifas = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
+            // Reservas recientes (últimas 10)
+            $stmt = $this->db->prepare("
+                SELECT r.reserva_id, r.fecha_reserva, r.hora_inicio, r.hora_fin,
+                       r.estado, r.estado_pago, r.precio_total,
+                       CONCAT(c2.cli_nombres, ' ', c2.cli_apellidos) AS cliente_nombre
+                FROM reservas r
+                LEFT JOIN clientes c2 ON r.cliente_id = c2.cli_cliente_id
+                WHERE r.instalacion_id = ? AND r.tenant_id = ?
+                ORDER BY r.fecha_reserva DESC, r.hora_inicio DESC
+                LIMIT 10
+            ");
+            $stmt->execute([$cancha['instalacion_id'], $this->tenantId]);
+            $reservas = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
+            // Mantenimientos activos
+            $stmt = $this->db->prepare("
+                SELECT m.mantenimiento_id, m.tipo, m.descripcion,
+                       m.fecha_inicio, m.fecha_fin, m.estado
+                FROM mantenimientos m
+                WHERE m.cancha_id = ? AND m.tenant_id = ?
+                  AND m.estado IN ('PROGRAMADO', 'EN_PROGRESO')
+                ORDER BY m.fecha_inicio ASC
+                LIMIT 5
+            ");
+            $stmt->execute([$canchaId, $this->tenantId]);
+            $mantenimientos = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
+            // KPIs rápidos
+            $stmt = $this->db->prepare("
+                SELECT
+                    COUNT(*) as total_reservas,
+                    SUM(CASE WHEN r.estado = 'CONFIRMADA' THEN 1 ELSE 0 END) as confirmadas,
+                    SUM(CASE WHEN r.fecha_reserva = CURDATE() THEN 1 ELSE 0 END) as hoy,
+                    COALESCE(SUM(r.precio_total), 0) as ingresos_total
+                FROM reservas r
+                WHERE r.instalacion_id = ? AND r.tenant_id = ?
+                  AND r.estado != 'CANCELADA'
+            ");
+            $stmt->execute([$cancha['instalacion_id'], $this->tenantId]);
+            $kpis = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+            $this->viewData['cancha'] = $cancha;
+            $this->viewData['tarifas'] = $tarifas;
+            $this->viewData['reservas'] = $reservas;
+            $this->viewData['mantenimientos'] = $mantenimientos;
+            $this->viewData['kpis'] = $kpis;
+            $this->viewData['title'] = 'Detalle de Cancha - ' . $cancha['nombre'];
+            $this->viewData['layout'] = 'main';
+
+            $this->renderModule('instalaciones/canchas/ver', $this->viewData);
+
+        } catch (\Exception $e) {
+            $this->logError("Error al ver cancha: " . $e->getMessage());
+            $this->error('Error al cargar el detalle de la cancha');
         }
     }
     
@@ -130,10 +230,10 @@ class CanchaController extends \BaseController {
         try {
             // Obtener instalaciones disponibles
             $stmt = $this->db->prepare("
-                SELECT instalacion_id, nombre 
+                SELECT ins_instalacion_id AS instalacion_id, ins_nombre AS nombre 
                 FROM instalaciones 
-                WHERE tenant_id = ? AND estado = 'ACTIVO'
-                ORDER BY nombre
+                WHERE ins_tenant_id = ? AND ins_estado = 'ACTIVO'
+                ORDER BY ins_nombre
             ");
             $stmt->execute([$this->tenantId]);
             $this->viewData['instalaciones'] = $stmt->fetchAll();
@@ -142,7 +242,7 @@ class CanchaController extends \BaseController {
             $this->viewData['title'] = 'Nueva Cancha';
             $this->viewData['layout'] = 'main';
             
-            $this->render('instalaciones/canchas/formulario', $this->viewData);
+            $this->renderModule('instalaciones/canchas/formulario', $this->viewData);
             
         } catch (\Exception $e) {
             $this->logError("Error al mostrar formulario crear: " . $e->getMessage());
@@ -197,9 +297,9 @@ class CanchaController extends \BaseController {
             
             // Verificar que la instalación pertenece al tenant
             $stmt = $this->db->prepare("
-                SELECT instalacion_id 
+                SELECT ins_instalacion_id AS instalacion_id 
                 FROM instalaciones 
-                WHERE instalacion_id = ? AND tenant_id = ?
+                WHERE ins_instalacion_id = ? AND ins_tenant_id = ?
             ");
             $stmt->execute([$instalacionId, $this->tenantId]);
             
@@ -261,9 +361,9 @@ class CanchaController extends \BaseController {
         try {
             // Obtener cancha
             $stmt = $this->db->prepare("
-                SELECT c.*, i.nombre as instalacion_nombre
+                SELECT c.*, i.ins_nombre as instalacion_nombre
                 FROM canchas c
-                INNER JOIN instalaciones i ON c.instalacion_id = i.instalacion_id
+                INNER JOIN instalaciones i ON c.instalacion_id = i.ins_instalacion_id
                 WHERE c.cancha_id = ? AND c.tenant_id = ?
             ");
             $stmt->execute([$canchaId, $this->tenantId]);
@@ -275,10 +375,10 @@ class CanchaController extends \BaseController {
             
             // Obtener instalaciones
             $stmt = $this->db->prepare("
-                SELECT instalacion_id, nombre 
+                SELECT ins_instalacion_id AS instalacion_id, ins_nombre AS nombre 
                 FROM instalaciones 
-                WHERE tenant_id = ? AND estado = 'ACTIVO'
-                ORDER BY nombre
+                WHERE ins_tenant_id = ? AND ins_estado = 'ACTIVO'
+                ORDER BY ins_nombre
             ");
             $stmt->execute([$this->tenantId]);
             
@@ -289,7 +389,7 @@ class CanchaController extends \BaseController {
             $this->viewData['layout'] = 'main';
             $this->viewData['modo'] = 'editar';
             
-            $this->render('instalaciones/canchas/formulario', $this->viewData);
+            $this->renderModule('instalaciones/canchas/formulario', $this->viewData);
             
         } catch (\Exception $e) {
             $this->logError("Error al mostrar formulario editar: " . $e->getMessage());
@@ -429,9 +529,9 @@ class CanchaController extends \BaseController {
             // Verificar si tiene reservas activas
             $stmt = $this->db->prepare("
                 SELECT COUNT(*) as total FROM reservas 
-                WHERE cancha_id = ? AND estado != 'CANCELADA'
+                WHERE instalacion_id = ? AND estado != 'CANCELADA'
             ");
-            $stmt->execute([$canchaId]);
+            $stmt->execute([$cancha['instalacion_id']]);
             
             if ($stmt->fetch()['total'] > 0) {
                 $this->error('No se puede eliminar una cancha con reservas activas');
@@ -475,9 +575,9 @@ class CanchaController extends \BaseController {
         try {
             // Obtener cancha
             $stmt = $this->db->prepare("
-                SELECT c.*, i.nombre as instalacion_nombre
+                SELECT c.*, i.ins_nombre as instalacion_nombre
                 FROM canchas c
-                INNER JOIN instalaciones i ON c.instalacion_id = i.instalacion_id
+                INNER JOIN instalaciones i ON c.instalacion_id = i.ins_instalacion_id
                 WHERE c.cancha_id = ? AND c.tenant_id = ?
             ");
             $stmt->execute([$canchaId, $this->tenantId]);
@@ -503,7 +603,7 @@ class CanchaController extends \BaseController {
             $this->viewData['title'] = 'Gestión de Tarifas - ' . $cancha['nombre'];
             $this->viewData['layout'] = 'main';
             
-            $this->render('instalaciones/canchas/tarifas', $this->viewData);
+            $this->renderModule('instalaciones/canchas/tarifas', $this->viewData);
             
         } catch (\Exception $e) {
             $this->logError("Error al obtener tarifas: " . $e->getMessage());

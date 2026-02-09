@@ -48,7 +48,8 @@ $tiposCliente = $tiposCliente ?? [];
                 </div>
             </div>
             <div class="card-body">
-                <form method="GET" action="<?= url('clientes', 'cliente', 'index') ?>" class="row">
+                <form method="POST" action="<?= url('clientes', 'cliente', 'index') ?>" class="row" id="formFiltrosClientes">
+                    <input type="hidden" name="csrf_token" value="<?= \Security::generateCsrfToken() ?>">
                     <div class="col-md-4">
                         <div class="form-group">
                             <label>Buscar</label>
@@ -132,16 +133,16 @@ $tiposCliente = $tiposCliente ?? [];
                         <?php foreach ($clientes as $cliente): ?>
                         <tr>
                             <td>
-                                <code><?= htmlspecialchars($cliente['identificacion']) ?></code>
+                                <code><?= htmlspecialchars($cliente['cli_identificacion'] ?? '') ?></code>
                             </td>
                             <td>
-                                <strong><?= htmlspecialchars($cliente['nombres'] . ' ' . $cliente['apellidos']) ?></strong>
-                                <?php if ($cliente['tipo_cliente'] === 'EMPRESA' && $cliente['razon_social']): ?>
-                                <br><small class="text-muted"><?= htmlspecialchars($cliente['razon_social']) ?></small>
+                                <strong><?= htmlspecialchars(($cliente['cli_nombres'] ?? '') . ' ' . ($cliente['cli_apellidos'] ?? '')) ?></strong>
+                                <?php if (($cliente['cli_tipo_cliente'] ?? '') === 'EMPRESA' && !empty($cliente['cli_razon_social'])): ?>
+                                <br><small class="text-muted"><?= htmlspecialchars($cliente['cli_razon_social']) ?></small>
                                 <?php endif; ?>
                             </td>
-                            <td><?= htmlspecialchars($cliente['email'] ?? '-') ?></td>
-                            <td><?= htmlspecialchars($cliente['celular'] ?? $cliente['telefono'] ?? '-') ?></td>
+                            <td><?= htmlspecialchars($cliente['cli_email'] ?? '-') ?></td>
+                            <td><?= htmlspecialchars($cliente['cli_celular'] ?? $cliente['cli_telefono'] ?? '-') ?></td>
                             <td>
                                 <?php
                                 $badgeClass = [
@@ -149,10 +150,10 @@ $tiposCliente = $tiposCliente ?? [];
                                     'CLIENTE' => 'badge-info',
                                     'EMPRESA' => 'badge-primary',
                                     'INVITADO' => 'badge-secondary'
-                                ][$cliente['tipo_cliente']] ?? 'badge-secondary';
+                                ][$cliente['cli_tipo_cliente'] ?? ''] ?? 'badge-secondary';
                                 ?>
                                 <span class="badge <?= $badgeClass ?>">
-                                    <?= htmlspecialchars($tiposCliente[$cliente['tipo_cliente']] ?? $cliente['tipo_cliente']) ?>
+                                    <?= htmlspecialchars($tiposCliente[$cliente['cli_tipo_cliente'] ?? ''] ?? ($cliente['cli_tipo_cliente'] ?? '')) ?>
                                 </span>
                             </td>
                             <td>
@@ -171,11 +172,11 @@ $tiposCliente = $tiposCliente ?? [];
                             </td>
                             <td class="text-center">
                                 <div class="btn-group btn-group-sm">
-                                    <a href="<?= url('clientes', 'cliente', 'ver', ['id' => $cliente['cliente_id']]) ?>" 
+                                    <a href="<?= url('clientes', 'cliente', 'ver', ['id' => $cliente['cli_cliente_id']]) ?>" 
                                        class="btn btn-info" title="Ver detalle">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    <a href="<?= url('clientes', 'cliente', 'editar', ['id' => $cliente['cliente_id']]) ?>" 
+                                    <a href="<?= url('clientes', 'cliente', 'editar', ['id' => $cliente['cli_cliente_id']]) ?>" 
                                        class="btn btn-warning" title="Editar">
                                         <i class="fas fa-edit"></i>
                                     </a>
