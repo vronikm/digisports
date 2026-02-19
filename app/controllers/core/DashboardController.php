@@ -277,33 +277,33 @@ class DashboardController extends \BaseController {
         $activity = [];
         
         try {
-            if ($this->tableExists('auditoria')) {
+            if ($this->tableExists('seguridad_auditoria')) {
                 $stmt = $this->db->prepare("
                     SELECT 
-                        a.operacion,
-                        a.tabla,
-                        a.fecha_operacion as fecha,
-                        CONCAT(u.nombres, ' ', u.apellidos) as usuario,
-                        CASE a.operacion
+                        a.aud_operacion AS operacion,
+                        a.aud_tabla AS tabla,
+                        a.aud_fecha_operacion AS fecha,
+                        CONCAT(u.usu_nombres, ' ', u.usu_apellidos) AS usuario,
+                        CASE a.aud_operacion
                             WHEN 'INSERT' THEN 'fas fa-plus-circle'
                             WHEN 'UPDATE' THEN 'fas fa-edit'
                             WHEN 'DELETE' THEN 'fas fa-trash'
                             WHEN 'LOGIN' THEN 'fas fa-sign-in-alt'
                             WHEN 'LOGOUT' THEN 'fas fa-sign-out-alt'
                             ELSE 'fas fa-circle'
-                        END as icono,
-                        CASE a.operacion
+                        END AS icono,
+                        CASE a.aud_operacion
                             WHEN 'INSERT' THEN '#28a745'
                             WHEN 'UPDATE' THEN '#ffc107'
                             WHEN 'DELETE' THEN '#dc3545'
                             WHEN 'LOGIN' THEN '#17a2b8'
                             WHEN 'LOGOUT' THEN '#6c757d'
                             ELSE '#6c757d'
-                        END as color
-                    FROM auditoria a
-                    LEFT JOIN usuarios u ON a.usuario_id = u.usuario_id
-                    WHERE a.tenant_id = ?
-                    ORDER BY a.fecha_operacion DESC
+                        END AS color
+                    FROM seguridad_auditoria a
+                    LEFT JOIN seguridad_usuarios u ON a.aud_usuario_id = u.usu_usuario_id
+                    WHERE a.aud_tenant_id = ?
+                    ORDER BY a.aud_fecha_operacion DESC
                     LIMIT ?
                 ");
                 $stmt->execute([$this->tenantId, $limit]);

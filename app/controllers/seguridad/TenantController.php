@@ -436,8 +436,6 @@ class TenantController extends \App\Controllers\ModuleController {
         $tenants = \DataProtection::decryptRows('seguridad_tenants', $tenants);
         $planes = $this->db->query("SELECT sus_plan_id, sus_nombre FROM seguridad_planes_suscripcion WHERE sus_estado = 'A' ORDER BY sus_nombre")->fetchAll(\PDO::FETCH_ASSOC);
         
-        // DEBUG: Log temporal para ver el contenido de $tenants
-        error_log('DEBUG_TENANTS: ' . print_r($tenants, true));
         $this->renderModule('seguridad/tenant/index', [
             'tenants' => $tenants,
             'planes' => $planes,

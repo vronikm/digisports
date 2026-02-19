@@ -336,10 +336,14 @@ class Security {
     
     /**
      * Verificar intentos de fuerza bruta
+     * Usa Config::SECURITY para max_login_attempts, brute_force_window e ip_block_duration
      */
     private static function checkBruteForce() {
         $ip = $_SERVER['REMOTE_ADDR'] ?? 'Unknown';
         $cacheFile = __DIR__ . '/../storage/cache/failed_attempts.json';
+        
+        $maxAttempts = Config::SECURITY['max_login_attempts'] ?? 5;
+        $window = Config::SECURITY['brute_force_window'] ?? 900;
         
         if (!file_exists($cacheFile)) {
             file_put_contents($cacheFile, json_encode([]));
@@ -352,14 +356,14 @@ class Security {
         
         $now = time();
         
-        // Limpiar intentos antiguos (más de 1 hora)
-        $attempts = array_filter($attempts, function($ipAttempts) use ($now) {
+        // Limpiar intentos antiguos (fuera de la ventana de bloqueo)
+        $cleanWindow = max($window, Config::SECURITY['ip_block_duration'] ?? 3600);
+        $attempts = array_filter($attempts, function($ipAttempts) use ($now, $cleanWindow) {
             if (!is_array($ipAttempts)) {
                 return false;
             }
-            // Si el IP tiene intentos recientes, mantenerlo
             foreach ($ipAttempts as $attemptTime) {
-                if (($now - (int)$attemptTime) < 3600) {
+                if (($now - (int)$attemptTime) < $cleanWindow) {
                     return true;
                 }
             }
@@ -372,12 +376,12 @@ class Security {
         
         $attempts[$ip][] = $now;
         
-        // Si más de 5 intentos en 15 minutos, bloquear
-        $recentAttempts = array_filter($attempts[$ip], function($time) use ($now) {
-            return is_numeric($time) && ($now - (int)$time) < 900; // 15 minutos
+        // Si más de N intentos en la ventana configurada, bloquear
+        $recentAttempts = array_filter($attempts[$ip], function($time) use ($now, $window) {
+            return is_numeric($time) && ($now - (int)$time) < $window;
         });
         
-        if (count($recentAttempts) > 5) {
+        if (count($recentAttempts) > $maxAttempts) {
             self::blockIP($ip);
         }
         
@@ -390,13 +394,17 @@ class Security {
      */
     private static function blockIP($ip) {
         $blockFile = __DIR__ . '/../storage/cache/blocked_ips.json';
+        $blockDuration = Config::SECURITY['ip_block_duration'] ?? 3600;
         
         if (!file_exists($blockFile)) {
             file_put_contents($blockFile, json_encode([]));
         }
         
         $blocked = json_decode(file_get_contents($blockFile), true);
-        $blocked[$ip] = time() + 3600; // Bloquear por 1 hora
+        if (!is_array($blocked)) {
+            $blocked = [];
+        }
+        $blocked[$ip] = time() + $blockDuration;
         
         file_put_contents($blockFile, json_encode($blocked));
         
@@ -417,6 +425,9 @@ class Security {
         }
         
         $blocked = json_decode(file_get_contents($blockFile), true);
+        if (!is_array($blocked)) {
+            return false;
+        }
         
         if (isset($blocked[$ip]) && $blocked[$ip] > time()) {
             return true;
@@ -429,6 +440,150 @@ class Security {
         }
         
         return false;
+    }
+    
+    // ─── Métodos de administración de IPs ───────────────────────────
+    
+    /**
+     * Obtener lista de IPs bloqueadas con sus tiempos de expiración
+     * @return array ['ip' => ..., 'expira' => ..., 'restante' => ...]
+     */
+    public static function getBlockedIPs(): array {
+        $blockFile = __DIR__ . '/../storage/cache/blocked_ips.json';
+        if (!file_exists($blockFile)) {
+            return [];
+        }
+        
+        $blocked = json_decode(file_get_contents($blockFile), true);
+        if (!is_array($blocked)) {
+            return [];
+        }
+        
+        $now = time();
+        $result = [];
+        $changed = false;
+        
+        foreach ($blocked as $ip => $expiry) {
+            if ($expiry > $now) {
+                $result[] = [
+                    'ip' => $ip,
+                    'expira' => date('Y-m-d H:i:s', $expiry),
+                    'restante_seg' => $expiry - $now,
+                    'restante' => self::formatDuration($expiry - $now)
+                ];
+            } else {
+                unset($blocked[$ip]);
+                $changed = true;
+            }
+        }
+        
+        if ($changed) {
+            file_put_contents($blockFile, json_encode($blocked));
+        }
+        
+        return $result;
+    }
+    
+    /**
+     * Desbloquear una IP manualmente
+     * @param string $ip IP a desbloquear
+     * @return bool True si se desbloqueó, false si no estaba bloqueada
+     */
+    public static function unblockIP(string $ip): bool {
+        $blockFile = __DIR__ . '/../storage/cache/blocked_ips.json';
+        if (!file_exists($blockFile)) {
+            return false;
+        }
+        
+        $blocked = json_decode(file_get_contents($blockFile), true);
+        if (!is_array($blocked) || !isset($blocked[$ip])) {
+            return false;
+        }
+        
+        unset($blocked[$ip]);
+        file_put_contents($blockFile, json_encode($blocked));
+        
+        // También limpiar intentos fallidos de esa IP
+        self::clearFailedAttempts($ip);
+        
+        return true;
+    }
+    
+    /**
+     * Obtener intentos fallidos por IP
+     * @return array ['ip' => ..., 'intentos' => ..., 'ultimo' => ...]
+     */
+    public static function getFailedAttempts(): array {
+        $cacheFile = __DIR__ . '/../storage/cache/failed_attempts.json';
+        if (!file_exists($cacheFile)) {
+            return [];
+        }
+        
+        $attempts = json_decode(file_get_contents($cacheFile), true);
+        if (!is_array($attempts)) {
+            return [];
+        }
+        
+        $now = time();
+        $window = Config::SECURITY['brute_force_window'] ?? 900;
+        $result = [];
+        
+        foreach ($attempts as $ip => $times) {
+            if (!is_array($times)) continue;
+            
+            $recent = array_filter($times, fn($t) => is_numeric($t) && ($now - (int)$t) < $window);
+            $allTimes = array_filter($times, fn($t) => is_numeric($t));
+            
+            if (!empty($allTimes)) {
+                $lastAttempt = max($allTimes);
+                $result[] = [
+                    'ip' => $ip,
+                    'intentos_recientes' => count($recent),
+                    'intentos_total' => count($allTimes),
+                    'ultimo_intento' => date('Y-m-d H:i:s', $lastAttempt),
+                    'hace' => self::formatDuration($now - $lastAttempt)
+                ];
+            }
+        }
+        
+        // Ordenar por intentos recientes desc
+        usort($result, fn($a, $b) => $b['intentos_recientes'] <=> $a['intentos_recientes']);
+        
+        return $result;
+    }
+    
+    /**
+     * Limpiar intentos fallidos de una IP específica
+     * @param string $ip IP a limpiar
+     * @return bool
+     */
+    public static function clearFailedAttempts(string $ip): bool {
+        $cacheFile = __DIR__ . '/../storage/cache/failed_attempts.json';
+        if (!file_exists($cacheFile)) {
+            return false;
+        }
+        
+        $attempts = json_decode(file_get_contents($cacheFile), true);
+        if (!is_array($attempts) || !isset($attempts[$ip])) {
+            return false;
+        }
+        
+        unset($attempts[$ip]);
+        file_put_contents($cacheFile, json_encode($attempts));
+        return true;
+    }
+    
+    /**
+     * Formatear duración en texto legible
+     * @param int $seconds
+     * @return string
+     */
+    private static function formatDuration(int $seconds): string {
+        if ($seconds < 60) return $seconds . 's';
+        if ($seconds < 3600) return floor($seconds / 60) . 'min ' . ($seconds % 60) . 's';
+        $h = floor($seconds / 3600);
+        $m = floor(($seconds % 3600) / 60);
+        return $h . 'h ' . $m . 'min';
     }
     
     /**

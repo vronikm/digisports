@@ -164,8 +164,25 @@ class AuthController extends \BaseController {
      * Manejar intento de login fallido
      */
     private function handleFailedLogin($username, $message, $userId = null) {
-        // Registrar intento fallido
+        // Registrar intento fallido en archivo de log
         \Security::logSecurityEvent('LOGIN_FAILED', "Usuario: {$username} - {$message}");
+        
+        // Registrar en tabla seguridad_log_accesos
+        try {
+            $stmtLog = $this->db->prepare("
+                INSERT INTO seguridad_log_accesos 
+                (acc_usuario_id, acc_tenant_id, acc_tipo, acc_ip, acc_user_agent, acc_exito, acc_mensaje)
+                VALUES (?, NULL, 'LOGIN_FAILED', ?, ?, 'N', ?)
+            ");
+            $stmtLog->execute([
+                $userId,
+                $_SERVER['REMOTE_ADDR'] ?? 'UNKNOWN',
+                substr($_SERVER['HTTP_USER_AGENT'] ?? '', 0, 255),
+                substr("Usuario: {$username} - {$message}", 0, 255)
+            ]);
+        } catch (\Exception $e) {
+            // Silenciar para no interrumpir flujo de login
+        }
         
         if ($userId) {
             // Incrementar intentos fallidos
@@ -445,13 +462,31 @@ class AuthController extends \BaseController {
             }
             
             // Auditoría
-            $this->audit('usuarios', $user['usuario_id'], 'LOGIN', [], [
+            $this->audit('seguridad_usuarios', $user['usu_usuario_id'], 'LOGIN', [], [
                 'ip' => $_SERVER['REMOTE_ADDR'] ?? 'UNKNOWN',
                 'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? 'UNKNOWN'
             ]);
             
             // Log de seguridad
-            \Security::logSecurityEvent('LOGIN_SUCCESS', "Usuario: {$user['username']}, Tenant: {$user['tenant_id']}");
+            \Security::logSecurityEvent('LOGIN_SUCCESS', "Usuario: {$user['usu_username']}, Tenant: {$user['usu_tenant_id']}");
+            
+            // Registrar login exitoso en seguridad_log_accesos
+            try {
+                $stmtLog = $this->db->prepare("
+                    INSERT INTO seguridad_log_accesos 
+                    (acc_usuario_id, acc_tenant_id, acc_tipo, acc_ip, acc_user_agent, acc_exito, acc_mensaje)
+                    VALUES (?, ?, 'LOGIN', ?, ?, 'S', ?)
+                ");
+                $stmtLog->execute([
+                    (int)$user['usu_usuario_id'],
+                    (int)$user['usu_tenant_id'],
+                    $_SERVER['REMOTE_ADDR'] ?? 'UNKNOWN',
+                    substr($_SERVER['HTTP_USER_AGENT'] ?? '', 0, 255),
+                    'Login exitoso'
+                ]);
+            } catch (\Exception $e) {
+                // Silenciar para no interrumpir flujo de login
+            }
             
             // Redirigir al Hub de aplicaciones
             $redirect = $_SESSION['redirect_after_login'] ?? url('core', 'hub', 'index');
@@ -511,10 +546,27 @@ class AuthController extends \BaseController {
     public function logout() {
         if (isAuthenticated()) {
             // Auditoría
-            $this->audit('usuarios', $this->userId, 'LOGOUT', [], []);
+            $this->audit('seguridad_usuarios', $this->userId, 'LOGOUT', [], []);
             
             // Log
             \Security::logSecurityEvent('LOGOUT', "Usuario: " . $_SESSION['username']);
+            
+            // Registrar logout en seguridad_log_accesos
+            try {
+                $stmtLog = $this->db->prepare("
+                    INSERT INTO seguridad_log_accesos 
+                    (acc_usuario_id, acc_tenant_id, acc_tipo, acc_ip, acc_user_agent, acc_exito, acc_mensaje)
+                    VALUES (?, ?, 'LOGOUT', ?, ?, 'S', 'Cierre de sesión')
+                ");
+                $stmtLog->execute([
+                    $this->userId,
+                    $_SESSION['tenant_id'] ?? null,
+                    $_SERVER['REMOTE_ADDR'] ?? 'UNKNOWN',
+                    substr($_SERVER['HTTP_USER_AGENT'] ?? '', 0, 255)
+                ]);
+            } catch (\Exception $e) {
+                // Silenciar
+            }
         }
         
         // Limpiar cookie de recordar

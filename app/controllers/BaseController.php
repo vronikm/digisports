@@ -402,9 +402,10 @@ abstract class BaseController {
     protected function audit($tabla, $registroId, $operacion, $valoresAnteriores = [], $valoresNuevos = []) {
         try {
             $stmt = $this->db->prepare("
-                INSERT INTO auditoria 
-                (tenant_id, usuario_id, modulo, tabla, registro_id, operacion, 
-                 valores_anteriores, valores_nuevos, ip, user_agent, url, metodo)
+                INSERT INTO seguridad_auditoria 
+                (aud_tenant_id, aud_usuario_id, aud_modulo, aud_tabla, aud_registro_id, 
+                 aud_operacion, aud_valores_anteriores, aud_valores_nuevos, 
+                 aud_ip, aud_user_agent, aud_url, aud_metodo)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ");
             

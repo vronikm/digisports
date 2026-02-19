@@ -315,12 +315,8 @@ abstract class ModuleController extends \BaseController {
         // Pasar contenido al layout
         $data['content'] = $content;
 
-        // LOG antes de incluir el layout
-        error_log('DEBUG: ModuleController - antes de include module.php, moduloCodigo=' . $this->moduloCodigo);
         extract($data);
         include BASE_PATH . '/app/views/layouts/module.php';
-        // LOG después de incluir el layout
-        error_log('DEBUG: ModuleController - después de include module.php, moduloCodigo=' . $this->moduloCodigo);
     }
     
     /**

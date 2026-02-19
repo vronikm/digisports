@@ -74,5 +74,81 @@ class AuditoriaController extends \App\Controllers\ModuleController {
         ]);
     }
 
+    /**
+     * Vista de administración de IPs bloqueadas e intentos fallidos
+     */
+    public function ipsBloqueadas() {
+        $blockedIPs = \Security::getBlockedIPs();
+        $failedAttempts = \Security::getFailedAttempts();
+        
+        $config = [
+            'max_login_attempts' => \Config::SECURITY['max_login_attempts'] ?? 5,
+            'brute_force_window' => \Config::SECURITY['brute_force_window'] ?? 900,
+            'ip_block_duration' => \Config::SECURITY['ip_block_duration'] ?? 3600,
+        ];
+        
+        $this->renderModule('seguridad/auditoria/ips_bloqueadas', [
+            'blockedIPs' => $blockedIPs,
+            'failedAttempts' => $failedAttempts,
+            'config' => $config,
+            'pageTitle' => 'IPs Bloqueadas'
+        ]);
+    }
+    
+    /**
+     * AJAX: Desbloquear una IP específica
+     */
+    public function desbloquearIp() {
+        header('Content-Type: application/json');
+        
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Método no permitido']);
+            return;
+        }
+        
+        $ip = $_POST['ip'] ?? '';
+        if (empty($ip)) {
+            echo json_encode(['success' => false, 'message' => 'IP no proporcionada']);
+            return;
+        }
+        
+        $result = \Security::unblockIP($ip);
+        
+        if ($result) {
+            // Registrar en auditoría
+            $this->audit('seguridad', 'blocked_ips', 0, 'DESBLOQUEO_IP', ['ip' => $ip], null);
+            echo json_encode(['success' => true, 'message' => "IP {$ip} desbloqueada exitosamente"]);
+        } else {
+            echo json_encode(['success' => false, 'message' => "La IP {$ip} no estaba bloqueada"]);
+        }
+    }
+    
+    /**
+     * AJAX: Limpiar intentos fallidos de una IP
+     */
+    public function limpiarIntentos() {
+        header('Content-Type: application/json');
+        
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Método no permitido']);
+            return;
+        }
+        
+        $ip = $_POST['ip'] ?? '';
+        if (empty($ip)) {
+            echo json_encode(['success' => false, 'message' => 'IP no proporcionada']);
+            return;
+        }
+        
+        $result = \Security::clearFailedAttempts($ip);
+        
+        if ($result) {
+            $this->audit('seguridad', 'failed_attempts', 0, 'LIMPIEZA_INTENTOS', ['ip' => $ip], null);
+            echo json_encode(['success' => true, 'message' => "Intentos de {$ip} limpiados"]);
+        } else {
+            echo json_encode(['success' => false, 'message' => "No había intentos para {$ip}"]);
+        }
+    }
+
 }
 

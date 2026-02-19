@@ -145,19 +145,34 @@ include __DIR__ . '/../partials/header.php';
                     <div class="card card-success">
                         <div class="card-header">
                             <h3 class="card-title"><i class="fas fa-crown mr-2"></i>Plan y Suscripción</h3>
+                            <div class="card-tools">
+                                <a href="<?= url('seguridad', 'plan', 'index') ?>" class="btn btn-tool" title="Administrar Planes">
+                                    <i class="fas fa-cog"></i>
+                                </a>
+                            </div>
                         </div>
                         <div class="card-body">
                             <div class="form-group">
                                 <label for="plan_id">Plan <span class="text-danger">*</span></label>
-                                <select class="form-control" id="plan_id" name="plan_id" required>
-                                    <option value="">-- Seleccionar --</option>
-                                    <?php foreach ($planes as $p): ?>
-                                    <option value="<?= $p['sus_plan_id'] ?>" <?= ($tenant['ten_plan_id'] ?? '') == $p['sus_plan_id'] ? 'selected' : '' ?> data-usuarios="<?= $p['sus_usuarios_incluidos'] ?? 0 ?>">
-                                        <?= htmlspecialchars($p['sus_nombre']) ?> - $
-                                        <?= isset($p['sus_precio_mensual']) ? number_format($p['sus_precio_mensual'], 2) : '0.00' ?>/mes
-                                    </option>
-                                    <?php endforeach; ?>
-                                </select>
+                                <div class="input-group">
+                                    <select class="form-control" id="plan_id" name="plan_id" required>
+                                        <option value="">-- Seleccionar --</option>
+                                        <?php foreach ($planes as $p): ?>
+                                        <option value="<?= $p['sus_plan_id'] ?>" <?= ($tenant['ten_plan_id'] ?? '') == $p['sus_plan_id'] ? 'selected' : '' ?> data-usuarios="<?= $p['sus_usuarios_incluidos'] ?? 0 ?>">
+                                            <?= htmlspecialchars($p['sus_nombre']) ?> - $
+                                            <?= isset($p['sus_precio_mensual']) ? number_format($p['sus_precio_mensual'], 2) : '0.00' ?>/mes
+                                        </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                    <div class="input-group-append">
+                                        <a href="<?= url('seguridad', 'plan', 'index') ?>" class="btn btn-outline-success" title="Administrar Planes">
+                                            <i class="fas fa-external-link-alt"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                                <small class="form-text text-muted">
+                                    <a href="<?= url('seguridad', 'plan', 'index') ?>">Administrar planes de suscripción</a>
+                                </small>
                             </div>
                             <div class="form-group">
                                 <label for="usuarios_permitidos">Usuarios Permitidos</label>

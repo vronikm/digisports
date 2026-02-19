@@ -45,7 +45,7 @@ $headerButtons  = [
 ];
 include __DIR__ . '/../partials/header.php';
 ?>
-        <form method="POST" action="<?= url('seguridad', 'plan', $esEdicion ? 'actualizar' : 'guardar') ?>">
+        <form method="POST" action="<?= url('seguridad', 'plan', $esEdicion ? 'actualizar' : 'crear') ?>">
             <?php if ($esEdicion): ?>
             <input type="hidden" name="plan_id" value="<?= $plan['sus_plan_id'] ?>">
             <?php endif; ?>
@@ -137,7 +137,11 @@ include __DIR__ . '/../partials/header.php';
                             <h3 class="card-title"><i class="fas fa-puzzle-piece mr-2"></i>Módulos Incluidos</h3>
                         </div>
                         <div class="card-body">
-                            <p class="text-muted mb-3">Seleccione los módulos que incluye este plan:</p>
+                            <div class="custom-control custom-switch mb-3">
+                                <input type="checkbox" class="custom-control-input" id="todos_modulos" name="todos_modulos" value="1">
+                                <label class="custom-control-label" for="todos_modulos">Todos los módulos</label>
+                                <small class="text-muted d-block">Marcar para incluir todos los módulos disponibles</small>
+                            </div>
                             
                             <div id="lista-modulos">
                                 <div class="row">
@@ -171,7 +175,14 @@ include __DIR__ . '/../partials/header.php';
                         <div class="card-body">
                             <div id="caracteristicas-container">
                                 <?php 
-                                $caracteristicas = is_string($plan['sus_caracteristicas'] ?? '') ? json_decode($plan['sus_caracteristicas'], true) : ($plan['sus_caracteristicas'] ?? []);
+                                $rawCaract = $plan['sus_caracteristicas'] ?? null;
+                                if (is_string($rawCaract) && $rawCaract !== '') {
+                                    $caracteristicas = json_decode($rawCaract, true) ?: [];
+                                } elseif (is_array($rawCaract)) {
+                                    $caracteristicas = $rawCaract;
+                                } else {
+                                    $caracteristicas = [];
+                                }
                                 if (empty($caracteristicas)) $caracteristicas = [''];
                                 foreach ($caracteristicas as $i => $c): 
                                 ?>
@@ -230,7 +241,7 @@ include __DIR__ . '/../partials/header.php';
                             <div class="form-group">
                                 <div class="custom-control custom-switch">
                                     <input type="checkbox" class="custom-control-input" id="es_destacado" name="es_destacado" value="1" <?= ($plan['sus_es_destacado'] ?? 'N') === 'S' ? 'checked' : '' ?>>
-                                    <label class="custom-control-label" for="destacado">Plan Destacado</label>
+                                    <label class="custom-control-label" for="es_destacado">Plan Destacado</label>
                                 </div>
                                 <small class="text-muted">Se mostrará con etiqueta "Popular"</small>
                             </div>
@@ -302,13 +313,81 @@ input[type="radio"]:checked + .color-selector .fa-check {
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // ─── Interceptar submit con SweetAlert2 + AJAX ───
+    const planForm = document.querySelector('form[method="POST"]');
+    if (planForm) {
+        planForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const esEdicion = <?= $esEdicion ? 'true' : 'false' ?>;
+            const accion = esEdicion ? 'actualizar' : 'crear';
+            
+            Swal.fire({
+                title: '¿' + (esEdicion ? 'Actualizar' : 'Crear') + ' plan?',
+                text: esEdicion ? 'Se guardarán los cambios realizados en el plan.' : 'Se creará un nuevo plan de suscripción.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: '<i class="fas fa-save"></i> Sí, ' + accion,
+                cancelButtonText: 'No, cancelar'
+            }).then(function(result) {
+                if (result.isConfirmed) {
+                    const formData = new FormData(planForm);
+                    const submitBtn = planForm.querySelector('button[type="submit"]');
+                    const btnOriginal = submitBtn.innerHTML;
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Guardando...';
+                    
+                    fetch(planForm.action, {
+                        method: 'POST',
+                        body: formData,
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    })
+                    .then(function(response) { return response.json(); })
+                    .then(function(data) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = btnOriginal;
+                        
+                        const Toast = Swal.mixin({
+                            toast: true,
+                            position: 'top-end',
+                            showConfirmButton: false,
+                            timer: 3000,
+                            timerProgressBar: true
+                        });
+                        
+                        Toast.fire({
+                            icon: data.success ? 'success' : 'error',
+                            title: data.message || (data.success ? 'Guardado correctamente' : 'Error al guardar')
+                        });
+                    })
+                    .catch(function(err) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = btnOriginal;
+                        
+                        const Toast = Swal.mixin({
+                            toast: true,
+                            position: 'top-end',
+                            showConfirmButton: false,
+                            timer: 4000,
+                            timerProgressBar: true
+                        });
+                        Toast.fire({ icon: 'error', title: 'Error de red o servidor' });
+                    });
+                }
+            });
+        });
+    }
+    
     // Toggle módulos
     const todosModulos = document.getElementById('todos_modulos');
     const listaModulos = document.getElementById('lista-modulos');
     
-    todosModulos.addEventListener('change', function() {
-        listaModulos.style.display = this.checked ? 'none' : 'block';
-    });
+    if (todosModulos && listaModulos) {
+        todosModulos.addEventListener('change', function() {
+            listaModulos.style.display = this.checked ? 'none' : 'block';
+        });
+    }
     
     // Vista previa en tiempo real
     const nombre = document.getElementById('nombre');

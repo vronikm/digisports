@@ -57,7 +57,6 @@ $coreTables = [
     'seguridad_tenant_modulos',
     'seguridad_log_accesos',
     'seguridad_auditoria',
-    'seguridad_auditoria_logs',
     'seguridad_menu',
     'seguridad_notificaciones_log',
 ];

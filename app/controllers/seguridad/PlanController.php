@@ -112,17 +112,39 @@ class PlanController extends \App\Controllers\ModuleController {
     }
     
     /**
-     * Guardar plan
+     * Actualizar plan (endpoint público para el form de edición)
+     */
+    public function actualizar() {
+        $id = $_POST['plan_id'] ?? $_GET['id'] ?? 0;
+        $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
+        
+        if (!$id) {
+            if ($isAjax) {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => false, 'message' => 'ID de plan no proporcionado']);
+                return;
+            }
+            setFlashMessage('error', 'ID de plan no proporcionado');
+            redirect('seguridad', 'plan', 'index');
+            return;
+        }
+        $this->guardar($id);
+    }
+
+    /**
+     * Guardar plan (soporta AJAX y redirect tradicional)
      */
     private function guardar($id = null) {
+        $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
+        
         $modulosIncluidos = isset($_POST['modulos']) ? $_POST['modulos'] : [];
         $caracteristicas = isset($_POST['caracteristicas']) ? array_filter($_POST['caracteristicas']) : [];
         
         $data = [
-            'sus_codigo' => strtoupper($_POST['codigo']),
-            'sus_nombre' => $_POST['nombre'],
+            'sus_codigo' => strtoupper($_POST['codigo'] ?? ''),
+            'sus_nombre' => $_POST['nombre'] ?? '',
             'sus_descripcion' => $_POST['descripcion'] ?? null,
-            'sus_precio_mensual' => $_POST['precio_mensual'],
+            'sus_precio_mensual' => $_POST['precio_mensual'] ?? 0,
             'sus_precio_anual' => $_POST['precio_anual'] ?? null,
             'sus_descuento_anual' => $_POST['descuento_anual'] ?? 0,
             'sus_usuarios_incluidos' => $_POST['usuarios_incluidos'] ?? 5,
@@ -150,7 +172,7 @@ class PlanController extends \App\Controllers\ModuleController {
                 
                 $stmt = $this->db->prepare($sql);
                 $stmt->execute($params);
-                setFlashMessage('success', 'Plan actualizado correctamente');
+                $msg = 'Plan actualizado correctamente';
             } else {
                 $sql = "INSERT INTO seguridad_planes_suscripcion (sus_codigo, sus_nombre, sus_descripcion, sus_precio_mensual, sus_precio_anual, sus_descuento_anual, sus_usuarios_incluidos, sus_sedes_incluidas, sus_almacenamiento_gb, sus_modulos_incluidos, sus_caracteristicas, sus_es_destacado, sus_es_personalizado, sus_color, sus_orden_visualizacion, sus_estado)
                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -158,13 +180,28 @@ class PlanController extends \App\Controllers\ModuleController {
                 
                 $stmt = $this->db->prepare($sql);
                 $stmt->execute($params);
-                setFlashMessage('success', 'Plan creado correctamente');
+                $msg = 'Plan creado correctamente';
             }
             
+            if ($isAjax) {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => true, 'message' => $msg]);
+                return;
+            }
+            
+            setFlashMessage('success', $msg);
             redirect('seguridad', 'plan', 'index');
             
         } catch (\Exception $e) {
-            setFlashMessage('error', 'Error al guardar: ' . $e->getMessage());
+            $errorMsg = 'Error al guardar: ' . $e->getMessage();
+            
+            if ($isAjax) {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => false, 'message' => $errorMsg]);
+                return;
+            }
+            
+            setFlashMessage('error', $errorMsg);
             redirect('seguridad', 'plan', $id ? 'editar&id=' . $id : 'crear');
         }
     }

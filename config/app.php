@@ -94,7 +94,9 @@ class Config {
             'expiration_days' => 90
         ],
         'max_login_attempts' => 5,
-        'lockout_duration' => 900, // 15 minutos
+        'lockout_duration' => 900, // 15 minutos en segundos
+        'brute_force_window' => 900, // Ventana de tiempo para contar intentos (15 min)
+        'ip_block_duration' => 3600, // Duración del bloqueo de IP (1 hora)
         'token_expiration' => 600 // 10 minutos
     ];
     
