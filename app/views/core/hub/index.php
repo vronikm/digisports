@@ -10,6 +10,8 @@ $modulos = $modulos ?? [];
 $modulosOrganizados = $modulos_organizados ?? [];
 $usuario = $usuario ?? 'Usuario';
 $tenantNombre = $tenant_nombre ?? 'DigiSports';
+$userEmail = $user_email ?? '';
+$userAvatar = $user_avatar ?? null;
 $title = $title ?? 'DigiSports Hub';
 ?>
 <!DOCTYPE html>
@@ -316,6 +318,273 @@ $title = $title ?? 'DigiSports Hub';
             background: rgba(16, 185, 129, 0.9);
             color: white;
         }
+        
+        /* ── Dropdown de usuario ── */
+        .hub-user-menu-wrapper {
+            position: relative;
+        }
+        
+        .hub-dropdown {
+            display: none;
+            position: absolute;
+            top: 55px;
+            right: 0;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.25);
+            min-width: 260px;
+            z-index: 1000;
+            overflow: hidden;
+            animation: dropdownFadeIn 0.2s ease;
+        }
+        
+        .hub-dropdown.show {
+            display: block;
+        }
+        
+        @keyframes dropdownFadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .hub-dropdown-header {
+            padding: 16px 20px;
+            background: linear-gradient(135deg, #1e40af, #3b82f6);
+            color: white;
+        }
+        
+        .hub-dropdown-header strong {
+            display: block;
+            font-size: 0.95rem;
+        }
+        
+        .hub-dropdown-header small {
+            opacity: 0.85;
+            font-size: 0.8rem;
+        }
+        
+        .hub-dropdown-divider {
+            height: 1px;
+            background: #e5e7eb;
+        }
+        
+        .hub-dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 20px;
+            color: #374151;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: background 0.15s;
+            cursor: pointer;
+        }
+        
+        .hub-dropdown-item:hover {
+            background: #f3f4f6;
+        }
+        
+        .hub-dropdown-item i {
+            width: 18px;
+            text-align: center;
+            color: #6b7280;
+        }
+        
+        .hub-dropdown-danger {
+            color: #dc2626;
+        }
+        
+        .hub-dropdown-danger i {
+            color: #dc2626;
+        }
+        
+        .hub-dropdown-danger:hover {
+            background: #fef2f2;
+        }
+        
+        /* ── Modales ── */
+        .hub-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(4px);
+        }
+        
+        .hub-modal-overlay.show {
+            display: flex;
+        }
+        
+        .hub-modal {
+            background: white;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: modalSlideIn 0.3s ease;
+            overflow: hidden;
+        }
+        
+        @keyframes modalSlideIn {
+            from { opacity: 0; transform: translateY(-30px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        
+        .hub-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 24px;
+            background: linear-gradient(135deg, #1e40af, #3b82f6);
+            color: white;
+        }
+        
+        .hub-modal-header h3 {
+            margin: 0;
+            font-size: 1.15rem;
+            font-weight: 600;
+        }
+        
+        .hub-modal-close {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+        
+        .hub-modal-close:hover {
+            background: rgba(255,255,255,0.35);
+        }
+        
+        .hub-modal-body {
+            padding: 24px;
+        }
+        
+        .hub-form-group {
+            margin-bottom: 18px;
+        }
+        
+        .hub-form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 6px;
+        }
+        
+        .hub-form-group input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-family: 'Poppins', sans-serif;
+            transition: border-color 0.2s;
+        }
+        
+        .hub-form-group input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+        }
+        
+        .hub-form-group .field-hint {
+            font-size: 0.75rem;
+            color: #9ca3af;
+            margin-top: 4px;
+        }
+        
+        .hub-modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            padding: 16px 24px;
+            border-top: 1px solid #e5e7eb;
+            background: #f9fafb;
+        }
+        
+        .hub-btn {
+            padding: 10px 22px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.2s;
+        }
+        
+        .hub-btn-cancel {
+            background: #e5e7eb;
+            color: #374151;
+        }
+        
+        .hub-btn-cancel:hover {
+            background: #d1d5db;
+        }
+        
+        .hub-btn-primary {
+            background: linear-gradient(135deg, #1e40af, #3b82f6);
+            color: white;
+        }
+        
+        .hub-btn-primary:hover {
+            box-shadow: 0 4px 15px rgba(59,130,246,0.4);
+            transform: translateY(-1px);
+        }
+        
+        .hub-btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .hub-form-msg {
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            margin-bottom: 15px;
+            display: none;
+        }
+        
+        .hub-form-msg.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+        
+        .hub-form-msg.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+        
+        .password-strength {
+            height: 4px;
+            border-radius: 2px;
+            background: #e5e7eb;
+            margin-top: 6px;
+            overflow: hidden;
+        }
+        
+        .password-strength-bar {
+            height: 100%;
+            width: 0;
+            border-radius: 2px;
+            transition: width 0.3s, background 0.3s;
+        }
     </style>
 </head>
 <body>
@@ -337,13 +606,29 @@ $title = $title ?? 'DigiSports Hub';
                     <div class="name"><?= htmlspecialchars($usuario) ?></div>
                     <div class="tenant"><?= htmlspecialchars($tenantNombre) ?></div>
                 </div>
-                <div class="hub-user-avatar" title="Mi perfil">
-                    <i class="fas fa-user"></i>
+                <div class="hub-user-menu-wrapper" style="position:relative;">
+                    <div class="hub-user-avatar" title="Mi perfil" onclick="toggleUserMenu(event)">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <!-- Dropdown -->
+                    <div class="hub-dropdown" id="hubUserDropdown">
+                        <div class="hub-dropdown-header">
+                            <strong><?= htmlspecialchars($usuario) ?></strong>
+                            <small><?= htmlspecialchars($userEmail) ?></small>
+                        </div>
+                        <div class="hub-dropdown-divider"></div>
+                        <a href="#" class="hub-dropdown-item" onclick="abrirModalPerfil(); return false;">
+                            <i class="fas fa-user-edit"></i> Actualizar Perfil
+                        </a>
+                        <a href="#" class="hub-dropdown-item" onclick="abrirModalClave(); return false;">
+                            <i class="fas fa-key"></i> Cambiar Contraseña
+                        </a>
+                        <div class="hub-dropdown-divider"></div>
+                        <a href="<?= url('core', 'auth', 'logout') ?>" class="hub-dropdown-item hub-dropdown-danger">
+                            <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                        </a>
+                    </div>
                 </div>
-                <a href="<?= url('core', 'auth', 'logout') ?>" class="btn-logout">
-                    <i class="fas fa-sign-out-alt"></i>
-                    Salir
-                </a>
             </div>
         </header>
         
@@ -405,9 +690,85 @@ $title = $title ?? 'DigiSports Hub';
         </footer>
     </div>
     
+    <!-- Modal: Actualizar Perfil -->
+    <div class="hub-modal-overlay" id="modalPerfil">
+        <div class="hub-modal">
+            <div class="hub-modal-header">
+                <h3><i class="fas fa-user-edit"></i> Actualizar Perfil</h3>
+                <button class="hub-modal-close" onclick="cerrarModal('modalPerfil')">&times;</button>
+            </div>
+            <div class="hub-modal-body">
+                <div class="hub-form-msg" id="perfilMsg"></div>
+                <form id="formPerfil" onsubmit="guardarPerfil(event)">
+                    <div class="hub-form-group">
+                        <label for="perfNombres"><i class="fas fa-user"></i> Nombres</label>
+                        <input type="text" id="perfNombres" name="nombres" value="<?= htmlspecialchars($_SESSION['nombres'] ?? '') ?>" required>
+                    </div>
+                    <div class="hub-form-group">
+                        <label for="perfApellidos"><i class="fas fa-user"></i> Apellidos</label>
+                        <input type="text" id="perfApellidos" name="apellidos" value="<?= htmlspecialchars($_SESSION['apellidos'] ?? '') ?>" required>
+                    </div>
+                    <div class="hub-form-group">
+                        <label for="perfEmail"><i class="fas fa-envelope"></i> Email</label>
+                        <input type="email" id="perfEmail" name="email" value="<?= htmlspecialchars($_SESSION['email'] ?? '') ?>" required>
+                    </div>
+                    <div class="hub-form-group">
+                        <label for="perfTelefono"><i class="fas fa-phone"></i> Teléfono</label>
+                        <input type="text" id="perfTelefono" name="telefono" value="<?= htmlspecialchars($_SESSION['telefono'] ?? '') ?>">
+                    </div>
+                    <div class="hub-form-group">
+                        <label for="perfCelular"><i class="fas fa-mobile-alt"></i> Celular</label>
+                        <input type="text" id="perfCelular" name="celular" value="<?= htmlspecialchars($_SESSION['celular'] ?? '') ?>">
+                    </div>
+                    <div class="hub-modal-footer">
+                        <button type="button" class="hub-btn hub-btn-cancel" onclick="cerrarModal('modalPerfil')">Cancelar</button>
+                        <button type="submit" class="hub-btn hub-btn-primary" id="btnGuardarPerfil">
+                            <i class="fas fa-save"></i> Guardar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal: Cambiar Contraseña -->
+    <div class="hub-modal-overlay" id="modalClave">
+        <div class="hub-modal">
+            <div class="hub-modal-header">
+                <h3><i class="fas fa-key"></i> Cambiar Contraseña</h3>
+                <button class="hub-modal-close" onclick="cerrarModal('modalClave')">&times;</button>
+            </div>
+            <div class="hub-modal-body">
+                <div class="hub-form-msg" id="claveMsg"></div>
+                <form id="formClave" onsubmit="guardarClave(event)">
+                    <div class="hub-form-group">
+                        <label for="claveActual"><i class="fas fa-lock"></i> Contraseña Actual</label>
+                        <input type="password" id="claveActual" name="password_actual" required autocomplete="current-password">
+                    </div>
+                    <div class="hub-form-group">
+                        <label for="claveNueva"><i class="fas fa-lock-open"></i> Nueva Contraseña</label>
+                        <input type="password" id="claveNueva" name="password_nueva" required autocomplete="new-password"
+                               oninput="evaluarFortaleza(this.value)">
+                        <div class="password-strength"><div class="password-strength-bar" id="strengthBar"></div></div>
+                        <div class="field-hint">Mínimo 8 caracteres, incluya mayúsculas, números y símbolos</div>
+                    </div>
+                    <div class="hub-form-group">
+                        <label for="claveConfirmar"><i class="fas fa-check-double"></i> Confirmar Nueva Contraseña</label>
+                        <input type="password" id="claveConfirmar" name="password_confirmar" required autocomplete="new-password">
+                    </div>
+                    <div class="hub-modal-footer">
+                        <button type="button" class="hub-btn hub-btn-cancel" onclick="cerrarModal('modalClave')">Cancelar</button>
+                        <button type="submit" class="hub-btn hub-btn-primary" id="btnGuardarClave">
+                            <i class="fas fa-save"></i> Cambiar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
     <script>
         function accederModulo(element) {
-            // Obtener la URL encriptada del atributo data
             const url = element.getAttribute('data-url');
             if (url) {
                 window.location.href = url;
@@ -423,6 +784,164 @@ $title = $title ?? 'DigiSports Hub';
                 this.style.transform = '';
             });
         });
+        
+        /* ── Dropdown de usuario ── */
+        function toggleUserMenu(e) {
+            e.stopPropagation();
+            document.getElementById('hubUserDropdown').classList.toggle('show');
+        }
+        
+        document.addEventListener('click', function(e) {
+            const dd = document.getElementById('hubUserDropdown');
+            if (dd && !dd.contains(e.target) && !e.target.closest('.hub-user-avatar')) {
+                dd.classList.remove('show');
+            }
+        });
+        
+        /* ── Modales ── */
+        function abrirModalPerfil() {
+            document.getElementById('hubUserDropdown').classList.remove('show');
+            document.getElementById('modalPerfil').classList.add('show');
+            resetMsg('perfilMsg');
+        }
+        
+        function abrirModalClave() {
+            document.getElementById('hubUserDropdown').classList.remove('show');
+            document.getElementById('modalClave').classList.add('show');
+            document.getElementById('formClave').reset();
+            resetMsg('claveMsg');
+            document.getElementById('strengthBar').style.width = '0';
+        }
+        
+        function cerrarModal(id) {
+            document.getElementById(id).classList.remove('show');
+        }
+        
+        // Cerrar modal con Escape o clic fuera
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.hub-modal-overlay.show').forEach(m => m.classList.remove('show'));
+            }
+        });
+        
+        document.querySelectorAll('.hub-modal-overlay').forEach(ov => {
+            ov.addEventListener('click', function(e) {
+                if (e.target === this) this.classList.remove('show');
+            });
+        });
+        
+        function showMsg(id, msg, type) {
+            const el = document.getElementById(id);
+            el.textContent = msg;
+            el.className = 'hub-form-msg ' + type;
+            el.style.display = 'block';
+        }
+        
+        function resetMsg(id) {
+            const el = document.getElementById(id);
+            el.style.display = 'none';
+            el.className = 'hub-form-msg';
+        }
+        
+        /* ── Guardar perfil ── */
+        function guardarPerfil(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnGuardarPerfil');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+            resetMsg('perfilMsg');
+            
+            const data = new FormData(document.getElementById('formPerfil'));
+            
+            fetch('<?= url('core', 'hub', 'actualizarPerfil') ?>', {
+                method: 'POST',
+                body: data
+            })
+            .then(r => r.json())
+            .then(res => {
+                if (res.success) {
+                    showMsg('perfilMsg', res.message || 'Perfil actualizado correctamente', 'success');
+                    // Actualizar nombre en la UI
+                    const nuevoNombre = data.get('nombres') + ' ' + data.get('apellidos');
+                    document.querySelectorAll('.hub-user-info .name').forEach(el => el.textContent = nuevoNombre);
+                    document.querySelector('.hub-dropdown-header strong').textContent = nuevoNombre;
+                    document.querySelector('.hub-dropdown-header small').textContent = data.get('email');
+                    setTimeout(() => cerrarModal('modalPerfil'), 1500);
+                } else {
+                    showMsg('perfilMsg', res.message || 'Error al actualizar', 'error');
+                }
+            })
+            .catch(() => showMsg('perfilMsg', 'Error de conexión', 'error'))
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-save"></i> Guardar';
+            });
+        }
+        
+        /* ── Cambiar contraseña ── */
+        function guardarClave(e) {
+            e.preventDefault();
+            const nueva = document.getElementById('claveNueva').value;
+            const confirmar = document.getElementById('claveConfirmar').value;
+            
+            if (nueva !== confirmar) {
+                showMsg('claveMsg', 'Las contraseñas no coinciden', 'error');
+                return;
+            }
+            
+            if (nueva.length < 8) {
+                showMsg('claveMsg', 'La contraseña debe tener al menos 8 caracteres', 'error');
+                return;
+            }
+            
+            const btn = document.getElementById('btnGuardarClave');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cambiando...';
+            resetMsg('claveMsg');
+            
+            const data = new FormData(document.getElementById('formClave'));
+            
+            fetch('<?= url('core', 'hub', 'cambiarClave') ?>', {
+                method: 'POST',
+                body: data
+            })
+            .then(r => r.json())
+            .then(res => {
+                if (res.success) {
+                    showMsg('claveMsg', res.message || 'Contraseña cambiada correctamente', 'success');
+                    document.getElementById('formClave').reset();
+                    document.getElementById('strengthBar').style.width = '0';
+                    setTimeout(() => cerrarModal('modalClave'), 1500);
+                } else {
+                    showMsg('claveMsg', res.message || 'Error al cambiar contraseña', 'error');
+                }
+            })
+            .catch(() => showMsg('claveMsg', 'Error de conexión', 'error'))
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-save"></i> Cambiar';
+            });
+        }
+        
+        /* ── Indicador de fortaleza ── */
+        function evaluarFortaleza(pwd) {
+            let score = 0;
+            if (pwd.length >= 8) score++;
+            if (pwd.length >= 12) score++;
+            if (/[A-Z]/.test(pwd)) score++;
+            if (/[0-9]/.test(pwd)) score++;
+            if (/[^A-Za-z0-9]/.test(pwd)) score++;
+            
+            const bar = document.getElementById('strengthBar');
+            const pct = (score / 5) * 100;
+            bar.style.width = pct + '%';
+            
+            if (score <= 1) bar.style.background = '#ef4444';
+            else if (score <= 2) bar.style.background = '#f97316';
+            else if (score <= 3) bar.style.background = '#eab308';
+            else if (score <= 4) bar.style.background = '#22c55e';
+            else bar.style.background = '#10b981';
+        }
     </script>
 </body>
 </html>

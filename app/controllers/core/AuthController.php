@@ -399,11 +399,23 @@ class AuthController extends \BaseController {
             $_SESSION['nombres'] = $user['usu_nombres'];
             $_SESSION['apellidos'] = $user['usu_apellidos'];
             $_SESSION['email'] = $user['usu_email'];
+            $_SESSION['telefono'] = $user['usu_telefono'] ?? '';
+            $_SESSION['celular'] = $user['usu_celular'] ?? '';
             $_SESSION['role'] = $user['rol_codigo'];
             $_SESSION['permissions'] = $permisos;
             $_SESSION['modules'] = $modulos;
             $_SESSION['avatar'] = $user['usu_avatar'] ?? null;
             $_SESSION['nivel_acceso'] = $user['rol_nivel_acceso'] ?? 1;
+
+            // Nombre del tenant
+            try {
+                $stmtTenant = $this->db->prepare("SELECT ten_nombre_comercial FROM seguridad_tenants WHERE ten_tenant_id = ?");
+                $stmtTenant->execute([(int)$user['usu_tenant_id']]);
+                $tenantRow = $stmtTenant->fetch(\PDO::FETCH_ASSOC);
+                $_SESSION['tenant_nombre'] = $tenantRow['ten_nombre_comercial'] ?? 'DigiSports';
+            } catch (\Exception $e) {
+                $_SESSION['tenant_nombre'] = 'DigiSports';
+            }
             $_SESSION['created_at'] = time();
             $_SESSION['LAST_ACTIVITY'] = time();
             

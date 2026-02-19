@@ -17,14 +17,14 @@ class HubController extends \BaseController {
      * Vista principal del Hub - Selección de módulos
      */
     public function index() {
-        $rolId = $_SESSION['usu_rol_id'] ?? null;
+        $rolId = $_SESSION['rol_id'] ?? null;
         if ($rolId === 1 || $rolId === '1') {
             // Super admin: acceso a todos los módulos activos
             $stmt = $this->db->query("SELECT mod_id, mod_codigo, mod_nombre, mod_descripcion, mod_icono, mod_color_fondo, mod_orden, mod_ruta_modulo, mod_ruta_controller, mod_ruta_action, mod_es_externo, mod_url_externa, mod_activo FROM seguridad_modulos WHERE mod_activo = 1 ORDER BY mod_orden ASC");
             $modulosRaw = $stmt->fetchAll(\PDO::FETCH_ASSOC);
         } else {
             // Resto de usuarios: lógica de permisos (puedes mejorar aquí si tienes reglas más complejas)
-            $tenantId = $_SESSION['usu_tenant_id'] ?? 1;
+            $tenantId = $_SESSION['tenant_id'] ?? 1;
             $modulosRaw = $this->obtenerModulosAccesibles($tenantId, $rolId);
         }
         // Mapear campos a los esperados por la vista
@@ -45,8 +45,14 @@ class HubController extends \BaseController {
         }, $modulosRaw);
         $this->viewData['modulos'] = $modulos;
         $this->viewData['modulos_organizados'] = array_chunk($modulos, 4);
-        $this->viewData['usuario'] = $_SESSION['usu_nombres'] ?? 'Usuario';
+        // Construir nombre completo del usuario
+        $nombres = $_SESSION['nombres'] ?? '';
+        $apellidos = $_SESSION['apellidos'] ?? '';
+        $nombreCompleto = trim($nombres . ' ' . $apellidos);
+        $this->viewData['usuario'] = $nombreCompleto ?: ($_SESSION['username'] ?? 'Usuario');
         $this->viewData['tenant_nombre'] = $_SESSION['tenant_nombre'] ?? 'DigiSports';
+        $this->viewData['user_email'] = $_SESSION['email'] ?? '';
+        $this->viewData['user_avatar'] = $_SESSION['avatar'] ?? null;
         $this->viewData['title'] = 'DigiSports - Selecciona tu módulo';
         $this->renderHub('core/hub/index', $this->viewData);
     }
@@ -286,5 +292,175 @@ class HubController extends \BaseController {
         unset($_SESSION['modulo_activo']);
         
         redirect('core', 'hub', 'index');
+    }
+    
+    /**
+     * Actualizar perfil del usuario (AJAX)
+     */
+    public function actualizarPerfil() {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->renderJson(['success' => false, 'message' => 'Método no permitido'], 405);
+            return;
+        }
+        
+        $userId = $_SESSION['user_id'] ?? null;
+        if (!$userId) {
+            $this->renderJson(['success' => false, 'message' => 'Sesión no válida'], 401);
+            return;
+        }
+        
+        $nombres   = trim($_POST['nombres'] ?? '');
+        $apellidos = trim($_POST['apellidos'] ?? '');
+        $email     = trim($_POST['email'] ?? '');
+        $telefono  = trim($_POST['telefono'] ?? '');
+        $celular   = trim($_POST['celular'] ?? '');
+        
+        // Validaciones
+        if (empty($nombres) || empty($apellidos)) {
+            $this->renderJson(['success' => false, 'message' => 'Nombres y apellidos son obligatorios']);
+            return;
+        }
+        
+        if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $this->renderJson(['success' => false, 'message' => 'Ingrese un email válido']);
+            return;
+        }
+        
+        try {
+            // Verificar que el email no esté en uso por otro usuario
+            $emailHash = \DataProtection::blindIndex($email);
+            $stmt = $this->db->prepare("
+                SELECT usu_usuario_id FROM seguridad_usuarios 
+                WHERE usu_email_hash = ? AND usu_usuario_id != ?
+            ");
+            $stmt->execute([$emailHash, $userId]);
+            if ($stmt->fetch()) {
+                $this->renderJson(['success' => false, 'message' => 'El email ya está registrado por otro usuario']);
+                return;
+            }
+            
+            // Cifrar campos PII
+            $emailEnc    = \DataProtection::encrypt($email);
+            $telefonoEnc = !empty($telefono) ? \DataProtection::encrypt($telefono) : '';
+            $celularEnc  = !empty($celular) ? \DataProtection::encrypt($celular) : '';
+            
+            $stmt = $this->db->prepare("
+                UPDATE seguridad_usuarios SET
+                    usu_nombres    = ?,
+                    usu_apellidos  = ?,
+                    usu_email      = ?,
+                    usu_email_hash = ?,
+                    usu_telefono   = ?,
+                    usu_celular    = ?,
+                    usu_fecha_actualizacion = NOW()
+                WHERE usu_usuario_id = ?
+            ");
+            $stmt->execute([
+                $nombres,
+                $apellidos,
+                $emailEnc,
+                $emailHash,
+                $telefonoEnc,
+                $celularEnc,
+                $userId
+            ]);
+            
+            // Actualizar sesión
+            $_SESSION['nombres']   = $nombres;
+            $_SESSION['apellidos'] = $apellidos;
+            $_SESSION['email']     = $email;
+            $_SESSION['telefono']  = $telefono;
+            $_SESSION['celular']   = $celular;
+            
+            $this->renderJson(['success' => true, 'message' => 'Perfil actualizado correctamente']);
+            
+        } catch (\Exception $e) {
+            error_log("Error al actualizar perfil: " . $e->getMessage());
+            $this->renderJson(['success' => false, 'message' => 'Error interno al actualizar el perfil']);
+        }
+    }
+    
+    /**
+     * Cambiar contraseña del usuario (AJAX)
+     */
+    public function cambiarClave() {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->renderJson(['success' => false, 'message' => 'Método no permitido'], 405);
+            return;
+        }
+        
+        $userId = $_SESSION['user_id'] ?? null;
+        if (!$userId) {
+            $this->renderJson(['success' => false, 'message' => 'Sesión no válida'], 401);
+            return;
+        }
+        
+        $actual    = $_POST['password_actual'] ?? '';
+        $nueva     = $_POST['password_nueva'] ?? '';
+        $confirmar = $_POST['password_confirmar'] ?? '';
+        
+        // Validaciones
+        if (empty($actual) || empty($nueva) || empty($confirmar)) {
+            $this->renderJson(['success' => false, 'message' => 'Todos los campos son obligatorios']);
+            return;
+        }
+        
+        if ($nueva !== $confirmar) {
+            $this->renderJson(['success' => false, 'message' => 'Las contraseñas no coinciden']);
+            return;
+        }
+        
+        if (strlen($nueva) < 8) {
+            $this->renderJson(['success' => false, 'message' => 'La contraseña debe tener al menos 8 caracteres']);
+            return;
+        }
+        
+        // Verificar complejidad: mayúscula, número y símbolo
+        if (!preg_match('/[A-Z]/', $nueva) || !preg_match('/[0-9]/', $nueva) || !preg_match('/[^A-Za-z0-9]/', $nueva)) {
+            $this->renderJson(['success' => false, 'message' => 'La contraseña debe incluir al menos una mayúscula, un número y un símbolo']);
+            return;
+        }
+        
+        try {
+            // Obtener contraseña actual
+            $stmt = $this->db->prepare("SELECT usu_password FROM seguridad_usuarios WHERE usu_usuario_id = ?");
+            $stmt->execute([$userId]);
+            $user = $stmt->fetch(\PDO::FETCH_ASSOC);
+            
+            if (!$user) {
+                $this->renderJson(['success' => false, 'message' => 'Usuario no encontrado']);
+                return;
+            }
+            
+            // Verificar contraseña actual
+            if (!\Security::verifyPassword($actual, $user['usu_password'])) {
+                $this->renderJson(['success' => false, 'message' => 'La contraseña actual es incorrecta']);
+                return;
+            }
+            
+            // No permitir reutilizar la misma contraseña
+            if (\Security::verifyPassword($nueva, $user['usu_password'])) {
+                $this->renderJson(['success' => false, 'message' => 'La nueva contraseña no puede ser igual a la actual']);
+                return;
+            }
+            
+            // Hashear nueva contraseña
+            $hash = \Security::hashPassword($nueva);
+            
+            $stmt = $this->db->prepare("
+                UPDATE seguridad_usuarios SET
+                    usu_password = ?,
+                    usu_debe_cambiar_password = 'N',
+                    usu_fecha_actualizacion = NOW()
+                WHERE usu_usuario_id = ?
+            ");
+            $stmt->execute([$hash, $userId]);
+            
+            $this->renderJson(['success' => true, 'message' => 'Contraseña cambiada correctamente']);
+            
+        } catch (\Exception $e) {
+            error_log("Error al cambiar contraseña: " . $e->getMessage());
+            $this->renderJson(['success' => false, 'message' => 'Error interno al cambiar la contraseña']);
+        }
     }
 }
