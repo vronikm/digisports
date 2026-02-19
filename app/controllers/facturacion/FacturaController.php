@@ -119,14 +119,30 @@ class FacturaController extends \BaseController {
             }
             
             // Obtener líneas de reserva
-            $stmt = $this->db->prepare("
-                SELECT rl.*, t.hora_inicio, t.hora_fin
-                FROM reservas_lineas rl
-                INNER JOIN tarifas t ON rl.tarifa_id = t.tarifa_id
-                WHERE rl.reserva_id = ?
-            ");
-            $stmt->execute([$reserva_id]);
-            $lineas = $stmt->fetchAll();
+            $lineas = [];
+            try {
+                $stmt = $this->db->prepare("
+                    SELECT rl.*, t.hora_inicio, t.hora_fin
+                    FROM reservas_lineas rl
+                    INNER JOIN tarifas t ON rl.tarifa_id = t.tarifa_id
+                    WHERE rl.reserva_id = ?
+                ");
+                $stmt->execute([$reserva_id]);
+                $lineas = $stmt->fetchAll();
+            } catch (\Exception $e) {
+                // Tabla puede no existir aún
+            }
+            
+            // Si no hay líneas, generar una desde la reserva
+            if (empty($lineas)) {
+                $lineas = [[
+                    'hora_inicio' => $reserva['hora_inicio'] ?? '',
+                    'hora_fin'    => $reserva['hora_fin'] ?? '',
+                    'precio_unitario' => $reserva['precio_base'] ?? $reserva['precio_total'] ?? 0,
+                    'cantidad'    => 1,
+                    'precio_total' => $reserva['precio_total'] ?? 0
+                ]];
+            }
             
             // Obtener configuración fiscal
             $stmt = $this->db->prepare("
@@ -246,11 +262,25 @@ class FacturaController extends \BaseController {
             $factura_id = $this->db->lastInsertId();
             
             // Crear líneas de factura desde líneas de reserva
-            $stmt = $this->db->prepare("
-                SELECT * FROM reservas_lineas WHERE reserva_id = ?
-            ");
-            $stmt->execute([$reserva_id]);
-            $lineas_reserva = $stmt->fetchAll();
+            $lineas_reserva = [];
+            try {
+                $stmt = $this->db->prepare("
+                    SELECT * FROM reservas_lineas WHERE reserva_id = ?
+                ");
+                $stmt->execute([$reserva_id]);
+                $lineas_reserva = $stmt->fetchAll();
+            } catch (\Exception $e) {
+                // Tabla puede no existir
+            }
+            
+            // Si no hay líneas, crear una virtual
+            if (empty($lineas_reserva)) {
+                $lineas_reserva = [[
+                    'cantidad' => 1,
+                    'precio_unitario' => $reserva['precio_base'] ?? $reserva['precio_total'] ?? 0,
+                    'precio_total' => $reserva['precio_total'] ?? 0
+                ]];
+            }
             
             foreach ($lineas_reserva as $linea) {
                 $stmt = $this->db->prepare("
@@ -562,13 +592,29 @@ class FacturaController extends \BaseController {
             }
             
             // Obtener líneas
-            $stmt = $this->db->prepare("
-                SELECT rl.*, t.nombre as descripcion FROM reservas_lineas rl
-                LEFT JOIN tarifas t ON rl.tarifa_id = t.tarifa_id
-                WHERE rl.reserva_id = ?
-            ");
-            $stmt->execute([$reserva_id]);
-            $lineas = $stmt->fetchAll();
+            $lineas = [];
+            try {
+                $stmt = $this->db->prepare("
+                    SELECT rl.*, t.nombre as descripcion FROM reservas_lineas rl
+                    LEFT JOIN tarifas t ON rl.tarifa_id = t.tarifa_id
+                    WHERE rl.reserva_id = ?
+                ");
+                $stmt->execute([$reserva_id]);
+                $lineas = $stmt->fetchAll();
+            } catch (\Exception $e) {
+                // Tabla puede no existir
+            }
+            
+            if (empty($lineas)) {
+                $lineas = [[
+                    'descripcion' => 'Reserva de cancha',
+                    'cantidad' => 1,
+                    'precio_unitario' => $reserva['precio_base'] ?? $reserva['precio_total'] ?? 0,
+                    'precio_total' => $reserva['precio_total'] ?? 0,
+                    'hora_inicio' => $reserva['hora_inicio'] ?? '',
+                    'hora_fin' => $reserva['hora_fin'] ?? ''
+                ]];
+            }
             
             $this->success([
                 'reserva' => $reserva,

@@ -1,13 +1,18 @@
 <?php
 /**
  * DigiSports Store - Vista Dashboard
+ * Panel principal con KPIs reales, ventas recientes, productos top y alertas
  */
 
-$kpis = $kpis ?? [];
-$topProducts = $topProducts ?? [];
-$lowStock = $lowStock ?? [];
-$moduloColor = $modulo_actual['color'] ?? '#E11D48';
-$moduloIcono = $modulo_actual['icono'] ?? 'fas fa-store';
+$kpis             = $kpis ?? [];
+$ultimas_ventas   = $ultimas_ventas ?? [];
+$productos_top    = $productos_top ?? [];
+$stock_bajo       = $stock_bajo ?? [];
+$ventas_categoria = $ventas_categoria ?? [];
+$chart_labels     = $chart_labels ?? '[]';
+$chart_data       = $chart_data ?? '[]';
+$moduloColor      = $modulo_actual['color'] ?? '#F59E0B';
+$moduloIcono      = $modulo_actual['icono'] ?? 'fas fa-store';
 ?>
 
 <!-- Content Header -->
@@ -21,11 +26,11 @@ $moduloIcono = $modulo_actual['icono'] ?? 'fas fa-store';
                 </h1>
             </div>
             <div class="col-sm-6">
-                <div class="float-sm-right quick-actions">
-                    <a href="<?= url('store', 'pos', 'index') ?>" class="btn" style="background: <?= $moduloColor ?>; color: white;">
+                <div class="float-sm-right">
+                    <a href="<?= url('store', 'pos', 'index') ?>" class="btn btn-sm" style="background: <?= $moduloColor ?>; color: white;">
                         <i class="fas fa-cash-register mr-1"></i> Punto de Venta
                     </a>
-                    <a href="<?= url('store', 'producto', 'crear') ?>" class="btn btn-outline-secondary">
+                    <a href="<?= url('store', 'producto', 'crear') ?>" class="btn btn-sm btn-outline-secondary">
                         <i class="fas fa-plus mr-1"></i> Nuevo Producto
                     </a>
                 </div>
@@ -36,39 +41,41 @@ $moduloIcono = $modulo_actual['icono'] ?? 'fas fa-store';
 
 <section class="content">
     <div class="container-fluid">
+
         <!-- KPI Cards -->
         <div class="row">
             <?php foreach ($kpis as $kpi): ?>
             <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
-                <div class="card kpi-card h-100">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center mb-3">
-                            <div class="kpi-icon" style="background: <?= $kpi['color'] ?>20; color: <?= $kpi['color'] ?>;">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body py-3">
+                        <div class="d-flex align-items-center mb-2">
+                            <div class="rounded-circle d-flex align-items-center justify-content-center"
+                                 style="width:40px;height:40px;background:<?= $kpi['color'] ?>20;color:<?= $kpi['color'] ?>;">
                                 <i class="<?= $kpi['icon'] ?>"></i>
                             </div>
                             <?php if (!empty($kpi['trend'])): ?>
-                            <span class="kpi-trend <?= $kpi['trend_type'] ?> ml-auto">
-                                <i class="fas fa-arrow-<?= $kpi['trend_type'] ?>"></i>
-                                <?= $kpi['trend'] ?>
+                            <span class="ml-auto small font-weight-bold <?= $kpi['trend_type'] === 'up' ? 'text-success' : 'text-danger' ?>">
+                                <i class="fas fa-arrow-<?= $kpi['trend_type'] ?> mr-1"></i><?= $kpi['trend'] ?>
                             </span>
                             <?php endif; ?>
                         </div>
-                        <div class="kpi-value"><?= $kpi['value'] ?></div>
-                        <div class="kpi-label"><?= $kpi['label'] ?></div>
+                        <div class="h3 mb-0 font-weight-bold"><?= $kpi['value'] ?></div>
+                        <div class="text-muted small"><?= $kpi['label'] ?></div>
                     </div>
                 </div>
             </div>
             <?php endforeach; ?>
         </div>
-        
+
         <div class="row">
-            <!-- Ventas recientes -->
+            <!-- Columna Principal -->
             <div class="col-lg-8">
-                <div class="card">
-                    <div class="card-header border-0">
+
+                <!-- Ventas Recientes -->
+                <div class="card shadow-sm">
+                    <div class="card-header border-0 bg-white">
                         <h3 class="card-title">
-                            <i class="fas fa-receipt mr-2" style="color: <?= $moduloColor ?>"></i>
-                            Ventas Recientes
+                            <i class="fas fa-receipt mr-2" style="color:<?= $moduloColor ?>"></i>Ventas Recientes
                         </h3>
                         <div class="card-tools">
                             <a href="<?= url('store', 'venta', 'index') ?>" class="btn btn-sm btn-outline-secondary">
@@ -77,71 +84,78 @@ $moduloIcono = $modulo_actual['icono'] ?? 'fas fa-store';
                         </div>
                     </div>
                     <div class="card-body p-0">
-                        <table class="table table-striped mb-0">
-                            <thead>
-                                <tr>
-                                    <th>#Venta</th>
-                                    <th>Cliente</th>
-                                    <th>Productos</th>
-                                    <th>Total</th>
-                                    <th>Estado</th>
-                                    <th>Hora</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td><code>V-2026-0145</code></td>
-                                    <td>Carlos Mendoza</td>
-                                    <td>
-                                        <span class="badge badge-light">Balón Nike</span>
-                                        <span class="badge badge-light">+2</span>
-                                    </td>
-                                    <td><strong class="text-success">$125.00</strong></td>
-                                    <td><span class="badge badge-success">Completada</span></td>
-                                    <td>10:45</td>
-                                </tr>
-                                <tr>
-                                    <td><code>V-2026-0144</code></td>
-                                    <td>María García</td>
-                                    <td>
-                                        <span class="badge badge-light">Camiseta Adidas</span>
-                                    </td>
-                                    <td><strong class="text-success">$45.00</strong></td>
-                                    <td><span class="badge badge-success">Completada</span></td>
-                                    <td>10:22</td>
-                                </tr>
-                                <tr>
-                                    <td><code>V-2026-0143</code></td>
-                                    <td>Juan Pérez</td>
-                                    <td>
-                                        <span class="badge badge-light">Zapatillas Running</span>
-                                    </td>
-                                    <td><strong class="text-success">$189.00</strong></td>
-                                    <td><span class="badge badge-warning">Pendiente entrega</span></td>
-                                    <td>09:58</td>
-                                </tr>
-                                <tr>
-                                    <td><code>V-2026-0142</code></td>
-                                    <td>Ana López</td>
-                                    <td>
-                                        <span class="badge badge-light">Raqueta Tenis</span>
-                                        <span class="badge badge-light">+1</span>
-                                    </td>
-                                    <td><strong class="text-success">$220.00</strong></td>
-                                    <td><span class="badge badge-success">Completada</span></td>
-                                    <td>09:30</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                        <?php if (empty($ultimas_ventas)): ?>
+                        <div class="text-center py-5 text-muted">
+                            <i class="fas fa-receipt fa-3x mb-3 opacity-50"></i>
+                            <p>No hay ventas registradas aún</p>
+                            <a href="<?= url('store', 'pos', 'index') ?>" class="btn btn-sm" style="background:<?= $moduloColor ?>;color:white;">
+                                <i class="fas fa-cash-register mr-1"></i> Ir al Punto de Venta
+                            </a>
+                        </div>
+                        <?php else: ?>
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th>#Venta</th>
+                                        <th>Cliente</th>
+                                        <th>Productos</th>
+                                        <th class="text-right">Total</th>
+                                        <th class="text-center">Estado</th>
+                                        <th>Fecha</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($ultimas_ventas as $v): ?>
+                                    <tr>
+                                        <td>
+                                            <a href="<?= url('store', 'venta', 'ver', ['id' => $v['ven_venta_id']]) ?>" class="font-weight-bold" style="color:<?= $moduloColor ?>">
+                                                <?= htmlspecialchars($v['ven_numero'] ?? '-') ?>
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <?php if (!empty($v['cli_nombres'])): ?>
+                                                <?= htmlspecialchars($v['cli_nombres'] . ' ' . $v['cli_apellidos']) ?>
+                                            <?php else: ?>
+                                                <span class="text-muted">Consumidor Final</span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td>
+                                            <?php
+                                            $nombres = $v['productos_nombres'] ?? '';
+                                            $items = $v['total_items'] ?? 0;
+                                            if ($nombres) {
+                                                $arr = explode(', ', $nombres);
+                                                echo '<span class="badge badge-light">' . htmlspecialchars($arr[0]) . '</span>';
+                                                if ($items > 1) echo ' <span class="badge badge-secondary">+' . ($items - 1) . '</span>';
+                                            }
+                                            ?>
+                                        </td>
+                                        <td class="text-right">
+                                            <strong class="text-success">$<?= number_format($v['ven_total'] ?? 0, 2) ?></strong>
+                                        </td>
+                                        <td class="text-center">
+                                            <?php
+                                            $coloresEst = ['COMPLETADA'=>'success','PENDIENTE'=>'warning','ANULADA'=>'danger','BORRADOR'=>'secondary'];
+                                            $c = $coloresEst[$v['ven_estado']] ?? 'secondary';
+                                            ?>
+                                            <span class="badge badge-<?= $c ?>"><?= $v['ven_estado'] ?></span>
+                                        </td>
+                                        <td><small class="text-muted"><?= date('d/m H:i', strtotime($v['ven_fecha'])) ?></small></td>
+                                    </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                        <?php endif; ?>
                     </div>
                 </div>
-                
-                <!-- Gráfico de ventas -->
-                <div class="card">
-                    <div class="card-header border-0">
+
+                <!-- Gráfico de Ventas -->
+                <div class="card shadow-sm">
+                    <div class="card-header border-0 bg-white">
                         <h3 class="card-title">
-                            <i class="fas fa-chart-line mr-2" style="color: <?= $moduloColor ?>"></i>
-                            Ventas de la Semana
+                            <i class="fas fa-chart-bar mr-2" style="color:<?= $moduloColor ?>"></i>Ventas de la Semana
                         </h3>
                     </div>
                     <div class="card-body">
@@ -149,177 +163,184 @@ $moduloIcono = $modulo_actual['icono'] ?? 'fas fa-store';
                     </div>
                 </div>
             </div>
-            
+
+            <!-- Columna Lateral -->
             <div class="col-lg-4">
-                <!-- Top productos -->
-                <div class="card">
-                    <div class="card-header border-0">
-                        <h3 class="card-title">
-                            <i class="fas fa-fire text-danger mr-2"></i>
-                            Más Vendidos
-                        </h3>
+
+                <!-- Top Productos -->
+                <div class="card shadow-sm">
+                    <div class="card-header border-0 bg-white">
+                        <h3 class="card-title"><i class="fas fa-fire text-danger mr-2"></i>Más Vendidos</h3>
+                        <div class="card-tools"><span class="badge badge-light">30 días</span></div>
                     </div>
                     <div class="card-body p-0">
+                        <?php if (empty($productos_top)): ?>
+                        <div class="text-center py-4 text-muted">
+                            <i class="fas fa-box-open fa-2x mb-2 opacity-50"></i>
+                            <p class="small">Sin datos de ventas aún</p>
+                        </div>
+                        <?php else: ?>
                         <ul class="list-group list-group-flush">
+                            <?php foreach ($productos_top as $i => $pt):
+                                $bc = $i === 0 ? 'badge-danger' : ($i === 1 ? 'badge-warning' : ($i === 2 ? 'badge-info' : 'badge-light'));
+                            ?>
                             <li class="list-group-item d-flex align-items-center">
-                                <span class="badge badge-danger mr-3">1</span>
+                                <span class="badge <?= $bc ?> mr-3"><?= $i + 1 ?></span>
                                 <div class="flex-grow-1">
-                                    <strong>Balón Nike Premier</strong>
-                                    <br><small class="text-muted">45 vendidos</small>
+                                    <strong><?= htmlspecialchars($pt['pro_nombre']) ?></strong>
+                                    <br><small class="text-muted"><?= intval($pt['total_vendido']) ?> vendidos</small>
                                 </div>
-                                <span class="text-success">$35.00</span>
-                            </li>
-                            <li class="list-group-item d-flex align-items-center">
-                                <span class="badge badge-secondary mr-3">2</span>
-                                <div class="flex-grow-1">
-                                    <strong>Camiseta Adidas Sport</strong>
-                                    <br><small class="text-muted">38 vendidos</small>
+                                <div class="text-right">
+                                    <span class="text-success font-weight-bold">$<?= number_format($pt['pro_precio_venta'] ?? 0, 2) ?></span>
+                                    <br><small class="text-muted">Stock: <?= intval($pt['stock_actual']) ?></small>
                                 </div>
-                                <span class="text-success">$45.00</span>
                             </li>
-                            <li class="list-group-item d-flex align-items-center">
-                                <span class="badge" style="background:#cd7f32;color:white" class="mr-3">3</span>
-                                <div class="flex-grow-1">
-                                    <strong>Gorra Deportiva</strong>
-                                    <br><small class="text-muted">32 vendidos</small>
-                                </div>
-                                <span class="text-success">$18.00</span>
-                            </li>
-                            <li class="list-group-item d-flex align-items-center">
-                                <span class="badge badge-light mr-3">4</span>
-                                <div class="flex-grow-1">
-                                    <strong>Botella Térmica</strong>
-                                    <br><small class="text-muted">28 vendidos</small>
-                                </div>
-                                <span class="text-success">$25.00</span>
-                            </li>
+                            <?php endforeach; ?>
                         </ul>
+                        <?php endif; ?>
                     </div>
                 </div>
-                
-                <!-- Alertas de stock -->
-                <div class="card card-outline card-danger">
+
+                <!-- Alertas Stock Bajo -->
+                <div class="card shadow-sm card-outline card-danger">
                     <div class="card-header">
                         <h3 class="card-title text-danger">
-                            <i class="fas fa-exclamation-triangle mr-2"></i>
-                            Stock Bajo
+                            <i class="fas fa-exclamation-triangle mr-2"></i>Stock Bajo
                         </h3>
+                        <?php if (!empty($stock_bajo)): ?>
+                        <div class="card-tools"><span class="badge badge-danger"><?= count($stock_bajo) ?></span></div>
+                        <?php endif; ?>
                     </div>
                     <div class="card-body p-0">
+                        <?php if (empty($stock_bajo)): ?>
+                        <div class="text-center py-4 text-muted">
+                            <i class="fas fa-check-circle fa-2x mb-2 text-success"></i>
+                            <p class="small">Inventario en buen estado</p>
+                        </div>
+                        <?php else: ?>
                         <ul class="list-group list-group-flush">
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <span>Zapatillas Running Nike</span>
-                                <span class="badge badge-danger">3 uds</span>
+                            <?php foreach ($stock_bajo as $sb):
+                                $bc2 = intval($sb['stk_disponible']) == 0 ? 'badge-danger' : 'badge-warning';
+                            ?>
+                            <li class="list-group-item d-flex justify-content-between align-items-center py-2">
+                                <span class="small"><?= htmlspecialchars($sb['pro_nombre']) ?></span>
+                                <span class="badge <?= $bc2 ?>"><?= intval($sb['stk_disponible']) ?> / <?= intval($sb['stk_minimo']) ?></span>
                             </li>
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <span>Raqueta Tenis Pro</span>
-                                <span class="badge badge-danger">2 uds</span>
-                            </li>
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <span>Guantes Portero</span>
-                                <span class="badge badge-warning">5 uds</span>
-                            </li>
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <span>Canilleras Adidas</span>
-                                <span class="badge badge-warning">6 uds</span>
-                            </li>
+                            <?php endforeach; ?>
                         </ul>
+                        <?php endif; ?>
                     </div>
-                    <div class="card-footer text-center">
-                        <a href="<?= url('store', 'stock', 'alertas') ?>" class="text-danger">
-                            Ver todas las alertas <i class="fas fa-arrow-right ml-1"></i>
+                    <div class="card-footer text-center py-2">
+                        <a href="<?= url('store', 'stock', 'alertas') ?>" class="text-danger small">
+                            Ver alertas <i class="fas fa-arrow-right ml-1"></i>
                         </a>
                     </div>
                 </div>
-                
-                <!-- Categorías -->
-                <div class="card">
-                    <div class="card-header border-0">
-                        <h3 class="card-title">
-                            <i class="fas fa-tags mr-2" style="color: <?= $moduloColor ?>"></i>
-                            Ventas por Categoría
-                        </h3>
+
+                <!-- Ventas por Categoría -->
+                <div class="card shadow-sm">
+                    <div class="card-header border-0 bg-white">
+                        <h3 class="card-title"><i class="fas fa-tags mr-2" style="color:<?= $moduloColor ?>"></i>Por Categoría</h3>
                     </div>
                     <div class="card-body">
+                        <?php if (empty($ventas_categoria)): ?>
+                        <div class="text-center py-3 text-muted"><p class="small">Sin datos</p></div>
+                        <?php else:
+                            $totalVC = array_sum(array_column($ventas_categoria, 'total_ventas'));
+                            $cols = ['#F59E0B','#3B82F6','#22C55E','#EF4444','#8B5CF6','#0EA5E9'];
+                            foreach ($ventas_categoria as $i => $vc):
+                                $pct = $totalVC > 0 ? round(($vc['total_ventas'] / $totalVC) * 100) : 0;
+                        ?>
                         <div class="mb-3">
                             <div class="d-flex justify-content-between mb-1">
-                                <span>Calzado</span>
-                                <span>35%</span>
+                                <span class="small"><?= htmlspecialchars($vc['cat_nombre']) ?></span>
+                                <span class="small font-weight-bold"><?= $pct ?>%</span>
                             </div>
-                            <div class="progress" style="height: 10px;">
-                                <div class="progress-bar" style="width: 35%; background: <?= $moduloColor ?>;"></div>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <div class="d-flex justify-content-between mb-1">
-                                <span>Ropa</span>
-                                <span>28%</span>
-                            </div>
-                            <div class="progress" style="height: 10px;">
-                                <div class="progress-bar bg-info" style="width: 28%;"></div>
+                            <div class="progress" style="height:8px;">
+                                <div class="progress-bar" style="width:<?= $pct ?>%;background:<?= $cols[$i % 6] ?>;"></div>
                             </div>
                         </div>
-                        <div class="mb-3">
-                            <div class="d-flex justify-content-between mb-1">
-                                <span>Equipamiento</span>
-                                <span>22%</span>
+                        <?php endforeach; endif; ?>
+                    </div>
+                </div>
+
+                <!-- Accesos Rápidos -->
+                <div class="card shadow-sm">
+                    <div class="card-header border-0 bg-white">
+                        <h3 class="card-title"><i class="fas fa-bolt mr-2" style="color:<?= $moduloColor ?>"></i>Accesos Rápidos</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-6 mb-2">
+                                <a href="<?= url('store', 'caja', 'index') ?>" class="btn btn-outline-secondary btn-block btn-sm">
+                                    <i class="fas fa-cash-register d-block mb-1"></i>Caja
+                                </a>
                             </div>
-                            <div class="progress" style="height: 10px;">
-                                <div class="progress-bar bg-success" style="width: 22%;"></div>
+                            <div class="col-6 mb-2">
+                                <a href="<?= url('store', 'producto', 'index') ?>" class="btn btn-outline-secondary btn-block btn-sm">
+                                    <i class="fas fa-box d-block mb-1"></i>Productos
+                                </a>
                             </div>
-                        </div>
-                        <div>
-                            <div class="d-flex justify-content-between mb-1">
-                                <span>Accesorios</span>
-                                <span>15%</span>
+                            <div class="col-6 mb-2">
+                                <a href="<?= url('store', 'cliente', 'index') ?>" class="btn btn-outline-secondary btn-block btn-sm">
+                                    <i class="fas fa-users d-block mb-1"></i>Clientes
+                                </a>
                             </div>
-                            <div class="progress" style="height: 10px;">
-                                <div class="progress-bar bg-warning" style="width: 15%;"></div>
+                            <div class="col-6 mb-2">
+                                <a href="<?= url('store', 'reporte', 'ventas') ?>" class="btn btn-outline-secondary btn-block btn-sm">
+                                    <i class="fas fa-chart-line d-block mb-1"></i>Reportes
+                                </a>
                             </div>
                         </div>
                     </div>
                 </div>
+
             </div>
         </div>
     </div>
 </section>
 
+<?php ob_start(); ?>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Gráfico de ventas semanal
-    const ctx = document.getElementById('salesChart');
-    if (ctx) {
+    var ctx = document.getElementById('salesChart');
+    if (ctx && typeof Chart !== 'undefined') {
         new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'],
+                labels: <?= $chart_labels ?>,
                 datasets: [{
                     label: 'Ventas ($)',
-                    data: [1250, 980, 1450, 1100, 1680, 2100, 890],
-                    backgroundColor: '<?= $moduloColor ?>80',
+                    data: <?= $chart_data ?>,
+                    backgroundColor: '<?= $moduloColor ?>40',
                     borderColor: '<?= $moduloColor ?>',
                     borderWidth: 2,
-                    borderRadius: 8
+                    borderRadius: 6,
+                    barPercentage: 0.6
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: { display: false }
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(c) { return '$ ' + c.parsed.y.toFixed(2); }
+                        }
+                    }
                 },
                 scales: {
                     y: {
                         beginAtZero: true,
-                        ticks: {
-                            callback: function(value) {
-                                return '$' + value;
-                            }
-                        }
-                    }
+                        ticks: { callback: function(v) { return '$' + v; } },
+                        grid: { color: '#f0f0f0' }
+                    },
+                    x: { grid: { display: false } }
                 }
             }
         });
     }
 });
 </script>
+<?php $scripts = ob_get_clean(); ?>

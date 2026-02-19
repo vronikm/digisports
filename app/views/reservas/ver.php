@@ -215,7 +215,7 @@ $badgeClass = $estadoClases[$reserva['estado']] ?? 'secondary';
                             <tbody>
                                 <?php foreach ($pagos as $pago): ?>
                                 <tr>
-                                    <td><?= date('d/m/Y H:i', strtotime($pago['rpa_fecha'])) ?></td>
+                                    <td><?= date('d/m/Y H:i', strtotime($pago['pag_fecha_pago'])) ?></td>
                                     <td>
                                         <?php
                                         $iconosMetodo = [
@@ -224,20 +224,20 @@ $badgeClass = $estadoClases[$reserva['estado']] ?? 'secondary';
                                             'TRANSFERENCIA' => 'fas fa-university text-info',
                                             'MONEDERO' => 'fas fa-wallet text-warning',
                                         ];
-                                        $icono = $iconosMetodo[$pago['rpa_metodo_pago']] ?? 'fas fa-receipt text-secondary';
+                                        $icono = $iconosMetodo[$pago['pag_tipo_pago']] ?? 'fas fa-receipt text-secondary';
                                         ?>
                                         <i class="<?= $icono ?> mr-1"></i>
-                                        <?= htmlspecialchars($pago['rpa_metodo_pago']) ?>
+                                        <?= htmlspecialchars($pago['pag_tipo_pago']) ?>
                                     </td>
-                                    <td class="text-right"><strong>$<?= number_format($pago['rpa_monto'], 2) ?></strong></td>
-                                    <td><small><?= htmlspecialchars($pago['rpa_referencia'] ?? '-') ?></small></td>
+                                    <td class="text-right"><strong>$<?= number_format($pago['pag_monto'], 2) ?></strong></td>
+                                    <td><small><?= htmlspecialchars($pago['pag_referencia'] ?? '-') ?></small></td>
                                     <td>
                                         <?php
-                                        $epBadge = ['COMPLETADO' => 'success', 'ANULADO' => 'danger'][$pago['rpa_estado']] ?? 'secondary';
+                                        $epBadge = ['COMPLETADO' => 'success', 'ANULADO' => 'danger'][$pago['pag_estado']] ?? 'secondary';
                                         ?>
-                                        <span class="badge badge-<?= $epBadge ?>"><?= $pago['rpa_estado'] ?></span>
+                                        <span class="badge badge-<?= $epBadge ?>"><?= $pago['pag_estado'] ?></span>
                                     </td>
-                                    <td><small class="text-muted"><?= htmlspecialchars($pago['rpa_notas'] ?? '') ?></small></td>
+                                    <td></td>
                                 </tr>
                                 <?php endforeach; ?>
                             </tbody>

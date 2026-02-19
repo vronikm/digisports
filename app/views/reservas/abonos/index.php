@@ -173,11 +173,9 @@ $csrfToken     = $csrf_token ?? '';
                                             <i class="fas fa-eye"></i>
                                         </a>
                                         <?php if ($a['estado'] === 'ACTIVO'): ?>
-                                        <button type="button" class="btn btn-success btn-recargar" title="Recargar"
-                                                data-id="<?= $a['abono_id'] ?>"
-                                                data-nombre="<?= htmlspecialchars($a['cliente_nombre']) ?>"
-                                                data-saldo="<?= $a['saldo_disponible'] ?>">
-                                            <i class="fas fa-plus-circle"></i>
+                                        <button type="button" class="btn btn-success btn-recargar" title="Recargar Monedero"
+                                                onclick="abrirModalRecarga(<?= (int)$a['abono_id'] ?>, '<?= addslashes(htmlspecialchars($a['cliente_nombre'])) ?>', <?= (float)$a['saldo_disponible'] ?>)">
+                                            <i class="fas fa-plus-circle mr-1"></i> Recargar
                                         </button>
                                         <?php endif; ?>
                                     </div>
@@ -219,15 +217,15 @@ $csrfToken     = $csrf_token ?? '';
 </section>
 
 <!-- Modal Recarga Rápida -->
-<div class="modal fade" id="modalRecarga" tabindex="-1">
-    <div class="modal-dialog">
+<div class="modal fade" id="modalRecarga" tabindex="-1" role="dialog" aria-labelledby="modalRecargaLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
         <div class="modal-content">
             <form id="formRecarga" method="POST">
                 <input type="hidden" name="csrf_token" value="<?= $csrfToken ?>">
                 <input type="hidden" name="abono_id" id="recarga_abono_id">
                 <div class="modal-header bg-success text-white">
-                    <h5 class="modal-title"><i class="fas fa-plus-circle mr-2"></i>Recargar Monedero</h5>
-                    <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+                    <h5 class="modal-title" id="modalRecargaLabel"><i class="fas fa-plus-circle mr-2"></i>Recargar Monedero</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar" onclick="cerrarModalRecarga()"><span aria-hidden="true">&times;</span></button>
                 </div>
                 <div class="modal-body">
                     <p class="mb-3">
@@ -253,7 +251,7 @@ $csrfToken     = $csrf_token ?? '';
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="cerrarModalRecarga()">Cancelar</button>
                     <button type="submit" class="btn btn-success">
                         <i class="fas fa-check mr-1"></i> Confirmar Recarga
                     </button>
@@ -263,40 +261,123 @@ $csrfToken     = $csrf_token ?? '';
     </div>
 </div>
 
+<?php
+/* ─── URL de recarga para AJAX ─── */
+$urlRecargar = url('reservas', 'abon', 'recargar');
+
+// Scripts que se inyectan DESPUÉS de jQuery/Bootstrap en el layout
+$scripts = <<<SCRIPTS
 <script>
+/* ─── Función global para abrir el modal de recarga (JS puro, sin dependencias) ─── */
+function abrirModalRecarga(id, nombre, saldo) {
+    // Llenar campos del modal
+    var elId     = document.getElementById('recarga_abono_id');
+    var elNombre = document.getElementById('recarga_cliente_nombre');
+    var elSaldo  = document.getElementById('recarga_saldo_actual');
+    var form     = document.getElementById('formRecarga');
+
+    if (elId) elId.value = id;
+    if (elNombre) elNombre.textContent = nombre;
+    if (elSaldo) elSaldo.textContent = '$' + parseFloat(saldo).toFixed(2);
+
+    // Limpiar campos del formulario
+    if (form) {
+        var montoInput = form.querySelector('[name=monto]');
+        var notaInput  = form.querySelector('[name=nota]');
+        if (montoInput) montoInput.value = '';
+        if (notaInput)  notaInput.value = '';
+    }
+
+    // Abrir el modal - intentar con jQuery/Bootstrap primero, fallback a JS puro
+    var modalEl = document.getElementById('modalRecarga');
+    if (typeof jQuery !== 'undefined' && typeof jQuery.fn.modal !== 'undefined') {
+        jQuery('#modalRecarga').modal('show');
+    } else if (modalEl) {
+        // Fallback: abrir manualmente sin Bootstrap JS
+        modalEl.classList.add('show');
+        modalEl.style.display = 'block';
+        modalEl.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('modal-open');
+        // Crear backdrop
+        var backdrop = document.createElement('div');
+        backdrop.className = 'modal-backdrop fade show';
+        backdrop.id = 'modalRecargaBackdrop';
+        document.body.appendChild(backdrop);
+    }
+}
+
+/* ─── Cerrar modal manualmente (fallback si Bootstrap JS no está) ─── */
+function cerrarModalRecarga() {
+    var modalEl = document.getElementById('modalRecarga');
+    if (typeof jQuery !== 'undefined' && typeof jQuery.fn.modal !== 'undefined') {
+        jQuery('#modalRecarga').modal('hide');
+    } else if (modalEl) {
+        modalEl.classList.remove('show');
+        modalEl.style.display = 'none';
+        modalEl.setAttribute('aria-hidden', 'true');
+        document.body.classList.remove('modal-open');
+        var backdrop = document.getElementById('modalRecargaBackdrop');
+        if (backdrop) backdrop.remove();
+    }
+}
+
+/* ─── Submit del formulario con AJAX (usa jQuery si está disponible, sino fetch) ─── */
 document.addEventListener('DOMContentLoaded', function() {
-    // Abrir modal de recarga
-    document.querySelectorAll('.btn-recargar').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            document.getElementById('recarga_abono_id').value = this.dataset.id;
-            document.getElementById('recarga_cliente_nombre').textContent = this.dataset.nombre;
-            document.getElementById('recarga_saldo_actual').textContent = '$' + parseFloat(this.dataset.saldo).toFixed(2);
-            $('#modalRecarga').modal('show');
-        });
-    });
+    var form = document.getElementById('formRecarga');
+    if (!form) return;
 
-    // Enviar recarga por AJAX
-    document.getElementById('formRecarga').addEventListener('submit', function(e) {
+    form.addEventListener('submit', function(e) {
         e.preventDefault();
-        var form = this;
         var formData = new FormData(form);
+        var btnSubmit = form.querySelector('button[type=submit]');
+        var btnOriginal = btnSubmit ? btnSubmit.innerHTML : '';
 
-        fetch('<?= url('reservas', 'abon', 'recargar') ?>', {
+        if (btnSubmit) {
+            btnSubmit.disabled = true;
+            btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Procesando...';
+        }
+
+        var urlRecarga = '{$urlRecargar}';
+
+        // Usar fetch (no depende de jQuery)
+        fetch(urlRecarga, {
             method: 'POST',
             body: formData
         })
-        .then(function(r) { return r.json(); })
+        .then(function(response) { return response.json(); })
         .then(function(data) {
-            if (data.status === 'success' || data.success) {
-                Swal.fire('¡Recarga exitosa!', data.message || 'Saldo actualizado', 'success')
-                    .then(function() { location.reload(); });
+            if (data.success) {
+                cerrarModalRecarga();
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Recarga exitosa!',
+                        text: data.message || 'Saldo actualizado correctamente',
+                        confirmButtonColor: '#28a745'
+                    }).then(function() { location.reload(); });
+                } else {
+                    alert('¡Recarga exitosa! ' + (data.message || ''));
+                    location.reload();
+                }
             } else {
-                Swal.fire('Error', data.message || 'Error al recargar', 'error');
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire('Error', data.message || 'Error al procesar la recarga', 'error');
+                } else {
+                    alert('Error: ' + (data.message || 'Error al procesar la recarga'));
+                }
+                if (btnSubmit) { btnSubmit.disabled = false; btnSubmit.innerHTML = btnOriginal; }
             }
         })
-        .catch(function() {
-            Swal.fire('Error', 'Error de conexión', 'error');
+        .catch(function(err) {
+            if (typeof Swal !== 'undefined') {
+                Swal.fire('Error', 'Error de conexión con el servidor', 'error');
+            } else {
+                alert('Error de conexión con el servidor');
+            }
+            if (btnSubmit) { btnSubmit.disabled = false; btnSubmit.innerHTML = btnOriginal; }
         });
     });
 });
 </script>
+SCRIPTS;
+?>

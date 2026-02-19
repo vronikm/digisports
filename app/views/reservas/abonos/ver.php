@@ -58,7 +58,8 @@ $esActivo    = ($abono['estado'] ?? '') === 'ACTIVO';
 
                         <?php if ($esActivo): ?>
                         <div class="mt-3">
-                            <button type="button" class="btn btn-success btn-block" data-toggle="modal" data-target="#modalRecarga">
+                            <button type="button" class="btn btn-success btn-block"
+                                    onclick="abrirModalRecargaVer()">
                                 <i class="fas fa-plus-circle mr-1"></i> Recargar
                             </button>
                         </div>
@@ -255,15 +256,15 @@ $esActivo    = ($abono['estado'] ?? '') === 'ACTIVO';
 
 <!-- Modal Recarga -->
 <?php if ($esActivo): ?>
-<div class="modal fade" id="modalRecarga" tabindex="-1">
-    <div class="modal-dialog">
+<div class="modal fade" id="modalRecarga" tabindex="-1" role="dialog" aria-labelledby="modalRecargaLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
         <div class="modal-content">
             <form id="formRecargaDetalle" method="POST">
                 <input type="hidden" name="csrf_token" value="<?= $csrfToken ?>">
                 <input type="hidden" name="abono_id" value="<?= $abono['abono_id'] ?>">
                 <div class="modal-header bg-success text-white">
-                    <h5 class="modal-title"><i class="fas fa-plus-circle mr-2"></i>Recargar Monedero</h5>
-                    <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+                    <h5 class="modal-title" id="modalRecargaLabel"><i class="fas fa-plus-circle mr-2"></i>Recargar Monedero</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar" onclick="cerrarModalRecargaVer()"><span aria-hidden="true">&times;</span></button>
                 </div>
                 <div class="modal-body">
                     <div class="text-center mb-3">
@@ -295,7 +296,7 @@ $esActivo    = ($abono['estado'] ?? '') === 'ACTIVO';
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="cerrarModalRecargaVer()">Cancelar</button>
                     <button type="submit" class="btn btn-success"><i class="fas fa-check mr-1"></i> Confirmar Recarga</button>
                 </div>
             </form>
@@ -303,21 +304,116 @@ $esActivo    = ($abono['estado'] ?? '') === 'ACTIVO';
     </div>
 </div>
 
+<?php
+/* ─── URL de recarga para AJAX ─── */
+$urlRecargarVer = url('reservas', 'abon', 'recargar');
+
+// Scripts que se inyectan DESPUÉS de jQuery/Bootstrap en el layout
+$scripts = <<<SCRIPTS
 <script>
-document.getElementById('formRecargaDetalle').addEventListener('submit', function(e) {
-    e.preventDefault();
-    var formData = new FormData(this);
-    fetch('<?= url('reservas', 'abon', 'recargar') ?>', { method: 'POST', body: formData })
-        .then(function(r) { return r.json(); })
+/* ─── Función global para abrir el modal de recarga en vista detalle ─── */
+function abrirModalRecargaVer() {
+    var modalEl = document.getElementById('modalRecarga');
+    if (!modalEl) { alert('Modal no encontrado'); return; }
+
+    // Limpiar campos
+    var form = document.getElementById('formRecargaDetalle');
+    if (form) {
+        var montoInput = form.querySelector('[name=monto]');
+        var notaInput  = form.querySelector('[name=nota]');
+        if (montoInput) montoInput.value = '';
+        if (notaInput)  notaInput.value = '';
+    }
+
+    // Abrir modal - jQuery/Bootstrap primero, fallback JS puro
+    if (typeof jQuery !== 'undefined' && typeof jQuery.fn.modal !== 'undefined') {
+        jQuery('#modalRecarga').modal('show');
+    } else {
+        modalEl.classList.add('show');
+        modalEl.style.display = 'block';
+        modalEl.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('modal-open');
+        var backdrop = document.createElement('div');
+        backdrop.className = 'modal-backdrop fade show';
+        backdrop.id = 'modalRecargaBackdrop';
+        document.body.appendChild(backdrop);
+    }
+}
+
+/* ─── Cerrar modal manualmente ─── */
+function cerrarModalRecargaVer() {
+    if (typeof jQuery !== 'undefined' && typeof jQuery.fn.modal !== 'undefined') {
+        jQuery('#modalRecarga').modal('hide');
+    } else {
+        var modalEl = document.getElementById('modalRecarga');
+        if (modalEl) {
+            modalEl.classList.remove('show');
+            modalEl.style.display = 'none';
+            modalEl.setAttribute('aria-hidden', 'true');
+            document.body.classList.remove('modal-open');
+            var backdrop = document.getElementById('modalRecargaBackdrop');
+            if (backdrop) backdrop.remove();
+        }
+    }
+}
+
+/* ─── Submit del formulario con fetch (sin depender de jQuery) ─── */
+document.addEventListener('DOMContentLoaded', function() {
+    var form = document.getElementById('formRecargaDetalle');
+    if (!form) return;
+
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        var formData = new FormData(form);
+        var btnSubmit = form.querySelector('button[type=submit]');
+        var btnOriginal = btnSubmit ? btnSubmit.innerHTML : '';
+
+        if (btnSubmit) {
+            btnSubmit.disabled = true;
+            btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Procesando...';
+        }
+
+        var urlRecarga = '{$urlRecargarVer}';
+
+        fetch(urlRecarga, {
+            method: 'POST',
+            body: formData
+        })
+        .then(function(response) { return response.json(); })
         .then(function(data) {
-            if (data.status === 'success' || data.success) {
-                Swal.fire('¡Recarga exitosa!', data.message || 'Saldo actualizado', 'success')
-                    .then(function() { location.reload(); });
+            if (data.success) {
+                cerrarModalRecargaVer();
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Recarga exitosa!',
+                        text: data.message || 'Saldo actualizado correctamente',
+                        confirmButtonColor: '#28a745'
+                    }).then(function() { location.reload(); });
+                } else {
+                    alert('¡Recarga exitosa! ' + (data.message || ''));
+                    location.reload();
+                }
             } else {
-                Swal.fire('Error', data.message || 'Error al recargar', 'error');
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire('Error', data.message || 'Error al procesar la recarga', 'error');
+                } else {
+                    alert('Error: ' + (data.message || 'Error al procesar la recarga'));
+                }
+                if (btnSubmit) { btnSubmit.disabled = false; btnSubmit.innerHTML = btnOriginal; }
             }
         })
-        .catch(function() { Swal.fire('Error', 'Error de conexión', 'error'); });
+        .catch(function(err) {
+            if (typeof Swal !== 'undefined') {
+                Swal.fire('Error', 'Error de conexión con el servidor', 'error');
+            } else {
+                alert('Error de conexión con el servidor');
+            }
+            if (btnSubmit) { btnSubmit.disabled = false; btnSubmit.innerHTML = btnOriginal; }
+        });
+    });
 });
 </script>
+SCRIPTS;
+?>
 <?php endif; ?>

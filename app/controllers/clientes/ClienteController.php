@@ -565,13 +565,13 @@ class ClienteController extends \App\Controllers\ModuleController {
      */
     private function getPagosCliente($clienteId, $limit = 10) {
         $stmt = $this->db->prepare("
-            SELECT p.rpa_pago_id, p.rpa_monto, p.rpa_metodo_pago,
-                   p.rpa_fecha, p.rpa_estado, p.rpa_referencia,
-                   p.rpa_reserva_id
+            SELECT p.pag_pago_id, p.pag_monto, p.pag_tipo_pago,
+                   p.pag_fecha_pago, p.pag_estado, p.pag_referencia,
+                   p.pag_reserva_id
             FROM instalaciones_reserva_pagos p
-            INNER JOIN instalaciones_reservas r ON p.rpa_reserva_id = r.res_reserva_id
-            WHERE r.res_cliente_id = ? AND p.rpa_estado = 'COMPLETADO'
-            ORDER BY p.rpa_fecha DESC
+            INNER JOIN instalaciones_reservas r ON p.pag_reserva_id = r.res_reserva_id
+            WHERE r.res_cliente_id = ? AND p.pag_estado = 'COMPLETADO'
+            ORDER BY p.pag_fecha_pago DESC
             LIMIT ?
         ");
         $stmt->execute([$clienteId, $limit]);
@@ -583,8 +583,8 @@ class ClienteController extends \App\Controllers\ModuleController {
      */
     private function getAbonosCliente($clienteId) {
         $stmt = $this->db->prepare("
-            SELECT abo_abono_id, abo_saldo, abo_total_recargado,
-                   abo_total_consumido, abo_estado, abo_fecha_registro
+            SELECT abo_abono_id, abo_saldo_disponible, abo_monto_total,
+                   abo_monto_utilizado, abo_estado, abo_fecha_registro
             FROM instalaciones_abonos
             WHERE abo_cliente_id = ? AND abo_estado = 'ACTIVO'
             ORDER BY abo_fecha_registro DESC
@@ -598,11 +598,11 @@ class ClienteController extends \App\Controllers\ModuleController {
      */
     private function getEntradasCliente($clienteId, $limit = 10) {
         $stmt = $this->db->prepare("
-            SELECT ent_entrada_id, ent_codigo, ent_cantidad, ent_monto_total,
-                   ent_fecha, ent_estado, ent_metodo_pago
+            SELECT ent_entrada_id, ent_codigo, ent_total,
+                   ent_fecha_entrada, ent_estado, ent_forma_pago
             FROM instalaciones_entradas
             WHERE ent_cliente_id = ? AND ent_estado = 'ACTIVA'
-            ORDER BY ent_fecha DESC
+            ORDER BY ent_fecha_entrada DESC
             LIMIT ?
         ");
         $stmt->execute([$clienteId, $limit]);

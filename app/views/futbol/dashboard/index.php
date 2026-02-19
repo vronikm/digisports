@@ -1,14 +1,20 @@
 <?php
 /**
- * DigiSports Fútbol - Vista Dashboard
+ * DigiSports Fútbol - Vista Dashboard (datos dinámicos)
  */
-
-$kpis = $kpis ?? [];
-$chartReservas = $chart_reservas ?? ['labels' => [], 'data' => []];
-$chartIngresos = $chart_ingresos ?? ['labels' => [], 'data' => []];
-$proximasReservas = $proximas_reservas ?? [];
-$canchasPopulares = $canchas_populares ?? [];
-$torneosActivos = $torneos_activos ?? [];
+$kpis                = $kpis ?? [];
+$entrenamientos_hoy  = $entrenamientos_hoy ?? [];
+$jugadores_categoria = $jugadores_categoria ?? [];
+$torneosData         = $futbol_torneos ?? [];
+$ultimas             = $ultimas_inscripciones ?? [];
+$chartLabels         = $chart_labels ?? '[]';
+$chartPresente       = $chart_presente ?? '[]';
+$chartAusente        = $chart_ausente ?? '[]';
+$moduloColor         = $modulo_actual['color'] ?? '#22C55E';
+$moduloIcono         = $modulo_actual['icono'] ?? 'fas fa-futbol';
+$totalJugadores      = array_sum(array_column($jugadores_categoria, 'total')) ?: 1;
+$sedes               = $sedes ?? [];
+$sedeActiva          = $sede_activa ?? null;
 ?>
 
 <!-- Content Header -->
@@ -17,41 +23,45 @@ $torneosActivos = $torneos_activos ?? [];
         <div class="row mb-2">
             <div class="col-sm-6">
                 <h1 class="m-0">
-                    <i class="<?= $modulo_actual['icono'] ?? 'fas fa-futbol text-success' ?> mr-2" style="color: <?= $modulo_actual['color'] ?? '#22C55E' ?>"></i>
+                    <i class="<?= $moduloIcono ?> mr-2" style="color: <?= $moduloColor ?>"></i>
                     <?= $modulo_actual['nombre_personalizado'] ?? $modulo_actual['nombre'] ?? 'Dashboard Fútbol' ?>
                 </h1>
             </div>
             <div class="col-sm-6">
-                <div class="float-sm-right">
-                    <div class="btn-group quick-actions">
-                        <a href="<?= url('futbol', 'reserva', 'crear') ?>" class="btn" style="background: <?= $modulo_actual['color'] ?? '#22C55E' ?>; color: white;">
-                            <i class="fas fa-plus mr-1"></i> Nueva Reserva
-                        </a>
-                        <a href="<?= url('futbol', 'calendario', 'index') ?>" class="btn btn-outline-secondary">
-                            <i class="fas fa-calendar-alt mr-1"></i> Calendario
-                        </a>
-                    </div>
+                <div class="float-sm-right quick-actions d-flex align-items-center">
+                    <?php if (!empty($sedes) && count($sedes) > 1): ?>
+                    <select id="sedeFilterDash" class="form-control form-control-sm mr-2" style="width:auto;">
+                        <option value="">🏢 Todas las sedes</option>
+                        <?php foreach ($sedes as $s): ?>
+                        <option value="<?= $s['sed_sede_id'] ?>" <?= $sedeActiva == $s['sed_sede_id'] ? 'selected' : '' ?>><?= htmlspecialchars($s['sed_nombre']) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                    <?php endif; ?>
+                    <a href="<?= url('futbol', 'alumno', 'index') ?>" class="btn" style="background: <?= $moduloColor ?>; color: white;">
+                        <i class="fas fa-user-plus mr-1"></i> Nuevo Jugador
+                    </a>
+                    <a href="<?= url('futbol', 'horario', 'index') ?>" class="btn btn-outline-secondary ml-1">
+                        <i class="fas fa-clock mr-1"></i> Horarios
+                    </a>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Main content -->
 <section class="content">
     <div class="container-fluid">
-        
         <!-- KPI Cards -->
         <div class="row">
             <?php foreach ($kpis as $kpi): ?>
-            <div class="col-lg-2 col-md-4 col-sm-6">
-                <div class="card kpi-card">
+            <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+                <div class="card kpi-card h-100">
                     <div class="card-body">
                         <div class="d-flex align-items-center mb-3">
                             <div class="kpi-icon" style="background: <?= $kpi['color'] ?>20; color: <?= $kpi['color'] ?>;">
                                 <i class="<?= $kpi['icon'] ?>"></i>
                             </div>
-                            <?php if ($kpi['trend']): ?>
+                            <?php if (!empty($kpi['trend'])): ?>
                             <span class="kpi-trend <?= $kpi['trend_type'] ?> ml-auto">
                                 <i class="fas fa-arrow-<?= $kpi['trend_type'] ?>"></i>
                                 <?= $kpi['trend'] ?>
@@ -65,298 +75,192 @@ $torneosActivos = $torneos_activos ?? [];
             </div>
             <?php endforeach; ?>
         </div>
-        
-        <!-- Charts Row -->
+
+        <!-- Entrenamientos del Día + Jugadores por Categoría -->
         <div class="row">
-            <!-- Reservas Chart -->
             <div class="col-lg-8">
                 <div class="card">
                     <div class="card-header border-0">
-                        <h3 class="card-title">
-                            <i class="fas fa-chart-line text-success mr-2"></i>
-                            Reservas - Últimos 7 días
-                        </h3>
-                        <div class="card-tools">
-                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                                <i class="fas fa-minus"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <div class="chart-container">
-                            <canvas id="chartReservas"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Ingresos Chart -->
-            <div class="col-lg-4">
-                <div class="card">
-                    <div class="card-header border-0">
-                        <h3 class="card-title">
-                            <i class="fas fa-dollar-sign text-warning mr-2"></i>
-                            Ingresos Semanal
-                        </h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="chart-container" style="height: 200px;">
-                            <canvas id="chartIngresos"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Tables Row -->
-        <div class="row">
-            <!-- Próximas Reservas -->
-            <div class="col-lg-6">
-                <div class="card">
-                    <div class="card-header border-0">
-                        <h3 class="card-title">
-                            <i class="fas fa-calendar-check text-primary mr-2"></i>
-                            Próximas Reservas
-                        </h3>
-                        <div class="card-tools">
-                            <a href="<?= url('futbol', 'reserva', 'index') ?>" class="btn btn-sm btn-link">
-                                Ver todas <i class="fas fa-arrow-right ml-1"></i>
-                            </a>
-                        </div>
+                        <h3 class="card-title"><i class="fas fa-futbol text-success mr-2"></i>Entrenamientos del Día</h3>
+                        <div class="card-tools"><span class="badge badge-success"><?= count($entrenamientos_hoy) ?> entrenamientos</span></div>
                     </div>
                     <div class="card-body p-0">
+                        <?php if (empty($entrenamientos_hoy)): ?>
+                        <div class="text-center py-4 text-muted">
+                            <i class="fas fa-calendar-day fa-2x mb-2 opacity-50"></i>
+                            <p>No hay entrenamientos programados para hoy</p>
+                        </div>
+                        <?php else: ?>
                         <div class="table-responsive">
-                            <table class="table table-hover table-module mb-0">
+                            <table class="table table-striped mb-0">
                                 <thead>
                                     <tr>
-                                        <th>Fecha/Hora</th>
+                                        <th>Hora</th>
+                                        <th>Grupo</th>
                                         <th>Cancha</th>
-                                        <th>Cliente</th>
-                                        <th>Estado</th>
+                                        <th>Categoría</th>
+                                        <th>Entrenador</th>
+                                        <th class="text-center">Jugadores</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php if (empty($proximasReservas)): ?>
+                                    <?php foreach ($entrenamientos_hoy as $ent): ?>
                                     <tr>
-                                        <td colspan="4" class="text-center text-muted py-4">
-                                            <i class="fas fa-calendar-times fa-2x mb-2 d-block"></i>
-                                            No hay reservas próximas
-                                        </td>
-                                    </tr>
-                                    <?php else: ?>
-                                    <?php foreach ($proximasReservas as $reserva): ?>
-                                    <tr>
+                                        <td><strong><?= substr($ent['fgh_hora_inicio'], 0, 5) ?></strong> - <?= substr($ent['fgh_hora_fin'], 0, 5) ?></td>
                                         <td>
-                                            <strong><?= date('d/m', strtotime($reserva['fecha'])) ?></strong>
-                                            <br>
-                                            <small class="text-muted"><?= substr($reserva['hora_inicio'], 0, 5) ?></small>
-                                        </td>
-                                        <td>
-                                            <i class="fas fa-futbol text-success mr-1"></i>
-                                            <?= htmlspecialchars($reserva['cancha_nombre'] ?? 'N/A') ?>
-                                        </td>
-                                        <td><?= htmlspecialchars($reserva['cliente_nombre'] ?? 'N/A') ?></td>
-                                        <td>
-                                            <?php
-                                            $estadoClass = [
-                                                'CONFIRMADA' => 'success',
-                                                'PENDIENTE' => 'warning',
-                                                'CANCELADA' => 'danger'
-                                            ][$reserva['estado']] ?? 'secondary';
-                                            ?>
-                                            <span class="badge badge-<?= $estadoClass ?>">
-                                                <?= $reserva['estado'] ?>
-                                            </span>
-                                        </td>
-                                    </tr>
-                                    <?php endforeach; ?>
-                                    <?php endif; ?>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Canchas Populares -->
-            <div class="col-lg-6">
-                <div class="card">
-                    <div class="card-header border-0">
-                        <h3 class="card-title">
-                            <i class="fas fa-fire text-danger mr-2"></i>
-                            Canchas Más Populares
-                        </h3>
-                    </div>
-                    <div class="card-body p-0">
-                        <div class="table-responsive">
-                            <table class="table table-hover table-module mb-0">
-                                <thead>
-                                    <tr>
-                                        <th>Cancha</th>
-                                        <th>Tipo</th>
-                                        <th class="text-center">Reservas</th>
-                                        <th class="text-right">Ingresos</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php if (empty($canchasPopulares)): ?>
-                                    <tr>
-                                        <td colspan="4" class="text-center text-muted py-4">
-                                            <i class="fas fa-futbol fa-2x mb-2 d-block"></i>
-                                            No hay datos disponibles
-                                        </td>
-                                    </tr>
-                                    <?php else: ?>
-                                    <?php foreach ($canchasPopulares as $index => $cancha): ?>
-                                    <tr>
-                                        <td>
-                                            <?php if ($index === 0): ?>
-                                            <i class="fas fa-medal text-warning mr-1"></i>
+                                            <?php if (!empty($ent['fgr_color'])): ?>
+                                            <span class="badge" style="background:<?= htmlspecialchars($ent['fgr_color']) ?>;color:white;">&nbsp;</span>
                                             <?php endif; ?>
-                                            <?= htmlspecialchars($cancha['nombre']) ?>
+                                            <?= htmlspecialchars($ent['fgr_nombre']) ?>
                                         </td>
+                                        <td><?= htmlspecialchars($ent['cancha'] ?? '—') ?></td>
                                         <td>
-                                            <span class="badge badge-light">
-                                                <?= htmlspecialchars($cancha['tipo'] ?? 'Fútbol') ?>
+                                            <span class="badge" style="background:<?= htmlspecialchars($ent['categoria_color'] ?? '#6c757d') ?>;color:white;">
+                                                <?= htmlspecialchars($ent['categoria'] ?? 'Sin categoría') ?>
                                             </span>
                                         </td>
+                                        <td><?= htmlspecialchars($ent['entrenador'] ?? '—') ?></td>
                                         <td class="text-center">
-                                            <strong><?= $cancha['total_reservas'] ?></strong>
-                                        </td>
-                                        <td class="text-right">
-                                            <span class="text-success font-weight-bold">
-                                                $<?= number_format($cancha['ingresos'], 2) ?>
-                                            </span>
+                                            <?php
+                                            $cupoActual = (int)($ent['fgr_cupo_actual'] ?? 0);
+                                            $cupoMax    = (int)($ent['fgr_cupo_maximo'] ?? 0);
+                                            $pct        = $cupoMax > 0 ? round($cupoActual / $cupoMax * 100) : 0;
+                                            $badgeClass = $pct >= 90 ? 'badge-danger' : ($pct >= 70 ? 'badge-warning' : 'badge-success');
+                                            ?>
+                                            <span class="badge <?= $badgeClass ?>"><?= $cupoActual ?>/<?= $cupoMax ?></span>
                                         </td>
                                     </tr>
                                     <?php endforeach; ?>
-                                    <?php endif; ?>
                                 </tbody>
                             </table>
+                        </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+
+                <!-- Gráfico de Asistencia -->
+                <div class="card">
+                    <div class="card-header border-0">
+                        <h3 class="card-title"><i class="fas fa-chart-bar text-primary mr-2"></i>Asistencia - Últimos 7 días</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container" style="height:250px;">
+                            <canvas id="chartAsistencia"></canvas>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-        
-        <!-- Torneos Activos -->
-        <?php if (!empty($torneosActivos)): ?>
-        <div class="row">
-            <div class="col-12">
+
+            <div class="col-lg-4">
+                <!-- Jugadores por Categoría -->
                 <div class="card">
                     <div class="card-header border-0">
-                        <h3 class="card-title">
-                            <i class="fas fa-trophy text-warning mr-2"></i>
-                            Torneos Activos
-                        </h3>
-                        <div class="card-tools">
-                            <a href="<?= url('futbol', 'torneo', 'index') ?>" class="btn btn-sm btn-link">
-                                Ver todos <i class="fas fa-arrow-right ml-1"></i>
-                            </a>
-                        </div>
+                        <h3 class="card-title"><i class="fas fa-layer-group mr-2" style="color:<?= $moduloColor ?>"></i>Jugadores por Categoría</h3>
                     </div>
                     <div class="card-body">
-                        <div class="row">
-                            <?php foreach ($torneosActivos as $torneo): ?>
-                            <div class="col-md-4">
-                                <div class="card bg-gradient-success">
-                                    <div class="card-body">
-                                        <h5 class="card-title text-white">
-                                            <i class="fas fa-trophy mr-2"></i>
-                                            <?= htmlspecialchars($torneo['nombre'] ?? 'Torneo') ?>
-                                        </h5>
-                                        <p class="card-text text-white-50">
-                                            <?= date('d/m/Y', strtotime($torneo['fecha_inicio'] ?? 'now')) ?> - 
-                                            <?= date('d/m/Y', strtotime($torneo['fecha_fin'] ?? 'now')) ?>
-                                        </p>
-                                    </div>
+                        <?php if (empty($jugadores_categoria)): ?>
+                        <p class="text-muted text-center">Sin datos de categorías</p>
+                        <?php else: ?>
+                        <?php foreach ($jugadores_categoria as $cat): ?>
+                        <?php $pctCat = $totalJugadores > 0 ? round(((int)$cat['total']) / $totalJugadores * 100) : 0; ?>
+                        <div class="progress-group mb-2">
+                            <span class="progress-text"><?= htmlspecialchars($cat['fct_nombre']) ?></span>
+                            <span class="float-right"><b><?= (int)$cat['total'] ?></b>/<?= $totalJugadores ?></span>
+                            <div class="progress progress-sm">
+                                <div class="progress-bar" style="width:<?= $pctCat ?>%;background:<?= htmlspecialchars($cat['fct_color'] ?? $moduloColor) ?>"></div>
+                            </div>
+                        </div>
+                        <?php endforeach; ?>
+                        <?php endif; ?>
+                    </div>
+                </div>
+
+                <!-- Próximos Torneos -->
+                <div class="card bg-gradient-success">
+                    <div class="card-body">
+                        <h5 class="text-white"><i class="fas fa-trophy mr-1"></i> Próximos Torneos</h5>
+                        <?php if (empty($torneosData)): ?>
+                        <p class="text-white-50">No hay torneos programados</p>
+                        <?php else: ?>
+                        <div class="row mt-3">
+                            <?php foreach ($torneosData as $torneo): ?>
+                            <div class="col-12 mb-2">
+                                <div class="text-white font-weight-bold">
+                                    <i class="fas fa-trophy text-warning mr-1"></i>
+                                    <?= htmlspecialchars($torneo['fto_nombre'] ?? '—') ?>
+                                </div>
+                                <div class="text-white-50 small">
+                                    <?= !empty($torneo['fto_fecha_inicio']) ? date('d/m/Y', strtotime($torneo['fto_fecha_inicio'])) : '' ?>
+                                    <?= !empty($torneo['fto_sede_torneo']) ? ' - ' . htmlspecialchars($torneo['fto_sede_torneo']) : '' ?>
                                 </div>
                             </div>
                             <?php endforeach; ?>
                         </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+
+                <!-- Últimas Inscripciones -->
+                <div class="card">
+                    <div class="card-header border-0">
+                        <h3 class="card-title"><i class="fas fa-clipboard-list mr-2 text-warning"></i>Últimas Inscripciones</h3>
+                    </div>
+                    <div class="card-body p-0">
+                        <?php if (empty($ultimas)): ?>
+                        <div class="text-center py-3 text-muted"><small>Sin inscripciones recientes</small></div>
+                        <?php else: ?>
+                        <ul class="list-group list-group-flush">
+                            <?php foreach ($ultimas as $ins): ?>
+                            <li class="list-group-item d-flex justify-content-between align-items-center py-2">
+                                <div>
+                                    <strong class="d-block" style="font-size:.85rem"><?= htmlspecialchars($ins['alumno']) ?></strong>
+                                    <small class="text-muted"><?= htmlspecialchars($ins['grupo']) ?></small>
+                                </div>
+                                <div class="text-right">
+                                    <?php
+                                    $estBadge = ['ACTIVA'=>'success','CANCELADA'=>'danger','SUSPENDIDA'=>'warning','COMPLETADA'=>'info'];
+                                    $bc = $estBadge[$ins['fin_estado']] ?? 'secondary';
+                                    ?>
+                                    <span class="badge badge-<?= $bc ?>"><?= $ins['fin_estado'] ?></span>
+                                    <br><small class="text-muted"><?= date('d/m', strtotime($ins['fin_fecha_inscripcion'])) ?></small>
+                                </div>
+                            </li>
+                            <?php endforeach; ?>
+                        </ul>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
         </div>
-        <?php endif; ?>
-        
     </div>
 </section>
 
 <?php ob_start(); ?>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Chart de Reservas
-    const ctxReservas = document.getElementById('chartReservas').getContext('2d');
-    new Chart(ctxReservas, {
-        type: 'line',
-        data: {
-            labels: <?= json_encode($chartReservas['labels']) ?>,
-            datasets: [{
-                label: 'Reservas',
-                data: <?= json_encode($chartReservas['data']) ?>,
-                borderColor: '#22C55E',
-                backgroundColor: 'rgba(34, 197, 94, 0.1)',
-                tension: 0.4,
-                fill: true,
-                pointBackgroundColor: '#22C55E',
-                pointBorderColor: '#fff',
-                pointBorderWidth: 2,
-                pointRadius: 5
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        stepSize: 1
-                    }
-                }
-            }
-        }
-    });
-    
-    // Chart de Ingresos
-    const ctxIngresos = document.getElementById('chartIngresos').getContext('2d');
-    new Chart(ctxIngresos, {
+// Gráfico de Asistencia
+var ctx = document.getElementById('chartAsistencia');
+if (ctx) {
+    new Chart(ctx.getContext('2d'), {
         type: 'bar',
         data: {
-            labels: <?= json_encode($chartIngresos['labels']) ?>,
-            datasets: [{
-                label: 'Ingresos',
-                data: <?= json_encode($chartIngresos['data']) ?>,
-                backgroundColor: '#F59E0B',
-                borderRadius: 5
-            }]
+            labels: <?= $chartLabels ?>,
+            datasets: [
+                { label: 'Presentes', data: <?= $chartPresente ?>, backgroundColor: '#22C55E', borderRadius: 4 },
+                { label: 'Ausentes',  data: <?= $chartAusente ?>,  backgroundColor: '#EF4444', borderRadius: 4 }
+            ]
         },
         options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        callback: function(value) {
-                            return '$' + value;
-                        }
-                    }
-                }
-            }
+            responsive: true, maintainAspectRatio: false,
+            scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } },
+            plugins: { legend: { position: 'bottom' } }
         }
     });
+}
+
+// Cambio de sede - filtro global
+$('#sedeFilterDash').on('change', function() {
+    var sedeId = $(this).val();
+    $.post('<?= url('futbol', 'sede', 'seleccionar') ?>', { id: sedeId, csrf_token: '<?= $csrf_token ?? '' ?>' }, function() { location.reload(); }, 'json');
 });
 </script>
 <?php $scripts = ob_get_clean(); ?>

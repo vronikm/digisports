@@ -58,6 +58,9 @@ class DataProtection {
             'cli_telefono'       => ['hash' => false],
             'cli_celular'        => ['hash' => false],
         ],
+        'alumnos' => [
+            'alu_identificacion' => ['hash' => true],
+        ],
     ];
 
     // ══════════════════════════════════════════════════════════════

@@ -82,18 +82,18 @@ class DashboardController extends \App\Controllers\ModuleController {
 
             // Ingresos reales del mes (pagos completados)
             $stmt = $this->db->prepare("
-                SELECT COALESCE(SUM(rpa_monto), 0) 
+                SELECT COALESCE(SUM(pag_monto), 0) 
                 FROM instalaciones_reserva_pagos 
-                WHERE rpa_tenant_id = ? AND rpa_fecha >= ? AND rpa_estado = 'COMPLETADO'
+                WHERE pag_tenant_id = ? AND pag_fecha_pago >= ? AND pag_estado = 'COMPLETADO'
             ");
             $stmt->execute([$tenantId, $inicioMes]);
             $ingresosReservas = (float) $stmt->fetchColumn();
             
             // + Ingresos por entradas del mes
             $stmt = $this->db->prepare("
-                SELECT COALESCE(SUM(ent_monto_total), 0)
+                SELECT COALESCE(SUM(ent_total), 0)
                 FROM instalaciones_entradas
-                WHERE ent_tenant_id = ? AND ent_fecha >= ? AND ent_estado = 'ACTIVA'
+                WHERE ent_tenant_id = ? AND ent_fecha_entrada >= ? AND ent_estado = 'ACTIVA'
             ");
             $stmt->execute([$tenantId, $inicioMes]);
             $ingresosEntradas = (float) $stmt->fetchColumn();
@@ -105,9 +105,9 @@ class DashboardController extends \App\Controllers\ModuleController {
             $inicioMesAnterior = date('Y-m-01', strtotime('-1 month'));
             $finMesAnterior = date('Y-m-t', strtotime('-1 month'));
             $stmt = $this->db->prepare("
-                SELECT COALESCE(SUM(rpa_monto), 0) 
+                SELECT COALESCE(SUM(pag_monto), 0) 
                 FROM instalaciones_reserva_pagos 
-                WHERE rpa_tenant_id = ? AND rpa_fecha >= ? AND rpa_fecha <= ? AND rpa_estado = 'COMPLETADO'
+                WHERE pag_tenant_id = ? AND pag_fecha_pago >= ? AND pag_fecha_pago <= ? AND pag_estado = 'COMPLETADO'
             ");
             $stmt->execute([$tenantId, $inicioMesAnterior, $finMesAnterior]);
             $ingresosAnterior = (float) $stmt->fetchColumn();
@@ -125,16 +125,16 @@ class DashboardController extends \App\Controllers\ModuleController {
 
             // Entradas vendidas hoy
             $stmt = $this->db->prepare("
-                SELECT COALESCE(SUM(ent_cantidad), 0) 
+                SELECT COUNT(*) 
                 FROM instalaciones_entradas 
-                WHERE ent_tenant_id = ? AND ent_fecha = ? AND ent_estado = 'ACTIVA'
+                WHERE ent_tenant_id = ? AND ent_fecha_entrada = ? AND ent_estado = 'ACTIVA'
             ");
             $stmt->execute([$tenantId, $hoy]);
             $default[4]['value'] = (int) $stmt->fetchColumn();
 
             // Saldo total en monederos activos
             $stmt = $this->db->prepare("
-                SELECT COALESCE(SUM(abo_saldo), 0)
+                SELECT COALESCE(SUM(abo_saldo_disponible), 0)
                 FROM instalaciones_abonos
                 WHERE abo_tenant_id = ? AND abo_estado = 'ACTIVO'
             ");
@@ -170,7 +170,7 @@ class DashboardController extends \App\Controllers\ModuleController {
     private function getReservasHoy($tenantId) {
         try {
             $stmt = $this->db->prepare("
-                SELECT r.reserva_id, r.hora_inicio, r.hora_fin, r.estado, r.total,
+                SELECT r.reserva_id, r.hora_inicio, r.hora_fin, r.estado, r.precio_total,
                        c.nombre AS cancha_nombre,
                        CONCAT(cl.cli_nombres, ' ', cl.cli_apellidos) AS cliente_nombre
                 FROM reservas r
@@ -212,14 +212,14 @@ class DashboardController extends \App\Controllers\ModuleController {
     private function getUltimosPagos($tenantId) {
         try {
             $stmt = $this->db->prepare("
-                SELECT p.rpa_pago_id, p.rpa_monto, p.rpa_metodo_pago, p.rpa_fecha, p.rpa_estado,
+                SELECT p.pag_pago_id, p.pag_monto, p.pag_tipo_pago, p.pag_fecha_pago, p.pag_estado,
                        CONCAT(cl.cli_nombres, ' ', cl.cli_apellidos) AS cliente_nombre,
-                       p.rpa_reserva_id
+                       p.pag_reserva_id
                 FROM instalaciones_reserva_pagos p
-                LEFT JOIN instalaciones_reservas r ON p.rpa_reserva_id = r.res_reserva_id
+                LEFT JOIN instalaciones_reservas r ON p.pag_reserva_id = r.res_reserva_id
                 LEFT JOIN clientes cl ON r.res_cliente_id = cl.cli_cliente_id
-                WHERE p.rpa_tenant_id = ? AND p.rpa_estado = 'COMPLETADO'
-                ORDER BY p.rpa_fecha DESC
+                WHERE p.pag_tenant_id = ? AND p.pag_estado = 'COMPLETADO'
+                ORDER BY p.pag_fecha_pago DESC
                 LIMIT 5
             ");
             $stmt->execute([$tenantId]);
@@ -239,16 +239,16 @@ class DashboardController extends \App\Controllers\ModuleController {
         
         try {
             $stmt = $this->db->prepare("
-                SELECT rpa_metodo_pago, COALESCE(SUM(rpa_monto), 0) as total
+                SELECT pag_tipo_pago, COALESCE(SUM(pag_monto), 0) as total
                 FROM instalaciones_reserva_pagos
-                WHERE rpa_tenant_id = ? AND rpa_fecha >= ? AND rpa_estado = 'COMPLETADO'
-                GROUP BY rpa_metodo_pago
+                WHERE pag_tenant_id = ? AND pag_fecha_pago >= ? AND pag_estado = 'COMPLETADO'
+                GROUP BY pag_tipo_pago
             ");
             $stmt->execute([$tenantId, $inicioMes]);
             $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
             
             foreach ($rows as $row) {
-                $m = $row['rpa_metodo_pago'];
+                $m = $row['pag_tipo_pago'];
                 if (isset($metodos[$m])) {
                     $metodos[$m] = (float)$row['total'];
                 }

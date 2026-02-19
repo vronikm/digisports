@@ -181,7 +181,7 @@ $moduloNombre    = $modulo_actual['nombre_personalizado'] ?? $modulo_actual['nom
                             <tbody>
                                 <?php foreach ($ultimosPagos as $p): ?>
                                 <tr>
-                                    <td><small><?= date('d/m H:i', strtotime($p['rpa_fecha'])) ?></small></td>
+                                    <td><small><?= date('d/m H:i', strtotime($p['pag_fecha_pago'])) ?></small></td>
                                     <td><?= htmlspecialchars($p['cliente_nombre'] ?? '-') ?></td>
                                     <td>
                                         <?php
@@ -191,12 +191,12 @@ $moduloNombre    = $modulo_actual['nombre_personalizado'] ?? $modulo_actual['nom
                                             'TRANSFERENCIA' => 'fas fa-university text-info',
                                             'MONEDERO' => 'fas fa-wallet text-warning',
                                         ];
-                                        $icM = $iconosM[$p['rpa_metodo_pago']] ?? 'fas fa-receipt';
+                                        $icM = $iconosM[$p['pag_tipo_pago']] ?? 'fas fa-receipt';
                                         ?>
                                         <i class="<?= $icM ?> mr-1"></i>
-                                        <small><?= $p['rpa_metodo_pago'] ?></small>
+                                        <small><?= $p['pag_tipo_pago'] ?></small>
                                     </td>
-                                    <td class="text-right"><strong class="text-success">$<?= number_format($p['rpa_monto'], 2) ?></strong></td>
+                                    <td class="text-right"><strong class="text-success">$<?= number_format($p['pag_monto'], 2) ?></strong></td>
                                 </tr>
                                 <?php endforeach; ?>
                             </tbody>

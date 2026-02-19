@@ -390,15 +390,31 @@ class ReservaController extends \App\Controllers\ModuleController {
                 $this->error('Reserva no encontrada');
             }
             
-            // Obtener detalles de líneas
-            $stmt = $this->db->prepare("
-                SELECT rl.*, t.hora_inicio, t.hora_fin
-                FROM reservas_lineas rl
-                INNER JOIN tarifas t ON rl.tarifa_id = t.tarifa_id
-                WHERE rl.reserva_id = ?
-            ");
-            $stmt->execute([$reserva_id]);
-            $lineas = $stmt->fetchAll();
+            // Obtener detalles de líneas (si existen en reservas_lineas)
+            $lineas = [];
+            try {
+                $stmt = $this->db->prepare("
+                    SELECT rl.*, t.hora_inicio as tarifa_hora_inicio, t.hora_fin as tarifa_hora_fin
+                    FROM reservas_lineas rl
+                    INNER JOIN tarifas t ON rl.tarifa_id = t.tarifa_id
+                    WHERE rl.reserva_id = ?
+                ");
+                $stmt->execute([$reserva_id]);
+                $lineas = $stmt->fetchAll();
+            } catch (\Exception $e) {
+                // Si la tabla no existe o falla, generamos línea virtual
+            }
+            
+            // Si no hay líneas de detalle, generar una línea resumen desde la reserva
+            if (empty($lineas)) {
+                $lineas = [[
+                    'hora_inicio' => $reserva['hora_inicio'],
+                    'hora_fin'    => $reserva['hora_fin'],
+                    'precio_unitario' => $reserva['precio_base'] ?? $reserva['precio_total'],
+                    'cantidad'    => 1,
+                    'precio_total' => $reserva['precio_total']
+                ]];
+            }
             
             $this->viewData['reserva'] = $reserva;
             $this->viewData['lineas'] = $lineas;
@@ -554,7 +570,7 @@ class ReservaController extends \App\Controllers\ModuleController {
             $kpis['pendientes_pago'] = (int)$stmt->fetchColumn();
             
             // Recaudado este mes (pagos reales)
-            $stmt = $this->db->prepare("SELECT COALESCE(SUM(rpa_monto),0) FROM instalaciones_reserva_pagos WHERE rpa_tenant_id = ? AND rpa_fecha >= ? AND rpa_estado = 'COMPLETADO'");
+            $stmt = $this->db->prepare("SELECT COALESCE(SUM(pag_monto),0) FROM instalaciones_reserva_pagos WHERE pag_tenant_id = ? AND pag_fecha_pago >= ? AND pag_estado = 'COMPLETADO'");
             $stmt->execute([$this->tenantId, $inicioMes]);
             $kpis['recaudado_mes'] = (float)$stmt->fetchColumn();
             
@@ -609,11 +625,11 @@ class ReservaController extends \App\Controllers\ModuleController {
             
             // Obtener historial de pagos
             $stmtPagos = $this->db->prepare("
-                SELECT rpa_pago_id, rpa_monto, rpa_metodo_pago, rpa_referencia,
-                       rpa_estado, rpa_fecha, rpa_notas
+                SELECT pag_pago_id, pag_monto, pag_tipo_pago, pag_referencia,
+                       pag_estado, pag_fecha_pago
                 FROM instalaciones_reserva_pagos
-                WHERE rpa_reserva_id = ? AND rpa_tenant_id = ?
-                ORDER BY rpa_fecha DESC
+                WHERE pag_reserva_id = ? AND pag_tenant_id = ?
+                ORDER BY pag_fecha_pago DESC
             ");
             $stmtPagos->execute([$reserva_id, $this->tenantId]);
             $pagos = $stmtPagos->fetchAll(\PDO::FETCH_ASSOC);

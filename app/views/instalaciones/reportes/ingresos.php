@@ -73,10 +73,10 @@ $totalMonto = 0;
                         </thead>
                         <tbody>
                             <?php foreach ($detalle as $d): ?>
-                            <?php $totalMonto += (float)$d['rpa_monto']; ?>
+                            <?php $totalMonto += (float)$d['pag_monto']; ?>
                             <tr>
-                                <td><small class="text-muted">#<?= $d['rpa_pago_id'] ?></small></td>
-                                <td><?= date('d/m/Y H:i', strtotime($d['rpa_fecha'])) ?></td>
+                                <td><small class="text-muted">#<?= $d['pag_pago_id'] ?></small></td>
+                                <td><?= date('d/m/Y H:i', strtotime($d['pag_fecha_pago'])) ?></td>
                                 <td><?= htmlspecialchars($d['cliente_nombre'] ?? '-') ?></td>
                                 <td><?= htmlspecialchars($d['cancha_nombre'] ?? '-') ?></td>
                                 <td>
@@ -87,12 +87,12 @@ $totalMonto = 0;
                                         'TRANSFERENCIA' => 'fas fa-university text-info',
                                         'MONEDERO' => 'fas fa-wallet text-warning',
                                     ];
-                                    $ic = $iconosM[$d['rpa_metodo_pago']] ?? 'fas fa-receipt';
+                                    $ic = $iconosM[$d['pag_tipo_pago']] ?? 'fas fa-receipt';
                                     ?>
-                                    <i class="<?= $ic ?> mr-1"></i> <?= $d['rpa_metodo_pago'] ?>
+                                    <i class="<?= $ic ?> mr-1"></i> <?= $d['pag_tipo_pago'] ?>
                                 </td>
-                                <td><small><?= htmlspecialchars($d['rpa_referencia'] ?? '-') ?></small></td>
-                                <td class="text-right"><strong>$<?= number_format($d['rpa_monto'], 2) ?></strong></td>
+                                <td><small><?= htmlspecialchars($d['pag_referencia'] ?? '-') ?></small></td>
+                                <td class="text-right"><strong>$<?= number_format($d['pag_monto'], 2) ?></strong></td>
                             </tr>
                             <?php endforeach; ?>
                         </tbody>

@@ -109,9 +109,9 @@ class ReporteArenaController extends \App\Controllers\ModuleController {
         try {
             // Pagos de reservas
             $stmt = $this->db->prepare("
-                SELECT COUNT(*) as num, COALESCE(SUM(rpa_monto),0) as total
+                SELECT COUNT(*) as num, COALESCE(SUM(pag_monto),0) as total
                 FROM instalaciones_reserva_pagos
-                WHERE rpa_tenant_id = ? AND rpa_fecha >= ? AND rpa_fecha <= ? AND rpa_estado = 'COMPLETADO'
+                WHERE pag_tenant_id = ? AND pag_fecha_pago >= ? AND pag_fecha_pago <= ? AND pag_estado = 'COMPLETADO'
             ");
             $stmt->execute([$tenantId, $desde, $hasta]);
             $row = $stmt->fetch(\PDO::FETCH_ASSOC);
@@ -120,9 +120,9 @@ class ReporteArenaController extends \App\Controllers\ModuleController {
 
             // Entradas
             $stmt = $this->db->prepare("
-                SELECT COUNT(*) as num, COALESCE(SUM(ent_monto_total),0) as total
+                SELECT COUNT(*) as num, COALESCE(SUM(ent_total),0) as total
                 FROM instalaciones_entradas
-                WHERE ent_tenant_id = ? AND ent_fecha >= ? AND ent_fecha <= ? AND ent_estado = 'ACTIVA'
+                WHERE ent_tenant_id = ? AND ent_fecha_entrada >= ? AND ent_fecha_entrada <= ? AND ent_estado = 'ACTIVA'
             ");
             $stmt->execute([$tenantId, $desde, $hasta]);
             $row = $stmt->fetch(\PDO::FETCH_ASSOC);
@@ -133,7 +133,7 @@ class ReporteArenaController extends \App\Controllers\ModuleController {
             $stmt = $this->db->prepare("
                 SELECT COALESCE(SUM(mov_monto),0) as total
                 FROM instalaciones_abono_movimientos
-                WHERE mov_tenant_id = ? AND mov_fecha >= ? AND mov_fecha <= ? AND mov_tipo = 'RECARGA'
+                WHERE mov_tenant_id = ? AND mov_fecha_registro >= ? AND mov_fecha_registro <= ? AND mov_tipo = 'RECARGA'
             ");
             $stmt->execute([$tenantId, $desde, $hasta]);
             $r['total_recargas'] = (float)$stmt->fetchColumn();
@@ -185,16 +185,16 @@ class ReporteArenaController extends \App\Controllers\ModuleController {
 
                 // Pagos reservas
                 $stmt = $this->db->prepare("
-                    SELECT COALESCE(SUM(rpa_monto),0) FROM instalaciones_reserva_pagos
-                    WHERE rpa_tenant_id = ? AND DATE(rpa_fecha) = ? AND rpa_estado = 'COMPLETADO'
+                    SELECT COALESCE(SUM(pag_monto),0) FROM instalaciones_reserva_pagos
+                    WHERE pag_tenant_id = ? AND DATE(pag_fecha_pago) = ? AND pag_estado = 'COMPLETADO'
                 ");
                 $stmt->execute([$tenantId, $fecha]);
                 $dataPagos[] = (float)$stmt->fetchColumn();
 
                 // Entradas
                 $stmt = $this->db->prepare("
-                    SELECT COALESCE(SUM(ent_monto_total),0) FROM instalaciones_entradas
-                    WHERE ent_tenant_id = ? AND ent_fecha = ? AND ent_estado = 'ACTIVA'
+                    SELECT COALESCE(SUM(ent_total),0) FROM instalaciones_entradas
+                    WHERE ent_tenant_id = ? AND ent_fecha_entrada = ? AND ent_estado = 'ACTIVA'
                 ");
                 $stmt->execute([$tenantId, $fecha]);
                 $dataEntradas[] = (float)$stmt->fetchColumn();
@@ -216,10 +216,10 @@ class ReporteArenaController extends \App\Controllers\ModuleController {
                     c.cli_cliente_id,
                     CONCAT(c.cli_nombres, ' ', c.cli_apellidos) as nombre,
                     COUNT(DISTINCT r.res_reserva_id) as num_reservas,
-                    COALESCE(SUM(p.rpa_monto), 0) as total_pagado
+                    COALESCE(SUM(p.pag_monto), 0) as total_pagado
                 FROM clientes c
                 INNER JOIN instalaciones_reservas r ON c.cli_cliente_id = r.res_cliente_id
-                LEFT JOIN instalaciones_reserva_pagos p ON r.res_reserva_id = p.rpa_reserva_id AND p.rpa_estado = 'COMPLETADO'
+                LEFT JOIN instalaciones_reserva_pagos p ON r.res_reserva_id = p.pag_reserva_id AND p.pag_estado = 'COMPLETADO'
                 WHERE r.res_tenant_id = ? AND r.res_fecha_reserva >= ? AND r.res_fecha_reserva <= ?
                 GROUP BY c.cli_cliente_id, c.cli_nombres, c.cli_apellidos
                 ORDER BY total_pagado DESC
@@ -270,7 +270,7 @@ class ReporteArenaController extends \App\Controllers\ModuleController {
             // Recargas en período
             $stmt = $this->db->prepare("
                 SELECT COALESCE(SUM(mov_monto),0) FROM instalaciones_abono_movimientos
-                WHERE mov_tenant_id = ? AND mov_fecha >= ? AND mov_fecha <= ? AND mov_tipo = 'RECARGA'
+                WHERE mov_tenant_id = ? AND mov_fecha_registro >= ? AND mov_fecha_registro <= ? AND mov_tipo = 'RECARGA'
             ");
             $stmt->execute([$tenantId, $desde, $hasta]);
             $result['recargas'] = (float)$stmt->fetchColumn();
@@ -278,14 +278,14 @@ class ReporteArenaController extends \App\Controllers\ModuleController {
             // Consumos en período
             $stmt = $this->db->prepare("
                 SELECT COALESCE(SUM(mov_monto),0) FROM instalaciones_abono_movimientos
-                WHERE mov_tenant_id = ? AND mov_fecha >= ? AND mov_fecha <= ? AND mov_tipo = 'CONSUMO'
+                WHERE mov_tenant_id = ? AND mov_fecha_registro >= ? AND mov_fecha_registro <= ? AND mov_tipo = 'CONSUMO'
             ");
             $stmt->execute([$tenantId, $desde, $hasta]);
             $result['consumos'] = (float)$stmt->fetchColumn();
 
             // Saldo total actual
             $stmt = $this->db->prepare("
-                SELECT COALESCE(SUM(abo_saldo),0), COUNT(*) 
+                SELECT COALESCE(SUM(abo_saldo_disponible),0), COUNT(*) 
                 FROM instalaciones_abonos 
                 WHERE abo_tenant_id = ? AND abo_estado = 'ACTIVO'
             ");
@@ -307,16 +307,16 @@ class ReporteArenaController extends \App\Controllers\ModuleController {
     private function getDetalleIngresos($tenantId, $desde, $hasta) {
         try {
             $stmt = $this->db->prepare("
-                SELECT p.rpa_pago_id, p.rpa_monto, p.rpa_metodo_pago, p.rpa_fecha,
-                       p.rpa_referencia, p.rpa_reserva_id,
+                SELECT p.pag_pago_id, p.pag_monto, p.pag_tipo_pago, p.pag_fecha_pago,
+                       p.pag_referencia, p.pag_reserva_id,
                        CONCAT(cl.cli_nombres, ' ', cl.cli_apellidos) as cliente_nombre,
                        c.nombre as cancha_nombre
                 FROM instalaciones_reserva_pagos p
-                INNER JOIN instalaciones_reservas r ON p.rpa_reserva_id = r.res_reserva_id
+                INNER JOIN instalaciones_reservas r ON p.pag_reserva_id = r.res_reserva_id
                 LEFT JOIN clientes cl ON r.res_cliente_id = cl.cli_cliente_id
                 LEFT JOIN canchas c ON r.res_instalacion_id = c.instalacion_id
-                WHERE p.rpa_tenant_id = ? AND p.rpa_fecha >= ? AND p.rpa_fecha <= ? AND p.rpa_estado = 'COMPLETADO'
-                ORDER BY p.rpa_fecha DESC
+                WHERE p.pag_tenant_id = ? AND p.pag_fecha_pago >= ? AND p.pag_fecha_pago <= ? AND p.pag_estado = 'COMPLETADO'
+                ORDER BY p.pag_fecha_pago DESC
             ");
             $stmt->execute([$tenantId, $desde, $hasta]);
             return $stmt->fetchAll(\PDO::FETCH_ASSOC);

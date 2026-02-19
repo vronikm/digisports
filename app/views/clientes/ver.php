@@ -206,11 +206,11 @@ $entradas = $entradas ?? [];
                                 <?php else: ?>
                                 <?php foreach ($pagos as $pago): ?>
                                 <tr>
-                                    <td><?= date('d/m/Y', strtotime($pago['rpa_fecha'])) ?></td>
-                                    <td><?= htmlspecialchars($pago['rpa_referencia'] ?? '—') ?></td>
-                                    <td><?= htmlspecialchars($pago['rpa_metodo_pago'] ?? 'N/A') ?></td>
+                                    <td><?= date('d/m/Y', strtotime($pago['pag_fecha_pago'])) ?></td>
+                                    <td><?= htmlspecialchars($pago['pag_referencia'] ?? '—') ?></td>
+                                    <td><?= htmlspecialchars($pago['pag_tipo_pago'] ?? 'N/A') ?></td>
                                     <td class="text-right font-weight-bold text-success">
-                                        $<?= number_format($pago['rpa_monto'] ?? 0, 2) ?>
+                                        $<?= number_format($pago['pag_monto'] ?? 0, 2) ?>
                                     </td>
                                 </tr>
                                 <?php endforeach; ?>
@@ -244,13 +244,13 @@ $entradas = $entradas ?? [];
                                 <tr>
                                     <td><?= date('d/m/Y', strtotime($abono['abo_fecha_registro'])) ?></td>
                                     <td class="text-right font-weight-bold">
-                                        $<?= number_format($abono['abo_saldo'] ?? 0, 2) ?>
+                                        $<?= number_format($abono['abo_saldo_disponible'] ?? 0, 2) ?>
                                     </td>
                                     <td class="text-right text-success">
-                                        $<?= number_format($abono['abo_total_recargado'] ?? 0, 2) ?>
+                                        $<?= number_format($abono['abo_monto_total'] ?? 0, 2) ?>
                                     </td>
                                     <td class="text-right text-danger">
-                                        $<?= number_format($abono['abo_total_consumido'] ?? 0, 2) ?>
+                                        $<?= number_format($abono['abo_monto_utilizado'] ?? 0, 2) ?>
                                     </td>
                                     <td>
                                         <span class="badge <?= ($abono['abo_estado'] ?? '') === 'ACTIVO' ? 'badge-success' : 'badge-secondary' ?>">
@@ -288,12 +288,12 @@ $entradas = $entradas ?? [];
                             <tbody>
                                 <?php foreach ($entradas as $entrada): ?>
                                 <tr>
-                                    <td><?= date('d/m/Y', strtotime($entrada['ent_fecha'])) ?></td>
+                                    <td><?= date('d/m/Y', strtotime($entrada['ent_fecha_entrada'])) ?></td>
                                     <td><code><?= htmlspecialchars($entrada['ent_codigo'] ?? '—') ?></code></td>
-                                    <td><?= (int)($entrada['ent_cantidad'] ?? 1) ?></td>
-                                    <td><?= htmlspecialchars($entrada['ent_metodo_pago'] ?? 'N/A') ?></td>
+                                    <td><?= htmlspecialchars($entrada['ent_tipo'] ?? '-') ?></td>
+                                    <td><?= htmlspecialchars($entrada['ent_forma_pago'] ?? 'N/A') ?></td>
                                     <td class="text-right font-weight-bold text-success">
-                                        $<?= number_format($entrada['ent_monto_total'] ?? 0, 2) ?>
+                                        $<?= number_format($entrada['ent_total'] ?? 0, 2) ?>
                                     </td>
                                     <td>
                                         <span class="badge badge-success"><?= $entrada['ent_estado'] ?? 'ACTIVA' ?></span>
