@@ -147,7 +147,7 @@ include __DIR__ . '/../partials/header.php';
                             // Recopilar todas las características únicas
                             $todasCaracteristicas = [];
                             foreach ($planes as $plan) {
-                                $caracs = is_string($plan['sus_caracteristicas'] ?? '') ? json_decode($plan['sus_caracteristicas'], true) : ($plan['sus_caracteristicas'] ?? []);
+                                $caracs = is_string($plan['sus_caracteristicas'] ?? '') ? json_decode($plan['sus_caracteristicas'] ?? '[]', true) : [];
                                 foreach ($caracs ?? [] as $c) {
                                     if (!empty($c) && !in_array($c, $todasCaracteristicas)) {
                                         $todasCaracteristicas[] = $c;
@@ -161,7 +161,7 @@ include __DIR__ . '/../partials/header.php';
                                 <?php foreach ($planes as $plan): ?>
                                 <td class="text-center">
                                     <?php 
-                                    $caracs = is_string($plan['sus_caracteristicas'] ?? '') ? json_decode($plan['sus_caracteristicas'], true) : ($plan['sus_caracteristicas'] ?? []);
+                                    $caracs = is_string($plan['sus_caracteristicas'] ?? '') ? json_decode($plan['sus_caracteristicas'] ?? '[]', true) : [];
                                     if (in_array($carac, $caracs ?? [])):
                                     ?>
                                     <i class="fas fa-check text-success"></i>

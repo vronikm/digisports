@@ -171,7 +171,7 @@ include __DIR__ . '/../partials/header.php';
                                     </a>
                                     <?php endif; ?>
                                     <a href="<?= url('seguridad', 'usuario', 'resetPassword', ['id' => $u['usu_usuario_id']]) ?>" 
-                                       class="btn btn-secondary" title="Reset Password" onclick="return confirm('¿Resetear contraseña?')">
+                                       class="btn btn-secondary" title="Reset Password" data-action="reset-password" data-user-id="<?= $u['usu_usuario_id'] ?>">
                                         <i class="fas fa-key"></i>
                                     </a>
                                     <a href="<?= url('seguridad', 'usuario', 'eliminar', ['id' => $u['usu_usuario_id']]) ?>" 

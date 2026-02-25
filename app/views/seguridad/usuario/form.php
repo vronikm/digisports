@@ -23,7 +23,7 @@ $headerButtons  = [
 ];
 include __DIR__ . '/../partials/header.php';
 ?>
-        <form method="POST" action="<?= $esEdicion ? url('seguridad', 'usuario', 'editar', ['id' => $usuario['usu_usuario_id']]) : url('seguridad', 'usuario', 'crear') ?>">
+        <form method="POST" id="formEditarUsuario" action="<?= $esEdicion ? url('seguridad', 'usuario', 'editar', ['id' => $usuario['usu_usuario_id']]) : url('seguridad', 'usuario', 'crear') ?>">
             <div class="row">
                 <div class="col-md-8">
                     <!-- Datos personales -->
@@ -51,9 +51,11 @@ include __DIR__ . '/../partials/header.php';
                             <div class="row">
                                 <div class="col-md-4">
                                     <div class="form-group">
-                                        <label>Identificación</label>
-                                        <input type="text" name="usu_identificacion" class="form-control"
+                                        <label>Identificación (Cédula)</label>
+                                        <input type="text" id="inputIdentificacion" name="usu_identificacion" class="form-control" 
+                                               placeholder="Ej: 1234567890" maxlength="10"
                                                value="<?= htmlspecialchars($usuario['usu_identificacion'] ?? '') ?>">
+                                        <small id="identificacionMessage" class="d-block mt-2" style="display:none;"></small>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
@@ -84,8 +86,9 @@ include __DIR__ . '/../partials/header.php';
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>Email <span class="text-danger">*</span></label>
-                                        <input type="email" name="usu_email" class="form-control" required
+                                        <input type="email" id="inputEmail" name="usu_email" class="form-control" required
                                                value="<?= htmlspecialchars($usuario['usu_email'] ?? '') ?>">
+                                        <small id="emailMessage" class="d-block mt-2" style="display:none;"></small>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
@@ -105,15 +108,23 @@ include __DIR__ . '/../partials/header.php';
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>Contraseña <?= $esEdicion ? '' : '<span class="text-danger">*</span>' ?></label>
-                                        <input type="password" name="password" class="form-control" <?= $esEdicion ? '' : 'required' ?>
-                                               placeholder="<?= $esEdicion ? 'Dejar vacío para mantener actual' : '' ?>">
-                                        <small class="text-muted">Mínimo 8 caracteres, mayúsculas, números y símbolos</small>
+                                        <input type="password" id="inputPassword" name="password" class="form-control" <?= $esEdicion ? '' : 'required' ?>
+                                               placeholder="<?= $esEdicion ? 'Dejar vacío para mantener actual' : 'Ingrese contraseña segura' ?>">
+                                        <small class="text-muted d-block mt-2">Requisitos:</small>
+                                        <ul class="list-unstyled small mt-1">
+                                            <li id="req-length"><i class="fas fa-times text-danger"></i> <span class="text-muted">Mínimo 8 caracteres</span></li>
+                                            <li id="req-uppercase"><i class="fas fa-times text-danger"></i> <span class="text-muted">Al menos 1 mayúscula (A-Z)</span></li>
+                                            <li id="req-number"><i class="fas fa-times text-danger"></i> <span class="text-muted">Al menos 1 número (0-9)</span></li>
+                                            <li id="req-symbol"><i class="fas fa-times text-danger"></i> <span class="text-muted">Al menos 1 símbolo (!@#$%)</span></li>
+                                        </ul>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>Confirmar Contraseña</label>
-                                        <input type="password" name="password_confirm" class="form-control">
+                                        <input type="password" id="inputPasswordConfirm" name="password_confirm" class="form-control"
+                                               placeholder="Repita la contraseña">
+                                        <small id="passwordMatchMessage" class="d-block mt-2" style="display:none;"></small>
                                     </div>
                                 </div>
                             </div>

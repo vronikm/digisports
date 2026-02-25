@@ -363,18 +363,45 @@ class UsuarioController extends \App\Controllers\ModuleController {
     public function resetPassword() {
         $this->authorize('editar', 'usuarios');
         $id = $_GET['id'] ?? 0;
+        $isAjax = isset($_GET['ajax']) || (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest');
+        
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $nuevaPassword = bin2hex(random_bytes(4)); // 8 caracteres
+            $success = false;
+            $message = '';
+            
             try {
                 $stmt = $this->db->prepare("UPDATE seguridad_usuarios SET usu_password = ?, usu_debe_cambiar_password = 'S' WHERE usu_usuario_id = ?");
                 $stmt->execute([password_hash($nuevaPassword, PASSWORD_ARGON2ID), $id]);
-                setFlashMessage('success', "Contraseña reseteada: $nuevaPassword");
+                $success = true;
+                $message = "Contraseña restablecida correctamente";
             } catch (\Exception $e) {
-                setFlashMessage('error', 'Error al resetear contraseña');
+                $success = false;
+                $message = 'Error al resetear contraseña: ' . $e->getMessage();
+            }
+            
+            // Responder en formato JSON si es petición AJAX
+            if ($isAjax) {
+                header('Content-Type: application/json');
+                echo json_encode([
+                    'success' => $success,
+                    'message' => $message,
+                    'password' => $success ? $nuevaPassword : null,
+                    'redirect' => url('seguridad', 'usuario', 'index')
+                ]);
+                exit;
+            }
+            
+            // Comportamiento original si no es AJAX
+            if ($success) {
+                setFlashMessage('success', "Contraseña reseteada: $nuevaPassword");
+            } else {
+                setFlashMessage('error', $message);
             }
             redirect('seguridad', 'usuario', 'index');
             return;
         }
+        
         $this->renderModule('usuario/resetPassword', [
             'usuario_id' => $id,
             'pageTitle' => 'Confirmar Reseteo de Contraseña'

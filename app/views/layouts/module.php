@@ -239,7 +239,20 @@ if (!is_string($moduloIcono) || trim($moduloIcono) === '') {
         }
     </style>
 </head>
-<body class="hold-transition sidebar-mini layout-fixed">
+<?php
+// Capturar flash message para mostrar como Toast
+$flashType = null;
+$flashMessage = null;
+foreach (['success', 'error', 'warning', 'info'] as $tipo) {
+    $msg = getFlashMessage($tipo);
+    if ($msg) {
+        $flashType = $tipo;
+        $flashMessage = $msg;
+        break;
+    }
+}
+?>
+<body class="hold-transition sidebar-mini layout-fixed" <?php if ($flashMessage): ?>data-flash-type="<?= htmlspecialchars($flashType) ?>" data-flash-message="<?= htmlspecialchars($flashMessage) ?>"<?php endif; ?>>
 <div class="wrapper">
     
     <!-- Navbar -->
@@ -439,6 +452,20 @@ if (!is_string($moduloIcono) || trim($moduloIcono) === '') {
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <!-- SweetAlert2 -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<!-- Scripts específicos por módulo/función -->
+<?php
+if (isset($moduloActual['codigo'])) {
+    $modCode = strtolower($moduloActual['codigo']);
+    // Script específico para Seguridad - Usuario
+    if ($modCode === 'seguridad') {
+        $usuarioScriptPath = BASE_PATH . '/public/assets/js/seguridad-usuario.js';
+        if (file_exists($usuarioScriptPath)) {
+            echo '<script src="/digisports/public/assets/js/seguridad-usuario.js"></script>' . "\n";
+        }
+    }
+}
+?>
 
 <?php if (isset($scripts)): ?>
 <?= $scripts ?>
