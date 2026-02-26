@@ -511,6 +511,80 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
+    // ==========================================
+    // 8. MANEJO DE ELIMINACIÓN CON SWEETALERT2
+    // ==========================================
+    document.querySelectorAll('[data-action="delete-user"]').forEach(boton => {
+        boton.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const userId = this.getAttribute('data-user-id');
+            const href = this.getAttribute('href');
+            
+            // Mostrar confirmación con SweetAlert2
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    title: '¿Eliminar usuario?',
+                    text: 'Esta acción no se puede deshacer. ¿Desea continuar?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#dc3545',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Sí, eliminar',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Hacer petición AJAX al servidor
+                        deleteUserAjax(href);
+                    }
+                });
+            } else {
+                // Fallback si SweetAlert2 no está disponible
+                if (confirm('¿Eliminar usuario?\nEsta acción no se puede deshacer.')) {
+                    window.location.href = href;
+                }
+            }
+        });
+    });
+    
+    // Función auxiliar para ejecutar eliminación vía AJAX
+    function deleteUserAjax(url) {
+        // Agregar parámetro para indicar AJAX
+        const urlFinal = url + (url.indexOf('?') > -1 ? '&' : '?') + 'ajax=1';
+        
+        fetch(urlFinal, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({})
+        })
+        .then(response => {
+            // Verificar el status HTTP
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Mostrar toast de éxito o error
+            if (data.success) {
+                mostrarToastGlobal(data.message || 'Usuario eliminado correctamente', 'success');
+                // Redirigir después de 1.5 segundos
+                setTimeout(() => {
+                    window.location.href = data.redirect || window.location.href.split('?')[0];
+                }, 1500);
+            } else {
+                mostrarToastGlobal(data.message || 'Error al eliminar usuario', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error en AJAX:', error);
+            mostrarToastGlobal('Error al procesar la solicitud: ' + error.message, 'error');
+        });
+    }
+    
 });
 
 /**

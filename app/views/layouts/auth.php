@@ -283,9 +283,13 @@
         <div class="auth-card">
             <div class="auth-header">
                 <div class="auth-logo">
-                    <i class="fas fa-futbol"></i>
+                    <!--i class="fas fa-futbol"></i-->
+                    <img src="/digisports/public/assets/images/login.png" 
+                        alt="Login" 
+                        class="img-fluid"
+                        style="max-width:160px;">
                 </div>
-                <h1>DigiSports</h1>
+                <!--h1>DigiSports</h1-->
                 <p><?php echo htmlspecialchars($title ?? '') ?></p>
             </div>
             

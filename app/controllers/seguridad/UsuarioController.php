@@ -287,7 +287,12 @@ class UsuarioController extends \App\Controllers\ModuleController {
     public function eliminar() {
         $this->authorize('eliminar', 'usuarios');
         $id = $_GET['id'] ?? 0;
+        $isAjax = isset($_GET['ajax']) || (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest');
+        
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $success = false;
+            $message = '';
+            
             try {
                 $stmtPrev = $this->db->prepare("SELECT * FROM seguridad_usuarios WHERE usu_usuario_id = ?");
                 $stmtPrev->execute([$id]);
@@ -295,14 +300,35 @@ class UsuarioController extends \App\Controllers\ModuleController {
                 $stmt = $this->db->prepare("UPDATE seguridad_usuarios SET usu_estado = 'E' WHERE usu_usuario_id = ?");
                 $stmt->execute([$id]);
                 $this->registrarAuditoria('eliminar_usuario', 'usuario', $id, $datosAntes, null);
-                setFlashMessage('success', 'Usuario eliminado correctamente');
+                $success = true;
+                $message = 'Usuario eliminado correctamente';
             } catch (\Exception $e) {
                 $this->registrarAuditoria('eliminar_usuario', 'usuario', $id, null, null, 'error', $e->getMessage());
-                setFlashMessage('error', 'Error al eliminar usuario');
+                $success = false;
+                $message = 'Error al eliminar usuario: ' . $e->getMessage();
+            }
+            
+            // Responder en formato JSON si es petición AJAX
+            if ($isAjax) {
+                header('Content-Type: application/json');
+                echo json_encode([
+                    'success' => $success,
+                    'message' => $message,
+                    'redirect' => url('seguridad', 'usuario', 'index')
+                ]);
+                exit;
+            }
+            
+            // Comportamiento original si no es AJAX
+            if ($success) {
+                setFlashMessage('success', $message);
+            } else {
+                setFlashMessage('error', $message);
             }
             redirect('seguridad', 'usuario', 'index');
             return;
         }
+        
         $this->renderModule('usuario/eliminar', [
             'usuario_id' => $id,
             'pageTitle' => 'Confirmar Eliminación de Usuario'

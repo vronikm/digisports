@@ -213,8 +213,16 @@ $content = $content ?? '';
                 <!-- User Menu -->
                 <li class="nav-item dropdown">
                     <a class="nav-link" data-toggle="dropdown" href="#">
-                        <img src="<?php echo $user['avatar'] ?? 'https://ui-avatars.com/api/?name=' . urlencode(($user['nombres'] ?? 'U') . '+' . ($user['apellidos'] ?? '')) . '&background=random' ?>" 
-                             class="img-circle" alt="User" style="width: 30px; height: 30px; object-fit: cover;">
+                        <?php
+                        $nombreCompleto = trim(($user['nombres'] ?? 'U') . ' ' . ($user['apellidos'] ?? ''));
+                        $avatar = generarAvatarUrl($user['avatar'] ?? null, $nombreCompleto);
+                        ?>
+                        <img src="<?= htmlspecialchars($avatar['src'], ENT_QUOTES, 'UTF-8') ?>" 
+                             class="img-circle" 
+                             alt="Usuario <?= htmlspecialchars($avatar['alt'], ENT_QUOTES, 'UTF-8') ?>" 
+                             style="width: 30px; height: 30px; object-fit: cover;"
+                             data-fallback-avatar="true"
+                             loading="lazy">
                         <span class="d-none d-md-inline ml-1">
                             <?php echo htmlspecialchars($user['nombres'] ?? 'Usuario') ?>
                         </span>

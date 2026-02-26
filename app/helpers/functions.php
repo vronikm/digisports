@@ -678,3 +678,37 @@ function logMessage($message, $type = 'info') {
     
     @file_put_contents($logFile, $logEntry, FILE_APPEND);
 }
+
+/**
+ * Generar URL de avatar de forma robusta
+ * 
+ * Válida el nombre del usuario y genera una URL segura hacia ui-avatars.com
+ * con fallback automático a imagen local si la carga falla.
+ * 
+ * @param string|null $avatarUrl URL del avatar guardado localmente (opcional)
+ * @param string $nombreUsuario Nombre del usuario para generar avatar genérico
+ * @param string $background Color de fondo en hex (por defecto: 6366F1 - Indigo)
+ * @return array Arreglo con 'src' y 'alt' para HTML
+ */
+function generarAvatarUrl($avatarUrl = null, $nombreUsuario = 'Usuario', $background = '6366F1') {
+    // Validar y limpiar nombre de usuario
+    $nombreUsuario = trim($nombreUsuario ?? 'Usuario');
+    $nombreUsuario = !empty($nombreUsuario) ? $nombreUsuario : 'Usuario';
+    
+    // Usar avatar local si existe, sino generar desde ui-avatars.com
+    if (!empty($avatarUrl)) {
+        // Si hay URL local, usarla directamente
+        $url = $avatarUrl;
+    } else {
+        // Construir URL de ui-avatars.com de forma segura
+        // urlencode ya maneja la seguridad de los parámetros
+        $url = 'https://ui-avatars.com/api/?name=' . urlencode($nombreUsuario) . 
+               '&background=' . $background . 
+               '&color=fff&size=32';
+    }
+    
+    return [
+        'src' => $url,
+        'alt' => $nombreUsuario
+    ];
+}

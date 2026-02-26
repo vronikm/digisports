@@ -121,8 +121,16 @@ include __DIR__ . '/../partials/header.php';
                             <td><?= $u['usu_usuario_id'] ?></td>
                             <td>
                                 <div class="d-flex align-items-center">
-                                    <img src="<?= $u['usu_avatar'] ?: 'https://ui-avatars.com/api/?name=' . urlencode($u['usu_nombres'] ?? '') . '&background=6366F1&color=fff&size=32' ?>" 
-                                         class="rounded-circle mr-2" width="32" height="32">
+                                    <?php
+                                    $avatar = generarAvatarUrl($u['usu_avatar'] ?? null, $u['usu_nombres'] ?? 'Usuario');
+                                    ?>
+                                    <img src="<?= htmlspecialchars($avatar['src'], ENT_QUOTES, 'UTF-8') ?>" 
+                                         class="rounded-circle mr-2" 
+                                         width="32" 
+                                         height="32"
+                                         alt="Avatar de <?= htmlspecialchars($avatar['alt'], ENT_QUOTES, 'UTF-8') ?>"
+                                         data-fallback-avatar="true"
+                                         loading="lazy">
                                     <div>
                                         <strong><?= htmlspecialchars(($u['usu_nombres'] ?? '') . ' ' . ($u['usu_apellidos'] ?? '')) ?></strong>
                                         <br><small class="text-muted">@<?= htmlspecialchars($u['usu_username'] ?? '') ?></small>
@@ -175,7 +183,7 @@ include __DIR__ . '/../partials/header.php';
                                         <i class="fas fa-key"></i>
                                     </a>
                                     <a href="<?= url('seguridad', 'usuario', 'eliminar', ['id' => $u['usu_usuario_id']]) ?>" 
-                                       class="btn btn-danger" title="Eliminar" onclick="return confirm('¿Eliminar usuario?')">
+                                       class="btn btn-danger" title="Eliminar" data-action="delete-user" data-user-id="<?= $u['usu_usuario_id'] ?>">
                                         <i class="fas fa-trash"></i>
                                     </a>
                                 </div>
