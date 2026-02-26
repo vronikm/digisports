@@ -597,7 +597,7 @@ $title = $title ?? 'DigiSports Hub';
                 </div>
                 <div class="hub-logo-text">
                     <h1>DigiSports</h1>
-                    <span>Plataforma de Gestión Deportiva</span>
+                    <span>Impulsa tu deporte</span>
                 </div>
             </div>
             

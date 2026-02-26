@@ -284,7 +284,7 @@
             <div class="auth-header">
                 <div class="auth-logo">
                     <!--i class="fas fa-futbol"></i-->
-                    <img src="/digisports/public/assets/images/login.png" 
+                    <img src="/public/assets/images/login.png" 
                         alt="Login" 
                         class="img-fluid"
                         style="max-width:160px;">
