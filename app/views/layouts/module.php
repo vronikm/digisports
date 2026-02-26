@@ -453,6 +453,9 @@ foreach (['success', 'error', 'warning', 'info'] as $tipo) {
 <!-- SweetAlert2 -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+<!-- Scripts de utilidades globales -->
+<script src="/digisports/public/assets/js/avatar-fallback.js"></script>
+
 <!-- Scripts específicos por módulo/función -->
 <?php
 if (isset($moduloActual['codigo'])) {
