@@ -96,9 +96,9 @@ $estadosColores = [
                         <option value="">Todas las canchas</option>
                         <?php if (!empty($canchas)): ?>
                             <?php foreach ($canchas as $cancha): ?>
-                                <option value="<?php echo $cancha['cancha_id']; ?>" 
-                                        <?php echo $cancha_id == $cancha['cancha_id'] ? 'selected' : ''; ?>>
-                                    <?php echo htmlspecialchars($cancha['nombre']); ?>
+                                <option value="<?php echo $cancha['can_cancha_id']; ?>" 
+                                        <?php echo $cancha_id == $cancha['can_cancha_id'] ? 'selected' : ''; ?>>
+                                    <?php echo htmlspecialchars($cancha['can_nombre']); ?>
                                 </option>
                             <?php endforeach; ?>
                         <?php endif; ?>

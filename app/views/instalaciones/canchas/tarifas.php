@@ -146,7 +146,7 @@ $diasSemana = [
                                     <tr>
                                         <td class="fw-semibold">
                                             <span class="badge bg-primary">
-                                                <?php echo $diasSemana[$tarifa['dia_semana']]; ?>
+                                                <?php echo htmlspecialchars($tarifa['aplica_dia'] ?? 'N/A'); ?>
                                             </span>
                                         </td>
                                         <td>
@@ -155,11 +155,11 @@ $diasSemana = [
                                         </td>
                                         <td>
                                             <span class="fw-bold text-success">
-                                                $ <?php echo number_format($tarifa['precio'], 2); ?>
+                                                $ <?php echo number_format($tarifa['precio_por_hora'], 2); ?>
                                             </span>
                                         </td>
                                         <td>
-                                            <?php if ($tarifa['estado'] === 'ACTIVO'): ?>
+                                            <?php if ($tarifa['estado'] === 'A'): ?>
                                                 <span class="badge bg-success">Activo</span>
                                             <?php else: ?>
                                                 <span class="badge bg-warning">Inactivo</span>
@@ -174,7 +174,7 @@ $diasSemana = [
                                                 </button>
                                                 <button type="button" class="btn btn-outline-danger btn-delete-tarifa" 
                                                         data-id="<?php echo $tarifa['tarifa_id']; ?>"
-                                                        data-dia="<?php echo $diasSemana[$tarifa['dia_semana']]; ?>"
+                                                        data-dia="<?php echo htmlspecialchars($tarifa['aplica_dia']); ?>"
                                                         data-url="<?php echo url('instalaciones', 'cancha', 'eliminarTarifa', ['id' => $tarifa['tarifa_id'], 'cancha_id' => $cancha['cancha_id']]); ?>"
                                                         title="Eliminar">
                                                     <i class="fas fa-trash"></i>
@@ -239,10 +239,10 @@ $diasSemana = [
 <script>
 function editarTarifa(tarifa) {
     document.getElementById('tarifa_id').value = tarifa.tarifa_id;
-    document.getElementById('dia_semana').value = tarifa.dia_semana;
+    document.getElementById('dia_semana').value = tarifa.aplica_dia;
     document.getElementById('hora_inicio').value = tarifa.hora_inicio;
     document.getElementById('hora_fin').value = tarifa.hora_fin;
-    document.getElementById('precio').value = tarifa.precio;
+    document.getElementById('precio').value = tarifa.precio_por_hora;
     document.getElementById('estado').value = tarifa.estado;
     
     // Notificar al usuario

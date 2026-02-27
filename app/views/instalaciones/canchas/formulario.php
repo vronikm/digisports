@@ -33,7 +33,7 @@ $urlListado = url('instalaciones', 'cancha', 'index');
                         <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrf_token); ?>">
                         
                         <?php if ($modo === 'editar'): ?>
-                            <input type="hidden" name="cancha_id" value="<?php echo $cancha['cancha_id']; ?>">
+                            <input type="hidden" name="cancha_id" value="<?php echo $cancha['can_cancha_id']; ?>">
                         <?php endif; ?>
 
                         <!-- Sección 1: Información Básica -->
@@ -46,7 +46,7 @@ $urlListado = url('instalaciones', 'cancha', 'index');
                                 <div class="col-md-6 mb-3">
                                     <label for="nombre" class="form-label">Nombre de la Cancha <span class="text-danger">*</span></label>
                                     <input type="text" id="nombre" name="nombre" class="form-control" required
-                                           value="<?php echo htmlspecialchars($cancha['nombre'] ?? ''); ?>"
+                                           value="<?php echo htmlspecialchars($cancha['can_nombre'] ?? ''); ?>"
                                            minlength="3" maxlength="100" 
                                            placeholder="Ej: Cancha 1, Piscina A">
                                     <small class="text-muted d-block mt-1">3 a 100 caracteres</small>
@@ -56,31 +56,31 @@ $urlListado = url('instalaciones', 'cancha', 'index');
                                     <label for="tipo" class="form-label">Tipo de Cancha <span class="text-danger">*</span></label>
                                     <select id="tipo" name="tipo" class="form-select" required>
                                         <option value="">Selecciona un tipo...</option>
-                                        <option value="futbol" <?php echo ($cancha['tipo'] ?? '') === 'futbol' ? 'selected' : ''; ?>>
+                                        <option value="futbol" <?php echo ($cancha['can_tipo'] ?? '') === 'futbol' ? 'selected' : ''; ?>>
                                             ⚽ Fútbol
                                         </option>
-                                        <option value="futbol_sala" <?php echo ($cancha['tipo'] ?? '') === 'futbol_sala' ? 'selected' : ''; ?>>
+                                        <option value="futbol_sala" <?php echo ($cancha['can_tipo'] ?? '') === 'futbol_sala' ? 'selected' : ''; ?>>
                                             ⚽ Fútbol Sala
                                         </option>
-                                        <option value="tenis" <?php echo ($cancha['tipo'] ?? '') === 'tenis' ? 'selected' : ''; ?>>
+                                        <option value="tenis" <?php echo ($cancha['can_tipo'] ?? '') === 'tenis' ? 'selected' : ''; ?>>
                                             🎾 Tenis
                                         </option>
-                                        <option value="padel" <?php echo ($cancha['tipo'] ?? '') === 'padel' ? 'selected' : ''; ?>>
+                                        <option value="padel" <?php echo ($cancha['can_tipo'] ?? '') === 'padel' ? 'selected' : ''; ?>>
                                             🏐 Pádel
                                         </option>
-                                        <option value="voleibol" <?php echo ($cancha['tipo'] ?? '') === 'voleibol' ? 'selected' : ''; ?>>
+                                        <option value="voleibol" <?php echo ($cancha['can_tipo'] ?? '') === 'voleibol' ? 'selected' : ''; ?>>
                                             🏐 Voleibol
                                         </option>
-                                        <option value="basquetbol" <?php echo ($cancha['tipo'] ?? '') === 'basquetbol' ? 'selected' : ''; ?>>
+                                        <option value="basquetbol" <?php echo ($cancha['can_tipo'] ?? '') === 'basquetbol' ? 'selected' : ''; ?>>
                                             🏀 Basquetbol
                                         </option>
-                                        <option value="piscina" <?php echo ($cancha['tipo'] ?? '') === 'piscina' ? 'selected' : ''; ?>>
+                                        <option value="piscina" <?php echo ($cancha['can_tipo'] ?? '') === 'piscina' ? 'selected' : ''; ?>>
                                             🏊 Piscina
                                         </option>
-                                        <option value="gimnasio" <?php echo ($cancha['tipo'] ?? '') === 'gimnasio' ? 'selected' : ''; ?>>
+                                        <option value="gimnasio" <?php echo ($cancha['can_tipo'] ?? '') === 'gimnasio' ? 'selected' : ''; ?>>
                                             💪 Gimnasio
                                         </option>
-                                        <option value="otro" <?php echo ($cancha['tipo'] ?? '') === 'otro' ? 'selected' : ''; ?>>
+                                        <option value="otro" <?php echo ($cancha['can_tipo'] ?? '') === 'otro' ? 'selected' : ''; ?>>
                                             ➕ Otro
                                         </option>
                                     </select>
@@ -106,7 +106,7 @@ $urlListado = url('instalaciones', 'cancha', 'index');
                                 <div class="col-md-12 mb-3">
                                     <label for="descripcion" class="form-label">Descripción</label>
                                     <textarea id="descripcion" name="descripcion" class="form-control" rows="3"
-                                              maxlength="500" placeholder="Información adicional sobre la cancha..."><?php echo htmlspecialchars($cancha['descripcion'] ?? ''); ?></textarea>
+                                              maxlength="500" placeholder="Información adicional sobre la cancha..."><?php echo htmlspecialchars($cancha['can_descripcion'] ?? ''); ?></textarea>
                                     <small class="text-muted d-block mt-1">Máximo 500 caracteres</small>
                                 </div>
                             </div>
@@ -123,7 +123,7 @@ $urlListado = url('instalaciones', 'cancha', 'index');
                                     <label for="capacidad_maxima" class="form-label">Capacidad Máxima <span class="text-danger">*</span></label>
                                     <input type="number" id="capacidad_maxima" name="capacidad_maxima" 
                                            class="form-control" required min="1" max="1000"
-                                           value="<?php echo htmlspecialchars($cancha['capacidad_maxima'] ?? ''); ?>"
+                                           value="<?php echo htmlspecialchars($cancha['can_capacidad_maxima'] ?? ''); ?>"
                                            placeholder="Número de personas">
                                     <small class="text-muted d-block mt-1">Límite de personas simultáneas</small>
                                 </div>
@@ -132,7 +132,7 @@ $urlListado = url('instalaciones', 'cancha', 'index');
                                     <label for="largo" class="form-label">Largo (metros)</label>
                                     <input type="number" id="largo" name="largo" 
                                            class="form-control" min="0" step="0.1"
-                                           value="<?php echo htmlspecialchars($cancha['largo'] ?? ''); ?>"
+                                           value="<?php echo htmlspecialchars($cancha['can_largo'] ?? ''); ?>"
                                            placeholder="0.00">
                                 </div>
 
@@ -140,7 +140,7 @@ $urlListado = url('instalaciones', 'cancha', 'index');
                                     <label for="ancho" class="form-label">Ancho (metros)</label>
                                     <input type="number" id="ancho" name="ancho" 
                                            class="form-control" min="0" step="0.1"
-                                           value="<?php echo htmlspecialchars($cancha['ancho'] ?? ''); ?>"
+                                           value="<?php echo htmlspecialchars($cancha['can_ancho'] ?? ''); ?>"
                                            placeholder="0.00">
                                 </div>
                             </div>
@@ -158,7 +158,7 @@ $urlListado = url('instalaciones', 'cancha', 'index');
                                         <div class="form-check form-check-inline">
                                             <input class="form-check-input" type="radio" id="estadoActivo" 
                                                    name="estado" value="ACTIVO" 
-                                                   <?php echo ($cancha['estado'] ?? '') === 'ACTIVO' ? 'checked' : ''; ?>>
+                                                   <?php echo ($cancha['can_estado'] ?? '') === 'ACTIVO' ? 'checked' : ''; ?>>
                                             <label class="form-check-label" for="estadoActivo">
                                                 <span class="badge bg-success">Activo</span>
                                             </label>
@@ -168,7 +168,7 @@ $urlListado = url('instalaciones', 'cancha', 'index');
                                         <div class="form-check form-check-inline">
                                             <input class="form-check-input" type="radio" id="estadoInactivo" 
                                                    name="estado" value="INACTIVO" 
-                                                   <?php echo ($cancha['estado'] ?? '') === 'INACTIVO' ? 'checked' : ''; ?>>
+                                                   <?php echo ($cancha['can_estado'] ?? '') === 'INACTIVO' ? 'checked' : ''; ?>>
                                             <label class="form-check-label" for="estadoInactivo">
                                                 <span class="badge bg-warning">Inactivo</span>
                                             </label>

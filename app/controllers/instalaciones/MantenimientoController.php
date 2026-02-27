@@ -37,14 +37,14 @@ class MantenimientoController extends \App\Controllers\ModuleController {
             $query = "
                 SELECT 
                     m.*,
-                    c.nombre as cancha_nombre,
-                    c.tipo as cancha_tipo,
+                    c.can_nombre as cancha_nombre,
+                    c.can_tipo as cancha_tipo,
                     i.ins_nombre as instalacion_nombre,
-                    CONCAT(u.nombres, ' ', u.apellidos) as responsable_nombre
+                    CONCAT(u.usu_nombres, ' ', u.usu_apellidos) as responsable_nombre
                 FROM mantenimientos m
-                INNER JOIN canchas c ON m.cancha_id = c.cancha_id
-                INNER JOIN instalaciones i ON c.instalacion_id = i.ins_instalacion_id
-                LEFT JOIN usuarios u ON m.responsable_id = u.usuario_id
+                INNER JOIN instalaciones_canchas c ON m.cancha_id = c.can_cancha_id
+                INNER JOIN instalaciones i ON c.can_instalacion_id = i.ins_instalacion_id
+                LEFT JOIN seguridad_usuarios u ON m.responsable_id = u.usu_usuario_id
                 WHERE m.tenant_id = ?
             ";
             
@@ -93,10 +93,10 @@ class MantenimientoController extends \App\Controllers\ModuleController {
             
             // Obtener canchas para filtro
             $stmt = $this->db->prepare("
-                SELECT DISTINCT c.cancha_id, c.nombre
-                FROM canchas c
-                WHERE c.tenant_id = ? AND c.estado = 'ACTIVO'
-                ORDER BY c.nombre
+                SELECT DISTINCT c.can_cancha_id as cancha_id, c.can_nombre as nombre
+                FROM instalaciones_canchas c
+                WHERE c.can_tenant_id = ? AND c.can_estado = 'ACTIVO'
+                ORDER BY c.can_nombre
             ");
             $stmt->execute([$this->tenantId]);
             
@@ -131,16 +131,16 @@ class MantenimientoController extends \App\Controllers\ModuleController {
         try {
             $stmt = $this->db->prepare("
                 SELECT m.*,
-                       c.nombre AS cancha_nombre,
-                       c.tipo AS cancha_tipo,
-                       c.capacidad_maxima,
+                       c.can_nombre AS cancha_nombre,
+                       c.can_tipo AS cancha_tipo,
+                       c.can_capacidad_maxima AS capacidad_maxima,
                        i.ins_nombre AS instalacion_nombre,
-                       CONCAT(u.nombres, ' ', u.apellidos) AS responsable_nombre,
-                       u.email AS responsable_email
+                       CONCAT(u.usu_nombres, ' ', u.usu_apellidos) AS responsable_nombre,
+                       u.usu_email AS responsable_email
                 FROM mantenimientos m
-                INNER JOIN canchas c ON m.cancha_id = c.cancha_id
-                INNER JOIN instalaciones i ON c.instalacion_id = i.ins_instalacion_id
-                LEFT JOIN usuarios u ON m.responsable_id = u.usuario_id
+                INNER JOIN instalaciones_canchas c ON m.cancha_id = c.can_cancha_id
+                INNER JOIN instalaciones i ON c.can_instalacion_id = i.ins_instalacion_id
+                LEFT JOIN seguridad_usuarios u ON m.responsable_id = u.usu_usuario_id
                 WHERE m.mantenimiento_id = ? AND m.tenant_id = ?
             ");
             $stmt->execute([$mantenimientoId, $this->tenantId]);
@@ -182,20 +182,20 @@ class MantenimientoController extends \App\Controllers\ModuleController {
         try {
             // Obtener canchas disponibles
             $stmt = $this->db->prepare("
-                SELECT cancha_id, nombre, tipo
-                FROM canchas 
-                WHERE tenant_id = ? AND estado = 'ACTIVO'
-                ORDER BY nombre
+                SELECT can_cancha_id as cancha_id, can_nombre as nombre, can_tipo as tipo
+                FROM instalaciones_canchas 
+                WHERE can_tenant_id = ? AND can_estado = 'ACTIVO'
+                ORDER BY can_nombre
             ");
             $stmt->execute([$this->tenantId]);
             
             // Obtener usuarios con rol de técnico/admin
             $stmt2 = $this->db->prepare("
-                SELECT u.usuario_id, CONCAT(u.nombres, ' ', u.apellidos) AS nombre, u.email
-                FROM usuarios u
-                INNER JOIN roles r ON u.rol_id = r.rol_id
-                WHERE u.tenant_id = ? AND r.codigo IN ('ADMIN', 'SUPERADMIN', 'TECNICO')
-                ORDER BY u.nombres
+                SELECT u.usu_usuario_id as usuario_id, CONCAT(u.usu_nombres, ' ', u.usu_apellidos) AS nombre, u.usu_email as email
+                FROM seguridad_usuarios u
+                INNER JOIN seguridad_roles r ON u.usu_rol_id = r.rol_rol_id
+                WHERE u.usu_tenant_id = ? AND r.rol_codigo IN ('ADMIN', 'SUPERADMIN', 'TECNICO')
+                ORDER BY u.usu_nombres
             ");
             $stmt2->execute([$this->tenantId]);
             
@@ -273,8 +273,8 @@ class MantenimientoController extends \App\Controllers\ModuleController {
             
             // Verificar que la cancha pertenece al tenant
             $stmt = $this->db->prepare("
-                SELECT cancha_id FROM canchas 
-                WHERE cancha_id = ? AND tenant_id = ?
+                SELECT can_cancha_id FROM instalaciones_canchas 
+                WHERE can_cancha_id = ? AND can_tenant_id = ?
             ");
             $stmt->execute([$canchaId, $this->tenantId]);
             
@@ -352,20 +352,20 @@ class MantenimientoController extends \App\Controllers\ModuleController {
             
             // Obtener canchas
             $stmt = $this->db->prepare("
-                SELECT cancha_id, nombre, tipo
-                FROM canchas 
-                WHERE tenant_id = ? AND estado = 'ACTIVO'
-                ORDER BY nombre
+                SELECT can_cancha_id as cancha_id, can_nombre as nombre, can_tipo as tipo
+                FROM instalaciones_canchas 
+                WHERE can_tenant_id = ? AND can_estado = 'ACTIVO'
+                ORDER BY can_nombre
             ");
             $stmt->execute([$this->tenantId]);
             
             // Obtener usuarios
             $stmt2 = $this->db->prepare("
-                SELECT u.usuario_id, CONCAT(u.nombres, ' ', u.apellidos) AS nombre, u.email
-                FROM usuarios u
-                INNER JOIN roles r ON u.rol_id = r.rol_id
-                WHERE u.tenant_id = ? AND r.codigo IN ('ADMIN', 'SUPERADMIN', 'TECNICO')
-                ORDER BY u.nombres
+                SELECT u.usu_usuario_id as usuario_id, CONCAT(u.usu_nombres, ' ', u.usu_apellidos) AS nombre, u.usu_email as email
+                FROM seguridad_usuarios u
+                INNER JOIN seguridad_roles r ON u.usu_rol_id = r.rol_rol_id
+                WHERE u.usu_tenant_id = ? AND r.rol_codigo IN ('ADMIN', 'SUPERADMIN', 'TECNICO')
+                ORDER BY u.usu_nombres
             ");
             $stmt2->execute([$this->tenantId]);
             

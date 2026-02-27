@@ -100,8 +100,8 @@ class DashboardController extends \BaseController {
         
         try {
             // Contar usuarios
-            if ($this->tableExists('usuarios')) {
-                $stmt = $this->db->prepare("SELECT COUNT(*) as total FROM usuarios WHERE tenant_id = ? AND estado = 'A'");
+            if ($this->tableExists('seguridad_usuarios')) {
+                $stmt = $this->db->prepare("SELECT COUNT(*) as total FROM seguridad_usuarios WHERE usu_tenant_id = ? AND usu_estado = 'A'");
                 $stmt->execute([$this->tenantId]);
                 $result = $stmt->fetch();
                 $stats['total_usuarios'] = $result['total'] ?? 0;
@@ -248,13 +248,13 @@ class DashboardController extends \BaseController {
                     // Reservas por instalación (top 5)
                     $stmt = $this->db->prepare("
                         SELECT 
-                            i.nombre,
+                            i.ins_nombre,
                             COUNT(*) as total_reservas
                         FROM reservas r
-                        INNER JOIN instalaciones i ON r.instalacion_id = i.instalacion_id
+                        INNER JOIN instalaciones i ON r.instalacion_id = i.ins_instalacion_id
                         WHERE r.tenant_id = ?
                         AND r.fecha_reserva >= DATE_SUB(CURDATE(), INTERVAL 3 MONTH)
-                        GROUP BY i.instalacion_id
+                        GROUP BY i.ins_instalacion_id
                         ORDER BY total_reservas DESC
                         LIMIT 5
                     ");
@@ -384,8 +384,8 @@ class DashboardController extends \BaseController {
                 $stmt = $this->db->prepare("
                     SELECT COUNT(*) as total
                     FROM instalacion_bloqueos ib
-                    INNER JOIN instalaciones i ON ib.instalacion_id = i.instalacion_id
-                    WHERE i.tenant_id = ?
+                    INNER JOIN instalaciones i ON ib.instalacion_id = i.ins_instalacion_id
+                    WHERE i.ins_tenant_id = ?
                     AND CURDATE() BETWEEN DATE(ib.fecha_inicio) AND DATE(ib.fecha_fin)
                 ");
                 $stmt->execute([$this->tenantId]);
@@ -447,13 +447,13 @@ class DashboardController extends \BaseController {
             $stmt = $this->db->prepare("
                 SELECT 
                     r.*,
-                    i.nombre as instalacion,
+                    i.ins_nombre as instalacion,
                     i.foto_principal,
-                    c.nombres as cliente_nombres,
-                    c.apellidos as cliente_apellidos
+                    c.cli_nombres as cliente_nombres,
+                    c.cli_apellidos as cliente_apellidos
                 FROM reservas r
-                INNER JOIN instalaciones i ON r.instalacion_id = i.instalacion_id
-                INNER JOIN clientes c ON r.cliente_id = c.cliente_id
+                INNER JOIN instalaciones i ON r.instalacion_id = i.ins_instalacion_id
+                INNER JOIN clientes c ON r.cliente_id = c.cli_cliente_id
                 WHERE r.tenant_id = ?
                 AND r.fecha_reserva = CURDATE()
                 ORDER BY r.hora_inicio ASC

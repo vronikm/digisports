@@ -1,0 +1,109 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║                                                                            ║
+║            ERROR 400 - MÓDULO MANTENIMIENTOS: SOLUCIÓN DEFINITIVA         ║
+║                                                                            ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+
+🔴 PROBLEMA ACTUAL:
+   {
+     "success": false,
+     "message": "Error al cargar los mantenimientos",
+     "error_code": 400
+   }
+
+
+✅ CAUSA IDENTIFICADA:
+   La base de datos falta las VISTAS de compatibilidad que mapean:
+   - usuarios → seguridad_usuarios
+   - roles → seguridad_roles
+   - mantenimientos → instalaciones_mantenimientos
+
+
+═════════════════════════════════════════════════════════════════════════════
+
+⚡ SOLUCIÓN (2 MINUTOS):
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃  PASO 1: ABRE ESTA URL EN TU NAVEGADOR                                  ┃
+┃                                                                         ┃
+┃  http://localhost/digisports/public/setup_views.php                    ┃
+┃                                                                         ┃
+┃  ⏳ Espera a que termine (20-30 segundos)                              ┃
+┃                                                                         ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+Deberías ver en la pantalla:
+
+    1. Creando vista 'usuarios'...
+       ✓ Vista 'usuarios' creada
+
+    2. Creando vista 'roles'...
+       ✓ Vista 'roles' creada
+
+    3. Verificando vista 'mantenimientos'...
+       ✓ Vista 'mantenimientos' creada/actualizada
+
+    ✓ Todas las vistas se crearon correctamente.
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃  PASO 2: PRUEBA EL MÓDULO DE MANTENIMIENTOS                              ┃
+┃                                                                         ┃
+┃  Accede a tu aplicación y abre el módulo de Mantenimientos             ┃
+┃                                                                         ┃
+┃  Debería cargar SIN error 400 ✓                                        ┃
+┃                                                                         ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+
+═════════════════════════════════════════════════════════════════════════════
+
+❌ ¿QUÉ HACER SI RECBO ERROR EN EL PASO 1?
+
+Opción 1: Reintentar
+   → Abre de nuevo la URL, a veces necesita 2-3 intentos
+
+Opción 2: Verificar conexión
+   → Abre http://localhost/digisports/public/index.php
+   → Si carga, tu aplicación está conectada a la BD
+
+Opción 3: Manual (Si eres admin de BD)
+   → Copia el contenido de: database/fase1_vistas_compatibilidad.sql
+   → Pégalo en MySQL Workbench o phpmyadmin
+   → Ejecuta como SQL directo
+
+
+═════════════════════════════════════════════════════════════════════════════
+
+✨ CAMBIOS REALIZADOS EN EL CÓDIGO:
+
+   5 controladores fueron corregidos para usar las nuevas tablas:
+   ✓ MantenimientoController.php
+   ✓ FacturaController.php
+   ✓ TenantController.php
+   ✓ DashboardController.php
+   ✓ AuthController.php
+
+   Las vistas de compatibilidad hacen que funcione TODO.
+
+
+═════════════════════════════════════════════════════════════════════════════
+
+📝 PREGUNTAS FRECUENTES:
+
+Q: ¿Qué son las vistas?
+A: Son tablas "virtuales" que mapean nombres antiguos a los nuevos.
+   Cuando MySQL ve "SELECT FROM usuarios", lo redirige a "seguridad_usuarios"
+
+Q: ¿Puedo eliminar el archivo setup_views.php después?
+A: Sí, después de que funcione.
+
+Q: ¿Paso 1 no funciona... ¿qué hago?
+A: Lee la sección "❌ ¿QUÉ HACER SI RECBO ERROR..." de arriba.
+
+Q: ¿Otros módulos también tienen problemas?
+A: El error 400 en cualquier módulo también se resuelve con estos cambios.
+
+
+═════════════════════════════════════════════════════════════════════════════

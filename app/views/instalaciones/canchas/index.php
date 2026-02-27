@@ -53,7 +53,7 @@ $urlIndex = url('instalaciones', 'cancha', 'index');
                     <h4 class="fw-bold text-success">
                         <?php
                         $cntActivas = 0;
-                        foreach ($canchas as $c) { if ($c['estado'] === 'ACTIVO') $cntActivas++; }
+                        foreach ($canchas as $c) { if ($c['can_estado'] === 'ACTIVO') $cntActivas++; }
                         echo $cntActivas;
                         ?>
                     </h4>
@@ -128,23 +128,23 @@ $urlIndex = url('instalaciones', 'cancha', 'index');
                     <?php if (!empty($canchas)): ?>
                         <?php foreach ($canchas as $cancha): ?>
                             <tr>
-                                <td class="fw-semibold"><?php echo htmlspecialchars($cancha['nombre']); ?></td>
+                                <td class="fw-semibold"><?php echo htmlspecialchars($cancha['can_nombre']); ?></td>
                                 <td><?php echo htmlspecialchars($cancha['instalacion_nombre'] ?? ''); ?></td>
                                 <td>
                                     <span class="badge bg-secondary">
-                                        <?php echo ucfirst($cancha['tipo']); ?>
+                                        <?php echo ucfirst($cancha['can_tipo']); ?>
                                     </span>
                                 </td>
-                                <td><?php echo $cancha['capacidad_maxima']; ?> personas</td>
+                                <td><?php echo $cancha['can_capacidad_maxima']; ?> personas</td>
                                 <td>
                                     <span class="badge bg-info">
                                         <?php echo $cancha['total_reservas_hoy'] ?? 0; ?>
                                     </span>
                                 </td>
                                 <td>
-                                    <?php if ($cancha['estado'] === 'ACTIVO'): ?>
+                                    <?php if ($cancha['can_estado'] === 'ACTIVO'): ?>
                                         <span class="badge bg-success">Activa</span>
-                                    <?php elseif ($cancha['estado'] === 'INACTIVO'): ?>
+                                    <?php elseif ($cancha['can_estado'] === 'INACTIVO'): ?>
                                         <span class="badge bg-warning">Inactiva</span>
                                     <?php else: ?>
                                         <span class="badge bg-danger">Eliminada</span>
@@ -152,22 +152,22 @@ $urlIndex = url('instalaciones', 'cancha', 'index');
                                 </td>
                                 <td>
                                     <div class="btn-group btn-group-sm">
-                                        <a href="<?php echo url('instalaciones', 'cancha', 'ver', ['id' => $cancha['cancha_id']]); ?>" 
+                                        <a href="<?php echo url('instalaciones', 'cancha', 'ver', ['id' => $cancha['can_cancha_id']]); ?>" 
                                            class="btn btn-outline-info" title="Ver detalle">
                                             <i class="fas fa-eye"></i>
                                         </a>
-                                        <a href="<?php echo url('instalaciones', 'cancha', 'tarifas', ['id' => $cancha['cancha_id']]); ?>" 
+                                        <a href="<?php echo url('instalaciones', 'cancha', 'tarifas', ['id' => $cancha['can_cancha_id']]); ?>" 
                                            class="btn btn-outline-success" title="Tarifas">
                                             <i class="fas fa-dollar-sign"></i>
                                         </a>
-                                        <a href="<?php echo url('instalaciones', 'cancha', 'editar', ['id' => $cancha['cancha_id']]); ?>" 
+                                        <a href="<?php echo url('instalaciones', 'cancha', 'editar', ['id' => $cancha['can_cancha_id']]); ?>" 
                                            class="btn btn-outline-primary" title="Editar">
                                             <i class="fas fa-edit"></i>
                                         </a>
                                         <button type="button" class="btn btn-outline-danger btn-delete" 
-                                                data-id="<?php echo $cancha['cancha_id']; ?>"
-                                                data-nombre="<?php echo htmlspecialchars($cancha['nombre']); ?>"
-                                                data-url="<?php echo url('instalaciones', 'cancha', 'eliminar', ['id' => $cancha['cancha_id'], 'confirmed' => 1]); ?>"
+                                                data-id="<?php echo $cancha['can_cancha_id']; ?>"
+                                                data-nombre="<?php echo htmlspecialchars($cancha['can_nombre']); ?>"
+                                                data-url="<?php echo url('instalaciones', 'cancha', 'eliminar', ['id' => $cancha['can_cancha_id'], 'confirmed' => 1]); ?>"
                                                 title="Eliminar">
                                             <i class="fas fa-trash"></i>
                                         </button>

@@ -44,9 +44,9 @@ class ReservaController extends \App\Controllers\ModuleController {
             
             // Obtener tipos de cancha
             $stmt = $this->db->prepare("
-                SELECT DISTINCT tipo FROM canchas 
-                WHERE tenant_id = ? AND estado = 'ACTIVO'
-                ORDER BY tipo
+                SELECT DISTINCT can_tipo FROM instalaciones_canchas 
+                WHERE can_tenant_id = ? AND can_estado = 'ACTIVO'
+                ORDER BY can_tipo
             ");
             $stmt->execute([$this->tenantId]);
             $tipos = array_column($stmt->fetchAll(), 'tipo');
@@ -56,13 +56,13 @@ class ReservaController extends \App\Controllers\ModuleController {
             
             if (!empty($fecha) && $instalacion_id > 0) {
                 // Obtener canchas de la instalación (filtrar por tipo si se especifica)
-                $sql = "SELECT cancha_id, nombre, tipo, capacidad_maxima, ancho, largo
-                        FROM canchas
-                        WHERE instalacion_id = ? AND tenant_id = ? AND estado = 'ACTIVO'";
+                $sql = "SELECT can_cancha_id as cancha_id, can_nombre as nombre, can_tipo as tipo, can_capacidad_maxima as capacidad_maxima, can_ancho as ancho, can_largo as largo
+                        FROM instalaciones_canchas
+                        WHERE can_instalacion_id = ? AND can_tenant_id = ? AND can_estado = 'ACTIVO'";
                 $params = [$instalacion_id, $this->tenantId];
                 
                 if (!empty($tipo_cancha)) {
-                    $sql .= " AND tipo = ?";
+                    $sql .= " AND can_tipo = ?";
                     $params[] = $tipo_cancha;
                 }
                 
@@ -106,13 +106,13 @@ class ReservaController extends \App\Controllers\ModuleController {
                             UNION ALL
                             
                             SELECT NULL as tipo_bloqueo,
-                                   r.hora_inicio,
-                                   r.hora_fin
-                            FROM reservas r
-                            INNER JOIN canchas c ON c.instalacion_id = r.instalacion_id
-                            WHERE c.cancha_id = ?
-                            AND r.fecha_reserva = ?
-                            AND r.estado IN ('CONFIRMADA', 'PENDIENTE')
+                                   r.res_hora_inicio,
+                                   r.res_hora_fin
+                            FROM instalaciones_reservas r
+                            INNER JOIN instalaciones_canchas c ON c.can_instalacion_id = r.res_instalacion_id
+                            WHERE c.can_cancha_id = ?
+                            AND r.res_fecha_reserva = ?
+                            AND r.res_estado IN ('CONFIRMADA', 'PENDIENTE')
                         ) bloques
                         ORDER BY hora_inicio
                     ");
@@ -243,11 +243,11 @@ class ReservaController extends \App\Controllers\ModuleController {
             
             // Obtener información de cancha y tarifa (incluir instalacion_id)
             $stmt = $this->db->prepare("
-                SELECT c.*, c.instalacion_id, t.precio, t.hora_inicio, t.hora_fin, t.dia_semana
-                FROM canchas c
-                INNER JOIN tarifas t ON c.cancha_id = t.cancha_id
-                WHERE c.cancha_id = ? AND t.tarifa_id = ? 
-                AND c.tenant_id = ? AND c.estado = 'ACTIVO'
+                SELECT c.*, c.can_instalacion_id as instalacion_id, t.precio, t.hora_inicio, t.hora_fin, t.dia_semana
+                FROM instalaciones_canchas c
+                INNER JOIN tarifas t ON c.can_cancha_id = t.can_cancha_id
+                WHERE c.can_cancha_id = ? AND t.tarifa_id = ? 
+                AND c.can_tenant_id = ? AND c.can_estado = 'ACTIVO'
             ");
             $stmt->execute([$cancha_id, $tarifa_id, $this->tenantId]);
             $info = $stmt->fetch();
@@ -263,11 +263,11 @@ class ReservaController extends \App\Controllers\ModuleController {
             
             // Verificar que no haya conflicto de horario (usar instalacion_id)
             $stmt = $this->db->prepare("
-                SELECT COUNT(*) as total FROM reservas
-                WHERE instalacion_id = ? 
-                AND fecha_reserva = ?
-                AND hora_inicio = ?
-                AND estado IN ('CONFIRMADA', 'PENDIENTE')
+                SELECT COUNT(*) as total FROM instalaciones_reservas
+                WHERE res_instalacion_id = ? 
+                AND res_fecha_reserva = ?
+                AND res_hora_inicio = ?
+                AND res_estado IN ('CONFIRMADA', 'PENDIENTE')
             ");
             $stmt->execute([
                 $info['instalacion_id'],
@@ -316,12 +316,12 @@ class ReservaController extends \App\Controllers\ModuleController {
             
             // Crear reserva con estructura correcta
             $stmt = $this->db->prepare("
-                INSERT INTO reservas (
-                    tenant_id, instalacion_id, cliente_id,
-                    fecha_reserva, hora_inicio, hora_fin,
-                    duracion_minutos, tarifa_aplicada_id,
-                    precio_base, precio_total,
-                    estado, observaciones, usuario_registro
+                INSERT INTO instalaciones_reservas (
+                    res_tenant_id, res_instalacion_id, res_cliente_id,
+                    res_fecha_reserva, res_hora_inicio, res_hora_fin,
+                    res_duracion_minutos, res_tarifa_aplicada_id,
+                    res_precio_base, res_precio_total,
+                    res_estado, res_observaciones, res_usuario_registro
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'PENDIENTE', ?, ?)
             ");
             
@@ -376,12 +376,12 @@ class ReservaController extends \App\Controllers\ModuleController {
         
         try {
             $stmt = $this->db->prepare("
-                SELECT r.*, c.nombre as cancha_nombre, c.tipo as cancha_tipo,
+                SELECT r.*, c.can_nombre as cancha_nombre, c.can_tipo as cancha_tipo,
                        i.ins_nombre as instalacion_nombre
-                FROM reservas r
-                INNER JOIN canchas c ON r.instalacion_id = c.instalacion_id
-                INNER JOIN instalaciones i ON c.instalacion_id = i.ins_instalacion_id
-                WHERE r.reserva_id = ? AND r.tenant_id = ?
+                FROM instalaciones_reservas r
+                INNER JOIN instalaciones_canchas c ON r.res_instalacion_id = c.can_instalacion_id
+                INNER JOIN instalaciones i ON c.can_instalacion_id = i.ins_instalacion_id
+                WHERE r.res_reserva_id = ? AND r.res_tenant_id = ?
             ");
             $stmt->execute([$reserva_id, $this->tenantId]);
             $reserva = $stmt->fetch();
@@ -450,42 +450,42 @@ class ReservaController extends \App\Controllers\ModuleController {
                        i.ins_nombre as instalacion_nombre,
                        c.cli_nombres as cliente_nombre,
                        c.cli_apellidos as cliente_apellidos
-                FROM reservas r
-                INNER JOIN instalaciones i ON r.instalacion_id = i.ins_instalacion_id
-                LEFT JOIN clientes c ON r.cliente_id = c.cli_cliente_id
-                WHERE r.tenant_id = ?
+                FROM instalaciones_reservas r
+                INNER JOIN instalaciones i ON r.res_instalacion_id = i.ins_instalacion_id
+                LEFT JOIN clientes c ON r.res_cliente_id = c.cli_cliente_id
+                WHERE r.res_tenant_id = ?
             ";
             
             $params = [$this->tenantId];
-            $countWhere = "WHERE tenant_id = ?";
+            $countWhere = "WHERE res_tenant_id = ?";
             $countParams = [$this->tenantId];
             
             // Filtro estado reserva
             if (!empty($estado)) {
-                $query .= " AND r.estado = ?";
+                $query .= " AND r.res_estado = ?";
                 $params[] = $estado;
-                $countWhere .= " AND estado = ?";
+                $countWhere .= " AND res_estado = ?";
                 $countParams[] = $estado;
             }
             
             // Filtro estado pago
             if (!empty($estadoPago)) {
-                $query .= " AND r.estado_pago = ?";
+                $query .= " AND r.res_estado_pago = ?";
                 $params[] = $estadoPago;
-                $countWhere .= " AND estado_pago = ?";
+                $countWhere .= " AND res_estado_pago = ?";
                 $countParams[] = $estadoPago;
             }
             
             // Filtro búsqueda (nombre cliente o ID reserva)
             if (!empty($buscar)) {
-                $query .= " AND (c.cli_nombres LIKE ? OR c.cli_apellidos LIKE ? OR CONCAT(c.cli_nombres,' ',c.cli_apellidos) LIKE ? OR r.reserva_id = ?)";
+                $query .= " AND (c.cli_nombres LIKE ? OR c.cli_apellidos LIKE ? OR CONCAT(c.cli_nombres,' ',c.cli_apellidos) LIKE ? OR r.res_reserva_id = ?)";
                 $like = "%{$buscar}%";
                 $params[] = $like;
                 $params[] = $like;
                 $params[] = $like;
                 $params[] = (int)$buscar;
                 // Count no incluye JOIN; usar subquery
-                $countWhere .= " AND (cliente_id IN (SELECT cli_cliente_id FROM clientes WHERE cli_nombres LIKE ? OR cli_apellidos LIKE ?) OR reserva_id = ?)";
+                $countWhere .= " AND (res_cliente_id IN (SELECT cli_cliente_id FROM clientes WHERE cli_nombres LIKE ? OR cli_apellidos LIKE ?) OR res_reserva_id = ?)";
                 $countParams[] = $like;
                 $countParams[] = $like;
                 $countParams[] = (int)$buscar;
@@ -493,22 +493,22 @@ class ReservaController extends \App\Controllers\ModuleController {
             
             // Filtro rango de fechas
             if (!empty($fechaDesde)) {
-                $query .= " AND r.fecha_reserva >= ?";
+                $query .= " AND r.res_fecha_reserva >= ?";
                 $params[] = $fechaDesde;
-                $countWhere .= " AND fecha_reserva >= ?";
+                $countWhere .= " AND res_fecha_reserva >= ?";
                 $countParams[] = $fechaDesde;
             }
             if (!empty($fechaHasta)) {
-                $query .= " AND r.fecha_reserva <= ?";
+                $query .= " AND r.res_fecha_reserva <= ?";
                 $params[] = $fechaHasta;
-                $countWhere .= " AND fecha_reserva <= ?";
+                $countWhere .= " AND res_fecha_reserva <= ?";
                 $countParams[] = $fechaHasta;
             }
             
-            $query .= " ORDER BY r.fecha_reserva DESC, r.hora_inicio DESC";
+            $query .= " ORDER BY r.res_fecha_reserva DESC, r.res_hora_inicio DESC";
             
             // Total registros con filtros
-            $countQuery = "SELECT COUNT(*) as total FROM reservas {$countWhere}";
+            $countQuery = "SELECT COUNT(*) as total FROM instalaciones_reservas {$countWhere}";
             $stmt = $this->db->prepare($countQuery);
             $stmt->execute($countParams);
             $totalRegistros = (int)$stmt->fetch()['total'];
@@ -560,12 +560,12 @@ class ReservaController extends \App\Controllers\ModuleController {
         
         try {
             // Reservas de hoy
-            $stmt = $this->db->prepare("SELECT COUNT(*) FROM reservas WHERE tenant_id = ? AND fecha_reserva = ? AND estado IN ('PENDIENTE','CONFIRMADA')");
+            $stmt = $this->db->prepare("SELECT COUNT(*) FROM instalaciones_reservas WHERE res_tenant_id = ? AND res_fecha_reserva = ? AND res_estado IN ('PENDIENTE','CONFIRMADA')");
             $stmt->execute([$this->tenantId, $hoy]);
             $kpis['hoy'] = (int)$stmt->fetchColumn();
             
             // Pendientes de pago
-            $stmt = $this->db->prepare("SELECT COUNT(*) FROM reservas WHERE tenant_id = ? AND estado_pago IN ('PENDIENTE','PARCIAL') AND estado != 'CANCELADA'");
+            $stmt = $this->db->prepare("SELECT COUNT(*) FROM instalaciones_reservas WHERE res_tenant_id = ? AND res_estado_pago IN ('PENDIENTE','PARCIAL') AND res_estado != 'CANCELADA'");
             $stmt->execute([$this->tenantId]);
             $kpis['pendientes_pago'] = (int)$stmt->fetchColumn();
             
@@ -575,7 +575,7 @@ class ReservaController extends \App\Controllers\ModuleController {
             $kpis['recaudado_mes'] = (float)$stmt->fetchColumn();
             
             // Saldo por cobrar total
-            $stmt = $this->db->prepare("SELECT COALESCE(SUM(saldo_pendiente),0) FROM reservas WHERE tenant_id = ? AND estado_pago IN ('PENDIENTE','PARCIAL') AND estado != 'CANCELADA'");
+            $stmt = $this->db->prepare("SELECT COALESCE(SUM(res_saldo_pendiente),0) FROM instalaciones_reservas WHERE res_tenant_id = ? AND res_estado_pago IN ('PENDIENTE','PARCIAL') AND res_estado != 'CANCELADA'");
             $stmt->execute([$this->tenantId]);
             $kpis['por_cobrar'] = (float)$stmt->fetchColumn();
             
@@ -598,18 +598,45 @@ class ReservaController extends \App\Controllers\ModuleController {
         
         try {
             $stmt = $this->db->prepare("
-                SELECT r.*, 
+                SELECT r.res_reserva_id AS reserva_id,
+                       r.res_tenant_id AS tenant_id,
+                       r.res_instalacion_id AS instalacion_id,
+                       r.res_cliente_id AS cliente_id,
+                       r.res_fecha_reserva AS fecha_reserva,
+                       r.res_hora_inicio AS hora_inicio,
+                       r.res_hora_fin AS hora_fin,
+                       r.res_duracion_minutos AS duracion_minutos,
+                       r.res_es_recurrente AS es_recurrente,
+                       r.res_reserva_padre_id AS reserva_padre_id,
+                       r.res_recurrencia_config AS recurrencia_config,
+                       r.res_tarifa_aplicada_id AS tarifa_aplicada_id,
+                       r.res_precio_base AS precio_base,
+                       r.res_descuento_monto AS descuento_monto,
+                       r.res_precio_total AS precio_total,
+                       r.res_abono_utilizado AS abono_utilizado,
+                       r.res_saldo_pendiente AS saldo_pendiente,
+                       r.res_estado AS estado,
+                       r.res_estado_pago AS estado_pago,
+                       r.res_monto_pagado AS monto_pagado,
+                       r.res_requiere_confirmacion AS requiere_confirmacion,
+                       r.res_fecha_confirmacion AS fecha_confirmacion,
+                       r.res_observaciones AS observaciones,
+                       r.res_motivo_cancelacion AS motivo_cancelacion,
+                       r.res_fecha_cancelacion AS fecha_cancelacion,
+                       r.res_fecha_actualizacion AS fecha_actualizacion,
+                       r.res_fecha_registro AS fecha_registro,
+                       r.res_usuario_registro AS usuario_registro,
                        i.ins_nombre as instalacion_nombre,
                        CONCAT(c.cli_nombres, ' ', c.cli_apellidos) as cliente_nombre,
                        c.cli_email as cliente_email,
                        c.cli_telefono as cliente_telefono
-                FROM reservas r
-                INNER JOIN instalaciones i ON r.instalacion_id = i.ins_instalacion_id
-                INNER JOIN clientes c ON r.cliente_id = c.cli_cliente_id
-                WHERE r.reserva_id = ? AND r.tenant_id = ?
+                FROM instalaciones_reservas r
+                INNER JOIN instalaciones i ON r.res_instalacion_id = i.ins_instalacion_id
+                INNER JOIN clientes c ON r.res_cliente_id = c.cli_cliente_id
+                WHERE r.res_reserva_id = ? AND r.res_tenant_id = ?
             ");
             $stmt->execute([$reserva_id, $this->tenantId]);
-            $reserva = $stmt->fetch();
+            $reserva = $stmt->fetch(\PDO::FETCH_ASSOC);
             
             if (!$reserva) {
                 $this->error('Reserva no encontrada');
@@ -661,8 +688,8 @@ class ReservaController extends \App\Controllers\ModuleController {
         
         try {
             $stmt = $this->db->prepare("
-                SELECT * FROM reservas
-                WHERE reserva_id = ? AND tenant_id = ?
+                SELECT * FROM instalaciones_reservas
+                WHERE res_reserva_id = ? AND res_tenant_id = ?
             ");
             $stmt->execute([$reserva_id, $this->tenantId]);
             $reserva = $stmt->fetch();
@@ -673,17 +700,17 @@ class ReservaController extends \App\Controllers\ModuleController {
             
             // Actualizar estado
             $stmt = $this->db->prepare("
-                UPDATE reservas
-                SET estado = 'CONFIRMADA',
-                    fecha_confirmacion = NOW(),
-                    fecha_actualizacion = NOW()
-                WHERE reserva_id = ?
+                UPDATE instalaciones_reservas
+                SET res_estado = 'CONFIRMADA',
+                    res_fecha_confirmacion = NOW(),
+                    res_fecha_actualizacion = NOW()
+                WHERE res_reserva_id = ?
             ");
             $stmt->execute([$reserva_id]);
             
             // Auditoría
             $this->audit('reservas', $reserva_id, 'STATUS_CHANGE',
-                        ['estado' => $reserva['estado']],
+                        ['estado' => $reserva['res_estado']],
                         ['estado' => 'CONFIRMADA']);
             
             \Security::logSecurityEvent('RESERVA_CONFIRMED', "Reserva ID: {$reserva_id}");
@@ -710,8 +737,8 @@ class ReservaController extends \App\Controllers\ModuleController {
         
         try {
             $stmt = $this->db->prepare("
-                SELECT * FROM reservas
-                WHERE reserva_id = ? AND tenant_id = ?
+                SELECT * FROM instalaciones_reservas
+                WHERE res_reserva_id = ? AND res_tenant_id = ?
             ");
             $stmt->execute([$reserva_id, $this->tenantId]);
             $reserva = $stmt->fetch();
@@ -720,22 +747,22 @@ class ReservaController extends \App\Controllers\ModuleController {
                 $this->error('Reserva no encontrada');
             }
             
-            if (!in_array($reserva['estado'], ['CONFIRMADA', 'PENDIENTE'])) {
+            if (!in_array($reserva['res_estado'], ['CONFIRMADA', 'PENDIENTE'])) {
                 $this->error('Solo se pueden completar reservas confirmadas o pendientes');
             }
             
             // Actualizar estado
             $stmt = $this->db->prepare("
-                UPDATE reservas
-                SET estado = 'COMPLETADA',
-                    fecha_actualizacion = NOW()
-                WHERE reserva_id = ?
+                UPDATE instalaciones_reservas
+                SET res_estado = 'COMPLETADA',
+                    res_fecha_actualizacion = NOW()
+                WHERE res_reserva_id = ?
             ");
             $stmt->execute([$reserva_id]);
             
             // Auditoría
             $this->audit('reservas', $reserva_id, 'STATUS_CHANGE',
-                        ['estado' => $reserva['estado']],
+                        ['estado' => $reserva['res_estado']],
                         ['estado' => 'COMPLETADA']);
             
             \Security::logSecurityEvent('RESERVA_COMPLETED', "Reserva ID: {$reserva_id}");
@@ -763,8 +790,8 @@ class ReservaController extends \App\Controllers\ModuleController {
         
         try {
             $stmt = $this->db->prepare("
-                SELECT * FROM reservas
-                WHERE reserva_id = ? AND tenant_id = ?
+                SELECT * FROM instalaciones_reservas
+                WHERE res_reserva_id = ? AND res_tenant_id = ?
             ");
             $stmt->execute([$reserva_id, $this->tenantId]);
             $reserva = $stmt->fetch();
@@ -775,18 +802,18 @@ class ReservaController extends \App\Controllers\ModuleController {
             
             // Actualizar estado
             $stmt = $this->db->prepare("
-                UPDATE reservas
-                SET estado = 'CANCELADA',
-                    motivo_cancelacion = ?,
-                    fecha_cancelacion = NOW(),
-                    fecha_actualizacion = NOW()
-                WHERE reserva_id = ?
+                UPDATE instalaciones_reservas
+                SET res_estado = 'CANCELADA',
+                    res_motivo_cancelacion = ?,
+                    res_fecha_cancelacion = NOW(),
+                    res_fecha_actualizacion = NOW()
+                WHERE res_reserva_id = ?
             ");
             $stmt->execute([$motivo, $reserva_id]);
             
             // Auditoría
             $this->audit('reservas', $reserva_id, 'CANCELLED',
-                        ['estado' => $reserva['estado']],
+                        ['estado' => $reserva['res_estado']],
                         ['estado' => 'CANCELADA', 'motivo' => $motivo]);
             
             \Security::logSecurityEvent('RESERVA_CANCELLED', "Reserva ID: {$reserva_id}");
@@ -818,7 +845,7 @@ class ReservaController extends \App\Controllers\ModuleController {
             $dia_semana = $fechaObj->format('w');
             
             // Obtener el instalacion_id de la cancha
-            $stmtCancha = $this->db->prepare("SELECT cancha_id, instalacion_id FROM canchas WHERE cancha_id = ? AND tenant_id = ?");
+            $stmtCancha = $this->db->prepare("SELECT can_cancha_id as cancha_id, can_instalacion_id as instalacion_id FROM instalaciones_canchas WHERE can_cancha_id = ? AND can_tenant_id = ?");
             $stmtCancha->execute([$cancha_id, $this->tenantId]);
             $canchaInfo = $stmtCancha->fetch();
             if (!$canchaInfo) {
@@ -837,10 +864,10 @@ class ReservaController extends \App\Controllers\ModuleController {
             
             // Obtener reservas confirmadas
             $stmt = $this->db->prepare("
-                SELECT hora_inicio, hora_fin
-                FROM reservas
-                WHERE instalacion_id = ? AND fecha_reserva = ?
-                AND estado IN ('CONFIRMADA', 'PENDIENTE')
+                SELECT res_hora_inicio as hora_inicio, res_hora_fin as hora_fin
+                FROM instalaciones_reservas
+                WHERE res_instalacion_id = ? AND res_fecha_reserva = ?
+                AND res_estado IN ('CONFIRMADA', 'PENDIENTE')
             ");
             $stmt->execute([$canchaInfo['instalacion_id'], $fecha]);
             $reservas = $stmt->fetchAll();
@@ -986,7 +1013,7 @@ class ReservaController extends \App\Controllers\ModuleController {
                 $stmt = $this->db->prepare("
                     SELECT COUNT(*) as total FROM mantenimientos
                     WHERE cancha_id = (
-                        SELECT cancha_id FROM canchas WHERE instalacion_id = ? AND tenant_id = ? LIMIT 1
+                        SELECT can_cancha_id FROM instalaciones_canchas WHERE can_instalacion_id = ? AND can_tenant_id = ? LIMIT 1
                     )
                     AND DATE(fecha_inicio) = ?
                     AND TIME(fecha_inicio) < ? AND TIME(fecha_fin) > ?
@@ -1015,8 +1042,8 @@ class ReservaController extends \App\Controllers\ModuleController {
                 $stmt = $this->db->prepare("
                     SELECT t.tarifa_id, t.precio
                     FROM tarifas t
-                    INNER JOIN canchas ca ON t.cancha_id = ca.cancha_id
-                    WHERE ca.instalacion_id = ? AND ca.tenant_id = ?
+                    INNER JOIN instalaciones_canchas ca ON t.can_cancha_id = ca.can_cancha_id
+                    WHERE ca.can_instalacion_id = ? AND ca.can_tenant_id = ?
                     AND t.dia_semana = ? AND t.hora_inicio = ? AND t.hora_fin = ?
                     AND t.estado = 'ACTIVO'
                     LIMIT 1
@@ -1097,8 +1124,8 @@ class ReservaController extends \App\Controllers\ModuleController {
             $stmt = $this->db->prepare("
                 SELECT DISTINCT t.tarifa_id, t.hora_inicio, t.hora_fin, t.precio
                 FROM tarifas t
-                INNER JOIN canchas ca ON t.cancha_id = ca.cancha_id
-                WHERE ca.instalacion_id = ? AND ca.tenant_id = ?
+                INNER JOIN instalaciones_canchas ca ON t.can_cancha_id = ca.can_cancha_id
+                WHERE ca.can_instalacion_id = ? AND ca.can_tenant_id = ?
                 AND t.dia_semana = ? AND t.estado = 'ACTIVO'
                 ORDER BY t.hora_inicio
             ");
@@ -1116,7 +1143,7 @@ class ReservaController extends \App\Controllers\ModuleController {
                 SELECT TIME(fecha_inicio) as hora_inicio, TIME(fecha_fin) as hora_fin, 'MANTENIMIENTO' as tipo
                 FROM mantenimientos
                 WHERE cancha_id = (
-                    SELECT cancha_id FROM canchas WHERE instalacion_id = ? AND tenant_id = ? LIMIT 1
+                    SELECT can_cancha_id FROM instalaciones_canchas WHERE can_instalacion_id = ? AND can_tenant_id = ? LIMIT 1
                 )
                 AND DATE(fecha_inicio) = ?
                 AND estado IN ('PROGRAMADO', 'EN_PROGRESO')

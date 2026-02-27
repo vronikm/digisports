@@ -145,26 +145,26 @@ $kpis = $kpis ?? ['hoy' => 0, 'pendientes_pago' => 0, 'recaudado_mes' => 0, 'por
                                 'CONFIRMADA' => 'success',
                                 'COMPLETADA' => 'info',
                                 'CANCELADA'  => 'danger'
-                            ][$reserva['estado']] ?? 'secondary';
+                            ][$reserva['res_estado']] ?? 'secondary';
                             
-                            $epago = $reserva['estado_pago'] ?? 'PENDIENTE';
+                            $epago = $reserva['res_estado_pago'] ?? 'PENDIENTE';
                             $pagoBadge = [
                                 'PENDIENTE' => 'secondary',
                                 'PARCIAL'   => 'warning',
                                 'PAGADO'    => 'success'
                             ][$epago] ?? 'secondary';
                             
-                            $saldo = (float)($reserva['saldo_pendiente'] ?? $reserva['precio_total']);
+                            $saldo = (float)($reserva['res_saldo_pendiente'] ?? $reserva['res_precio_total']);
                         ?>
                         <tr>
-                            <td><strong>#<?= $reserva['reserva_id'] ?></strong></td>
+                            <td><strong>#<?= $reserva['res_reserva_id'] ?></strong></td>
                             <td><?= htmlspecialchars(trim(($reserva['cliente_nombre'] ?? '') . ' ' . ($reserva['cliente_apellidos'] ?? ''))) ?></td>
                             <td><?= htmlspecialchars($reserva['instalacion_nombre'] ?? 'N/A') ?></td>
-                            <td><?= date('d/m/Y', strtotime($reserva['fecha_reserva'])) ?></td>
-                            <td><?= substr($reserva['hora_inicio'], 0, 5) ?> - <?= substr($reserva['hora_fin'], 0, 5) ?></td>
-                            <td class="text-right"><strong>$<?= number_format($reserva['precio_total'], 2) ?></strong></td>
+                            <td><?= date('d/m/Y', strtotime($reserva['res_fecha_reserva'])) ?></td>
+                            <td><?= substr($reserva['res_hora_inicio'], 0, 5) ?> - <?= substr($reserva['res_hora_fin'], 0, 5) ?></td>
+                            <td class="text-right"><strong>$<?= number_format($reserva['res_precio_total'], 2) ?></strong></td>
                             <td class="text-center">
-                                <span class="badge badge-<?= $estadoBadge ?>"><?= $reserva['estado'] ?></span>
+                                <span class="badge badge-<?= $estadoBadge ?>"><?= $reserva['res_estado'] ?></span>
                             </td>
                             <td class="text-center">
                                 <span class="badge badge-<?= $pagoBadge ?>"><?= $epago ?></span>
@@ -174,29 +174,29 @@ $kpis = $kpis ?? ['hoy' => 0, 'pendientes_pago' => 0, 'recaudado_mes' => 0, 'por
                             </td>
                             <td class="text-center">
                                 <div class="btn-group btn-group-sm" role="group">
-                                    <a href="<?= url('reservas', 'reserva', 'ver', ['id' => $reserva['reserva_id']]) ?>"
+                                    <a href="<?= url('reservas', 'reserva', 'ver', ['id' => $reserva['res_reserva_id']]) ?>"
                                        class="btn btn-outline-info" title="Ver">
                                         <i class="fas fa-eye"></i>
                                     </a>
                                     
-                                    <?php if ($reserva['estado'] !== 'CANCELADA' && $epago !== 'PAGADO'): ?>
-                                    <a href="<?= url('reservas', 'pago', 'checkout') ?>&id=<?= $reserva['reserva_id'] ?>"
+                                    <?php if ($reserva['res_estado'] !== 'CANCELADA' && $epago !== 'PAGADO'): ?>
+                                    <a href="<?= url('reservas', 'pago', 'checkout') ?>&id=<?= $reserva['res_reserva_id'] ?>"
                                        class="btn btn-outline-warning" title="Cobrar $<?= number_format($saldo, 2) ?>">
                                         <i class="fas fa-cash-register"></i>
                                     </a>
                                     <?php endif; ?>
                                     
-                                    <?php if ($reserva['estado'] === 'PENDIENTE'): ?>
+                                    <?php if ($reserva['res_estado'] === 'PENDIENTE'): ?>
                                     <button type="button" class="btn btn-outline-success btn-confirmar"
-                                            data-url="<?= url('reservas', 'reserva', 'confirmar', ['id' => $reserva['reserva_id']]) ?>"
+                                            data-url="<?= url('reservas', 'reserva', 'confirmar', ['id' => $reserva['res_reserva_id']]) ?>"
                                             title="Confirmar">
                                         <i class="fas fa-check"></i>
                                     </button>
                                     <?php endif; ?>
                                     
-                                    <?php if (in_array($reserva['estado'], ['PENDIENTE', 'CONFIRMADA'])): ?>
+                                    <?php if (in_array($reserva['res_estado'], ['PENDIENTE', 'CONFIRMADA'])): ?>
                                     <button type="button" class="btn btn-outline-danger btn-cancelar"
-                                            data-url="<?= url('reservas', 'reserva', 'cancelar', ['id' => $reserva['reserva_id']]) ?>"
+                                            data-url="<?= url('reservas', 'reserva', 'cancelar', ['id' => $reserva['res_reserva_id']]) ?>"
                                             title="Cancelar">
                                         <i class="fas fa-times"></i>
                                     </button>

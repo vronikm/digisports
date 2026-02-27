@@ -93,10 +93,10 @@ class FacturaController extends \BaseController {
         try {
             // Obtener datos de reserva
             $stmt = $this->db->prepare("
-                SELECT r.*, c.nombre as cancha_nombre, i.nombre as instalacion_nombre
+                SELECT r.*, c.can_nombre as cancha_nombre, i.ins_nombre as instalacion_nombre
                 FROM reservas r
-                INNER JOIN canchas c ON r.cancha_id = c.cancha_id
-                INNER JOIN instalaciones i ON c.instalacion_id = i.instalacion_id
+                INNER JOIN instalaciones_canchas c ON r.cancha_id = c.can_cancha_id
+                INNER JOIN instalaciones i ON c.can_instalacion_id = i.ins_instalacion_id
                 WHERE r.reserva_id = ? AND r.tenant_id = ? 
                 AND r.estado IN ('CONFIRMADA', 'COMPLETADA')
             ");
@@ -217,9 +217,9 @@ class FacturaController extends \BaseController {
             
             // Obtener reserva
             $stmt = $this->db->prepare("
-                SELECT r.*, c.nombre as cancha_nombre
+                SELECT r.*, c.can_nombre as cancha_nombre
                 FROM reservas r
-                INNER JOIN canchas c ON r.cancha_id = c.cancha_id
+                INNER JOIN instalaciones_canchas c ON r.cancha_id = c.can_cancha_id
                 WHERE r.reserva_id = ? AND r.tenant_id = ?
             ");
             $stmt->execute([$reserva_id, $this->tenantId]);
@@ -334,11 +334,11 @@ class FacturaController extends \BaseController {
             $stmt = $this->db->prepare("
                 SELECT f.*, r.nombre_cliente, r.email_cliente,
                        fp.nombre as forma_pago_nombre,
-                       u.nombre as usuario_nombre
+                       CONCAT(u.usu_nombres, ' ', u.usu_apellidos) as usuario_nombre
                 FROM facturas f
                 LEFT JOIN reservas r ON f.reserva_id = r.reserva_id
                 LEFT JOIN formas_pago fp ON f.forma_pago_id = fp.forma_pago_id
-                LEFT JOIN usuarios u ON f.usuario_id = u.usuario_id
+                LEFT JOIN seguridad_usuarios u ON f.usuario_id = u.usu_usuario_id
                 WHERE f.factura_id = ? AND f.tenant_id = ?
             ");
             $stmt->execute([$factura_id, $this->tenantId]);

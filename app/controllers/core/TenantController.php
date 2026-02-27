@@ -33,10 +33,10 @@ class TenantController extends \BaseController {
                     t.*,
                     p.nombre as plan_nombre,
                     p.precio_mensual,
-                    COUNT(DISTINCT u.usuario_id) as usuarios_activos
+                    COUNT(DISTINCT u.usu_usuario_id) as usuarios_activos
                 FROM tenants t
                 LEFT JOIN planes_suscripcion p ON t.plan_id = p.plan_id
-                LEFT JOIN usuarios u ON t.tenant_id = u.tenant_id AND u.estado = 'A'
+                LEFT JOIN seguridad_usuarios u ON t.tenant_id = u.usu_tenant_id AND u.usu_estado = 'A'
                 GROUP BY t.tenant_id
                 ORDER BY t.fecha_registro DESC
             ");

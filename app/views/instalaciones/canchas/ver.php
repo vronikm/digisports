@@ -111,7 +111,7 @@ $estadoColors = [
                             <?php endif; ?>
                             <?php if (!empty($cancha['descripcion'])): ?>
                             <li class="list-group-item">
-                                <strong>Descripción</strong><br>
+                                <strong>Descripción</strong>
                                 <small class="text-muted"><?php echo nl2br(htmlspecialchars($cancha['descripcion'])); ?></small>
                             </li>
                             <?php endif; ?>
@@ -185,13 +185,13 @@ $estadoColors = [
                                 <tbody>
                                     <?php foreach ($tarifas as $tarifa): ?>
                                     <tr>
-                                        <td><?php echo $diasSemana[$tarifa['dia_semana']] ?? 'N/A'; ?></td>
+                                        <td><?php echo htmlspecialchars($tarifa['aplica_dia'] ?? 'N/A'); ?></td>
                                         <td>
                                             <?php echo date('H:i', strtotime($tarifa['hora_inicio'])); ?> - 
                                             <?php echo date('H:i', strtotime($tarifa['hora_fin'])); ?>
                                         </td>
                                         <td class="text-right font-weight-bold text-success">
-                                            $<?php echo number_format($tarifa['precio'], 2); ?>
+                                            $<?php echo number_format($tarifa['precio_por_hora'], 2); ?>
                                         </td>
                                     </tr>
                                     <?php endforeach; ?>

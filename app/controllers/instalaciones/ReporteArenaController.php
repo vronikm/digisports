@@ -240,16 +240,16 @@ class ReporteArenaController extends \App\Controllers\ModuleController {
         try {
             $stmt = $this->db->prepare("
                 SELECT 
-                    c.nombre as cancha,
-                    c.tipo,
+                    c.can_nombre as cancha,
+                    c.can_tipo as tipo,
                     COUNT(r.reserva_id) as total_reservas,
                     COALESCE(SUM(r.precio_total), 0) as ingreso_total
-                FROM canchas c
-                LEFT JOIN reservas r ON c.instalacion_id = r.instalacion_id 
+                FROM instalaciones_canchas c
+                LEFT JOIN reservas r ON c.can_instalacion_id = r.instalacion_id 
                     AND r.fecha_reserva >= ? AND r.fecha_reserva <= ?
                     AND r.estado IN ('CONFIRMADA','COMPLETADA','PENDIENTE')
-                WHERE c.tenant_id = ? AND c.estado = 'ACTIVO'
-                GROUP BY c.cancha_id, c.nombre, c.tipo
+                WHERE c.can_tenant_id = ? AND c.can_estado = 'ACTIVO'
+                GROUP BY c.can_cancha_id, c.can_nombre, c.can_tipo
                 ORDER BY total_reservas DESC
             ");
             $stmt->execute([$desde, $hasta, $tenantId]);
@@ -310,11 +310,11 @@ class ReporteArenaController extends \App\Controllers\ModuleController {
                 SELECT p.pag_pago_id, p.pag_monto, p.pag_tipo_pago, p.pag_fecha_pago,
                        p.pag_referencia, p.pag_reserva_id,
                        CONCAT(cl.cli_nombres, ' ', cl.cli_apellidos) as cliente_nombre,
-                       c.nombre as cancha_nombre
+                       c.can_nombre as cancha_nombre
                 FROM instalaciones_reserva_pagos p
                 INNER JOIN instalaciones_reservas r ON p.pag_reserva_id = r.res_reserva_id
                 LEFT JOIN clientes cl ON r.res_cliente_id = cl.cli_cliente_id
-                LEFT JOIN canchas c ON r.res_instalacion_id = c.instalacion_id
+                LEFT JOIN instalaciones_canchas c ON r.res_instalacion_id = c.can_instalacion_id
                 WHERE p.pag_tenant_id = ? AND p.pag_fecha_pago >= ? AND p.pag_fecha_pago <= ? AND p.pag_estado = 'COMPLETADO'
                 ORDER BY p.pag_fecha_pago DESC
             ");

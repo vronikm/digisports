@@ -35,14 +35,24 @@ class AbonController extends \App\Controllers\ModuleController {
             $offset  = ($pagina - 1) * $perPage;
 
             $query = "
-                SELECT a.*,
+                SELECT a.abo_abono_id AS abono_id,
+                       a.abo_tenant_id AS tenant_id,
+                       a.abo_cliente_id AS cliente_id,
+                       a.abo_monto_total AS monto_total,
+                       a.abo_monto_utilizado AS monto_utilizado,
+                       a.abo_saldo_disponible AS saldo_disponible,
+                       a.abo_fecha_compra AS fecha_compra,
+                       a.abo_fecha_vencimiento AS fecha_vencimiento,
+                       a.abo_forma_pago AS forma_pago,
+                       a.abo_estado AS estado,
+                       a.abo_fecha_registro AS fecha_registro,
                        CONCAT(c.cli_nombres, ' ', c.cli_apellidos) AS cliente_nombre,
                        c.cli_email AS cliente_email,
                        c.cli_telefono AS cliente_telefono,
                        c.cli_identificacion AS cliente_identificacion
-                FROM abonos a
-                INNER JOIN clientes c ON a.cliente_id = c.cli_cliente_id
-                WHERE a.tenant_id = ?
+                FROM instalaciones_abonos a
+                INNER JOIN clientes c ON a.abo_cliente_id = c.cli_cliente_id
+                WHERE a.abo_tenant_id = ?
             ";
             $params = [$this->tenantId];
 
@@ -53,7 +63,7 @@ class AbonController extends \App\Controllers\ModuleController {
             }
 
             if (!empty($estado)) {
-                $query .= " AND a.estado = ?";
+                $query .= " AND a.abo_estado = ?";
                 $params[] = $estado;
             }
 
@@ -67,7 +77,7 @@ class AbonController extends \App\Controllers\ModuleController {
             $stmt->execute($params);
             $totalRegistros = (int)$stmt->fetchColumn();
 
-            $query .= " ORDER BY a.fecha_registro DESC LIMIT " . (int)$perPage . " OFFSET " . (int)$offset;
+            $query .= " ORDER BY a.abo_fecha_registro DESC LIMIT " . (int)$perPage . " OFFSET " . (int)$offset;
 
             $stmt = $this->db->prepare($query);
             $stmt->execute($params);
@@ -118,15 +128,24 @@ class AbonController extends \App\Controllers\ModuleController {
 
         try {
             $stmt = $this->db->prepare("
-                SELECT a.*,
+                SELECT a.abo_abono_id AS abono_id,
+                       a.abo_tenant_id AS tenant_id,
+                       a.abo_cliente_id AS cliente_id,
+                       a.abo_monto_total AS monto_total,
+                       a.abo_monto_utilizado AS monto_utilizado,
+                       a.abo_saldo_disponible AS saldo_disponible,
+                       a.abo_fecha_compra AS fecha_compra,
+                       a.abo_fecha_vencimiento AS fecha_vencimiento,
+                       a.abo_forma_pago AS forma_pago,
+                       a.abo_estado AS estado,
+                       a.abo_fecha_registro AS fecha_registro,
                        CONCAT(c.cli_nombres, ' ', c.cli_apellidos) AS cliente_nombre,
                        c.cli_email AS cliente_email,
                        c.cli_telefono AS cliente_telefono,
-                       c.cli_identificacion AS cliente_identificacion,
                        c.cli_tipo_cliente AS cliente_tipo
-                FROM abonos a
-                INNER JOIN clientes c ON a.cliente_id = c.cli_cliente_id
-                WHERE a.abono_id = ? AND a.tenant_id = ?
+                FROM instalaciones_abonos a
+                INNER JOIN clientes c ON a.abo_cliente_id = c.cli_cliente_id
+                WHERE a.abo_abono_id = ? AND a.abo_tenant_id = ?
             ");
             $stmt->execute([$id, $this->tenantId]);
             $abono = $stmt->fetch(\PDO::FETCH_ASSOC);
@@ -146,9 +165,23 @@ class AbonController extends \App\Controllers\ModuleController {
 
             // Últimos movimientos
             $stmt = $this->db->prepare("
-                SELECT * FROM abono_movimientos
-                WHERE abono_id = ? AND tenant_id = ?
-                ORDER BY fecha_registro DESC
+                SELECT mov_movimiento_id AS movimiento_id,
+                       mov_abono_id AS abono_id,
+                       mov_tenant_id AS tenant_id,
+                       mov_cliente_id AS cliente_id,
+                       mov_tipo AS tipo,
+                       mov_monto AS monto,
+                       mov_saldo_anterior AS saldo_anterior,
+                       mov_saldo_posterior AS saldo_posterior,
+                       mov_descripcion AS descripcion,
+                       mov_referencia_tipo AS referencia_tipo,
+                       mov_referencia_id AS referencia_id,
+                       mov_forma_pago AS forma_pago,
+                       mov_usuario_registro AS usuario_registro,
+                       mov_fecha_registro AS fecha_registro
+                FROM instalaciones_abono_movimientos
+                WHERE mov_abono_id = ? AND mov_tenant_id = ?
+                ORDER BY mov_fecha_registro DESC
                 LIMIT 20
             ");
             $stmt->execute([$id, $this->tenantId]);
@@ -475,30 +508,43 @@ class AbonController extends \App\Controllers\ModuleController {
             $offset  = ($pagina - 1) * $perPage;
 
             $query = "
-                SELECT m.*,
+                SELECT m.mov_movimiento_id AS movimiento_id,
+                       m.mov_abono_id AS abono_id,
+                       m.mov_tenant_id AS tenant_id,
+                       m.mov_cliente_id AS cliente_id,
+                       m.mov_tipo AS tipo,
+                       m.mov_monto AS monto,
+                       m.mov_saldo_anterior AS saldo_anterior,
+                       m.mov_saldo_posterior AS saldo_posterior,
+                       m.mov_descripcion AS descripcion,
+                       m.mov_referencia_tipo AS referencia_tipo,
+                       m.mov_referencia_id AS referencia_id,
+                       m.mov_forma_pago AS forma_pago,
+                       m.mov_usuario_registro AS usuario_registro,
+                       m.mov_fecha_registro AS fecha_registro,
                        CONCAT(c.cli_nombres, ' ', c.cli_apellidos) AS cliente_nombre
-                FROM abono_movimientos m
-                INNER JOIN clientes c ON m.cliente_id = c.cli_cliente_id
-                WHERE m.tenant_id = ?
+                FROM instalaciones_abono_movimientos m
+                INNER JOIN clientes c ON m.mov_cliente_id = c.cli_cliente_id
+                WHERE m.mov_tenant_id = ?
             ";
             $params = [$this->tenantId];
 
             if (!empty($tipo)) {
-                $query .= " AND m.tipo = ?";
+                $query .= " AND m.mov_tipo = ?";
                 $params[] = $tipo;
             }
 
-            $countSql = "SELECT COUNT(*) FROM abono_movimientos m WHERE m.tenant_id = ?";
+            $countSql = "SELECT COUNT(*) FROM instalaciones_abono_movimientos m WHERE m.mov_tenant_id = ?";
             $countParams = [$this->tenantId];
             if (!empty($tipo)) {
-                $countSql .= " AND m.tipo = ?";
+                $countSql .= " AND m.mov_tipo = ?";
                 $countParams[] = $tipo;
             }
             $stmt = $this->db->prepare($countSql);
             $stmt->execute($countParams);
             $total = (int)$stmt->fetchColumn();
 
-            $query .= " ORDER BY m.fecha_registro DESC LIMIT " . (int)$perPage . " OFFSET " . (int)$offset;
+            $query .= " ORDER BY m.mov_fecha_registro DESC LIMIT " . (int)$perPage . " OFFSET " . (int)$offset;
             $stmt = $this->db->prepare($query);
             $stmt->execute($params);
             $movimientos = $stmt->fetchAll(\PDO::FETCH_ASSOC);

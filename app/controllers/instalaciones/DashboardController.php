@@ -71,7 +71,7 @@ class DashboardController extends \App\Controllers\ModuleController {
 
         try {
             // Total canchas activas
-            $stmt = $this->db->prepare("SELECT COUNT(*) FROM canchas WHERE tenant_id = ? AND estado = 'ACTIVO'");
+            $stmt = $this->db->prepare("SELECT COUNT(*) FROM instalaciones_canchas WHERE can_tenant_id = ? AND can_estado = 'ACTIVO'");
             $stmt->execute([$tenantId]);
             $default[0]['value'] = (int) $stmt->fetchColumn();
 
@@ -152,11 +152,11 @@ class DashboardController extends \App\Controllers\ModuleController {
     private function getCanchasResumen($tenantId) {
         try {
             $stmt = $this->db->prepare("
-                SELECT c.cancha_id, c.nombre, c.tipo, c.estado,
-                       COALESCE((SELECT COUNT(*) FROM reservas r WHERE r.instalacion_id = c.instalacion_id AND r.fecha_reserva = CURDATE() AND r.estado IN ('CONFIRMADA','PENDIENTE')), 0) as reservas_hoy
-                FROM canchas c
-                WHERE c.tenant_id = ? AND c.estado = 'ACTIVO'
-                ORDER BY c.nombre
+                SELECT c.can_cancha_id as cancha_id, c.can_nombre as nombre, c.can_tipo as tipo, c.can_estado as estado,
+                       COALESCE((SELECT COUNT(*) FROM reservas r WHERE r.instalacion_id = c.can_instalacion_id AND r.fecha_reserva = CURDATE() AND r.estado IN ('CONFIRMADA','PENDIENTE')), 0) as reservas_hoy
+                FROM instalaciones_canchas c
+                WHERE c.can_tenant_id = ? AND c.can_estado = 'ACTIVO'
+                ORDER BY c.can_nombre
                 LIMIT 8
             ");
             $stmt->execute([$tenantId]);
@@ -171,10 +171,10 @@ class DashboardController extends \App\Controllers\ModuleController {
         try {
             $stmt = $this->db->prepare("
                 SELECT r.reserva_id, r.hora_inicio, r.hora_fin, r.estado, r.precio_total,
-                       c.nombre AS cancha_nombre,
+                       c.can_nombre AS cancha_nombre,
                        CONCAT(cl.cli_nombres, ' ', cl.cli_apellidos) AS cliente_nombre
                 FROM reservas r
-                LEFT JOIN canchas c ON r.instalacion_id = c.instalacion_id
+                LEFT JOIN instalaciones_canchas c ON r.instalacion_id = c.can_instalacion_id
                 LEFT JOIN clientes cl ON r.cliente_id = cl.cli_cliente_id
                 WHERE r.tenant_id = ? AND r.fecha_reserva = CURDATE()
                 ORDER BY r.hora_inicio ASC

@@ -549,9 +549,9 @@ class ClienteController extends \App\Controllers\ModuleController {
         $stmt = $this->db->prepare("
             SELECT r.reserva_id, r.fecha_reserva, r.hora_inicio, r.hora_fin,
                    r.precio_total as total, r.estado, r.estado_pago,
-                   c.nombre as cancha_nombre
+                   c.can_nombre as cancha_nombre
             FROM reservas r
-            LEFT JOIN canchas c ON r.instalacion_id = c.cancha_id
+            LEFT JOIN instalaciones_canchas c ON r.instalacion_id = c.can_instalacion_id
             WHERE r.cliente_id = ?
             ORDER BY r.fecha_reserva DESC, r.hora_inicio DESC
             LIMIT ?

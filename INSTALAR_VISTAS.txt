@@ -1,0 +1,60 @@
+# SOLUCIÓN PARA ERROR "Error al cargar los mantenimientos"
+
+## ACCIÓN REQUERIDA: Crear vistas de compatibilidad en la base de datos
+
+El módulo de Mantenimientos requiere 3 vistas en la base de datos para funcionar correctamente:
+- vista `usuarios` (mapea seguridad_usuarios)
+- vista `roles` (mapea seguridad_roles)  
+- vista `mantenimientos` (mapea instalaciones_mantenimientos)
+
+### PASO 1: Accede a la URL de inicialización
+
+```
+http://localhost/digisports/public/setup_views.php
+```
+
+Esto ejecutará un script que:
+✓ Crea/actualiza la vista `usuarios`
+✓ Crea/actualiza la vista `roles`
+✓ Crea/actualiza la vista `mantenimientos`
+
+**Verifica que veas el mensaje: "✓ Todas las vistas se crearon correctamente."**
+
+### PASO 2: Prueba el módulo de Mantenimientos
+
+Después de ejecutar setup_views.php, accede a:
+```
+http://localhost/digisports/public/index.php?r=<route_cifrada_del_tenant>&module=mantenimientos
+```
+
+Debería cargar sin errores 400.
+
+### PASO 3: Elimina el script de inicialización
+
+Una vez que todo funcione, elimina el archivo:
+```
+public/setup_views.php
+```
+
+---
+
+## ¿QUÉ SUCEDIÓ?
+
+El proyecto usa un sistema de **compatibilidad de tablas con vistas MySQL**:
+
+- Las tablas reales tienen prefijos (ej: `seguridad_usuarios`, `instalaciones_mantenimientos`)
+- Las vistas permiten acceder con nombres simples (ej: `usuarios`, `mantenimientos`)
+- Esto facilita el mantenimiento del código
+
+Las vistas fueron definidas en `database/fase1_vistas_compatibilidad.sql`, 
+pero algunas nunca se ejecutaron en tu base de datos.
+
+---
+
+## SOPORTE
+
+Si recibes error al abrir setup_views.php:
+1. Verifica que la base de datos `digisports_core` exista
+2. Verifica conexión en `config/database.php`
+3. Documenta el error exacto y contacta soporte
+

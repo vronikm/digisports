@@ -616,9 +616,9 @@ class AuthController extends \BaseController {
         try {
             // Buscar usuario
             $stmt = $this->db->prepare("
-                SELECT usuario_id, username, nombres, email 
-                FROM usuarios 
-                WHERE email = ? AND estado = 'A'
+                SELECT usu_usuario_id as usuario_id, usu_username as username, usu_nombres as nombres, usu_email as email 
+                FROM seguridad_usuarios 
+                WHERE usu_email = ? AND usu_estado = 'A'
             ");
             
             $stmt->execute([$email]);
@@ -670,10 +670,10 @@ class AuthController extends \BaseController {
         
         // Verificar token
         $stmt = $this->db->prepare("
-            SELECT usuario_id, nombres 
-            FROM usuarios 
-            WHERE token_recuperacion = ? 
-            AND token_recuperacion_expira > NOW()
+            SELECT usu_usuario_id as usuario_id, usu_nombres as nombres 
+            FROM seguridad_usuarios 
+            WHERE usu_token_recuperacion = ? 
+            AND usu_token_recuperacion_expira > NOW()
         ");
         
         $stmt->execute([$token]);
@@ -725,10 +725,10 @@ class AuthController extends \BaseController {
         try {
             // Verificar token
             $stmt = $this->db->prepare("
-                SELECT usuario_id 
-                FROM usuarios 
-                WHERE token_recuperacion = ? 
-                AND token_recuperacion_expira > NOW()
+                SELECT usu_usuario_id as usuario_id 
+                FROM seguridad_usuarios 
+                WHERE usu_token_recuperacion = ? 
+                AND usu_token_recuperacion_expira > NOW()
             ");
             
             $stmt->execute([$token]);
@@ -898,7 +898,7 @@ class AuthController extends \BaseController {
             }
             
             // Verificar usuario
-            $stmt = $this->db->prepare("SELECT COUNT(*) as count FROM usuarios WHERE username = ?");
+            $stmt = $this->db->prepare("SELECT COUNT(*) as count FROM seguridad_usuarios WHERE usu_username = ?");
             $stmt->execute([$username]);
             $result = $stmt->fetch();
             
@@ -950,7 +950,7 @@ class AuthController extends \BaseController {
                     ) VALUES (
                         ?, ?, ?, ?,
                         ?, ?, ?, ?,
-                        (SELECT rol_id FROM roles WHERE codigo = 'ADMIN' LIMIT 1),
+                        (SELECT rol_rol_id FROM seguridad_roles WHERE rol_codigo = 'ADMIN' LIMIT 1),
                         'A', NULL, 'S', 'N', ?, NOW()
                     )
                 ");
@@ -1055,7 +1055,7 @@ class AuthController extends \BaseController {
         
         try {
             // Obtener contraseña actual
-            $stmt = $this->db->prepare("SELECT password FROM usuarios WHERE usuario_id = ?");
+            $stmt = $this->db->prepare("SELECT usu_password as password FROM seguridad_usuarios WHERE usu_usuario_id = ?");
             $stmt->execute([$this->userId]);
             $user = $stmt->fetch();
             

@@ -49,10 +49,10 @@ class CalendarioController extends \App\Controllers\ModuleController {
             $canchas = [];
             if ($instalacionId > 0) {
                 $stmt = $this->db->prepare("
-                    SELECT cancha_id, nombre, tipo, capacidad_maxima, estado
-                    FROM canchas
-                    WHERE instalacion_id = ? AND tenant_id = ? AND estado = 'ACTIVO'
-                    ORDER BY nombre
+                    SELECT can_cancha_id as cancha_id, can_nombre as nombre, can_tipo as tipo, can_capacidad_maxima as capacidad_maxima, can_estado as estado
+                    FROM instalaciones_canchas
+                    WHERE can_instalacion_id = ? AND can_tenant_id = ? AND can_estado = 'ACTIVO'
+                    ORDER BY can_nombre
                 ");
                 $stmt->execute([$instalacionId, $this->tenantId]);
                 $canchas = $stmt->fetchAll(\PDO::FETCH_ASSOC);
@@ -118,9 +118,9 @@ class CalendarioController extends \App\Controllers\ModuleController {
 
             // Obtener canchas de la instalación
             $stmt = $this->db->prepare("
-                SELECT cancha_id, instalacion_id, nombre
-                FROM canchas
-                WHERE instalacion_id = ? AND tenant_id = ? AND estado = 'ACTIVO'
+                SELECT can_cancha_id as cancha_id, can_instalacion_id as instalacion_id, can_nombre as nombre
+                FROM instalaciones_canchas
+                WHERE can_instalacion_id = ? AND can_tenant_id = ? AND can_estado = 'ACTIVO'
             ");
             $stmt->execute([$instalacionId, $this->tenantId]);
             $canchas = $stmt->fetchAll(\PDO::FETCH_ASSOC);
@@ -137,16 +137,16 @@ class CalendarioController extends \App\Controllers\ModuleController {
             // Reservas del rango
             $instPlaceholders = implode(',', array_fill(0, count($instIds), '?'));
             $stmt = $this->db->prepare("
-                SELECT r.reserva_id, r.instalacion_id, r.fecha_reserva, 
-                       r.hora_inicio, r.hora_fin, r.estado, r.total,
+                SELECT r.res_reserva_id as reserva_id, r.res_instalacion_id as instalacion_id, r.res_fecha_reserva as fecha_reserva, 
+                       r.res_hora_inicio as hora_inicio, r.res_hora_fin as hora_fin, r.res_estado as estado, r.res_precio_total as total,
                        CONCAT(c.cli_nombres, ' ', c.cli_apellidos) AS cliente_nombre
-                FROM reservas r
-                LEFT JOIN clientes c ON r.cliente_id = c.cli_cliente_id
-                WHERE r.instalacion_id IN ({$instPlaceholders})
-                  AND r.tenant_id = ?
-                  AND r.fecha_reserva BETWEEN ? AND ?
-                  AND r.estado IN ('CONFIRMADA','PENDIENTE')
-                ORDER BY r.fecha_reserva, r.hora_inicio
+                FROM instalaciones_reservas r
+                LEFT JOIN clientes c ON r.res_cliente_id = c.cli_cliente_id
+                WHERE r.res_instalacion_id IN ({$instPlaceholders})
+                  AND r.res_tenant_id = ?
+                  AND r.res_fecha_reserva BETWEEN ? AND ?
+                  AND r.res_estado IN ('CONFIRMADA','PENDIENTE')
+                ORDER BY r.res_fecha_reserva, r.res_hora_inicio
             ");
             $params = array_merge($instIds, [$this->tenantId, $inicio, $fin]);
             $stmt->execute($params);

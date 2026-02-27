@@ -1,0 +1,44 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║                   SOLUCIÓN RÁPIDA - Error de Mantenimientos              ║
+║                          Error 400: No encontrado                         ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+🔧 PROBLEMA:
+   El módulo de Mantenimientos no puede cargar porque los controladores 
+   referencian tablas que no existen en las nuevas tablas con prefijos.
+
+✅ SOLUCIÓN EN 2 PASOS:
+
+┌─ PASO 1: Crear vistas en la base de datos ─────────────────────────────┐
+│                                                                         │
+│  Abre en tu navegador:                                                 │
+│  http://localhost/digisports/public/setup_views.php                   │
+│                                                                         │
+│  Espera a ver: "✓ Todas las vistas se crearon correctamente."         │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+
+┌─ PASO 2: Verificar que funciona ──────────────────────────────────────┐
+│                                                                         │
+│  Accede al módulo de Mantenimientos en la aplicación.                 │
+│                                                                         │
+│  Debería cargar sin el error 400.                                      │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+
+📁 ARCHIVOS CORREGIDOS:
+   ✓ app/controllers/instalaciones/MantenimientoController.php
+   ✓ app/controllers/facturacion/FacturaController.php
+   ✓ app/controllers/core/TenantController.php
+   ✓ app/controllers/core/DashboardController.php
+   ✓ app/controllers/core/AuthController.php
+
+📖 DOCUMENTACIÓN COMPLETA:
+   Revisa: RESOLUCION_ERROR_400_MANTENIMIENTOS.md
+
+❌ SI EL ERROR PERSISTE:
+   1. Verifica que la URL setup_views.php se ejecutó sin errores
+   2. Abre: http://localhost/digisports/public/setup_views.php nuevamente
+   3. Si hay error, captura la pantalla y contacta soporte
+
+═════════════════════════════════════════════════════════════════════════════

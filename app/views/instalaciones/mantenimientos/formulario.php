@@ -45,9 +45,9 @@ $accion = $modo === 'editar' ? 'actualizar' : 'guardar';
                                     <select id="cancha_id" name="cancha_id" class="form-select" required <?php echo $modo === 'editar' ? 'disabled' : ''; ?>>
                                         <option value="">Selecciona una cancha...</option>
                                         <?php foreach ($canchas as $cancha): ?>
-                                            <option value="<?php echo $cancha['cancha_id']; ?>" 
-                                                    <?php echo ($mantenimiento['cancha_id'] ?? '') == $cancha['cancha_id'] ? 'selected' : ''; ?>>
-                                                <?php echo htmlspecialchars($cancha['nombre']); ?>
+                                            <option value="<?php echo $cancha['can_cancha_id']; ?>" 
+                                                    <?php echo ($mantenimiento['cancha_id'] ?? '') == $cancha['can_cancha_id'] ? 'selected' : ''; ?>>
+                                                <?php echo htmlspecialchars($cancha['can_nombre']); ?>
                                             </option>
                                         <?php endforeach; ?>
                                     </select>
