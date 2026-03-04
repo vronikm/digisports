@@ -79,7 +79,7 @@
     <div class="container">
         <div class="text-center mb-5">
             <h2 class="text-white mb-3" style="font-size: 2.5rem; font-weight: 700;">
-                Módulos del Sistema
+                Subproductos
             </h2>
             <p class="text-white-50">
                 Todo lo que necesitas para gestionar tu centro deportivo

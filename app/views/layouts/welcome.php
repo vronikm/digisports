@@ -146,6 +146,36 @@
             margin-right: 10px;
         }
         
+        .brand-logo img {
+            max-width: 360px;  /* Más armonioso con el botón */
+            height: auto;
+        }
+      
+        /* Para tablets */
+        @media (max-width: 992px) {
+            .brand-logo img {
+                max-width: 180px;
+            }
+        }
+
+        /* Para móviles */
+        @media (max-width: 576px) {
+            .welcome-header .container .d-flex {
+                flex-wrap: wrap;
+                gap: 10px;
+                justify-content: center !important;
+            }
+            
+            .brand-logo img {
+                max-width: 160px;
+            }
+            
+            .btn-login {
+                font-size: 14px;
+                padding: 8px 16px;
+            }
+        }
+
         @media (max-width: 768px) {
             .hero-title {
                 font-size: 2.5rem;
@@ -155,12 +185,14 @@
 </head>
 <body>
     <!-- Header -->
-    <header class="welcome-header py-3">
+    <header class="welcome-header py-0">
         <div class="container">
             <div class="d-flex justify-content-between align-items-center">
                 <div class="brand-logo">
-                    <i class="fas fa-futbol"></i>
-                    DigiSports
+                    <img src="/public/assets/images/logo_blanco.png" 
+                     alt="DigiSports" 
+                        class="img-fluid"
+                        style="max-width:280px;">
                 </div>
                 <div>
                     <a href="<?php echo url('core', 'auth', 'login') ?>" class="btn btn-login">
