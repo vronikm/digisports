@@ -21,13 +21,13 @@ $moduloColor   = $modulo_actual['color'] ?? '#0EA5E9';
         <!-- Filtros -->
         <div class="card card-outline" style="border-top-color:<?= $moduloColor ?>">
             <div class="card-body py-2">
-                <form method="GET" action="<?= url('natacion', 'inscripcion', 'index') ?>" class="row align-items-end">
+                <form method="POST" action="<?= url('natacion', 'inscripcion', 'index') ?>" class="row align-items-end">
                     <div class="col-md-4">
                         <label class="small">Grupo</label>
-                        <select name="grupo_id" class="form-control form-control-sm">
+                        <select name="grupo" class="form-control form-control-sm">
                             <option value="">— Todos —</option>
                             <?php foreach ($grupos as $g): ?>
-                            <option value="<?= $g['ngr_grupo_id'] ?>" <?= ($grupo_id ?? '') == $g['ngr_grupo_id'] ? 'selected' : '' ?>><?= htmlspecialchars($g['ngr_nombre']) ?></option>
+                            <option value="<?= $g['ngr_grupo_id'] ?>" <?= ($grupoFiltro ?? '') == $g['ngr_grupo_id'] ? 'selected' : '' ?>><?= htmlspecialchars($g['ngr_nombre']) ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>
@@ -35,13 +35,14 @@ $moduloColor   = $modulo_actual['color'] ?? '#0EA5E9';
                         <label class="small">Estado</label>
                         <select name="estado" class="form-control form-control-sm">
                             <option value="">— Todos —</option>
-                            <option value="ACTIVA" <?= ($estado ?? '') === 'ACTIVA' ? 'selected' : '' ?>>Activa</option>
-                            <option value="CANCELADA" <?= ($estado ?? '') === 'CANCELADA' ? 'selected' : '' ?>>Cancelada</option>
-                            <option value="COMPLETADA" <?= ($estado ?? '') === 'COMPLETADA' ? 'selected' : '' ?>>Completada</option>
+                            <option value="ACTIVA" <?= ($estadoFiltro ?? '') === 'ACTIVA' ? 'selected' : '' ?>>Activa</option>
+                            <option value="CANCELADA" <?= ($estadoFiltro ?? '') === 'CANCELADA' ? 'selected' : '' ?>>Cancelada</option>
+                            <option value="COMPLETADA" <?= ($estadoFiltro ?? '') === 'COMPLETADA' ? 'selected' : '' ?>>Completada</option>
                         </select>
                     </div>
                     <div class="col-md-3 text-right">
                         <button class="btn btn-sm btn-primary"><i class="fas fa-search mr-1"></i>Filtrar</button>
+                        <a href="<?= url('natacion', 'inscripcion', 'index') ?>" class="btn btn-sm btn-outline-secondary ml-1">Limpiar</a>
                     </div>
                 </form>
             </div>
@@ -97,7 +98,7 @@ $moduloColor   = $modulo_actual['color'] ?? '#0EA5E9';
                 <input type="hidden" name="id" id="insc_id">
                 <div class="modal-header" style="background:<?= $moduloColor ?>;color:white;">
                     <h5 class="modal-title" id="modalTitulo"><i class="fas fa-clipboard-list mr-2"></i>Nueva Inscripción</h5>
-                    <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar" onclick="cerrarModal()">&times;</button>
                 </div>
                 <div class="modal-body">
                     <div class="form-group">
@@ -118,7 +119,7 @@ $moduloColor   = $modulo_actual['color'] ?? '#0EA5E9';
                     <div class="form-group"><label>Notas</label><textarea name="notas" id="insc_notas" class="form-control" rows="2"></textarea></div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="cerrarModal()">Cancelar</button>
                     <button type="submit" class="btn" style="background:<?= $moduloColor ?>;color:white;"><i class="fas fa-save mr-1"></i>Inscribir</button>
                 </div>
             </form>
@@ -132,16 +133,95 @@ var urlCrear = '<?= url('natacion', 'inscripcion', 'crear') ?>';
 var urlEditar = '<?= url('natacion', 'inscripcion', 'editar') ?>';
 
 function abrirModal() {
+    var modal = document.getElementById('modalInscripcion');
+    if (!modal) {
+        Swal.fire('Error', 'El formulario de inscripción no se encontró.', 'error');
+        return;
+    }
+    
+    // Limpiar formulario
     document.getElementById('formInscripcion').reset();
     document.getElementById('insc_id').value = '';
     document.getElementById('insc_alumno_id').value = '';
     document.getElementById('alumnoSelInfo').innerHTML = '';
     document.getElementById('modalTitulo').innerHTML = '<i class="fas fa-clipboard-list mr-2"></i>Nueva Inscripción';
     document.getElementById('formInscripcion').action = urlCrear;
-    $('#modalInscripcion').modal('show');
+    
+    // Remover hold-transition que bloquea animaciones
+    document.body.classList.remove('hold-transition');
+    
+    // Mover modal al body si está dentro de content-wrapper
+    if (modal.closest('.content-wrapper')) {
+        document.body.appendChild(modal);
+    }
+    
+    // Intentar con Bootstrap/jQuery
+    try {
+        if (typeof jQuery !== 'undefined' && jQuery.fn && jQuery.fn.modal) {
+            jQuery('#modalInscripcion').modal('show');
+            setTimeout(function() {
+                if (modal.style.display !== 'block' && !modal.classList.contains('show')) {
+                    abrirModalManual(modal);
+                }
+            }, 300);
+            return;
+        }
+    } catch(e) {
+        console.warn('Bootstrap modal falló, usando fallback:', e);
+    }
+    
+    // Fallback manual
+    abrirModalManual(modal);
+}
+
+function abrirModalManual(modal) {
+    if (!modal) modal = document.getElementById('modalInscripcion');
+    if (!modal) return;
+    modal.style.display = 'block';
+    modal.classList.add('show');
+    modal.setAttribute('aria-modal', 'true');
+    modal.removeAttribute('aria-hidden');
+    modal.style.paddingRight = '17px';
+    // Crear backdrop si no existe
+    if (!document.getElementById('modalBackdropFallback')) {
+        var backdrop = document.createElement('div');
+        backdrop.className = 'modal-backdrop fade show';
+        backdrop.id = 'modalBackdropFallback';
+        backdrop.onclick = function() { cerrarModal(); };
+        document.body.appendChild(backdrop);
+    }
+    document.body.classList.add('modal-open');
+    document.body.style.overflow = 'hidden';
+}
+
+function cerrarModal() {
+    var modal = document.getElementById('modalInscripcion');
+    if (modal) {
+        try {
+            if (typeof jQuery !== 'undefined' && jQuery.fn && jQuery.fn.modal) {
+                jQuery('#modalInscripcion').modal('hide');
+            } else {
+                modal.style.display = 'none';
+                modal.classList.remove('show');
+            }
+        } catch(e) {
+            modal.style.display = 'none';
+            modal.classList.remove('show');
+        }
+    }
+    var backdrop = document.getElementById('modalBackdropFallback');
+    if (backdrop) backdrop.remove();
+    document.body.classList.remove('modal-open');
+    document.body.style.overflow = '';
 }
 
 function editarInscripcion(ins) {
+    var modal = document.getElementById('modalInscripcion');
+    if (!modal) {
+        Swal.fire('Error', 'El formulario de inscripción no se encontró.', 'error');
+        return;
+    }
+    
     document.getElementById('insc_id').value = ins.nis_inscripcion_id;
     document.getElementById('insc_alumno_id').value = ins.nis_alumno_id;
     document.getElementById('insc_grupo').value = ins.nis_grupo_id || '';
@@ -149,7 +229,32 @@ function editarInscripcion(ins) {
     document.getElementById('alumnoSelInfo').innerHTML = '<span class="badge badge-info">' + (ins.alu_nombres || '') + ' ' + (ins.alu_apellidos || '') + '</span>';
     document.getElementById('modalTitulo').innerHTML = '<i class="fas fa-edit mr-2"></i>Editar Inscripción';
     document.getElementById('formInscripcion').action = urlEditar;
-    $('#modalInscripcion').modal('show');
+    
+    // Remover hold-transition
+    document.body.classList.remove('hold-transition');
+    
+    // Mover modal si está dentro de content-wrapper
+    if (modal.closest('.content-wrapper')) {
+        document.body.appendChild(modal);
+    }
+    
+    // Intentar con Bootstrap/jQuery
+    try {
+        if (typeof jQuery !== 'undefined' && jQuery.fn && jQuery.fn.modal) {
+            jQuery('#modalInscripcion').modal('show');
+            setTimeout(function() {
+                if (modal.style.display !== 'block' && !modal.classList.contains('show')) {
+                    abrirModalManual(modal);
+                }
+            }, 300);
+            return;
+        }
+    } catch(e) {
+        console.warn('Bootstrap modal falló, usando fallback:', e);
+    }
+    
+    // Fallback manual
+    abrirModalManual(modal);
 }
 
 function cancelarInscripcion(id) {
@@ -159,15 +264,19 @@ function cancelarInscripcion(id) {
 
 // Búsqueda AJAX de alumno
 var timerAlumno;
-$('#buscarAlumnoInsc').on('input', function() {
-    clearTimeout(timerAlumno);
-    var q = $(this).val();
-    if (q.length < 2) return;
-    timerAlumno = setTimeout(function() {
-        $.getJSON('<?= url('natacion', 'alumno', 'buscarRepresentante') ?>&q=' + encodeURIComponent(q), function(res) {
-            // Reutiliza endpoint de búsqueda — adaptar si se crea uno específico
+if (typeof jQuery !== 'undefined') {
+    jQuery(document).ready(function() {
+        jQuery('#buscarAlumnoInsc').on('input', function() {
+            clearTimeout(timerAlumno);
+            var q = jQuery(this).val();
+            if (q.length < 2) return;
+            timerAlumno = setTimeout(function() {
+                jQuery.getJSON('<?= url('natacion', 'alumno', 'buscarRepresentante') ?>&q=' + encodeURIComponent(q), function(res) {
+                    // Endpoint de búsqueda — adaptar si se crea uno específico
+                });
+            }, 300);
         });
-    }, 300);
-});
+    });
+}
 </script>
 <?php $scripts = ob_get_clean(); ?>

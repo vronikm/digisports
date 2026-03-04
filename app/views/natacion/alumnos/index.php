@@ -29,17 +29,17 @@ $moduloColor = $modulo_actual['color'] ?? '#0EA5E9';
         <!-- Filtros -->
         <div class="card card-outline" style="border-top-color:<?= $moduloColor ?>">
             <div class="card-body py-2">
-                <form method="GET" action="<?= url('natacion', 'alumno', 'index') ?>" class="row align-items-end">
+                <form method="POST" action="<?= url('natacion', 'alumno', 'index') ?>" class="row align-items-end">
                     <div class="col-md-4">
                         <label class="small">Buscar</label>
-                        <input type="text" name="q" class="form-control form-control-sm" placeholder="Nombres, apellidos..." value="<?= htmlspecialchars($q ?? '') ?>">
+                        <input type="text" name="buscar" class="form-control form-control-sm" placeholder="Nombres, apellidos..." value="<?= htmlspecialchars($buscar ?? '') ?>">
                     </div>
                     <div class="col-md-3">
                         <label class="small">Nivel</label>
-                        <select name="nivel_id" class="form-control form-control-sm">
+                        <select name="nivel" class="form-control form-control-sm">
                             <option value="">— Todos —</option>
                             <?php foreach ($niveles as $n): ?>
-                            <option value="<?= $n['nnv_nivel_id'] ?>" <?= ($nivel_id ?? '') == $n['nnv_nivel_id'] ? 'selected' : '' ?>><?= htmlspecialchars($n['nnv_nombre']) ?></option>
+                            <option value="<?= $n['nnv_nivel_id'] ?>" <?= ($nivelFiltro ?? '') == $n['nnv_nivel_id'] ? 'selected' : '' ?>><?= htmlspecialchars($n['nnv_nombre']) ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>
@@ -47,8 +47,8 @@ $moduloColor = $modulo_actual['color'] ?? '#0EA5E9';
                         <label class="small">Estado</label>
                         <select name="estado" class="form-control form-control-sm">
                             <option value="">— Todos —</option>
-                            <option value="ACTIVO" <?= ($estado ?? '') === 'ACTIVO' ? 'selected' : '' ?>>Activo</option>
-                            <option value="INACTIVO" <?= ($estado ?? '') === 'INACTIVO' ? 'selected' : '' ?>>Inactivo</option>
+                            <option value="ACTIVO" <?= ($estadoFiltro ?? '') === 'ACTIVO' ? 'selected' : '' ?>>Activo</option>
+                            <option value="INACTIVO" <?= ($estadoFiltro ?? '') === 'INACTIVO' ? 'selected' : '' ?>>Inactivo</option>
                         </select>
                     </div>
                     <div class="col-md-3 text-right">

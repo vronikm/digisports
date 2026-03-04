@@ -215,7 +215,7 @@ if (!empty($pagos)) {
                 <h5 class="modal-title" id="modalPagoTitle">
                     <i class="<?= $moduloIcon ?>"></i> Nuevo Pago
                 </h5>
-                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar">
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar" onclick="cerrarModalPago()">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -316,7 +316,7 @@ if (!empty($pagos)) {
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="cerrarModalPago()">Cancelar</button>
                     <button type="submit" class="btn btn-success">
                         <i class="fas fa-save"></i> Guardar
                     </button>
@@ -377,10 +377,16 @@ function limpiarFormulario() {
     $('#fpg_descuento').val(0);
     $('#fpg_recargo_mora').val(0);
     $('#modalPagoTitle').html('<i class="<?= $moduloIcon ?>"></i> Nuevo Pago');
+    abrirModalPago();
 }
 
 function editarPago(obj) {
-    limpiarFormulario();
+    var modal = document.getElementById('modalPago');
+    if (!modal) {
+        Swal.fire('Error', 'Modal no encontrado', 'error');
+        return;
+    }
+    $('#formPago')[0].reset();
     $('#fpg_id').val(obj.fpg_pago_id);
     $('#fpg_alumno_id').val(obj.fpg_alumno_id || '').trigger('change');
     $('#fpg_grupo_id').val(obj.fpg_grupo_id || '');
@@ -393,7 +399,71 @@ function editarPago(obj) {
     $('#fpg_referencia').val(obj.fpg_referencia || '');
     $('#fpg_notas').val(obj.fpg_notas || '');
     $('#modalPagoTitle').html('<i class="<?= $moduloIcon ?>"></i> Editar Pago');
-    $('#modalPago').modal('show');
+    document.body.classList.remove('hold-transition');
+    abrirModalPago();
+}
+
+function abrirModalPago() {
+    var modal = document.getElementById('modalPago');
+    if (!modal) {
+        Swal.fire('Error', 'Modal no encontrado', 'error');
+        return;
+    }
+    document.body.classList.remove('hold-transition');
+    var modalShown = false;
+    try {
+        if (typeof jQuery !== 'undefined' && jQuery.fn && jQuery.fn.modal) {
+            jQuery('#modalPago').modal('show');
+            modalShown = true;
+            setTimeout(function() {
+                if (!modal.classList.contains('show')) {
+                    abrirModalPagoManual(modal);
+                }
+            }, 300);
+            return;
+        }
+    } catch(e) {
+        console.warn('Bootstrap modal falló:', e);
+        modalShown = false;
+    }
+    abrirModalPagoManual(modal);
+}
+
+function abrirModalPagoManual(modal) {
+    if (!modal) return;
+    modal.style.display = 'block';
+    modal.classList.add('show');
+    var backdrop = document.querySelector('.modal-backdrop');
+    if (!backdrop) {
+        backdrop = document.createElement('div');
+        backdrop.className = 'modal-backdrop fade show';
+        document.body.appendChild(backdrop);
+    }
+    if (!document.body.classList.contains('modal-open')) {
+        document.body.style.overflow = 'hidden';
+        document.body.classList.add('modal-open');
+    }
+}
+
+function cerrarModalPago() {
+    var modal = document.getElementById('modalPago');
+    if (!modal) return;
+    try {
+        if (typeof jQuery !== 'undefined' && jQuery.fn && jQuery.fn.modal) {
+            jQuery('#modalPago').modal('hide');
+            return;
+        }
+    } catch(e) {
+        console.warn('Bootstrap modal falló al cerrar:', e);
+    }
+    modal.style.display = 'none';
+    modal.classList.remove('show');
+    document.body.classList.remove('modal-open');
+    document.body.style.overflow = '';
+    var backdrop = document.querySelector('.modal-backdrop');
+    if (backdrop) {
+        backdrop.remove();
+    }
 }
 
 function anularPago(id) {

@@ -145,7 +145,7 @@ $sedeActiva  = $sede_activa ?? null;
                 <input type="hidden" name="id" id="sed_id">
                 <div class="modal-header" style="background:<?= $moduloColor ?>;color:white;">
                     <h5 class="modal-title" id="modalTitulo"><i class="fas fa-building mr-2"></i>Nueva Sede</h5>
-                    <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar" onclick="cerrarModal()">&times;</button>
                 </div>
                 <div class="modal-body">
                     <div class="row">
@@ -168,7 +168,7 @@ $sedeActiva  = $sede_activa ?? null;
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="cerrarModal()">Cancelar</button>
                     <button type="submit" class="btn" style="background:<?= $moduloColor ?>;color:white;"><i class="fas fa-save mr-1"></i>Guardar</button>
                 </div>
             </form>
@@ -184,14 +184,43 @@ var urlSeleccionar = '<?= url('futbol', 'sede', 'seleccionar') ?>';
 var urlResumen  = '<?= url('futbol', 'sede', 'resumenFinanciero') ?>';
 
 function abrirModal() {
+    var modal = document.getElementById('modalSede');
+    if (!modal) {
+        Swal.fire('Error', 'Modal no encontrado', 'error');
+        return;
+    }
     document.getElementById('formSede').reset();
     document.getElementById('sed_id').value = '';
     document.getElementById('modalTitulo').innerHTML = '<i class="fas fa-building mr-2"></i>Nueva Sede';
     document.getElementById('formSede').action = urlCrear;
-    $('#modalSede').modal('show');
+    document.body.classList.remove('hold-transition');
+    
+    var modalShown = false;
+    try {
+        if (typeof jQuery !== 'undefined' && jQuery.fn && jQuery.fn.modal) {
+            jQuery('#modalSede').modal('show');
+            modalShown = true;
+            setTimeout(function() {
+                if (!modal.classList.contains('show')) {
+                    abrirModalManual(modal);
+                }
+            }, 300);
+            return;
+        }
+    } catch(e) {
+        console.warn('Bootstrap modal falló:', e);
+        modalShown = false;
+    }
+    
+    abrirModalManual(modal);
 }
 
 function editarSede(s) {
+    var modal = document.getElementById('modalSede');
+    if (!modal) {
+        Swal.fire('Error', 'Modal no encontrado', 'error');
+        return;
+    }
     document.getElementById('sed_id').value = s.sed_sede_id;
     document.getElementById('sed_nombre').value = s.sed_nombre || '';
     document.getElementById('sed_codigo').value = s.sed_codigo || '';
@@ -202,7 +231,68 @@ function editarSede(s) {
     document.getElementById('sed_principal').checked = (s.sed_es_principal === 'S');
     document.getElementById('modalTitulo').innerHTML = '<i class="fas fa-edit mr-2"></i>Editar Sede';
     document.getElementById('formSede').action = urlEditar;
-    $('#modalSede').modal('show');
+    document.body.classList.remove('hold-transition');
+    
+    var modalShown = false;
+    try {
+        if (typeof jQuery !== 'undefined' && jQuery.fn && jQuery.fn.modal) {
+            jQuery('#modalSede').modal('show');
+            modalShown = true;
+            setTimeout(function() {
+                if (!modal.classList.contains('show')) {
+                    abrirModalManual(modal);
+                }
+            }, 300);
+            return;
+        }
+    } catch(e) {
+        console.warn('Bootstrap modal falló:', e);
+        modalShown = false;
+    }
+    
+    abrirModalManual(modal);
+}
+
+function abrirModalManual(modal) {
+    if (!modal) return;
+    modal.style.display = 'block';
+    modal.classList.add('show');
+    
+    var backdrop = document.querySelector('.modal-backdrop');
+    if (!backdrop) {
+        backdrop = document.createElement('div');
+        backdrop.className = 'modal-backdrop fade show';
+        document.body.appendChild(backdrop);
+    }
+    
+    if (!document.body.classList.contains('modal-open')) {
+        document.body.style.overflow = 'hidden';
+        document.body.classList.add('modal-open');
+    }
+}
+
+function cerrarModal() {
+    var modal = document.getElementById('modalSede');
+    if (!modal) return;
+    
+    try {
+        if (typeof jQuery !== 'undefined' && jQuery.fn && jQuery.fn.modal) {
+            jQuery('#modalSede').modal('hide');
+            return;
+        }
+    } catch(e) {
+        console.warn('Bootstrap modal falló al cerrar:', e);
+    }
+    
+    modal.style.display = 'none';
+    modal.classList.remove('show');
+    document.body.classList.remove('modal-open');
+    document.body.style.overflow = '';
+    
+    var backdrop = document.querySelector('.modal-backdrop');
+    if (backdrop) {
+        backdrop.remove();
+    }
 }
 
 function seleccionarSede(id) {

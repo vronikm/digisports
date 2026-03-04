@@ -23,10 +23,10 @@ $moduloColor = $modulo_actual['color'] ?? '#0EA5E9';
         <!-- Selector nivel -->
         <div class="card card-outline" style="border-top-color:<?= $moduloColor ?>">
             <div class="card-body py-2">
-                <form method="GET" action="<?= url('natacion', 'evaluacion', 'index') ?>" class="row align-items-end" id="formFiltroEval">
+                <form method="POST" action="<?= url('natacion', 'evaluacion', 'index') ?>" class="row align-items-end" id="formFiltroEval">
                     <div class="col-md-5">
                         <label class="small">Nivel</label>
-                        <select name="nivel_id" class="form-control form-control-sm" onchange="this.form.submit()">
+                        <select name="nivel" class="form-control form-control-sm" onchange="this.form.submit()">
                             <option value="">— Seleccionar nivel —</option>
                             <?php foreach ($niveles as $n): ?>
                             <option value="<?= $n['nnv_nivel_id'] ?>" <?= $nivelId == $n['nnv_nivel_id'] ? 'selected' : '' ?>><?= htmlspecialchars($n['nnv_nombre']) ?></option>

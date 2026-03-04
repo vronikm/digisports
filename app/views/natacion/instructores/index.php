@@ -66,7 +66,7 @@ $moduloColor  = $modulo_actual['color'] ?? '#0EA5E9';
                 <input type="hidden" name="id" id="ins_id">
                 <div class="modal-header" style="background:<?= $moduloColor ?>;color:white;">
                     <h5 class="modal-title" id="modalTitulo"><i class="fas fa-chalkboard-teacher mr-2"></i>Nuevo Instructor</h5>
-                    <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar" onclick="cerrarModal()">&times;</button>
                 </div>
                 <div class="modal-body">
                     <div class="row">
@@ -93,7 +93,7 @@ $moduloColor  = $modulo_actual['color'] ?? '#0EA5E9';
                     <div class="form-group"><label>Certificaciones</label><textarea name="certificaciones" id="ins_certificaciones" class="form-control" rows="2"></textarea></div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="cerrarModal()">Cancelar</button>
                     <button type="submit" class="btn" style="background:<?= $moduloColor ?>;color:white;"><i class="fas fa-save mr-1"></i>Guardar</button>
                 </div>
             </form>
@@ -105,12 +105,47 @@ $moduloColor  = $modulo_actual['color'] ?? '#0EA5E9';
 <script>
 var urlCrear = '<?= url('natacion', 'instructor', 'crear') ?>';
 var urlEditar = '<?= url('natacion', 'instructor', 'editar') ?>';
+
 function abrirModal() {
-    document.getElementById('formInstructor').reset(); document.getElementById('ins_id').value = '';
+    var modal = document.getElementById('modalInstructor');
+    if (!modal) {
+        Swal.fire('Error', 'El formulario del instructor no se encontró.', 'error');
+        return;
+    }
+    
+    document.getElementById('formInstructor').reset();
+    document.getElementById('ins_id').value = '';
     document.getElementById('modalTitulo').innerHTML = '<i class="fas fa-chalkboard-teacher mr-2"></i>Nuevo Instructor';
-    document.getElementById('formInstructor').action = urlCrear; $('#modalInstructor').modal('show');
+    document.getElementById('formInstructor').action = urlCrear;
+    
+    document.body.classList.remove('hold-transition');
+    if (modal.closest('.content-wrapper')) {
+        document.body.appendChild(modal);
+    }
+    
+    try {
+        if (typeof jQuery !== 'undefined' && jQuery.fn && jQuery.fn.modal) {
+            jQuery('#modalInstructor').modal('show');
+            setTimeout(function() {
+                if (modal.style.display !== 'block' && !modal.classList.contains('show')) {
+                    abrirModalManual(modal);
+                }
+            }, 300);
+            return;
+        }
+    } catch(e) {
+        console.warn('Bootstrap modal falló, usando fallback:', e);
+    }
+    abrirModalManual(modal);
 }
+
 function editarInstructor(ins) {
+    var modal = document.getElementById('modalInstructor');
+    if (!modal) {
+        Swal.fire('Error', 'El formulario del instructor no se encontró.', 'error');
+        return;
+    }
+    
     document.getElementById('ins_id').value = ins.nin_instructor_id;
     document.getElementById('ins_nombres').value = ins.nin_nombres || '';
     document.getElementById('ins_apellidos').value = ins.nin_apellidos || '';
@@ -121,7 +156,67 @@ function editarInstructor(ins) {
     document.getElementById('ins_email').value = ins.nin_email || '';
     document.getElementById('ins_certificaciones').value = ins.nin_certificaciones || '';
     document.getElementById('modalTitulo').innerHTML = '<i class="fas fa-edit mr-2"></i>Editar Instructor';
-    document.getElementById('formInstructor').action = urlEditar; $('#modalInstructor').modal('show');
+    document.getElementById('formInstructor').action = urlEditar;
+    
+    document.body.classList.remove('hold-transition');
+    if (modal.closest('.content-wrapper')) {
+        document.body.appendChild(modal);
+    }
+    
+    try {
+        if (typeof jQuery !== 'undefined' && jQuery.fn && jQuery.fn.modal) {
+            jQuery('#modalInstructor').modal('show');
+            setTimeout(function() {
+                if (modal.style.display !== 'block' && !modal.classList.contains('show')) {
+                    abrirModalManual(modal);
+                }
+            }, 300);
+            return;
+        }
+    } catch(e) {
+        console.warn('Bootstrap modal falló, usando fallback:', e);
+    }
+    abrirModalManual(modal);
+}
+
+function abrirModalManual(modal) {
+    if (!modal) modal = document.getElementById('modalInstructor');
+    if (!modal) return;
+    modal.style.display = 'block';
+    modal.classList.add('show');
+    modal.setAttribute('aria-modal', 'true');
+    modal.removeAttribute('aria-hidden');
+    modal.style.paddingRight = '17px';
+    if (!document.getElementById('modalBackdropFallback')) {
+        var backdrop = document.createElement('div');
+        backdrop.className = 'modal-backdrop fade show';
+        backdrop.id = 'modalBackdropFallback';
+        backdrop.onclick = function() { cerrarModal(); };
+        document.body.appendChild(backdrop);
+    }
+    document.body.classList.add('modal-open');
+    document.body.style.overflow = 'hidden';
+}
+
+function cerrarModal() {
+    var modal = document.getElementById('modalInstructor');
+    if (modal) {
+        try {
+            if (typeof jQuery !== 'undefined' && jQuery.fn && jQuery.fn.modal) {
+                jQuery('#modalInstructor').modal('hide');
+            } else {
+                modal.style.display = 'none';
+                modal.classList.remove('show');
+            }
+        } catch(e) {
+            modal.style.display = 'none';
+            modal.classList.remove('show');
+        }
+    }
+    var backdrop = document.getElementById('modalBackdropFallback');
+    if (backdrop) backdrop.remove();
+    document.body.classList.remove('modal-open');
+    document.body.style.overflow = '';
 }
 function eliminarInstructor(id, nombre) {
     Swal.fire({ title: '¿Desactivar instructor?', html: 'Se desactivará a <strong>' + nombre + '</strong>', icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Sí, desactivar', cancelButtonText: 'Cancelar'

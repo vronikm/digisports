@@ -73,7 +73,7 @@ $moduloColor = $modulo_actual['color'] ?? '#0EA5E9';
                 <input type="hidden" name="id" id="pis_id">
                 <div class="modal-header" style="background:<?= $moduloColor ?>;color:white;">
                     <h5 class="modal-title" id="modalTitulo"><i class="fas fa-swimming-pool mr-2"></i>Nueva Piscina</h5>
-                    <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar" onclick="cerrarModal()">&times;</button>
                 </div>
                 <div class="modal-body">
                     <div class="form-group"><label>Nombre <span class="text-danger">*</span></label><input type="text" name="nombre" id="pis_nombre" class="form-control" required></div>
@@ -101,7 +101,7 @@ $moduloColor = $modulo_actual['color'] ?? '#0EA5E9';
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="cerrarModal()">Cancelar</button>
                     <button type="submit" class="btn" style="background:<?= $moduloColor ?>;color:white;"><i class="fas fa-save mr-1"></i>Guardar</button>
                 </div>
             </form>
@@ -113,12 +113,47 @@ $moduloColor = $modulo_actual['color'] ?? '#0EA5E9';
 <script>
 var urlCrear = '<?= url('natacion', 'piscina', 'crear') ?>';
 var urlEditar = '<?= url('natacion', 'piscina', 'editar') ?>';
+
 function abrirModal() {
-    document.getElementById('formPiscina').reset(); document.getElementById('pis_id').value = '';
+    var modal = document.getElementById('modalPiscina');
+    if (!modal) {
+        Swal.fire('Error', 'El formulario de piscina no se encontró.', 'error');
+        return;
+    }
+    
+    document.getElementById('formPiscina').reset();
+    document.getElementById('pis_id').value = '';
     document.getElementById('modalTitulo').innerHTML = '<i class="fas fa-swimming-pool mr-2"></i>Nueva Piscina';
-    document.getElementById('formPiscina').action = urlCrear; $('#modalPiscina').modal('show');
+    document.getElementById('formPiscina').action = urlCrear;
+    
+    document.body.classList.remove('hold-transition');
+    if (modal.closest('.content-wrapper')) {
+        document.body.appendChild(modal);
+    }
+    
+    try {
+        if (typeof jQuery !== 'undefined' && jQuery.fn && jQuery.fn.modal) {
+            jQuery('#modalPiscina').modal('show');
+            setTimeout(function() {
+                if (modal.style.display !== 'block' && !modal.classList.contains('show')) {
+                    abrirModalManual(modal);
+                }
+            }, 300);
+            return;
+        }
+    } catch(e) {
+        console.warn('Bootstrap modal falló, usando fallback:', e);
+    }
+    abrirModalManual(modal);
 }
+
 function editarPiscina(p) {
+    var modal = document.getElementById('modalPiscina');
+    if (!modal) {
+        Swal.fire('Error', 'El formulario de piscina no se encontró.', 'error');
+        return;
+    }
+    
     document.getElementById('pis_id').value = p.npi_piscina_id;
     document.getElementById('pis_nombre').value = p.npi_nombre || '';
     document.getElementById('pis_sede').value = p.npi_sede_id || '';
@@ -130,7 +165,67 @@ function editarPiscina(p) {
     document.getElementById('pis_carriles').value = p.npi_num_carriles || '';
     document.getElementById('pis_ubicacion').value = p.npi_ubicacion || '';
     document.getElementById('modalTitulo').innerHTML = '<i class="fas fa-edit mr-2"></i>Editar Piscina';
-    document.getElementById('formPiscina').action = urlEditar; $('#modalPiscina').modal('show');
+    document.getElementById('formPiscina').action = urlEditar;
+    
+    document.body.classList.remove('hold-transition');
+    if (modal.closest('.content-wrapper')) {
+        document.body.appendChild(modal);
+    }
+    
+    try {
+        if (typeof jQuery !== 'undefined' && jQuery.fn && jQuery.fn.modal) {
+            jQuery('#modalPiscina').modal('show');
+            setTimeout(function() {
+                if (modal.style.display !== 'block' && !modal.classList.contains('show')) {
+                    abrirModalManual(modal);
+                }
+            }, 300);
+            return;
+        }
+    } catch(e) {
+        console.warn('Bootstrap modal falló, usando fallback:', e);
+    }
+    abrirModalManual(modal);
+}
+
+function abrirModalManual(modal) {
+    if (!modal) modal = document.getElementById('modalPiscina');
+    if (!modal) return;
+    modal.style.display = 'block';
+    modal.classList.add('show');
+    modal.setAttribute('aria-modal', 'true');
+    modal.removeAttribute('aria-hidden');
+    modal.style.paddingRight = '17px';
+    if (!document.getElementById('modalBackdropFallback')) {
+        var backdrop = document.createElement('div');
+        backdrop.className = 'modal-backdrop fade show';
+        backdrop.id = 'modalBackdropFallback';
+        backdrop.onclick = function() { cerrarModal(); };
+        document.body.appendChild(backdrop);
+    }
+    document.body.classList.add('modal-open');
+    document.body.style.overflow = 'hidden';
+}
+
+function cerrarModal() {
+    var modal = document.getElementById('modalPiscina');
+    if (modal) {
+        try {
+            if (typeof jQuery !== 'undefined' && jQuery.fn && jQuery.fn.modal) {
+                jQuery('#modalPiscina').modal('hide');
+            } else {
+                modal.style.display = 'none';
+                modal.classList.remove('show');
+            }
+        } catch(e) {
+            modal.style.display = 'none';
+            modal.classList.remove('show');
+        }
+    }
+    var backdrop = document.getElementById('modalBackdropFallback');
+    if (backdrop) backdrop.remove();
+    document.body.classList.remove('modal-open');
+    document.body.style.overflow = '';
 }
 function eliminarPiscina(id, nombre) {
     Swal.fire({ title: '¿Desactivar piscina?', html: 'Se desactivará <strong>' + nombre + '</strong>', icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Sí, desactivar', cancelButtonText: 'Cancelar'

@@ -68,7 +68,7 @@ $colores     = ['#22C55E','#3B82F6','#F59E0B','#EF4444','#8B5CF6','#EC4899','#14
                 <input type="hidden" name="id" id="nv_id">
                 <div class="modal-header" style="background:<?= $moduloColor ?>;color:white;">
                     <h5 class="modal-title" id="modalTitulo"><i class="fas fa-layer-group mr-2"></i>Nuevo Nivel</h5>
-                    <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar" onclick="cerrarModal()">&times;</button>
                 </div>
                 <div class="modal-body">
                     <div class="row">
@@ -84,7 +84,7 @@ $colores     = ['#22C55E','#3B82F6','#F59E0B','#EF4444','#8B5CF6','#EC4899','#14
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="cerrarModal()">Cancelar</button>
                     <button type="submit" class="btn" style="background:<?= $moduloColor ?>;color:white;"><i class="fas fa-save mr-1"></i>Guardar</button>
                 </div>
             </form>
@@ -96,12 +96,47 @@ $colores     = ['#22C55E','#3B82F6','#F59E0B','#EF4444','#8B5CF6','#EC4899','#14
 <script>
 var urlCrear = '<?= url('natacion', 'nivel', 'crear') ?>';
 var urlEditar = '<?= url('natacion', 'nivel', 'editar') ?>';
+
 function abrirModal() {
-    document.getElementById('formNivel').reset(); document.getElementById('nv_id').value = '';
+    var modal = document.getElementById('modalNivel');
+    if (!modal) {
+        Swal.fire('Error', 'El formulario del nivel no se encontró.', 'error');
+        return;
+    }
+    
+    document.getElementById('formNivel').reset();
+    document.getElementById('nv_id').value = '';
     document.getElementById('modalTitulo').innerHTML = '<i class="fas fa-layer-group mr-2"></i>Nuevo Nivel';
-    document.getElementById('formNivel').action = urlCrear; $('#modalNivel').modal('show');
+    document.getElementById('formNivel').action = urlCrear;
+    
+    document.body.classList.remove('hold-transition');
+    if (modal.closest('.content-wrapper')) {
+        document.body.appendChild(modal);
+    }
+    
+    try {
+        if (typeof jQuery !== 'undefined' && jQuery.fn && jQuery.fn.modal) {
+            jQuery('#modalNivel').modal('show');
+            setTimeout(function() {
+                if (modal.style.display !== 'block' && !modal.classList.contains('show')) {
+                    abrirModalManual(modal);
+                }
+            }, 300);
+            return;
+        }
+    } catch(e) {
+        console.warn('Bootstrap modal falló, usando fallback:', e);
+    }
+    abrirModalManual(modal);
 }
+
 function editarNivel(nv) {
+    var modal = document.getElementById('modalNivel');
+    if (!modal) {
+        Swal.fire('Error', 'El formulario del nivel no se encontró.', 'error');
+        return;
+    }
+    
     document.getElementById('nv_id').value = nv.nnv_nivel_id;
     document.getElementById('nv_nombre').value = nv.nnv_nombre || '';
     document.getElementById('nv_codigo').value = nv.nnv_codigo || '';
@@ -111,7 +146,67 @@ function editarNivel(nv) {
     document.getElementById('nv_emax').value = nv.nnv_edad_max || '';
     document.getElementById('nv_color').value = nv.nnv_color || '#3B82F6';
     document.getElementById('modalTitulo').innerHTML = '<i class="fas fa-edit mr-2"></i>Editar Nivel';
-    document.getElementById('formNivel').action = urlEditar; $('#modalNivel').modal('show');
+    document.getElementById('formNivel').action = urlEditar;
+    
+    document.body.classList.remove('hold-transition');
+    if (modal.closest('.content-wrapper')) {
+        document.body.appendChild(modal);
+    }
+    
+    try {
+        if (typeof jQuery !== 'undefined' && jQuery.fn && jQuery.fn.modal) {
+            jQuery('#modalNivel').modal('show');
+            setTimeout(function() {
+                if (modal.style.display !== 'block' && !modal.classList.contains('show')) {
+                    abrirModalManual(modal);
+                }
+            }, 300);
+            return;
+        }
+    } catch(e) {
+        console.warn('Bootstrap modal falló, usando fallback:', e);
+    }
+    abrirModalManual(modal);
+}
+
+function abrirModalManual(modal) {
+    if (!modal) modal = document.getElementById('modalNivel');
+    if (!modal) return;
+    modal.style.display = 'block';
+    modal.classList.add('show');
+    modal.setAttribute('aria-modal', 'true');
+    modal.removeAttribute('aria-hidden');
+    modal.style.paddingRight = '17px';
+    if (!document.getElementById('modalBackdropFallback')) {
+        var backdrop = document.createElement('div');
+        backdrop.className = 'modal-backdrop fade show';
+        backdrop.id = 'modalBackdropFallback';
+        backdrop.onclick = function() { cerrarModal(); };
+        document.body.appendChild(backdrop);
+    }
+    document.body.classList.add('modal-open');
+    document.body.style.overflow = 'hidden';
+}
+
+function cerrarModal() {
+    var modal = document.getElementById('modalNivel');
+    if (modal) {
+        try {
+            if (typeof jQuery !== 'undefined' && jQuery.fn && jQuery.fn.modal) {
+                jQuery('#modalNivel').modal('hide');
+            } else {
+                modal.style.display = 'none';
+                modal.classList.remove('show');
+            }
+        } catch(e) {
+            modal.style.display = 'none';
+            modal.classList.remove('show');
+        }
+    }
+    var backdrop = document.getElementById('modalBackdropFallback');
+    if (backdrop) backdrop.remove();
+    document.body.classList.remove('modal-open');
+    document.body.style.overflow = '';
 }
 function eliminarNivel(id, nombre) {
     Swal.fire({ title: '¿Desactivar nivel?', html: '<strong>' + nombre + '</strong>', icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Sí, desactivar', cancelButtonText: 'Cancelar'

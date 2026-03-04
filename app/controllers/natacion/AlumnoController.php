@@ -29,9 +29,10 @@ class AlumnoController extends \App\Controllers\ModuleController {
     public function index() {
         try {
             $this->setupModule();
-            $buscar   = trim($this->get('buscar') ?? '');
-            $nivel    = $this->get('nivel') ?? '';
-            $estado   = $this->get('estado') ?? '';
+            // Aceptar parámetros de GET o POST (filtros pueden venir de ambos)
+            $buscar   = trim($this->post('buscar') ?? $this->get('buscar') ?? '');
+            $nivel    = $this->post('nivel') ?? $this->get('nivel') ?? '';
+            $estado   = $this->post('estado') ?? $this->get('estado') ?? '';
             $pagina   = max(1, (int)($this->get('pagina') ?? 1));
             $porPagina = 25;
             $sedeId   = $_SESSION['natacion_sede_id'] ?? null;

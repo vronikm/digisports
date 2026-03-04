@@ -245,8 +245,25 @@ function cargarAsistencia() {
         Swal.fire('Atención', 'Seleccione fecha y grupo.', 'warning');
         return;
     }
-    var url = '<?= url("futbol", "asistencia", "index") ?>&fecha=' + fecha + '&grupo_id=' + grupoId;
-    window.location.href = url;
+    // Usar POST en lugar de concatenar a URL
+    var form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '<?= url("futbol", "asistencia", "index") ?>';
+    
+    var inputFecha = document.createElement('input');
+    inputFecha.type = 'hidden';
+    inputFecha.name = 'fecha';
+    inputFecha.value = fecha;
+    form.appendChild(inputFecha);
+    
+    var inputGrupo = document.createElement('input');
+    inputGrupo.type = 'hidden';
+    inputGrupo.name = 'grupo';
+    inputGrupo.value = grupoId;
+    form.appendChild(inputGrupo);
+    
+    document.body.appendChild(form);
+    form.submit();
 }
 
 function guardarAsistencia() {

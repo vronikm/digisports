@@ -26,10 +26,10 @@ $moduloColor = $modulo_actual['color'] ?? '#0EA5E9';
         <!-- Selector grupo/fecha -->
         <div class="card card-outline" style="border-top-color:<?= $moduloColor ?>">
             <div class="card-body py-2">
-                <form method="GET" action="<?= url('natacion', 'asistencia', 'index') ?>" class="row align-items-end" id="formFiltro">
+                <form method="POST" action="<?= url('natacion', 'asistencia', 'index') ?>" class="row align-items-end" id="formFiltro">
                     <div class="col-md-5">
                         <label class="small">Grupo</label>
-                        <select name="grupo_id" class="form-control form-control-sm" onchange="document.getElementById('formFiltro').submit()">
+                        <select name="grupo" class="form-control form-control-sm" onchange="document.getElementById('formFiltro').submit()">
                             <option value="">— Seleccionar grupo —</option>
                             <?php foreach ($grupos as $g): ?>
                             <option value="<?= $g['ngr_grupo_id'] ?>" <?= $grupoId == $g['ngr_grupo_id'] ? 'selected' : '' ?>><?= htmlspecialchars($g['ngr_nombre']) ?></option>

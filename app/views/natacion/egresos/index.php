@@ -175,7 +175,7 @@ foreach ($totales as $t) {
                 <input type="hidden" name="id" id="egr_id">
                 <div class="modal-header" style="background:<?= $moduloColor ?>;color:white;">
                     <h5 class="modal-title" id="modalTitulo"><i class="fas fa-money-bill-wave mr-2"></i>Nuevo Egreso</h5>
-                    <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar" onclick="cerrarModalEgreso()">&times;</button>
                 </div>
                 <div class="modal-body">
                     <div class="row">
@@ -232,7 +232,7 @@ foreach ($totales as $t) {
                     <div class="form-group"><label>Notas</label><textarea name="notas" id="egr_notas" class="form-control" rows="2"></textarea></div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="cerrarModalEgreso()">Cancelar</button>
                     <button type="submit" class="btn" style="background:<?= $moduloColor ?>;color:white;"><i class="fas fa-save mr-1"></i>Guardar</button>
                 </div>
             </form>
@@ -246,15 +246,44 @@ var urlCrear  = '<?= url('natacion', 'egreso', 'crear') ?>';
 var urlEditar = '<?= url('natacion', 'egreso', 'editar') ?>';
 
 function abrirModal() {
+    var modal = document.getElementById('modalEgreso');
+    if (!modal) {
+        Swal.fire('Error', 'Modal no encontrado', 'error');
+        return;
+    }
     document.getElementById('formEgreso').reset();
     document.getElementById('egr_id').value = '';
     document.getElementById('egr_fecha').value = '<?= date('Y-m-d') ?>';
     document.getElementById('modalTitulo').innerHTML = '<i class="fas fa-money-bill-wave mr-2"></i>Nuevo Egreso';
     document.getElementById('formEgreso').action = urlCrear;
-    $('#modalEgreso').modal('show');
+    document.body.classList.remove('hold-transition');
+    
+    var modalShown = false;
+    try {
+        if (typeof jQuery !== 'undefined' && jQuery.fn && jQuery.fn.modal) {
+            jQuery('#modalEgreso').modal('show');
+            modalShown = true;
+            setTimeout(function() {
+                if (!modal.classList.contains('show')) {
+                    abrirModalManual(modal);
+                }
+            }, 300);
+            return;
+        }
+    } catch(e) {
+        console.warn('Bootstrap modal falló:', e);
+        modalShown = false;
+    }
+    
+    abrirModalManual(modal);
 }
 
 function editarEgreso(e) {
+    var modal = document.getElementById('modalEgreso');
+    if (!modal) {
+        Swal.fire('Error', 'Modal no encontrado', 'error');
+        return;
+    }
     document.getElementById('egr_id').value = e.neg_egreso_id;
     document.getElementById('egr_concepto').value = e.neg_concepto || '';
     document.getElementById('egr_categoria').value = e.neg_categoria || 'OTROS';
@@ -269,7 +298,68 @@ function editarEgreso(e) {
     document.getElementById('egr_notas').value = e.neg_notas || '';
     document.getElementById('modalTitulo').innerHTML = '<i class="fas fa-edit mr-2"></i>Editar Egreso';
     document.getElementById('formEgreso').action = urlEditar;
-    $('#modalEgreso').modal('show');
+    document.body.classList.remove('hold-transition');
+    
+    var modalShown = false;
+    try {
+        if (typeof jQuery !== 'undefined' && jQuery.fn && jQuery.fn.modal) {
+            jQuery('#modalEgreso').modal('show');
+            modalShown = true;
+            setTimeout(function() {
+                if (!modal.classList.contains('show')) {
+                    abrirModalManual(modal);
+                }
+            }, 300);
+            return;
+        }
+    } catch(e) {
+        console.warn('Bootstrap modal falló:', e);
+        modalShown = false;
+    }
+    
+    abrirModalManual(modal);
+}
+
+function abrirModalManual(modal) {
+    if (!modal) return;
+    modal.style.display = 'block';
+    modal.classList.add('show');
+    
+    var backdrop = document.querySelector('.modal-backdrop');
+    if (!backdrop) {
+        backdrop = document.createElement('div');
+        backdrop.className = 'modal-backdrop fade show';
+        document.body.appendChild(backdrop);
+    }
+    
+    if (!document.body.classList.contains('modal-open')) {
+        document.body.style.overflow = 'hidden';
+        document.body.classList.add('modal-open');
+    }
+}
+
+function cerrarModalEgreso() {
+    var modal = document.getElementById('modalEgreso');
+    if (!modal) return;
+    
+    try {
+        if (typeof jQuery !== 'undefined' && jQuery.fn && jQuery.fn.modal) {
+            jQuery('#modalEgreso').modal('hide');
+            return;
+        }
+    } catch(e) {
+        console.warn('Bootstrap modal falló al cerrar:', e);
+    }
+    
+    modal.style.display = 'none';
+    modal.classList.remove('show');
+    document.body.classList.remove('modal-open');
+    document.body.style.overflow = '';
+    
+    var backdrop = document.querySelector('.modal-backdrop');
+    if (backdrop) {
+        backdrop.remove();
+    }
 }
 
 function anularEgreso(id) {

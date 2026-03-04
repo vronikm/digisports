@@ -84,7 +84,7 @@ foreach ($totales as $t) {
                 <input type="hidden" name="id" id="pag_id">
                 <div class="modal-header" style="background:<?= $moduloColor ?>;color:white;">
                     <h5 class="modal-title" id="modalTitulo"><i class="fas fa-dollar-sign mr-2"></i>Nuevo Pago</h5>
-                    <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar" onclick="cerrarModal()">&times;</button>
                 </div>
                 <div class="modal-body">
                     <div class="form-group">
@@ -104,7 +104,7 @@ foreach ($totales as $t) {
                     <div class="form-group"><label>Notas</label><textarea name="notas" id="pag_notas" class="form-control" rows="2"></textarea></div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="cerrarModal()">Cancelar</button>
                     <button type="submit" class="btn" style="background:<?= $moduloColor ?>;color:white;"><i class="fas fa-save mr-1"></i>Guardar</button>
                 </div>
             </form>
@@ -116,14 +116,47 @@ foreach ($totales as $t) {
 <script>
 var urlCrear = '<?= url('natacion', 'pago', 'crear') ?>';
 var urlEditar = '<?= url('natacion', 'pago', 'editar') ?>';
+
 function abrirModal() {
-    document.getElementById('formPago').reset(); document.getElementById('pag_id').value = '';
+    var modal = document.getElementById('modalPago');
+    if (!modal) {
+        Swal.fire('Error', 'Modal no encontrado', 'error');
+        return;
+    }
+    document.getElementById('formPago').reset();
+    document.getElementById('pag_id').value = '';
     document.getElementById('pag_inscripcion').value = '';
     document.getElementById('inscSelInfo').innerHTML = '';
     document.getElementById('modalTitulo').innerHTML = '<i class="fas fa-dollar-sign mr-2"></i>Nuevo Pago';
-    document.getElementById('formPago').action = urlCrear; $('#modalPago').modal('show');
+    document.getElementById('formPago').action = urlCrear;
+    document.body.classList.remove('hold-transition');
+    
+    var modalShown = false;
+    try {
+        if (typeof jQuery !== 'undefined' && jQuery.fn && jQuery.fn.modal) {
+            jQuery('#modalPago').modal('show');
+            modalShown = true;
+            setTimeout(function() {
+                if (!modal.classList.contains('show')) {
+                    abrirModalManual(modal);
+                }
+            }, 300);
+            return;
+        }
+    } catch(e) {
+        console.warn('Bootstrap modal falló:', e);
+        modalShown = false;
+    }
+    
+    abrirModalManual(modal);
 }
+
 function editarPago(p) {
+    var modal = document.getElementById('modalPago');
+    if (!modal) {
+        Swal.fire('Error', 'Modal no encontrado', 'error');
+        return;
+    }
     document.getElementById('pag_id').value = p.npg_pago_id;
     document.getElementById('pag_inscripcion').value = p.npg_inscripcion_id || '';
     document.getElementById('pag_monto').value = p.npg_monto || '';
@@ -133,7 +166,69 @@ function editarPago(p) {
     document.getElementById('pag_notas').value = p.npg_notas || '';
     document.getElementById('inscSelInfo').innerHTML = '<span class="badge badge-info">' + (p.alu_nombres||'') + ' ' + (p.alu_apellidos||'') + ' - ' + (p.grupo_nombre||'') + '</span>';
     document.getElementById('modalTitulo').innerHTML = '<i class="fas fa-edit mr-2"></i>Editar Pago';
-    document.getElementById('formPago').action = urlEditar; $('#modalPago').modal('show');
+    document.getElementById('formPago').action = urlEditar;
+    document.body.classList.remove('hold-transition');
+    
+    var modalShown = false;
+    try {
+        if (typeof jQuery !== 'undefined' && jQuery.fn && jQuery.fn.modal) {
+            jQuery('#modalPago').modal('show');
+            modalShown = true;
+            setTimeout(function() {
+                if (!modal.classList.contains('show')) {
+                    abrirModalManual(modal);
+                }
+            }, 300);
+            return;
+        }
+    } catch(e) {
+        console.warn('Bootstrap modal falló:', e);
+        modalShown = false;
+    }
+    
+    abrirModalManual(modal);
+}
+
+function abrirModalManual(modal) {
+    if (!modal) return;
+    modal.style.display = 'block';
+    modal.classList.add('show');
+    
+    var backdrop = document.querySelector('.modal-backdrop');
+    if (!backdrop) {
+        backdrop = document.createElement('div');
+        backdrop.className = 'modal-backdrop fade show';
+        document.body.appendChild(backdrop);
+    }
+    
+    if (!document.body.classList.contains('modal-open')) {
+        document.body.style.overflow = 'hidden';
+        document.body.classList.add('modal-open');
+    }
+}
+
+function cerrarModal() {
+    var modal = document.getElementById('modalPago');
+    if (!modal) return;
+    
+    try {
+        if (typeof jQuery !== 'undefined' && jQuery.fn && jQuery.fn.modal) {
+            jQuery('#modalPago').modal('hide');
+            return;
+        }
+    } catch(e) {
+        console.warn('Bootstrap modal falló al cerrar:', e);
+    }
+    
+    modal.style.display = 'none';
+    modal.classList.remove('show');
+    document.body.classList.remove('modal-open');
+    document.body.style.overflow = '';
+    
+    var backdrop = document.querySelector('.modal-backdrop');
+    if (backdrop) {
+        backdrop.remove();
+    }
 }
 function anularPago(id) {
     Swal.fire({ title: '¿Anular pago?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Sí, anular', cancelButtonText: 'No'

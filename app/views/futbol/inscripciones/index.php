@@ -34,18 +34,20 @@ $moduloIcon = 'fas fa-futbol';
         <!-- Filtro de Estado y botón -->
         <div class="row mb-3">
             <div class="col-md-4">
-                <div class="input-group">
-                    <div class="input-group-prepend">
-                        <span class="input-group-text"><i class="fas fa-filter"></i></span>
+                <form method="POST" action="<?= url('futbol', 'inscripcion', 'index') ?>" style="display: inline;">
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text"><i class="fas fa-filter"></i></span>
+                        </div>
+                        <select class="form-control" name="estado" id="filtroEstado" onchange="this.form.submit()">
+                            <option value="">Todos los estados</option>
+                            <option value="ACTIVA" <?= (isset($estadoFiltro) && $estadoFiltro == 'ACTIVA') ? 'selected' : '' ?>>Activa</option>
+                            <option value="SUSPENDIDA" <?= (isset($estadoFiltro) && $estadoFiltro == 'SUSPENDIDA') ? 'selected' : '' ?>>Suspendida</option>
+                            <option value="CANCELADA" <?= (isset($estadoFiltro) && $estadoFiltro == 'CANCELADA') ? 'selected' : '' ?>>Cancelada</option>
+                            <option value="COMPLETADA" <?= (isset($estadoFiltro) && $estadoFiltro == 'COMPLETADA') ? 'selected' : '' ?>>Completada</option>
+                        </select>
                     </div>
-                    <select class="form-control" id="filtroEstado" onchange="filtrarPorEstado(this.value)">
-                        <option value="">Todos los estados</option>
-                        <option value="ACTIVA" <?= (isset($estadoFiltro) && $estadoFiltro == 'ACTIVA') ? 'selected' : '' ?>>Activa</option>
-                        <option value="SUSPENDIDA" <?= (isset($estadoFiltro) && $estadoFiltro == 'SUSPENDIDA') ? 'selected' : '' ?>>Suspendida</option>
-                        <option value="CANCELADA" <?= (isset($estadoFiltro) && $estadoFiltro == 'CANCELADA') ? 'selected' : '' ?>>Cancelada</option>
-                        <option value="COMPLETADA" <?= (isset($estadoFiltro) && $estadoFiltro == 'COMPLETADA') ? 'selected' : '' ?>>Completada</option>
-                    </select>
-                </div>
+                </form>
             </div>
             <div class="col-md-8 text-right">
                 <button type="button" class="btn btn-success" onclick="abrirNuevaInscripcion()">
@@ -484,10 +486,6 @@ function filtrarPorSede(sedeId) {
     $.post('<?= url("futbol", "sede", "seleccionar") ?>', { sede_id: sedeId, csrf_token: '<?= $csrf_token ?? "" ?>' }, function() { location.reload(); }, 'json');
 }
 
-function filtrarPorEstado(estado) {
-    var url = '<?= url("futbol", "inscripcion", "index") ?>';
-    if (estado) url += '&estado=' + estado;
-    window.location.href = url;
-}
+
 </script>
 <?php $scripts = ob_get_clean(); ?>

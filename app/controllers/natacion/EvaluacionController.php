@@ -17,7 +17,7 @@ class EvaluacionController extends \App\Controllers\ModuleController {
     public function index() {
         try {
             $this->setupModule();
-            $nivelId  = (int)($this->get('nivel_id') ?? 0);
+            $nivelId  = (int)($this->post('nivel') ?? $this->get('nivel') ?? $this->post('nivel_id') ?? $this->get('nivel_id') ?? 0);
             $alumnoId = (int)($this->get('alumno_id') ?? 0);
 
             // Niveles

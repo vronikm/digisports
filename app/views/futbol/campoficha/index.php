@@ -101,7 +101,7 @@ $moduloColor  = $modulo_actual['color'] ?? '#22C55E';
                 <input type="hidden" name="id" id="cf_id">
                 <div class="modal-header" style="background:<?= $moduloColor ?>;color:white;">
                     <h5 class="modal-title" id="modalTitulo"><i class="fas fa-sliders-h mr-2"></i>Nuevo Campo</h5>
-                    <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar" onclick="cerrarModalCampo()">&times;</button>
                 </div>
                 <div class="modal-body">
                     <div class="row">
@@ -157,7 +157,7 @@ $moduloColor  = $modulo_actual['color'] ?? '#22C55E';
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="cerrarModalCampo()">Cancelar</button>
                     <button type="submit" class="btn" style="background:<?= $moduloColor ?>;color:white;"><i class="fas fa-save mr-1"></i>Guardar</button>
                 </div>
             </form>
@@ -170,23 +170,159 @@ $moduloColor  = $modulo_actual['color'] ?? '#22C55E';
 var urlCrear  = '<?= url('futbol', 'campoficha', 'crear') ?>';
 var urlEditar = '<?= url('futbol', 'campoficha', 'editar') ?>';
 
-// Submit via AJAX
-$(document).ready(function() {
-    $('#formCampo').on('submit', function(e) {
+// Submit via AJAX con confirmación previa - VERSIÓN MEJORADA
+var isSubmittingCampo = false;
+
+// Usar DOMContentLoaded + MutationObserver para asegurar que el formulario exista
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('[DEBUG] DOMContentLoaded ejecutado');
+    
+    function setupFormListener() {
+        var form = document.getElementById('formCampo');
+        console.log('[DEBUG] Buscando formulario #formCampo:', form);
+        
+        if (!form) {
+            console.warn('[WARN] Formulario #formCampo no encontrado');
+            return false;
+        }
+        
+        // Remover listener anterior si existe
+        form.removeEventListener('submit', handleFormSubmit);
+        
+        // Agregar nuevo listener
+        form.addEventListener('submit', handleFormSubmit);
+        console.log('[SUCCESS] Listener del formulario agregado correctamente');
+        return true;
+    }
+    
+    function handleFormSubmit(e) {
+        console.log('[DEBUG] Evento submit capturado');
         e.preventDefault();
-        var formData = $(this).serialize();
-        var url = $(this).attr('action');
-        $.post(url, formData, function(res) {
-            if (res.success) {
-                $('#modalCampo').modal('hide');
-                Swal.fire({ icon: 'success', title: '¡Guardado!', text: res.message, timer: 2000, showConfirmButton: false }).then(() => location.reload());
-            } else {
-                Swal.fire('Error', res.message || 'No se pudo guardar.', 'error');
+        e.stopPropagation();
+        
+        // Prevenir doble-click
+        if (isSubmittingCampo) {
+            console.log('[WARN] Ya hay un envío en curso, se ignoró');
+            return false;
+        }
+        
+        var cfId = document.getElementById('cf_id').value;
+        var isEditing = cfId && cfId.length > 0;
+        var titulo = isEditing ? '¿Guardar cambios?' : '¿Crear nuevo campo?';
+        var texto = isEditing ? '¿Deseas confirmar la actualización de este campo?' : '¿Deseas crear este campo?';
+        
+        console.log('[DEBUG] Mostrando confirmación SweetAlert2:', { titulo, isEditing });
+        
+        // Mostrar confirmación con SweetAlert2
+        Swal.fire({
+            title: titulo,
+            text: texto,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#22C55E',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: isEditing ? 'Sí, guardar' : 'Sí, crear',
+            cancelButtonText: 'Cancelar',
+            allowOutsideClick: false,
+            allowEscapeKey: false
+        }).then(function(result) {
+            console.log('[DEBUG] Resultado SweetAlert:', result.isConfirmed);
+            
+            if (result.isConfirmed) {
+                isSubmittingCampo = true;
+                var formData = new FormData(document.getElementById('formCampo'));
+                var url = document.getElementById('formCampo').getAttribute('action');
+                var params = new URLSearchParams(formData);
+                
+                console.log('[DEBUG] Enviando AJAX a:', url);
+                
+                $.ajax({
+                    url: url,
+                    type: 'POST',
+                    data: params.toString(),
+                    contentType: 'application/x-www-form-urlencoded',
+                    dataType: 'json',
+                    success: function(res) {
+                        console.log('[DEBUG] Respuesta AJAX:', res);
+                        
+                        if (res.success) {
+                            cerrarModalCampo();
+                            
+                            // Toast de éxito
+                            Swal.fire({
+                                toast: true,
+                                position: 'top-end',
+                                icon: 'success',
+                                title: isEditing ? 'Campo actualizado correctamente' : 'Campo creado correctamente',
+                                showConfirmButton: false,
+                                timer: 3000,
+                                timerProgressBar: true,
+                                didOpen: function(toast) {
+                                    toast.addEventListener('mouseenter', Swal.stopTimer);
+                                    toast.addEventListener('mouseleave', Swal.resumeTimer);
+                                }
+                            });
+                            
+                            setTimeout(function() {
+                                location.reload();
+                            }, 500);
+                        } else {
+                            // Toast de error
+                            Swal.fire({
+                                toast: true,
+                                position: 'top-end',
+                                icon: 'error',
+                                title: res.message || 'No se pudo guardar el campo',
+                                showConfirmButton: false,
+                                timer: 4000,
+                                timerProgressBar: true,
+                                didOpen: function(toast) {
+                                    toast.addEventListener('mouseenter', Swal.stopTimer);
+                                    toast.addEventListener('mouseleave', Swal.resumeTimer);
+                                }
+                            });
+                        }
+                        isSubmittingCampo = false;
+                    },
+                    error: function(xhr, status, error) {
+                        console.log('[ERROR] AJAX Error:', { status, error });
+                        
+                        // Toast de error de conexión
+                        Swal.fire({
+                            toast: true,
+                            position: 'top-end',
+                            icon: 'error',
+                            title: 'Error de conexión: ' + (xhr.statusText || 'Error desconocido'),
+                            showConfirmButton: false,
+                            timer: 4000,
+                            timerProgressBar: true,
+                            didOpen: function(toast) {
+                                toast.addEventListener('mouseenter', Swal.stopTimer);
+                                toast.addEventListener('mouseleave', Swal.resumeTimer);
+                            }
+                        });
+                        isSubmittingCampo = false;
+                    }
+                });
             }
-        }, 'json').fail(function() {
-            Swal.fire('Error', 'Error de conexión al guardar.', 'error');
         });
-    });
+    }
+    
+    // Intentar setup inmediatamente
+    if (!setupFormListener()) {
+        // Si falla, usar MutationObserver para esperar por el elemento
+        console.log('[INFO] Esperando por elemento #formCampo...');
+        var observer = new MutationObserver(function() {
+            if (setupFormListener()) {
+                observer.disconnect();
+            }
+        });
+        
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+    }
 });
 
 function toggleTipo() {
@@ -195,16 +331,45 @@ function toggleTipo() {
 }
 
 function abrirModal() {
+    var modal = document.getElementById('modalCampo');
+    if (!modal) {
+        Swal.fire('Error', 'Modal no encontrado', 'error');
+        return;
+    }
     document.getElementById('formCampo').reset();
     document.getElementById('cf_id').value = '';
     document.getElementById('cf_activo').checked = true;
     document.getElementById('modalTitulo').innerHTML = '<i class="fas fa-sliders-h mr-2"></i>Nuevo Campo';
     document.getElementById('formCampo').action = urlCrear;
     toggleTipo();
-    $('#modalCampo').modal('show');
+    document.body.classList.remove('hold-transition');
+    
+    var modalShown = false;
+    try {
+        if (typeof jQuery !== 'undefined' && jQuery.fn && jQuery.fn.modal) {
+            jQuery('#modalCampo').modal('show');
+            modalShown = true;
+            setTimeout(function() {
+                if (!modal.classList.contains('show')) {
+                    abrirModalManual(modal);
+                }
+            }, 300);
+            return;
+        }
+    } catch(e) {
+        console.warn('Bootstrap modal falló:', e);
+        modalShown = false;
+    }
+    
+    abrirModalManual(modal);
 }
 
 function editarCampo(c) {
+    var modal = document.getElementById('modalCampo');
+    if (!modal) {
+        Swal.fire('Error', 'Modal no encontrado', 'error');
+        return;
+    }
     document.getElementById('cf_id').value       = c.fcf_campo_id;
     document.getElementById('cf_nombre').value    = c.fcf_clave || '';
     document.getElementById('cf_etiqueta').value  = c.fcf_etiqueta || '';
@@ -213,20 +378,80 @@ function editarCampo(c) {
     document.getElementById('cf_requerido').checked = !!parseInt(c.fcf_requerido);
     document.getElementById('cf_activo').checked    = !!parseInt(c.fcf_activo);
 
-    // Opciones
     var ops = c.fcf_opciones || '';
     if (ops) {
         try {
             var parsed = JSON.parse(ops);
             ops = Array.isArray(parsed) ? parsed.join(', ') : ops;
-        } catch(e) { /* ya es string separado por comas */ }
+        } catch(e) { }
     }
     document.getElementById('cf_opciones').value = ops;
 
     document.getElementById('modalTitulo').innerHTML = '<i class="fas fa-edit mr-2"></i>Editar Campo';
     document.getElementById('formCampo').action = urlEditar;
     toggleTipo();
-    $('#modalCampo').modal('show');
+    document.body.classList.remove('hold-transition');
+    
+    var modalShown = false;
+    try {
+        if (typeof jQuery !== 'undefined' && jQuery.fn && jQuery.fn.modal) {
+            jQuery('#modalCampo').modal('show');
+            modalShown = true;
+            setTimeout(function() {
+                if (!modal.classList.contains('show')) {
+                    abrirModalManual(modal);
+                }
+            }, 300);
+            return;
+        }
+    } catch(e) {
+        console.warn('Bootstrap modal falló:', e);
+        modalShown = false;
+    }
+    
+    abrirModalManual(modal);
+}
+
+function abrirModalManual(modal) {
+    if (!modal) return;
+    modal.style.display = 'block';
+    modal.classList.add('show');
+    
+    var backdrop = document.querySelector('.modal-backdrop');
+    if (!backdrop) {
+        backdrop = document.createElement('div');
+        backdrop.className = 'modal-backdrop fade show';
+        document.body.appendChild(backdrop);
+    }
+    
+    if (!document.body.classList.contains('modal-open')) {
+        document.body.style.overflow = 'hidden';
+        document.body.classList.add('modal-open');
+    }
+}
+
+function cerrarModalCampo() {
+    var modal = document.getElementById('modalCampo');
+    if (!modal) return;
+    
+    try {
+        if (typeof jQuery !== 'undefined' && jQuery.fn && jQuery.fn.modal) {
+            jQuery('#modalCampo').modal('hide');
+            return;
+        }
+    } catch(e) {
+        console.warn('Bootstrap modal falló al cerrar:', e);
+    }
+    
+    modal.style.display = 'none';
+    modal.classList.remove('show');
+    document.body.classList.remove('modal-open');
+    document.body.style.overflow = '';
+    
+    var backdrop = document.querySelector('.modal-backdrop');
+    if (backdrop) {
+        backdrop.remove();
+    }
 }
 
 function eliminarCampo(id, nombre) {

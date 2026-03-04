@@ -378,14 +378,40 @@ function verDetalle(id) {
 }
 
 function aplicarFiltros() {
-    var url = '<?= url("futbol", "evaluacion", "index") ?>&';
     var sede = $('#filtroSede').val();
     var grupo = $('#filtroGrupo').val();
     var periodo = $('#filtroPeriodo').val();
-    if (sede) url += 'sede=' + sede + '&';
-    if (grupo) url += 'grupo_id=' + grupo + '&';
-    if (periodo) url += 'periodo_id=' + periodo + '&';
-    window.location.href = url.replace(/[&?]$/, '');
+    
+    var form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '<?= url("futbol", "evaluacion", "index") ?>';
+    
+    if (sede) {
+        var inputSede = document.createElement('input');
+        inputSede.type = 'hidden';
+        inputSede.name = 'sede';
+        inputSede.value = sede;
+        form.appendChild(inputSede);
+    }
+    
+    if (grupo) {
+        var inputGrupo = document.createElement('input');
+        inputGrupo.type = 'hidden';
+        inputGrupo.name = 'grupo';
+        inputGrupo.value = grupo;
+        form.appendChild(inputGrupo);
+    }
+    
+    if (periodo) {
+        var inputPeriodo = document.createElement('input');
+        inputPeriodo.type = 'hidden';
+        inputPeriodo.name = 'periodo';
+        inputPeriodo.value = periodo;
+        form.appendChild(inputPeriodo);
+    }
+    
+    document.body.appendChild(form);
+    form.submit();
 }
 
 function filtrarPorSede(sedeId) {

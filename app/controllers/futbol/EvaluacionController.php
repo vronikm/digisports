@@ -31,8 +31,8 @@ class EvaluacionController extends \App\Controllers\ModuleController {
     public function index() {
         try {
             $this->setupModule();
-            $grupoId   = (int)($this->get('grupo_id') ?? 0);
-            $periodoId = (int)($this->get('periodo_id') ?? 0);
+            $grupoId   = (int)($this->post('grupo') ?? $this->get('grupo') ?? $this->post('grupo_id') ?? $this->get('grupo_id') ?? 0);
+            $periodoId = (int)($this->post('periodo') ?? $this->get('periodo') ?? $this->post('periodo_id') ?? $this->get('periodo_id') ?? 0);
 
             // Grupos para filtro
             $stmG = $this->db->prepare("

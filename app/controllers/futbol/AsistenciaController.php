@@ -17,8 +17,8 @@ class AsistenciaController extends \App\Controllers\ModuleController {
     public function index() {
         try {
             $this->setupModule();
-            $grupoId = (int)($this->get('grupo_id') ?? 0);
-            $fecha   = $this->get('fecha') ?? date('Y-m-d');
+            $grupoId = (int)($this->post('grupo') ?? $this->get('grupo') ?? $this->post('grupo_id') ?? $this->get('grupo_id') ?? 0);
+            $fecha   = $this->post('fecha') ?? $this->get('fecha') ?? date('Y-m-d');
 
             // Grupos para selector
             $stmG = $this->db->prepare("SELECT fgr_grupo_id, fgr_nombre, fgr_color FROM futbol_grupos WHERE fgr_tenant_id = ? AND fgr_estado IN ('ABIERTO','EN_CURSO') ORDER BY fgr_nombre");

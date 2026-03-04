@@ -184,7 +184,7 @@ $categoriasConfig = [
                 <h5 class="modal-title" id="modalEgresoTitle">
                     <i class="<?= $moduloIcon ?>"></i> Nuevo Egreso
                 </h5>
-                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar">
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar" onclick="cerrarModalEgreso()">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -255,7 +255,7 @@ $categoriasConfig = [
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="cerrarModalEgreso()">Cancelar</button>
                     <button type="submit" class="btn btn-success">
                         <i class="fas fa-save"></i> Guardar
                     </button>
@@ -332,10 +332,16 @@ function limpiarFormulario() {
     $('#feg_fecha').val('<?= date("Y-m-d") ?>');
     $('#feg_categoria').val('');
     $('#modalEgresoTitle').html('<i class="<?= $moduloIcon ?>"></i> Nuevo Egreso');
+    abrirModalEgreso();
 }
 
 function editarEgreso(obj) {
-    limpiarFormulario();
+    var modal = document.getElementById('modalEgreso');
+    if (!modal) {
+        Swal.fire('Error', 'Modal no encontrado', 'error');
+        return;
+    }
+    $('#formEgreso')[0].reset();
     $('#feg_id').val(obj.feg_egreso_id);
     $('#feg_descripcion').val(obj.feg_concepto || '');
     $('#feg_categoria').val(obj.feg_categoria || '');
@@ -345,7 +351,71 @@ function editarEgreso(obj) {
     $('#feg_comprobante_num').val(obj.feg_factura_ref || '');
     $('#feg_notas').val(obj.feg_notas || '');
     $('#modalEgresoTitle').html('<i class="<?= $moduloIcon ?>"></i> Editar Egreso');
-    $('#modalEgreso').modal('show');
+    document.body.classList.remove('hold-transition');
+    abrirModalEgreso();
+}
+
+function abrirModalEgreso() {
+    var modal = document.getElementById('modalEgreso');
+    if (!modal) {
+        Swal.fire('Error', 'Modal no encontrado', 'error');
+        return;
+    }
+    document.body.classList.remove('hold-transition');
+    var modalShown = false;
+    try {
+        if (typeof jQuery !== 'undefined' && jQuery.fn && jQuery.fn.modal) {
+            jQuery('#modalEgreso').modal('show');
+            modalShown = true;
+            setTimeout(function() {
+                if (!modal.classList.contains('show')) {
+                    abrirModalEgresoManual(modal);
+                }
+            }, 300);
+            return;
+        }
+    } catch(e) {
+        console.warn('Bootstrap modal falló:', e);
+        modalShown = false;
+    }
+    abrirModalEgresoManual(modal);
+}
+
+function abrirModalEgresoManual(modal) {
+    if (!modal) return;
+    modal.style.display = 'block';
+    modal.classList.add('show');
+    var backdrop = document.querySelector('.modal-backdrop');
+    if (!backdrop) {
+        backdrop = document.createElement('div');
+        backdrop.className = 'modal-backdrop fade show';
+        document.body.appendChild(backdrop);
+    }
+    if (!document.body.classList.contains('modal-open')) {
+        document.body.style.overflow = 'hidden';
+        document.body.classList.add('modal-open');
+    }
+}
+
+function cerrarModalEgreso() {
+    var modal = document.getElementById('modalEgreso');
+    if (!modal) return;
+    try {
+        if (typeof jQuery !== 'undefined' && jQuery.fn && jQuery.fn.modal) {
+            jQuery('#modalEgreso').modal('hide');
+            return;
+        }
+    } catch(e) {
+        console.warn('Bootstrap modal falló al cerrar:', e);
+    }
+    modal.style.display = 'none';
+    modal.classList.remove('show');
+    document.body.classList.remove('modal-open');
+    document.body.style.overflow = '';
+    var backdrop = document.querySelector('.modal-backdrop');
+    if (backdrop) {
+        backdrop.remove();
+    }
 }
 
 function eliminarEgreso(id) {

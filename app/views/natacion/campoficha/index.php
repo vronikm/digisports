@@ -65,7 +65,7 @@ $moduloColor  = $modulo_actual['color'] ?? '#0EA5E9';
                 <input type="hidden" name="id" id="cf_id">
                 <div class="modal-header" style="background:<?= $moduloColor ?>;color:white;">
                     <h5 class="modal-title" id="modalTitulo"><i class="fas fa-sliders-h mr-2"></i>Nuevo Campo</h5>
-                    <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar" onclick="cerrarModalCampo()">&times;</button>
                 </div>
                 <div class="modal-body">
                     <div class="row">
@@ -98,7 +98,7 @@ $moduloColor  = $modulo_actual['color'] ?? '#0EA5E9';
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="cerrarModalCampo()">Cancelar</button>
                     <button type="submit" class="btn" style="background:<?= $moduloColor ?>;color:white;"><i class="fas fa-save mr-1"></i>Guardar</button>
                 </div>
             </form>
@@ -110,15 +110,50 @@ $moduloColor  = $modulo_actual['color'] ?? '#0EA5E9';
 <script>
 var urlCrear = '<?= url('natacion', 'campoficha', 'crear') ?>';
 var urlEditar = '<?= url('natacion', 'campoficha', 'editar') ?>';
+
 function toggleOpciones() {
     document.getElementById('divOpciones').style.display = document.getElementById('cf_tipo').value === 'SELECT' ? '' : 'none';
 }
+
 function abrirModal() {
-    document.getElementById('formCampo').reset(); document.getElementById('cf_id').value = '';
+    var modal = document.getElementById('modalCampo');
+    if (!modal) {
+        Swal.fire('Error', 'Modal no encontrado', 'error');
+        return;
+    }
+    document.getElementById('formCampo').reset();
+    document.getElementById('cf_id').value = '';
     document.getElementById('modalTitulo').innerHTML = '<i class="fas fa-sliders-h mr-2"></i>Nuevo Campo';
-    document.getElementById('formCampo').action = urlCrear; toggleOpciones(); $('#modalCampo').modal('show');
+    document.getElementById('formCampo').action = urlCrear;
+    toggleOpciones();
+    document.body.classList.remove('hold-transition');
+    
+    var modalShown = false;
+    try {
+        if (typeof jQuery !== 'undefined' && jQuery.fn && jQuery.fn.modal) {
+            jQuery('#modalCampo').modal('show');
+            modalShown = true;
+            setTimeout(function() {
+                if (!modal.classList.contains('show')) {
+                    abrirModalManual(modal);
+                }
+            }, 300);
+            return;
+        }
+    } catch(e) {
+        console.warn('Bootstrap modal falló:', e);
+        modalShown = false;
+    }
+    
+    abrirModalManual(modal);
 }
+
 function editarCampo(c) {
+    var modal = document.getElementById('modalCampo');
+    if (!modal) {
+        Swal.fire('Error', 'Modal no encontrado', 'error');
+        return;
+    }
     document.getElementById('cf_id').value = c.ncf_campo_id;
     document.getElementById('cf_clave').value = c.ncf_clave || '';
     document.getElementById('cf_nombre').value = c.ncf_etiqueta || '';
@@ -128,8 +163,226 @@ function editarCampo(c) {
     var ops = c.ncf_opciones ? JSON.parse(c.ncf_opciones) : [];
     document.getElementById('cf_opciones').value = ops.join(', ');
     document.getElementById('modalTitulo').innerHTML = '<i class="fas fa-edit mr-2"></i>Editar Campo';
-    document.getElementById('formCampo').action = urlEditar; toggleOpciones(); $('#modalCampo').modal('show');
+    document.getElementById('formCampo').action = urlEditar;
+    toggleOpciones();
+    document.body.classList.remove('hold-transition');
+    
+    var modalShown = false;
+    try {
+        if (typeof jQuery !== 'undefined' && jQuery.fn && jQuery.fn.modal) {
+            jQuery('#modalCampo').modal('show');
+            modalShown = true;
+            setTimeout(function() {
+                if (!modal.classList.contains('show')) {
+                    abrirModalManual(modal);
+                }
+            }, 300);
+            return;
+        }
+    } catch(e) {
+        console.warn('Bootstrap modal falló:', e);
+        modalShown = false;
+    }
+    
+    abrirModalManual(modal);
 }
+
+function abrirModalManual(modal) {
+    if (!modal) return;
+    modal.style.display = 'block';
+    modal.classList.add('show');
+    
+    var backdrop = document.querySelector('.modal-backdrop');
+    if (!backdrop) {
+        backdrop = document.createElement('div');
+        backdrop.className = 'modal-backdrop fade show';
+        document.body.appendChild(backdrop);
+    }
+    
+    if (!document.body.classList.contains('modal-open')) {
+        document.body.style.overflow = 'hidden';
+        document.body.classList.add('modal-open');
+    }
+}
+
+function cerrarModalCampo() {
+    var modal = document.getElementById('modalCampo');
+    if (!modal) return;
+    
+    try {
+        if (typeof jQuery !== 'undefined' && jQuery.fn && jQuery.fn.modal) {
+            jQuery('#modalCampo').modal('hide');
+            return;
+        }
+    } catch(e) {
+        console.warn('Bootstrap modal falló al cerrar:', e);
+    }
+    
+    modal.style.display = 'none';
+    modal.classList.remove('show');
+    document.body.classList.remove('modal-open');
+    document.body.style.overflow = '';
+    
+    var backdrop = document.querySelector('.modal-backdrop');
+    if (backdrop) {
+        backdrop.remove();
+    }
+}
+
+// Submit via AJAX con confirmación previa - VERSIÓN MEJORADA
+var isSubmittingCampo = false;
+
+// Usar DOMContentLoaded + MutationObserver para asegurar que el formulario exista
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('[DEBUG] DOMContentLoaded ejecutado');
+    
+    function setupFormListener() {
+        var form = document.getElementById('formCampo');
+        console.log('[DEBUG] Buscando formulario #formCampo:', form);
+        
+        if (!form) {
+            console.warn('[WARN] Formulario #formCampo no encontrado');
+            return false;
+        }
+        
+        // Remover listener anterior si existe
+        form.removeEventListener('submit', handleFormSubmit);
+        
+        // Agregar nuevo listener
+        form.addEventListener('submit', handleFormSubmit);
+        console.log('[SUCCESS] Listener del formulario agregado correctamente');
+        return true;
+    }
+    
+    function handleFormSubmit(e) {
+        console.log('[DEBUG] Evento submit capturado');
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // Prevenir doble-click
+        if (isSubmittingCampo) {
+            console.log('[WARN] Ya hay un envío en curso, se ignoró');
+            return false;
+        }
+        
+        var cfId = document.getElementById('cf_id').value;
+        var isEditing = cfId && cfId.length > 0;
+        var titulo = isEditing ? '¿Guardar cambios?' : '¿Crear nuevo campo?';
+        var texto = isEditing ? '¿Deseas confirmar la actualización de este campo?' : '¿Deseas crear este campo?';
+        
+        console.log('[DEBUG] Mostrando confirmación SweetAlert2:', { titulo, isEditing });
+        
+        // Mostrar confirmación con SweetAlert2
+        Swal.fire({
+            title: titulo,
+            text: texto,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#0EA5E9',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: isEditing ? 'Sí, guardar' : 'Sí, crear',
+            cancelButtonText: 'Cancelar',
+            allowOutsideClick: false,
+            allowEscapeKey: false
+        }).then(function(result) {
+            console.log('[DEBUG] Resultado SweetAlert:', result.isConfirmed);
+            
+            if (result.isConfirmed) {
+                isSubmittingCampo = true;
+                var formData = new FormData(document.getElementById('formCampo'));
+                var url = document.getElementById('formCampo').getAttribute('action');
+                var params = new URLSearchParams(formData);
+                
+                console.log('[DEBUG] Enviando AJAX a:', url);
+                
+                $.ajax({
+                    url: url,
+                    type: 'POST',
+                    data: params.toString(),
+                    contentType: 'application/x-www-form-urlencoded',
+                    dataType: 'json',
+                    success: function(res) {
+                        console.log('[DEBUG] Respuesta AJAX:', res);
+                        
+                        if (res.success) {
+                            cerrarModalCampo();
+                            
+                            // Toast de éxito
+                            Swal.fire({
+                                toast: true,
+                                position: 'top-end',
+                                icon: 'success',
+                                title: isEditing ? 'Campo actualizado correctamente' : 'Campo creado correctamente',
+                                showConfirmButton: false,
+                                timer: 3000,
+                                timerProgressBar: true,
+                                didOpen: function(toast) {
+                                    toast.addEventListener('mouseenter', Swal.stopTimer);
+                                    toast.addEventListener('mouseleave', Swal.resumeTimer);
+                                }
+                            });
+                            
+                            setTimeout(function() {
+                                location.reload();
+                            }, 500);
+                        } else {
+                            // Toast de error
+                            Swal.fire({
+                                toast: true,
+                                position: 'top-end',
+                                icon: 'error',
+                                title: res.message || 'No se pudo guardar el campo',
+                                showConfirmButton: false,
+                                timer: 4000,
+                                timerProgressBar: true,
+                                didOpen: function(toast) {
+                                    toast.addEventListener('mouseenter', Swal.stopTimer);
+                                    toast.addEventListener('mouseleave', Swal.resumeTimer);
+                                }
+                            });
+                        }
+                        isSubmittingCampo = false;
+                    },
+                    error: function(xhr, status, error) {
+                        console.log('[ERROR] AJAX Error:', { status, error });
+                        
+                        // Toast de error de conexión
+                        Swal.fire({
+                            toast: true,
+                            position: 'top-end',
+                            icon: 'error',
+                            title: 'Error de conexión: ' + (xhr.statusText || 'Error desconocido'),
+                            showConfirmButton: false,
+                            timer: 4000,
+                            timerProgressBar: true,
+                            didOpen: function(toast) {
+                                toast.addEventListener('mouseenter', Swal.stopTimer);
+                                toast.addEventListener('mouseleave', Swal.resumeTimer);
+                            }
+                        });
+                        isSubmittingCampo = false;
+                    }
+                });
+            }
+        });
+    }
+    
+    // Intentar setup inmediatamente
+    if (!setupFormListener()) {
+        // Si falla, usar MutationObserver para esperar por el elemento
+        console.log('[INFO] Esperando por elemento #formCampo...');
+        var observer = new MutationObserver(function() {
+            if (setupFormListener()) {
+                observer.disconnect();
+            }
+        });
+        
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+    }
+});
 function desactivarCampo(id) {
     Swal.fire({ title: '¿Desactivar campo?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Sí', cancelButtonText: 'No'
     }).then(function(r) { if (r.isConfirmed) window.location.href = '<?= url('natacion', 'campoficha', 'eliminar') ?>&id=' + id; });

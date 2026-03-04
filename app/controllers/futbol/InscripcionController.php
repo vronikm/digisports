@@ -17,9 +17,9 @@ class InscripcionController extends \App\Controllers\ModuleController {
     public function index() {
         try {
             $this->setupModule();
-            $estado = $this->get('estado') ?? '';
-            $grupo  = $this->get('grupo') ?? '';
-            $pagina = max(1, (int)($this->get('pagina') ?? 1));
+            $estado = $this->post('estado') ?? $this->get('estado') ?? '';
+            $grupo  = $this->post('grupo') ?? $this->get('grupo') ?? '';
+            $pagina = max(1, (int)($this->post('pagina') ?? $this->get('pagina') ?? 1));
             $porPagina = 25;
 
             $where = " WHERE i.fin_tenant_id = ?";
