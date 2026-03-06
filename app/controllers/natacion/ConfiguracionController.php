@@ -20,17 +20,17 @@ class ConfiguracionController extends \App\Controllers\ModuleController {
 
             $stm = $this->db->prepare("
                 SELECT * FROM natacion_configuracion
-                WHERE nco_tenant_id = ?
-                ORDER BY nco_categoria, nco_clave
+                WHERE ncg_tenant_id = ?
+                ORDER BY ncg_tipo, ncg_clave
             ");
             $stm->execute([$this->tenantId]);
 
             $configs = $stm->fetchAll(\PDO::FETCH_ASSOC);
 
-            // Agrupar por categoría
+            // Agrupar por tipo
             $agrupados = [];
             foreach ($configs as $c) {
-                $cat = $c['nco_categoria'] ?: 'GENERAL';
+                $cat = $c['ncg_tipo'] ?: 'TEXT';
                 $agrupados[$cat][] = $c;
             }
 
@@ -41,37 +41,70 @@ class ConfiguracionController extends \App\Controllers\ModuleController {
             $this->renderModule('natacion/configuracion/index', $this->viewData);
 
         } catch (\Exception $e) {
-            $this->logError("Error listando configuración: " . $e->getMessage());
             $this->error('Error al cargar configuración');
         }
     }
 
     public function guardar() {
         try {
-            if ($_SERVER['REQUEST_METHOD'] !== 'POST') return $this->jsonResponse(['success' => false, 'message' => 'POST requerido']);
-            if (!\Security::validateCsrfToken($this->post('csrf_token'))) return $this->jsonResponse(['success' => false, 'message' => 'Token inválido']);
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+                return $this->jsonResponse(['success' => false, 'message' => 'POST requerido']);
+            }
+            
+            // Validar CSRF token
+            $csrfToken = $this->post('csrf_token');
+            if (!\Security::validateCsrfToken($csrfToken)) {
+                return $this->jsonResponse(['success' => false, 'message' => 'Token inválido']);
+            }
 
+            // Obtener configuraciones
             $configs = $this->post('config');
-            if (!is_array($configs)) return $this->jsonResponse(['success' => false, 'message' => 'Datos inválidos']);
+            if (!is_array($configs) || empty($configs)) {
+                return $this->jsonResponse(['success' => false, 'message' => 'No hay configuraciones para guardar']);
+            }
 
             $this->beginTransaction();
 
             $stm = $this->db->prepare("
-                UPDATE natacion_configuracion SET nco_valor = ?
-                WHERE nco_config_id = ? AND nco_tenant_id = ?
+                UPDATE natacion_configuracion SET ncg_valor = ?
+                WHERE ncg_config_id = ? AND ncg_tenant_id = ?
             ");
 
+            $actualizados = 0;
             foreach ($configs as $id => $valor) {
-                $stm->execute([$valor, (int)$id, $this->tenantId]);
+                $id = (int)$id;
+                if ($id <= 0) continue;
+                
+                $stm->execute([$valor, $id, $this->tenantId]);
+                $actualizados += $stm->rowCount();
             }
 
             $this->commit();
-            return $this->jsonResponse(['success' => true, 'message' => 'Configuración guardada']);
+            
+            // Limpiar cualquier output anterior y enviar JSON
+            if (ob_get_level() > 0) {
+                ob_end_clean();
+            }
+            ob_start();
+            header('Content-Type: application/json; charset=utf-8');
+            $response = ['success' => true, 'message' => "Configuración guardada ($actualizados cambios)"];
+            echo json_encode($response, JSON_UNESCAPED_UNICODE);
+            ob_end_flush();
+            exit;
 
         } catch (\Exception $e) {
             $this->rollback();
-            $this->logError("Error guardando configuración: " . $e->getMessage());
-            return $this->jsonResponse(['success' => false, 'message' => 'Error al guardar']);
+            
+            // Limpiar output y enviar JSON con error
+            if (ob_get_level() > 0) {
+                ob_end_clean();
+            }
+            ob_start();
+            header('Content-Type: application/json; charset=utf-8');
+            $response = ['success' => false, 'message' => 'Error al guardar: ' . $e->getMessage()];
+            echo json_encode($response, JSON_UNESCAPED_UNICODE);
+            ob_end_flush();
+            exit;
         }
     }
 
@@ -84,24 +117,23 @@ class ConfiguracionController extends \App\Controllers\ModuleController {
             if (empty($clave)) return $this->jsonResponse(['success' => false, 'message' => 'Clave obligatoria']);
 
             // Verificar duplicado
-            $chk = $this->db->prepare("SELECT COUNT(*) FROM natacion_configuracion WHERE nco_tenant_id = ? AND nco_clave = ?");
+            $chk = $this->db->prepare("SELECT COUNT(*) FROM natacion_configuracion WHERE ncg_tenant_id = ? AND ncg_clave = ?");
             $chk->execute([$this->tenantId, $clave]);
             if ((int)$chk->fetchColumn() > 0) return $this->jsonResponse(['success' => false, 'message' => 'La clave ya existe']);
 
             $this->db->prepare("
-                INSERT INTO natacion_configuracion (nco_tenant_id, nco_clave, nco_valor, nco_descripcion, nco_categoria)
+                INSERT INTO natacion_configuracion (ncg_tenant_id, ncg_clave, ncg_valor, ncg_descripcion, ncg_tipo)
                 VALUES (?,?,?,?,?)
             ")->execute([
                 $this->tenantId, $clave,
                 $this->post('valor') ?: '',
                 $this->post('descripcion') ?: null,
-                $this->post('categoria') ?: 'GENERAL',
+                $this->post('tipo') ?: 'TEXT',
             ]);
 
             return $this->jsonResponse(['success' => true, 'message' => 'Configuración creada']);
 
         } catch (\Exception $e) {
-            $this->logError("Error creando configuración: " . $e->getMessage());
             return $this->jsonResponse(['success' => false, 'message' => 'Error al crear']);
         }
     }
@@ -111,11 +143,10 @@ class ConfiguracionController extends \App\Controllers\ModuleController {
             $id = (int)($this->get('id') ?? 0);
             if (!$id) return $this->jsonResponse(['success' => false, 'message' => 'ID requerido']);
 
-            $this->db->prepare("DELETE FROM natacion_configuracion WHERE nco_config_id = ? AND nco_tenant_id = ?")->execute([$id, $this->tenantId]);
+            $this->db->prepare("DELETE FROM natacion_configuracion WHERE ncg_config_id = ? AND ncg_tenant_id = ?")->execute([$id, $this->tenantId]);
             return $this->jsonResponse(['success' => true, 'message' => 'Configuración eliminada']);
 
         } catch (\Exception $e) {
-            $this->logError("Error eliminando configuración: " . $e->getMessage());
             return $this->jsonResponse(['success' => false, 'message' => 'Error al eliminar']);
         }
     }

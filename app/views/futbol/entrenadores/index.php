@@ -135,7 +135,7 @@ $moduloColor  = $modulo_actual['color'] ?? '#22C55E';
 </div>
 
 <?php ob_start(); ?>
-<script>
+<script nonce="<?= cspNonce() ?>">
 var urlCrear = '<?= url('futbol', 'entrenador', 'crear') ?>';
 var urlEditar = '<?= url('futbol', 'entrenador', 'editar') ?>';
 function abrirModal() {

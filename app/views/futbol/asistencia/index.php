@@ -209,7 +209,7 @@ $grupoId = $grupoId ?? 0;
 </div>
 
 <?php ob_start(); ?>
-<script>
+<script nonce="<?= cspNonce() ?>">
 $(document).ready(function() {
     // Mostrar acciones masivas si hay datos
     if ($('#tablaAsistencia tbody tr').length > 0) {

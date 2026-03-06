@@ -22,6 +22,9 @@ if (file_exists(BASE_PATH . '/vendor/autoload.php')) {
     require_once BASE_PATH . '/vendor/autoload.php';
 }
 
+// Cargar variables de entorno (.env) ANTES de cualquier otra configuración
+require_once CONFIG_PATH . '/env.php';
+
 // Cargar configuración
 require_once CONFIG_PATH . '/app.php';
 require_once CONFIG_PATH . '/database.php';
@@ -30,6 +33,9 @@ require_once CONFIG_PATH . '/Router.php';
 
 // Cargar funciones helper
 require_once APP_PATH . '/helpers/functions.php';
+
+// Cargar helpers de URL segura (POST para URLs largas)
+require_once APP_PATH . '/helpers/SecureUrlHelper.php';
 
 // Cargar servicio de protección de datos (LOPDP Ecuador)
 require_once APP_PATH . '/services/DataProtection.php';

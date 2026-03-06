@@ -128,7 +128,7 @@ $colores     = ['#22C55E','#3B82F6','#F59E0B','#EF4444','#8B5CF6','#EC4899','#14
 </div>
 
 <?php ob_start(); ?>
-<script>
+<script nonce="<?= cspNonce() ?>">
 var urlCrear = '<?= url('futbol', 'categoria', 'crear') ?>';
 var urlEditar = '<?= url('futbol', 'categoria', 'editar') ?>';
 function abrirModal() {

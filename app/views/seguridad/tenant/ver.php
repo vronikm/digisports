@@ -73,114 +73,10 @@ include __DIR__ . '/../partials/header.php';
                         <a href="#" class="btn btn-warning btn-block btn-suspender" data-url="<?= url('seguridad', 'tenant', 'suspender', ['id' => $tenant['ten_tenant_id']]) ?>">
                             <i class="fas fa-pause mr-1"></i> Suspender
                         </a>
-                        <script>
-                        document.addEventListener('DOMContentLoaded', function() {
-                            var btn = document.querySelector('.btn-suspender');
-                            if (btn) {
-                                btn.addEventListener('click', function(e) {
-                                    e.preventDefault();
-                                    const url = btn.getAttribute('data-url');
-                                    Swal.fire({
-                                        title: '¿Suspender tenant?',
-                                        text: 'Esta acción suspenderá el acceso del tenant. ¿Desea continuar?',
-                                        icon: 'warning',
-                                        showCancelButton: true,
-                                        confirmButtonColor: '#d33',
-                                        cancelButtonColor: '#3085d6',
-                                        confirmButtonText: 'Sí, suspender',
-                                        cancelButtonText: 'Cancelar'
-                                    }).then((result) => {
-                                        if (result.isConfirmed) {
-                                            fetch(url, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-                                                .then(response => response.json())
-                                                .then(data => {
-                                                    if (data.success) {
-                                                        Swal.fire({
-                                                            toast: true,
-                                                            position: 'top-end',
-                                                            icon: 'success',
-                                                            title: 'Tenant suspendido correctamente',
-                                                            showConfirmButton: false,
-                                                            timer: 1800
-                                                        });
-                                                        setTimeout(function() { location.reload(); }, 1200);
-                                                    } else {
-                                                        Swal.fire({
-                                                            icon: 'error',
-                                                            title: 'Error',
-                                                            text: data.message || 'No se pudo suspender el tenant.'
-                                                        });
-                                                    }
-                                                })
-                                                .catch(() => {
-                                                    Swal.fire({
-                                                        icon: 'error',
-                                                        title: 'Error',
-                                                        text: 'No se pudo conectar con el servidor.'
-                                                    });
-                                                });
-                                        }
-                                    });
-                                });
-                            }
-                        });
-                        </script>
                         <?php else: ?>
                         <a href="#" class="btn btn-success btn-block btn-reactivar" data-url="<?= url('seguridad', 'tenant', 'reactivar', ['id' => $tenant['ten_tenant_id']]) ?>">
                             <i class="fas fa-play mr-1"></i> Reactivar
                         </a>
-                        <script>
-                        document.addEventListener('DOMContentLoaded', function() {
-                            var btn = document.querySelector('.btn-reactivar');
-                            if (btn) {
-                                btn.addEventListener('click', function(e) {
-                                    e.preventDefault();
-                                    const url = btn.getAttribute('data-url');
-                                    Swal.fire({
-                                        title: '¿Reactivar tenant?',
-                                        text: 'Esta acción reactivará el acceso del tenant. ¿Desea continuar?',
-                                        icon: 'question',
-                                        showCancelButton: true,
-                                        confirmButtonColor: '#28a745',
-                                        cancelButtonColor: '#3085d6',
-                                        confirmButtonText: 'Sí, reactivar',
-                                        cancelButtonText: 'Cancelar'
-                                    }).then((result) => {
-                                        if (result.isConfirmed) {
-                                            fetch(url, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-                                                .then(response => response.json())
-                                                .then(data => {
-                                                    if (data.success) {
-                                                        Swal.fire({
-                                                            toast: true,
-                                                            position: 'top-end',
-                                                            icon: 'success',
-                                                            title: 'Tenant reactivado correctamente',
-                                                            showConfirmButton: false,
-                                                            timer: 1800
-                                                        });
-                                                        setTimeout(function() { location.reload(); }, 1200);
-                                                    } else {
-                                                        Swal.fire({
-                                                            icon: 'error',
-                                                            title: 'Error',
-                                                            text: data.message || 'No se pudo reactivar el tenant.'
-                                                        });
-                                                    }
-                                                })
-                                                .catch(() => {
-                                                    Swal.fire({
-                                                        icon: 'error',
-                                                        title: 'Error',
-                                                        text: 'No se pudo conectar con el servidor.'
-                                                    });
-                                                });
-                                        }
-                                    });
-                                });
-                            }
-                        });
-                        </script>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -218,70 +114,6 @@ include __DIR__ . '/../partials/header.php';
                         <a href="#" class="btn btn-info btn-block btn-renovar" data-url="<?= url('seguridad', 'tenant', 'renovar', ['id' => $tenant['ten_tenant_id']]) ?>">
                             <i class="fas fa-sync mr-1"></i> Renovar Suscripción
                         </a>
-                        <script>
-                        document.addEventListener('DOMContentLoaded', function() {
-                            var btn = document.querySelector('.btn-renovar');
-                            if (btn) {
-                                btn.addEventListener('click', function(e) {
-                                    e.preventDefault();
-                                    const url = btn.getAttribute('data-url');
-                                    Swal.fire({
-                                        title: 'Renovar suscripción',
-                                        html: '<label>Meses a renovar:</label><input id="mesesInput" type="number" min="1" max="36" value="12" class="swal2-input" style="width:120px">',
-                                        icon: 'info',
-                                        showCancelButton: true,
-                                        confirmButtonColor: '#17a2b8',
-                                        cancelButtonColor: '#3085d6',
-                                        confirmButtonText: 'Renovar',
-                                        cancelButtonText: 'Cancelar',
-                                        preConfirm: () => {
-                                            const meses = document.getElementById('mesesInput').value;
-                                            if (!meses || meses < 1 || meses > 36) {
-                                                Swal.showValidationMessage('Ingrese un valor entre 1 y 36');
-                                                return false;
-                                            }
-                                            return meses;
-                                        }
-                                    }).then((result) => {
-                                        if (result.isConfirmed && result.value) {
-                                            fetch(url, {
-                                                method: 'POST',
-                                                headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-urlencoded' },
-                                                body: 'meses=' + encodeURIComponent(result.value)
-                                            })
-                                            .then(response => response.json())
-                                            .then(data => {
-                                                if (data.success) {
-                                                    Swal.fire({
-                                                        toast: true,
-                                                        position: 'top-end',
-                                                        icon: 'success',
-                                                        title: 'Suscripción renovada correctamente',
-                                                        showConfirmButton: false,
-                                                        timer: 1800
-                                                    });
-                                                    setTimeout(function() { location.reload(); }, 1200);
-                                                } else {
-                                                    Swal.fire({
-                                                        icon: 'error',
-                                                        title: 'Error',
-                                                        text: data.message || 'No se pudo renovar la suscripción.'
-                                                    });
-                                                }
-                                            })
-                                            .catch(() => {
-                                                Swal.fire({
-                                                    icon: 'error',
-                                                    title: 'Error',
-                                                    text: 'No se pudo conectar con el servidor.'
-                                                });
-                                            });
-                                        }
-                                    });
-                                });
-                            }
-                        });
-                        </script>
                     </div>
                 </div>
             </div>
@@ -422,3 +254,126 @@ include __DIR__ . '/../partials/header.php';
         </div>
     </div>
 </section>
+
+<?php ob_start(); ?>
+<script nonce="<?= cspNonce() ?>">
+(function () {
+    function postAction(url, body, mensajeOk) {
+        return fetch(url, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: body || ''
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            if (data.success) {
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'success',
+                    title: data.message || mensajeOk,
+                    showConfirmButton: false,
+                    timer: 1800,
+                    timerProgressBar: true
+                });
+                setTimeout(function () { location.reload(); }, 1400);
+            } else {
+                Swal.fire({ icon: 'error', title: 'Error', text: data.message || 'No se pudo completar la acción.' });
+            }
+        })
+        .catch(function () {
+            Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo conectar con el servidor.' });
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+
+        // ── Suspender ────────────────────────────────────────────────
+        var btnSuspender = document.querySelector('.btn-suspender');
+        if (btnSuspender) {
+            btnSuspender.addEventListener('click', function (e) {
+                e.preventDefault();
+                var endpointUrl = this.dataset.url;
+                Swal.fire({
+                    title: '¿Suspender tenant?',
+                    text: 'Esta acción suspenderá el acceso del tenant. ¿Desea continuar?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: '<i class="fas fa-pause"></i> Sí, suspender',
+                    cancelButtonText: 'Cancelar'
+                }).then(function (result) {
+                    if (result.isConfirmed) {
+                        postAction(endpointUrl, '', 'Tenant suspendido correctamente');
+                    }
+                });
+            });
+        }
+
+        // ── Reactivar ─────────────────────────────────────────────────
+        var btnReactivar = document.querySelector('.btn-reactivar');
+        if (btnReactivar) {
+            btnReactivar.addEventListener('click', function (e) {
+                e.preventDefault();
+                var endpointUrl = this.dataset.url;
+                Swal.fire({
+                    title: '¿Reactivar tenant?',
+                    text: 'Esta acción reactivará el acceso del tenant. ¿Desea continuar?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#28a745',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: '<i class="fas fa-play"></i> Sí, reactivar',
+                    cancelButtonText: 'Cancelar'
+                }).then(function (result) {
+                    if (result.isConfirmed) {
+                        postAction(endpointUrl, '', 'Tenant reactivado correctamente');
+                    }
+                });
+            });
+        }
+
+        // ── Renovar Suscripción ───────────────────────────────────────
+        var btnRenovar = document.querySelector('.btn-renovar');
+        if (btnRenovar) {
+            btnRenovar.addEventListener('click', function (e) {
+                e.preventDefault();
+                var endpointUrl = this.dataset.url;
+                Swal.fire({
+                    title: 'Renovar suscripción',
+                    html: '<label class="d-block mb-1">Meses a renovar:</label>' +
+                          '<input id="mesesInput" type="number" min="1" max="36" value="12" class="swal2-input" style="width:140px">',
+                    icon: 'info',
+                    showCancelButton: true,
+                    confirmButtonColor: '#17a2b8',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: '<i class="fas fa-sync"></i> Renovar',
+                    cancelButtonText: 'Cancelar',
+                    preConfirm: function () {
+                        var meses = parseInt(document.getElementById('mesesInput').value, 10);
+                        if (!meses || meses < 1 || meses > 36) {
+                            Swal.showValidationMessage('Ingrese un valor entre 1 y 36');
+                            return false;
+                        }
+                        return meses;
+                    }
+                }).then(function (result) {
+                    if (result.isConfirmed && result.value) {
+                        postAction(
+                            endpointUrl,
+                            'meses=' + encodeURIComponent(result.value),
+                            'Suscripción renovada correctamente'
+                        );
+                    }
+                });
+            });
+        }
+
+    });
+}());
+</script>
+<?php $scripts = ob_get_clean(); ?>

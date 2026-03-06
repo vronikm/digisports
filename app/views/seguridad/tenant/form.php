@@ -124,18 +124,7 @@ include __DIR__ . '/../partials/header.php';
                                 </div>
                                 <?php endforeach; ?>
                             </div>
-                                    <?php if (empty($modulos)): ?>
-                                    <script>
-                                        document.addEventListener('DOMContentLoaded', function() {
-                                            Swal.fire({
-                                                icon: 'info',
-                                                title: 'Sin módulos disponibles',
-                                                text: 'No hay módulos disponibles. Cree módulos desde la sección de Módulos.',
-                                                confirmButtonText: 'Entendido'
-                                            });
-                                        });
-                                    </script>
-                                    <?php endif; ?>
+                                    <?php /* aviso sin módulos → se muestra desde el bloque $scripts al final */ ?>
                         </div>
                     </div>
                 </div>
@@ -228,75 +217,99 @@ include __DIR__ . '/../partials/header.php';
     </div>
 </section>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Actualizar usuarios según plan
-    const planSelect = document.getElementById('plan_id');
-    const usuariosInput = document.getElementById('usuarios_permitidos');
-    planSelect.addEventListener('change', function() {
-        const option = this.options[this.selectedIndex];
-        const usuarios = option.getAttribute('data-usuarios');
-        if (usuarios) {
-            usuariosInput.value = usuarios;
-        }
-    });
-    // Auto calcular fecha vencimiento
-    const fechaInicio = document.getElementById('fecha_inicio');
-    const fechaVencimiento = document.getElementById('fecha_vencimiento');
-    fechaInicio.addEventListener('change', function() {
-        if (this.value) {
-            const fecha = new Date(this.value);
-            fecha.setMonth(fecha.getMonth() + 1);
-            fechaVencimiento.value = fecha.toISOString().split('T')[0];
-        }
-    });
+<?php ob_start(); ?>
+<script nonce="<?= cspNonce() ?>">
+(function () {
+    document.addEventListener('DOMContentLoaded', function () {
 
-    // Interceptar submit para confirmación y AJAX
-    const form = document.querySelector('form');
-    form.addEventListener('submit', function(e) {
-        e.preventDefault();
+        <?php if (empty($modulos)): ?>
+        // Aviso: sin módulos disponibles
         Swal.fire({
-            title: '¿Guardar cambios?',
-            text: '¿Deseas confirmar la actualización de este tenant?',
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonText: 'Sí, guardar',
-            cancelButtonText: 'Cancelar',
-            reverseButtons: true
-        }).then((result) => {
-            if (result.isConfirmed) {
-                // Enviar por AJAX
-                const formData = new FormData(form);
-                fetch(form.action, {
+            icon: 'info',
+            title: 'Sin módulos disponibles',
+            text: 'No hay módulos disponibles. Cree módulos desde la sección de Módulos.',
+            confirmButtonText: 'Entendido'
+        });
+        <?php endif; ?>
+
+        // ── Actualizar usuarios según plan ──────────────────────────
+        var planSelect     = document.getElementById('plan_id');
+        var usuariosInput  = document.getElementById('usuarios_permitidos');
+        planSelect.addEventListener('change', function () {
+            var opt = this.options[this.selectedIndex];
+            var usuarios = opt.getAttribute('data-usuarios');
+            if (usuarios) usuariosInput.value = usuarios;
+        });
+
+        // ── Auto calcular fecha vencimiento (+1 mes) ─────────────────
+        var fechaInicio      = document.getElementById('fecha_inicio');
+        var fechaVencimiento = document.getElementById('fecha_vencimiento');
+        fechaInicio.addEventListener('change', function () {
+            if (this.value) {
+                var fecha = new Date(this.value);
+                fecha.setMonth(fecha.getMonth() + 1);
+                fechaVencimiento.value = fecha.toISOString().split('T')[0];
+            }
+        });
+
+        // ── Interceptar submit: confirmación → AJAX → Toast ──────────
+        var form = document.querySelector('form');
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            var f = this;
+
+            Swal.fire({
+                title: '<?= $esEdicion ? "¿Guardar cambios?" : "¿Crear tenant?" ?>',
+                text:  '<?= $esEdicion ? "Se actualizará la información del tenant en el sistema." : "Se registrará un nuevo tenant en el sistema." ?>',
+                icon:  'question',
+                showCancelButton:   true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor:  '#6c757d',
+                confirmButtonText:  '<i class="fas fa-save"></i> <?= $esEdicion ? "Sí, guardar" : "Sí, crear" ?>',
+                cancelButtonText:   'Cancelar'
+            }).then(function (result) {
+                if (!result.isConfirmed) return;
+
+                var btn = f.querySelector('button[type="submit"]');
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Guardando…';
+
+                fetch(f.action, {
                     method: 'POST',
-                    body: formData,
+                    body: new FormData(f),
                     headers: { 'X-Requested-With': 'XMLHttpRequest' }
                 })
-                .then(response => response.json())
-                .then(data => {
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
                     Swal.fire({
                         toast: true,
                         position: 'top-end',
                         icon: data.success ? 'success' : 'error',
-                        title: data.message || (data.success ? 'Cambios guardados correctamente' : 'Error al guardar'),
+                        title: data.message || (data.success ? 'Guardado correctamente' : 'Error al guardar'),
                         showConfirmButton: false,
                         timer: 3500,
                         timerProgressBar: true
                     });
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-save mr-1"></i> <?= $esEdicion ? "Actualizar" : "Crear" ?> Tenant';
                 })
-                .catch(() => {
+                .catch(function () {
                     Swal.fire({
                         toast: true,
                         position: 'top-end',
                         icon: 'error',
-                        title: 'Error de red o servidor',
+                        title: 'Error de comunicación con el servidor',
                         showConfirmButton: false,
                         timer: 3500,
                         timerProgressBar: true
                     });
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-save mr-1"></i> <?= $esEdicion ? "Actualizar" : "Crear" ?> Tenant';
                 });
-            }
+            });
         });
+
     });
-});
+}());
 </script>
+<?php $scripts = ob_get_clean(); ?>

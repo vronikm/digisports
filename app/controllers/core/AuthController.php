@@ -228,10 +228,10 @@ class AuthController extends \BaseController {
         // Guardar temporalmente el usuario en sesión
         $_SESSION['temp_user_id'] = $user['usu_usuario_id'];
         $_SESSION['temp_2fa_required'] = true;
-        
+
         $this->success([
             'require_2fa' => true,
-            'redirect' => url('core', 'auth', '2fa')
+            'redirect' => url('core', 'auth', 'twoFactorAuth')
         ], 'Código de verificación enviado a su correo');
     }
     
@@ -394,7 +394,7 @@ class AuthController extends \BaseController {
             
             // Cargar permisos y módulos
             $permisos = json_decode($user['rol_permisos'], true) ?? [];
-            $modulos = $this->getUserModules($user['tenant_id']);
+            $modulos = $this->getUserModules($user['usu_tenant_id']);
             
             // Iniciar sesión segura
             if (session_status() !== PHP_SESSION_ACTIVE) {
@@ -911,7 +911,7 @@ class AuthController extends \BaseController {
             
             try {
                 // 1. Crear tenant
-                $planPorDefecto = Config::get('PLANES.PLAN_PRUEBA', 'PRUEBA');
+                $planPorDefecto = \Config::get('PLANES.PLAN_PRUEBA', 'PRUEBA');
                 $stmt = $this->db->prepare("
                     INSERT INTO tenants (
                         nombre_empresa, ruc, email_contacto, telefono,
@@ -1059,7 +1059,7 @@ class AuthController extends \BaseController {
             $stmt->execute([$this->userId]);
             $user = $stmt->fetch();
             
-            if (!$user || \Security::verifyPassword($passwordActual, $user['password'])) {
+            if (!$user || !\Security::verifyPassword($passwordActual, $user['password'])) {
                 $this->error('La contraseña actual es incorrecta');
             }
             

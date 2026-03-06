@@ -245,7 +245,7 @@ unset($dia);
 </div>
 
 <?php ob_start(); ?>
-<script>
+<script nonce="<?= cspNonce() ?>">
 var urlCrear  = '<?= url('futbol', 'horario', 'crear') ?>';
 var urlEditar = '<?= url('futbol', 'horario', 'editar') ?>';
 

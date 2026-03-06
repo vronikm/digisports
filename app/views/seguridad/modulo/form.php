@@ -201,7 +201,8 @@ include __DIR__ . '/../partials/header.php';
     </div>
 </section>
 
-<script>
+<?php ob_start(); ?>
+<script nonce="<?= cspNonce() ?>">
 document.addEventListener('DOMContentLoaded', function() {
     // =============================================
     // Selector de iconos
@@ -215,7 +216,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('preview-icon').className = 'fas ' + icon + ' fa-5x';
         });
     });
-    
+
     // =============================================
     // Selector de colores
     // =============================================
@@ -233,7 +234,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('color-custom').value = color;
         });
     });
-    
+
     // Color personalizado
     document.getElementById('color-custom').addEventListener('input', function() {
         const color = this.value;
@@ -244,12 +245,12 @@ document.addEventListener('DOMContentLoaded', function() {
             b.innerHTML = '';
         });
     });
-    
+
     // Preview nombre
     document.querySelector('input[name="mod_nombre"]').addEventListener('input', function() {
         document.getElementById('preview-nombre').textContent = this.value || 'Nombre del Módulo';
     });
-    
+
     // Preview código
     document.querySelector('input[name="mod_codigo"]').addEventListener('input', function() {
         document.getElementById('preview-codigo').textContent = this.value.toUpperCase() || 'CODIGO';
@@ -275,7 +276,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         Swal.fire({
             title: esEdicion ? '¿Actualizar módulo?' : '¿Crear módulo?',
-            html: esEdicion 
+            html: esEdicion
                 ? `Se guardarán los cambios del módulo <strong>${nombreModulo}</strong>.`
                 : `Se creará el nuevo módulo <strong>${nombreModulo}</strong>.`,
             icon: 'question',
@@ -355,6 +356,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
+<?php $scripts = ob_get_clean(); ?>
 
 <style>
 .icon-btn.active {

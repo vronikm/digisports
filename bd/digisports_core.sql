@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1:3306
--- Tiempo de generación: 26-02-2026 a las 22:36:22
+-- Tiempo de generación: 04-03-2026 a las 19:52:54
 -- Versión del servidor: 8.4.7
 -- Versión de PHP: 8.3.28
 
@@ -1489,7 +1489,7 @@ CREATE TABLE IF NOT EXISTS `instalaciones_reservas` (
 INSERT INTO `instalaciones_reservas` (`res_reserva_id`, `res_tenant_id`, `res_instalacion_id`, `res_cliente_id`, `res_fecha_reserva`, `res_hora_inicio`, `res_hora_fin`, `res_duracion_minutos`, `res_es_recurrente`, `res_reserva_padre_id`, `res_recurrencia_config`, `res_tarifa_aplicada_id`, `res_precio_base`, `res_descuento_monto`, `res_precio_total`, `res_abono_utilizado`, `res_estado_pago`, `res_monto_pagado`, `res_saldo_pendiente`, `res_estado`, `res_requiere_confirmacion`, `res_fecha_confirmacion`, `res_observaciones`, `res_motivo_cancelacion`, `res_fecha_cancelacion`, `res_fecha_actualizacion`, `res_fecha_registro`, `res_usuario_registro`) VALUES
 (1, 1, 4, 1, '2026-01-26', '06:00:00', '07:00:00', 60, 'N', NULL, NULL, 3, 15.00, 0.00, 15.00, 0.00, 'PENDIENTE', 0.00, 15.00, 'PENDIENTE', 'S', NULL, '', NULL, NULL, NULL, '2026-01-26 00:36:19', 1),
 (2, 1, 4, 1, '2026-01-26', '12:00:00', '13:00:00', 60, 'N', NULL, NULL, 4, 16.00, 0.00, 16.00, 0.00, 'PAGADO', 16.00, 0.00, 'CONFIRMADA', 'S', '2026-02-08 21:27:40', 'ok', NULL, NULL, NULL, '2026-01-26 00:40:15', 1),
-(3, 1, 4, 1, '2026-02-09', '17:00:00', '18:00:00', 60, 'N', NULL, NULL, 1, 21.00, 0.00, 21.00, 5.00, 'PARCIAL', 5.00, 16.00, 'PENDIENTE', 'S', NULL, 'ok', NULL, NULL, '2026-02-09 04:00:23', '2026-01-26 03:23:02', 1);
+(3, 1, 4, 1, '2026-02-09', '17:00:00', '18:00:00', 60, 'N', NULL, NULL, 1, 21.00, 0.00, 21.00, 5.00, 'PAGADO', 16.00, 0.00, 'CONFIRMADA', 'S', '2026-02-27 10:34:06', 'ok', NULL, NULL, '2026-02-27 15:34:06', '2026-01-26 03:23:02', 1);
 
 -- --------------------------------------------------------
 
@@ -1515,7 +1515,7 @@ CREATE TABLE IF NOT EXISTS `instalaciones_reserva_pagos` (
   KEY `tenant_id` (`pag_tenant_id`),
   KEY `idx_reserva` (`pag_reserva_id`),
   KEY `idx_fecha` (`pag_fecha_pago`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Volcado de datos para la tabla `instalaciones_reserva_pagos`
@@ -1523,7 +1523,8 @@ CREATE TABLE IF NOT EXISTS `instalaciones_reserva_pagos` (
 
 INSERT INTO `instalaciones_reserva_pagos` (`pag_pago_id`, `pag_tenant_id`, `pag_reserva_id`, `pag_monto`, `pag_tipo_pago`, `pag_forma_pago`, `pag_referencia`, `pag_pasarela`, `pag_transaction_id`, `pag_estado`, `pag_fecha_pago`, `pag_usuario_registro`) VALUES
 (1, 1, 2, 16.00, 'EFECTIVO', 'EFECTIVO', NULL, NULL, NULL, 'COMPLETADO', '2026-02-08 21:27:40', 1),
-(2, 1, 3, 10.00, 'MIXTO', 'EFECTIVO', NULL, NULL, NULL, 'COMPLETADO', '2026-02-08 22:56:44', 1);
+(2, 1, 3, 10.00, 'MIXTO', 'EFECTIVO', NULL, NULL, NULL, 'COMPLETADO', '2026-02-08 22:56:44', 1),
+(3, 1, 3, 6.00, 'EFECTIVO', 'EFECTIVO', NULL, NULL, NULL, 'COMPLETADO', '2026-02-27 10:34:06', 1);
 
 -- --------------------------------------------------------
 
@@ -1609,6 +1610,32 @@ INSERT INTO `instalaciones_tipos_instalacion` (`tip_tipo_id`, `tip_tenant_id`, `
 -- --------------------------------------------------------
 
 --
+-- Estructura Stand-in para la vista `mantenimientos`
+-- (Véase abajo para la vista actual)
+--
+DROP VIEW IF EXISTS `mantenimientos`;
+CREATE TABLE IF NOT EXISTS `mantenimientos` (
+`cadencia_recurrencia` int
+,`cancha_id` int
+,`descripcion` text
+,`estado` varchar(20)
+,`fecha_actualizacion` timestamp
+,`fecha_creacion` timestamp
+,`fecha_fin` datetime
+,`fecha_inicio` datetime
+,`mantenimiento_id` int
+,`notas` text
+,`recurrir` varchar(2)
+,`responsable_id` int
+,`tenant_id` int
+,`tipo` varchar(50)
+,`usuario_actualizacion` int
+,`usuario_creacion` int
+);
+
+-- --------------------------------------------------------
+
+--
 -- Estructura de tabla para la tabla `natacion_asistencia`
 --
 
@@ -1663,13 +1690,13 @@ CREATE TABLE IF NOT EXISTS `natacion_campos_ficha` (
 --
 
 INSERT INTO `natacion_campos_ficha` (`ncf_campo_id`, `ncf_tenant_id`, `ncf_clave`, `ncf_etiqueta`, `ncf_tipo`, `ncf_opciones`, `ncf_placeholder`, `ncf_requerido`, `ncf_grupo`, `ncf_orden`, `ncf_activo`, `ncf_validacion`, `ncf_created_at`, `ncf_updated_at`) VALUES
-(1, 1, 'talla_traje', 'Talla de Traje de Ba??o', 'SELECT', '[\"4\", \"6\", \"8\", \"10\", \"12\", \"14\", \"S\", \"M\", \"L\", \"XL\"]', NULL, 0, 'personal', 1, 1, NULL, '2026-02-09 16:44:22', '2026-02-09 16:44:22'),
-(2, 1, 'usa_gorra', '??Usa Gorra de Nataci??n?', 'CHECKBOX', NULL, NULL, 0, 'personal', 2, 1, NULL, '2026-02-09 16:44:22', '2026-02-09 16:44:22'),
-(3, 1, 'usa_lentes', '??Usa Lentes de Nataci??n?', 'CHECKBOX', NULL, NULL, 0, 'personal', 3, 1, NULL, '2026-02-09 16:44:22', '2026-02-09 16:44:22'),
-(4, 1, 'objetivo_natacion', 'Objetivo Principal', 'SELECT', '[\"Aprender a nadar\", \"Mejorar t??cnica\", \"Competir\", \"Terap??utico\", \"Recreativo\"]', NULL, 1, 'deportivo', 1, 1, NULL, '2026-02-09 16:44:22', '2026-02-09 16:44:22'),
-(5, 1, 'como_nos_conocio', '??C??mo nos conoci???', 'SELECT', '[\"Redes sociales\", \"Recomendaci??n\", \"Publicidad\", \"Otro\"]', NULL, 0, 'general', 1, 1, NULL, '2026-02-09 16:44:22', '2026-02-09 16:44:22'),
-(6, 1, 'autoriza_fotos', 'Autoriza publicaci??n de fotos/videos', 'CHECKBOX', NULL, NULL, 1, 'legal', 1, 1, NULL, '2026-02-09 16:44:22', '2026-02-09 16:44:22'),
-(7, 1, 'observaciones_medicas_adicionales', 'Observaciones M??dicas Adicionales', 'TEXTAREA', NULL, 'Ingrese cualquier informaci??n m??dica relevante...', 0, 'medico', 1, 1, NULL, '2026-02-09 16:44:22', '2026-02-09 16:44:22');
+(1, 1, 'talla_traje', 'Talla de Traje de Baño', 'SELECT', '[\"4\", \"6\", \"8\", \"10\", \"12\", \"14\", \"S\", \"M\", \"L\", \"XL\"]', NULL, 0, 'personal', 1, 1, NULL, '2026-02-09 16:44:22', '2026-02-27 17:35:46'),
+(2, 1, 'usa_gorra', '¿Usa Gorra de Natación?', 'CHECKBOX', NULL, NULL, 0, 'personal', 2, 1, NULL, '2026-02-09 16:44:22', '2026-02-27 17:36:41'),
+(3, 1, 'usa_lentes', '¿Usa Lentes de Natación?', 'CHECKBOX', NULL, NULL, 0, 'personal', 3, 1, NULL, '2026-02-09 16:44:22', '2026-02-27 17:36:27'),
+(4, 1, 'objetivo_natacion', 'Objetivo Principal', 'SELECT', '[\"Aprender a nadar\", \"Mejorar técnica\", \"Competir\", \"Terapéutico\", \"Recreativo\"]', NULL, 1, 'deportivo', 1, 0, NULL, '2026-02-09 16:44:22', '2026-03-03 17:54:02'),
+(5, 1, 'como_nos_conocio', '¿Cómo nos conoció?', 'SELECT', '[\"Redes sociales\", \"Recomendaci??n\", \"Publicidad\", \"Otro\"]', NULL, 0, 'general', 1, 0, NULL, '2026-02-09 16:44:22', '2026-03-03 19:46:12'),
+(6, 1, 'autoriza_fotos', 'Autoriza publicación de fotos/videos', 'CHECKBOX', NULL, NULL, 1, 'legal', 1, 0, NULL, '2026-02-09 16:44:22', '2026-03-03 19:32:15'),
+(7, 1, 'observaciones_medicas_adicionales', 'Observaciones Médicas Adicionales', 'TEXTAREA', NULL, 'Ingrese cualquier informaci??n m??dica relevante...', 0, 'medico', 1, 0, NULL, '2026-02-09 16:44:22', '2026-03-03 19:46:44');
 
 -- --------------------------------------------------------
 
@@ -1715,15 +1742,15 @@ CREATE TABLE IF NOT EXISTS `natacion_configuracion` (
 --
 
 INSERT INTO `natacion_configuracion` (`ncg_config_id`, `ncg_tenant_id`, `ncg_clave`, `ncg_valor`, `ncg_tipo`, `ncg_descripcion`, `ncg_created_at`, `ncg_updated_at`) VALUES
-(1, 1, 'nombre_modulo', 'Escuela de Nataci??n', 'TEXT', 'Nombre personalizado del m??dulo', '2026-02-09 16:44:22', '2026-02-09 16:44:22'),
+(1, 1, 'nombre_modulo', 'Escuela de Natación - Test 2026-03-04 16:29:02', 'TEXT', 'Nombre personalizado del módulo', '2026-02-09 16:44:22', '2026-03-04 16:29:02'),
 (2, 1, 'moneda', 'USD', 'TEXT', 'Moneda para precios', '2026-02-09 16:44:22', '2026-02-09 16:44:22'),
-(3, 1, 'max_alumnos_carril', '8', 'NUMBER', 'M??ximo de alumnos por carril', '2026-02-09 16:44:22', '2026-02-09 16:44:22'),
-(4, 1, 'requiere_certificado_medico', 'true', 'BOOLEAN', 'Exigir certificado m??dico', '2026-02-09 16:44:22', '2026-02-09 16:44:22'),
-(5, 1, 'edad_minima_inscripcion', '3', 'NUMBER', 'Edad m??nima para inscribir', '2026-02-09 16:44:22', '2026-02-09 16:44:22'),
+(3, 1, 'max_alumnos_carril', '8', 'NUMBER', 'Máximo de alumnos por carril', '2026-02-09 16:44:22', '2026-02-27 17:38:49'),
+(4, 1, 'requiere_certificado_medico', 'true', 'BOOLEAN', 'Exigir certificado médico', '2026-02-09 16:44:22', '2026-02-27 17:38:16'),
+(5, 1, 'edad_minima_inscripcion', '3', 'NUMBER', 'Edad mínima para inscribir', '2026-02-09 16:44:22', '2026-02-27 17:38:16'),
 (6, 1, 'permite_lista_espera', 'true', 'BOOLEAN', 'Activar lista de espera', '2026-02-09 16:44:22', '2026-02-09 16:44:22'),
-(7, 1, 'dias_prueba_gratis', '0', 'NUMBER', 'D??as de clase de prueba gratis', '2026-02-09 16:44:22', '2026-02-09 16:44:22'),
-(8, 1, 'porcentaje_asistencia_min', '70', 'NUMBER', 'Porcentaje m??nimo de asistencia', '2026-02-09 16:44:22', '2026-02-09 16:44:22'),
-(9, 1, 'escala_evaluacion', '5', 'NUMBER', 'Escala de evaluaci??n (1-5 estrellas o 1-10)', '2026-02-09 16:44:22', '2026-02-09 16:44:22');
+(7, 1, 'dias_prueba_gratis', '3', 'NUMBER', 'Días de clase de prueba gratis', '2026-02-09 16:44:22', '2026-03-04 17:04:24'),
+(8, 1, 'porcentaje_asistencia_min', '70', 'NUMBER', 'Porcentaje mínimo de asistencia', '2026-02-09 16:44:22', '2026-02-27 17:38:27'),
+(9, 1, 'escala_evaluacion', '5', 'NUMBER', 'Escala de evaluación (1-5 estrellas o 1-10)', '2026-02-09 16:44:22', '2026-02-27 17:38:35');
 
 -- --------------------------------------------------------
 
@@ -1979,10 +2006,10 @@ CREATE TABLE IF NOT EXISTS `natacion_niveles` (
 --
 
 INSERT INTO `natacion_niveles` (`nnv_nivel_id`, `nnv_tenant_id`, `nnv_nombre`, `nnv_codigo`, `nnv_descripcion`, `nnv_color`, `nnv_orden`, `nnv_edad_min`, `nnv_edad_max`, `nnv_activo`, `nnv_created_at`) VALUES
-(1, 1, 'Adaptaci??n al Agua', 'N0', 'Familiarizaci??n con el medio acu??tico. P??rdida del miedo, flotaci??n asistida.', '#94A3B8', 1, 3, 5, 1, '2026-02-09 16:44:22'),
-(2, 1, 'Principiante', 'N1', 'Flotaci??n, patada b??sica, desplazamiento con tabla, inmersiones cortas.', '#22C55E', 2, 4, 99, 1, '2026-02-09 16:44:22'),
-(3, 1, 'B??sico', 'N2', 'Crol b??sico, espalda b??sica, respiraci??n lateral, zambullidas.', '#3B82F6', 3, 5, 99, 1, '2026-02-09 16:44:22'),
-(4, 1, 'Intermedio', 'N3', 'Crol y espalda completos, introducci??n a pecho, virajes simples.', '#8B5CF6', 4, 6, 99, 1, '2026-02-09 16:44:22'),
+(1, 1, 'Adaptación al Agua', 'N0', 'Familiarización con el medio acuático. Pérdida del miedo, flotación asistida.', '#94A3B8', 1, 3, 5, 1, '2026-02-09 16:44:22'),
+(2, 1, 'Principiante', 'N1', 'Flotación, patada básica, desplazamiento con tabla, inmersiones cortas.', '#22C55E', 2, 4, 99, 1, '2026-02-09 16:44:22'),
+(3, 1, 'Básico', 'N2', 'Crol básico, espalda básica, respiración lateral, zambullidas.', '#3B82F6', 3, 5, 99, 1, '2026-02-09 16:44:22'),
+(4, 1, 'Intermedio', 'N3', 'Crol y espalda completos, introducción a pecho, virajes simples.', '#8B5CF6', 4, 6, 99, 1, '2026-02-09 16:44:22'),
 (5, 1, 'Avanzado', 'N4', 'Los 4 estilos completos, virajes, salidas desde bloque.', '#F59E0B', 5, 7, 99, 1, '2026-02-09 16:44:22'),
 (6, 1, 'Competitivo', 'N5', 'Perfeccionamiento de estilos, entrenamiento de velocidad y resistencia.', '#EF4444', 6, 8, 99, 1, '2026-02-09 16:44:22');
 
@@ -2012,14 +2039,14 @@ CREATE TABLE IF NOT EXISTS `natacion_nivel_habilidades` (
 --
 
 INSERT INTO `natacion_nivel_habilidades` (`nnh_habilidad_id`, `nnh_tenant_id`, `nnh_nivel_id`, `nnh_nombre`, `nnh_descripcion`, `nnh_orden`, `nnh_activo`, `nnh_created_at`) VALUES
-(1, 1, 2, 'Flotaci??n dorsal', 'Flotaci??n boca arriba sin asistencia por 10 segundos', 1, 1, '2026-02-09 16:44:22'),
-(2, 1, 2, 'Flotaci??n ventral', 'Flotaci??n boca abajo con cara en el agua por 10 segundos', 2, 1, '2026-02-09 16:44:22'),
+(1, 1, 2, 'Flotación dorsal', 'Flotación boca arriba sin asistencia por 10 segundos', 1, 1, '2026-02-09 16:44:22'),
+(2, 1, 2, 'Flotación ventral', 'Flotacón boca abajo con cara en el agua por 10 segundos', 2, 1, '2026-02-09 16:44:22'),
 (3, 1, 2, 'Patada con tabla', 'Desplazamiento de 15m con tabla usando patada flutter', 3, 1, '2026-02-09 16:44:22'),
-(4, 1, 2, 'Inmersi??n', 'Sumergirse completamente y recoger objeto del fondo', 4, 1, '2026-02-09 16:44:22'),
-(5, 1, 2, 'Respiraci??n r??tmica', 'Inspiraci??n fuera, exhalaci??n dentro del agua (10 repeticiones)', 5, 1, '2026-02-09 16:44:22'),
-(6, 1, 3, 'Crol 25m', 'Nado crol completo 25 metros con respiraci??n lateral', 1, 1, '2026-02-09 16:44:22'),
+(4, 1, 2, 'Inmersión', 'Sumergirse completamente y recoger objeto del fondo', 4, 1, '2026-02-09 16:44:22'),
+(5, 1, 2, 'Respiración rítmica', 'Inspiración fuera, exhalación dentro del agua (10 repeticiones)', 5, 1, '2026-02-09 16:44:22'),
+(6, 1, 3, 'Crol 25m', 'Nado crol completo 25 metros con respiración lateral', 1, 1, '2026-02-09 16:44:22'),
 (7, 1, 3, 'Espalda 25m', 'Nado espalda completo 25 metros', 2, 1, '2026-02-09 16:44:22'),
-(8, 1, 3, 'Respiraci??n bilateral', 'Respiraci??n por ambos lados en crol', 3, 1, '2026-02-09 16:44:22'),
+(8, 1, 3, 'Respiración bilateral', 'Respiración por ambos lados en crol', 3, 1, '2026-02-09 16:44:22'),
 (9, 1, 3, 'Zambullida de pie', 'Entrada al agua de pie desde el borde', 4, 1, '2026-02-09 16:44:22');
 
 -- --------------------------------------------------------
@@ -2108,6 +2135,24 @@ CREATE TABLE IF NOT EXISTS `natacion_piscinas` (
 -- --------------------------------------------------------
 
 --
+-- Estructura Stand-in para la vista `roles`
+-- (Véase abajo para la vista actual)
+--
+DROP VIEW IF EXISTS `roles`;
+CREATE TABLE IF NOT EXISTS `roles` (
+`codigo` varchar(50)
+,`descripcion` text
+,`estado` char(1)
+,`fecha_registro` timestamp
+,`nombre` varchar(100)
+,`permisos` json
+,`rol_id` int
+,`tenant_id` int
+);
+
+-- --------------------------------------------------------
+
+--
 -- Estructura de tabla para la tabla `seguridad_auditoria`
 --
 
@@ -2133,7 +2178,7 @@ CREATE TABLE IF NOT EXISTS `seguridad_auditoria` (
   KEY `idx_tabla` (`aud_tabla`),
   KEY `idx_fecha` (`aud_fecha_operacion`),
   KEY `idx_operacion` (`aud_operacion`)
-) ENGINE=InnoDB AUTO_INCREMENT=230 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=244 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Volcado de datos para la tabla `seguridad_auditoria`
@@ -2370,7 +2415,21 @@ INSERT INTO `seguridad_auditoria` (`aud_auditoria_id`, `aud_tenant_id`, `aud_usu
 (226, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=KKBT2tQ54LtaA1ARVHhnKbIoR27QEUEBtwWoql-viVfhM6gM-4eQQT-QQO04QZ2mhz4Ir3pakGxSnaVB2zuA1-496cDPs6e6HKGKtZLBIPy0Gdix__TWjemL-X_9dEQ6', 'POST', '2026-02-26 15:20:35'),
 (227, NULL, NULL, 'seguridad', 'seguridad_modulos', 30, 'editar_modulo', '{\"mod_id\": 30, \"mod_icono\": \"fas fa-apple-alt\", \"mod_orden\": 0, \"mod_activo\": 1, \"mod_codigo\": \"NUTRICION\", \"mod_nombre\": \"Planes Nutricionales\", \"mod_created_at\": \"2026-02-07 17:50:38\", \"mod_es_externo\": 0, \"mod_updated_at\": \"2026-02-07 17:50:38\", \"mod_color_fondo\": \"#fd7e14\", \"mod_descripcion\": \"Seguimiento nutricional de deportistas\", \"mod_ruta_action\": \"index\", \"mod_ruta_modulo\": \"nutricion\", \"mod_url_externa\": \"/nutricion/\", \"mod_ruta_controller\": \"dashboard\", \"mod_requiere_licencia\": 1, \"mod_base_datos_externa\": null}', '{\"mod_icono\": \"fas fa-apple-alt\", \"mod_orden\": 0, \"mod_activo\": 0, \"mod_codigo\": \"NUTRICION\", \"mod_nombre\": \"Planes Nutricionales\", \"mod_es_externo\": 0, \"mod_color_fondo\": \"#fd7e14\", \"mod_descripcion\": \"Seguimiento nutricional de deportistas\", \"mod_url_externa\": \"/nutricion/\", \"mod_requiere_licencia\": 1}', '::1', NULL, '/digisports/public/index.php?r=m271p1YSRo5zYlIqcXl7vv3RfElzGutUnsi1VbuvaXQhj9SnCywFFFxAM25HpI7cx3bt9H8AQ4PPhTKy_ruQpGAlWTlbGXt_E0UsCi7pHJxFYAOtmPPHq6V4bZ4WKf1DLw,,', 'POST', '2026-02-26 15:26:25'),
 (228, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=__hq_vBrkizxgO92_TSEt1iYnDDezbx3FFt2i9ExFik0q-H9WrjMIG0425Fh3ISNatYHri8c7vzmB_SuyoTHU3fI-k4FgK2lgepm-pV0F2Ip6XF4Zof_zr0bxGO_49Xk', 'POST', '2026-02-26 16:10:50'),
-(229, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=VlBtUKyvZ8kyHdYnL3O9baZTiQuW_OOyuHIlc3d2xYIXkYJI0UTGN8CEXYA3eEwZog_L49Guu1u60JIdkzW1ho7fO-9OWryWhdTj15rg07Z-tQIl1-wg4jsvXWg6hd9l', 'POST', '2026-02-26 22:28:35');
+(229, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=VlBtUKyvZ8kyHdYnL3O9baZTiQuW_OOyuHIlc3d2xYIXkYJI0UTGN8CEXYA3eEwZog_L49Guu1u60JIdkzW1ho7fO-9OWryWhdTj15rg07Z-tQIl1-wg4jsvXWg6hd9l', 'POST', '2026-02-26 22:28:35'),
+(230, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=KezXAlZneun1_4S9EKS2pIy3CGXcqGb9gKxQ4eyMkwXglUeJtuCIeG94FVrWAhMEhEbhXEen1sHQLnWHrenhM5EvyRLDpRdVYUYOJYCLMFlt_KCpxZ_izcjcrBJlqr4a', 'POST', '2026-02-27 00:46:22'),
+(231, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=9HQRUQXnJNjBIuLlHuk1mY0ygAtcgWvLWBYn9NOLdEl5St1N8aVt-l-p0_g3iuFWK3m0yymB7EtusCWyAqeGWfp0SuNerntT1qZhtIajdOn2hwB0yVMM5GXDk8YoqW1Y', 'POST', '2026-02-27 03:28:05'),
+(232, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=C2SwMankLcGDQYofa686G0BF2_0KXmpR3vBJ_-tU7j0gxXUa-5D7W1R2Y3yeAkb5bJsxsr3wQ2DUerLXTjkpyk9lzz7AyNriwYrTfa8-FjrwuR7FG2qfEcFlRNXfhLtG', 'POST', '2026-02-27 04:21:55'),
+(233, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=ToJDTfPIbMQhN1v1d8Kspz5rzlv0m0iFs2vhMI9qmxOJbPOlshKyD8BkfcwhzOIJjqKRWg0nEoNdGWHlfL5lSiaa1w5xgD7vlG3N-XoYjRQ9_BexJazyjXNdZc66wJ1J', 'POST', '2026-02-27 13:19:52'),
+(234, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=vmB27c0m2aRmSvczMG285yxu0NWeugWBq5dxrGcMjp9x0W8CRrhGhV-StgbNs1nawQvFXbcG_SOcE39xl6S8HNoUo5tpHJY8rhVbhboi_HayCsWCJVDz7PDtRyaRfTnv', 'POST', '2026-02-27 14:35:03'),
+(235, 1, 1, 'Reservas', 'reserva_pagos', 3, 'PAGO_REGISTRADO', 'null', '{\"monto\": 6, \"forma_pago\": \"EFECTIVO\", \"reserva_id\": 3, \"estado_pago\": \"PAGADO\", \"monto_efectivo\": 6, \"monto_monedero\": 0}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=_AJV8ZMYKGdoojzAVcJy6bMkgR5djKc7StnRB0gdgsUHf7uYXE98zS2s7KxT8m_eCr6yIUedg03Xli-0uyjbLqVaXBCGqE23InkwGLGD-h5DN4e028no7LOHJgKjBhLMhX9RmQ,,', 'POST', '2026-02-27 15:34:06'),
+(236, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=wUVBuGUXvP1ziE_SlscbflMggM4b9f2Ok0KajtCtcHXQ9jR8tOwFvEGnKH8FgKD8fXuWdEJ1jDXuxtg4h0bwmqtqwHt9dozpDmWKqCOccX719lkaDBdihz_WVBIX_q2h', 'POST', '2026-02-27 17:34:58'),
+(237, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=4XXhjfGJbxulUuPJpMWC_YfFvz_ClDjR0LHs1UzQjgXG47Mc_bgEJuwMlboQwdoxZuQ4ZuIAOlIKyemsbCYkq8PpPjday9hghfPWyl1U-37S4PIMmiW91Rt9MijDb2nr', 'POST', '2026-03-02 21:27:37'),
+(238, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=A_dFf0mKJvX6fehMnZ4M7YcdhRY1n4CHJsayKRq960Oc5HiN4lirSLzDdmyA19PajNBlvTMzSXRloprmdZVvkZzA3jII170gv7AoI3vKeElj7zAeCpT6Ux1XjrM_zglp', 'POST', '2026-03-02 21:28:29'),
+(239, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=4bpIRP1itHKWh4uzms_NBv6mJYWWlrFiIJCV_v7Kk6icb4Vr-Si7qk0thkwZ1fT2IrE-UuKHuTJahaF0zVP15jtdiROOlDndMrWho7Xq90RIxqcv4oCyOpPNHJnSwKRn', 'POST', '2026-03-03 17:07:55'),
+(240, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=hVDQqfsxr7hAaWUeB7QeX1SWTDhcKGcNNbl0JGcHBkfX0FwDlb6_blgT0LvlfQLTe6anuOGMMrI5DtY3EkhROgsaliOKq-LHO0Dqlbj_YVSesAF1mf2KhRhPmtsONOVr', 'POST', '2026-03-03 19:31:52'),
+(241, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=xdUUPV3gzX5muLkj5feXQxhRIm7JdmHpL5wPWJqxqxbeDQJaRMPAjOAPGkqcOzaCfqeQZIiB_chyvkWL61-ZKEE2n46dsyotTC71dO3OgfmwrAiUX5YWHzckCD7JKPn5', 'POST', '2026-03-03 21:06:40'),
+(242, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=Doir_HshHIcOoUqFZp0liKQBRShZh1oILzqQeHHM5e3y_d0iLpe2L9Y6snnOxPijURiariGa-_7Ghhj6Znhr84WQmP4eTfY5WPE-er5Gjg3LHPAHPRf4F0Zv9QRX9j9O', 'POST', '2026-03-04 14:14:01'),
+(243, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=yo1VGQDZmIymLo1UvW1GQQOHMeGdnKohKOf5Dj4jnvb6y_h1YRRcZ5XlAe4xgFCDbnEQkuKjVXRDnRVEUdFDNTDIw5Cs5qyFvu7l5jU4yHUj4e_KT-2EGQGihwVvGDKj', 'POST', '2026-03-04 15:25:29');
 
 -- --------------------------------------------------------
 
@@ -2436,7 +2495,7 @@ CREATE TABLE IF NOT EXISTS `seguridad_log_accesos` (
   KEY `idx_tenant` (`acc_tenant_id`),
   KEY `idx_fecha` (`acc_fecha`),
   KEY `idx_tipo` (`acc_tipo`)
-) ENGINE=InnoDB AUTO_INCREMENT=28 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=41 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Volcado de datos para la tabla `seguridad_log_accesos`
@@ -2469,7 +2528,20 @@ INSERT INTO `seguridad_log_accesos` (`acc_log_id`, `acc_usuario_id`, `acc_tenant
 (24, NULL, NULL, '2026-02-26 00:30:52', 'LOGIN_FAILED', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'N', 'Usuario: admin - Usuario o email no encontrado o inactivo'),
 (25, 1, 1, '2026-02-26 10:20:35', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
 (26, 1, 1, '2026-02-26 11:10:50', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
-(27, 1, 1, '2026-02-26 17:28:35', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso');
+(27, 1, 1, '2026-02-26 17:28:35', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(28, 1, 1, '2026-02-26 19:46:22', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(29, 1, 1, '2026-02-26 22:28:05', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(30, 1, 1, '2026-02-26 23:21:55', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(31, 1, 1, '2026-02-27 08:19:52', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(32, 1, 1, '2026-02-27 09:35:03', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(33, 1, 1, '2026-02-27 12:34:58', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(34, 1, 1, '2026-03-02 16:27:37', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(35, 1, 1, '2026-03-02 16:28:29', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(36, 1, 1, '2026-03-03 12:07:55', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(37, 1, 1, '2026-03-03 14:31:52', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(38, 1, 1, '2026-03-03 16:06:40', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(39, 1, 1, '2026-03-04 09:14:01', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(40, 1, 1, '2026-03-04 10:25:29', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso');
 
 -- --------------------------------------------------------
 
@@ -2633,7 +2705,7 @@ INSERT INTO `seguridad_menu` (`men_id`, `men_modulo_id`, `men_padre_id`, `men_ti
 (140, 8, NULL, 'HEADER', 'Principal', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 1, NULL, NULL, '2026-02-09 16:44:23', '2026-02-09 16:44:23'),
 (141, 8, 140, 'ITEM', 'Dashboard', 'fas fa-tachometer-alt', 'natacion', 'dashboard', 'index', NULL, NULL, NULL, 1, 1, NULL, NULL, '2026-02-09 16:44:23', '2026-02-09 16:44:23'),
 (142, 8, 140, 'ITEM', 'Horario Semanal', 'fas fa-calendar-alt', 'natacion', 'horario', 'index', NULL, NULL, NULL, 2, 1, NULL, NULL, '2026-02-09 16:44:23', '2026-02-09 16:44:23'),
-(143, 8, NULL, 'HEADER', 'Gesti??n Acad??mica', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 2, 1, NULL, NULL, '2026-02-09 16:44:23', '2026-02-09 16:44:23'),
+(143, 8, NULL, 'HEADER', 'Gestión Académica', NULL, NULL, NULL, 'index', NULL, NULL, NULL, 2, 1, NULL, NULL, '2026-02-09 16:44:23', '2026-03-04 15:52:15'),
 (144, 8, 143, 'ITEM', 'Alumnos', 'fas fa-user-graduate', 'natacion', 'alumno', 'index', NULL, NULL, NULL, 1, 1, NULL, NULL, '2026-02-09 16:44:23', '2026-02-09 16:44:23'),
 (145, 8, 143, 'ITEM', 'Inscripciones', 'fas fa-clipboard-list', 'natacion', 'inscripcion', 'index', NULL, NULL, NULL, 2, 1, NULL, NULL, '2026-02-09 16:44:23', '2026-02-09 16:44:23'),
 (146, 8, 143, 'ITEM', 'Asistencia', 'fas fa-check-double', 'natacion', 'asistencia', 'index', NULL, NULL, NULL, 3, 1, NULL, NULL, '2026-02-09 16:44:23', '2026-02-09 16:44:23'),
@@ -2643,13 +2715,13 @@ INSERT INTO `seguridad_menu` (`men_id`, `men_modulo_id`, `men_padre_id`, `men_ti
 (150, 8, 149, 'ITEM', 'Piscinas', 'fas fa-swimming-pool', 'natacion', 'piscina', 'index', NULL, NULL, NULL, 1, 1, NULL, NULL, '2026-02-09 16:44:23', '2026-02-09 16:44:23'),
 (151, 8, 149, 'ITEM', 'Instructores', 'fas fa-chalkboard-teacher', 'natacion', 'instructor', 'index', NULL, NULL, NULL, 2, 1, NULL, NULL, '2026-02-09 16:44:23', '2026-02-09 16:44:23'),
 (152, 8, 149, 'ITEM', 'Grupos/Clases', 'fas fa-users-class', 'natacion', 'grupo', 'index', NULL, NULL, NULL, 3, 1, NULL, NULL, '2026-02-09 16:44:23', '2026-02-09 16:44:23'),
-(153, 8, 149, 'ITEM', 'Per??odos', 'fas fa-calendar-check', 'natacion', 'periodo', 'index', NULL, NULL, NULL, 4, 1, NULL, NULL, '2026-02-09 16:44:23', '2026-02-09 16:44:23'),
+(153, 8, 149, 'ITEM', 'Períodos', 'fas fa-calendar-check', 'natacion', 'periodo', 'index', NULL, NULL, NULL, 4, 1, NULL, NULL, '2026-02-09 16:44:23', '2026-03-04 15:51:57'),
 (154, 8, NULL, 'HEADER', 'Financiero', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 4, 1, NULL, NULL, '2026-02-09 16:44:23', '2026-02-09 16:44:23'),
 (155, 8, 154, 'ITEM', 'Pagos', 'fas fa-money-bill-wave', 'natacion', 'pago', 'index', NULL, NULL, NULL, 1, 1, NULL, NULL, '2026-02-09 16:44:23', '2026-02-09 16:44:23'),
 (156, 8, 154, 'ITEM', 'Reportes', 'fas fa-chart-bar', 'natacion', 'reporte', 'index', NULL, NULL, NULL, 2, 1, NULL, NULL, '2026-02-09 16:44:23', '2026-02-09 16:44:23'),
-(157, 8, NULL, 'HEADER', 'Configuraci??n', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 5, 1, NULL, NULL, '2026-02-09 16:44:23', '2026-02-09 16:44:23'),
+(157, 8, NULL, 'HEADER', 'Configuración', NULL, NULL, NULL, 'index', NULL, NULL, NULL, 5, 1, NULL, NULL, '2026-02-09 16:44:23', '2026-03-04 15:50:48'),
 (158, 8, 157, 'ITEM', 'Campos de Ficha', 'fas fa-sliders-h', 'natacion', 'campoficha', 'index', NULL, NULL, NULL, 1, 1, NULL, NULL, '2026-02-09 16:44:23', '2026-02-09 16:44:23'),
-(159, 8, 157, 'ITEM', 'Configuraci??n', 'fas fa-cog', 'natacion', 'configuracion', 'index', NULL, NULL, NULL, 2, 1, NULL, NULL, '2026-02-09 16:44:23', '2026-02-09 16:44:23'),
+(159, 8, 157, 'ITEM', 'Configuración', 'fas fa-cog', 'natacion', 'configuracion', 'index', NULL, NULL, NULL, 2, 1, NULL, NULL, '2026-02-09 16:44:23', '2026-03-04 15:51:26'),
 (160, 8, 149, 'ITEM', 'Sedes', 'fas fa-building', 'natacion', 'sede', 'index', NULL, NULL, NULL, 5, 1, NULL, NULL, '2026-02-09 17:42:56', '2026-02-09 17:42:56'),
 (161, 8, 154, 'ITEM', 'Egresos', 'fas fa-file-invoice-dollar', 'natacion', 'egreso', 'index', NULL, NULL, NULL, 3, 1, NULL, NULL, '2026-02-09 17:42:56', '2026-02-09 17:42:56'),
 (162, 15, NULL, 'HEADER', 'Principal', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 1, NULL, NULL, '2026-02-09 20:03:14', '2026-02-09 20:03:14'),
@@ -3224,6 +3296,145 @@ INSERT INTO `seguridad_rol_modulos` (`rmo_rol_id`, `rmo_rol_rol_id`, `rmo_rol_mo
 -- --------------------------------------------------------
 
 --
+-- Estructura de tabla para la tabla `seguridad_tabla`
+--
+
+DROP TABLE IF EXISTS `seguridad_tabla`;
+CREATE TABLE IF NOT EXISTS `seguridad_tabla` (
+  `st_id`          int           NOT NULL AUTO_INCREMENT,
+  `st_nombre`      varchar(100)  NOT NULL,
+  `st_descripcion` varchar(500)  NULL,
+  `st_activo`      tinyint(1)    NOT NULL DEFAULT 1,
+  `st_created_at`  datetime      NULL DEFAULT CURRENT_TIMESTAMP,
+  `st_updated_at`  datetime      NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`st_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `seguridad_tabla`
+--
+
+INSERT INTO `seguridad_tabla` (`st_id`, `st_nombre`, `st_descripcion`, `st_activo`) VALUES
+(1,  'tipo_documento',        NULL, 1),
+(2,  'nacionalidad',          NULL, 1),
+(3,  'posicion_juego',        NULL, 1),
+(4,  'parentesco',            NULL, 1),
+(5,  'rubros',                NULL, 1),
+(6,  'forma_pago',            NULL, 1),
+(7,  'descuento',             NULL, 1),
+(8,  'especialidad_empleado', NULL, 1),
+(9,  'tipo_participacion',    NULL, 1),
+(10, 'tallas',                NULL, 1),
+(11, 'tipo_ingreso',          NULL, 1),
+(12, 'tipo_personal',         NULL, 1),
+(13, 'tipo_egreso',           NULL, 1),
+(14, 'egreso_dscto',          NULL, 1),
+(15, 'periodicidad',          NULL, 1),
+(16, 'forma_entregaingreso',  NULL, 1),
+(17, 'balance_ingreso',       NULL, 1),
+(18, 'balance_egreso',        NULL, 1);
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `seguridad_tabla_catalogo`
+--
+
+DROP TABLE IF EXISTS `seguridad_tabla_catalogo`;
+CREATE TABLE IF NOT EXISTS `seguridad_tabla_catalogo` (
+  `stc_id`         int           NOT NULL AUTO_INCREMENT,
+  `stc_tabla_id`   int           NOT NULL,
+  `stc_codigo`     varchar(10)   NOT NULL,
+  `stc_valor`      varchar(255)  NOT NULL,
+  `stc_etiqueta`   varchar(255)  NULL,
+  `stc_orden`      int           NOT NULL DEFAULT 10,
+  `stc_activo`     tinyint(1)    NOT NULL DEFAULT 1,
+  `stc_created_at` datetime      NULL DEFAULT CURRENT_TIMESTAMP,
+  `stc_updated_at` datetime      NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`stc_id`),
+  UNIQUE KEY `idx_stc_grupo_codigo` (`stc_tabla_id`, `stc_codigo`),
+  KEY `idx_stc_orden` (`stc_orden`)
+) ENGINE=InnoDB AUTO_INCREMENT=68 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `seguridad_tabla_catalogo`
+-- stc_valor  = descripción (valor almacenado en los registros)
+-- stc_etiqueta = etiqueta para mostrar en UI (igual a stc_valor por defecto)
+-- stc_orden  = stc_id * 10 (permite insertar entre valores existentes)
+--
+
+INSERT INTO `seguridad_tabla_catalogo` (`stc_id`, `stc_tabla_id`, `stc_codigo`, `stc_valor`, `stc_etiqueta`, `stc_orden`, `stc_activo`) VALUES
+(1,   1,  'CED', 'CÉDULA',                        'CÉDULA',                        10,  1),
+(2,   1,  'PAS', 'PASAPORTE',                     'PASAPORTE',                     20,  1),
+(3,   1,  'DNI', 'DNI',                           'DNI',                           30,  1),
+(4,   2,  'ECU', 'ECUATORIANA',                   'ECUATORIANA',                   40,  1),
+(5,   2,  'PER', 'PERUANA',                       'PERUANA',                       50,  1),
+(6,   2,  'COL', 'COLOMBIANA',                    'COLOMBIANA',                    60,  1),
+(7,   2,  'VEN', 'VENEZOLANA',                    'VENEZOLANA',                    70,  1),
+(8,   2,  'USA', 'ESTADOUNIDENSE',                'ESTADOUNIDENSE',                80,  1),
+(9,   3,  '3DE', 'Delantero',                     'Delantero',                     90,  1),
+(10,  3,  '3AR', 'Portero',                       'Portero',                       100, 1),
+(11,  3,  '3CE', 'Centrocampista',                'Centrocampista',                110, 1),
+(12,  3,  '3DF', 'Defensa',                       'Defensa',                       120, 1),
+(13,  4,  '4MA', 'Madre',                         'Madre',                         130, 1),
+(14,  4,  '4PA', 'Padre',                         'Padre',                         140, 1),
+(15,  4,  '4HE', 'Hermano/a',                     'Hermano/a',                     150, 1),
+(16,  4,  '4TI', 'Tio/a',                         'Tio/a',                         160, 1),
+(17,  4,  '4AB', 'Abuelo/a',                      'Abuelo/a',                      170, 1),
+(18,  5,  'ROT', 'Otros',                         'Otros',                         180, 1),
+(19,  5,  'RKE', 'Kit entrenamiento',             'Kit entrenamiento',             190, 1),
+(20,  5,  'RIN', 'Inscripción',                   'Inscripción',                   200, 1),
+(21,  5,  'RPE', 'Pensión',                       'Pensión',                       210, 1),
+(22,  5,  'RNU', 'Nuevo Uniforme',                'Nuevo Uniforme',                220, 1),
+(23,  6,  'FEF', 'Efectivo',                      'Efectivo',                      230, 1),
+(24,  6,  'FTR', 'Transferencia',                 'Transferencia',                 240, 1),
+(25,  6,  'FTC', 'Tarjeta',                       'Tarjeta',                       250, 1),
+(26,  6,  'FJU', 'Justificado',                   'Justificado',                   260, 1),
+(27,  7,  'DBC', 'Beca',                          'Beca',                          270, 1),
+(28,  7,  'DDS', 'Descuento',                     'Descuento',                     280, 1),
+(29,  6,  'FNA', 'No aplica',                     'No aplica',                     290, 1),
+(30,  8,  'EAT', 'Asistente técnico de arqueros', 'Asistente técnico de arqueros', 300, 1),
+(31,  8,  'EED', 'Entrenador delanteros',         'Entrenador delanteros',         310, 1),
+(32,  9,  'PJP', 'Jugador Principal',             'Jugador Principal',             320, 1),
+(33,  9,  'PJS', 'Jugador Suplente',              'Jugador Suplente',              330, 1),
+(34,  8,  'EEG', 'Entrenador general',            'Entrenador general',            340, 1),
+(35,  6,  'FTL', 'Transferencia Banco de Loja',   'Transferencia Banco de Loja',   350, 1),
+(36,  6,  'FTP', 'Transferencia Banco Pichincha', 'Transferencia Banco Pichincha', 360, 1),
+(37,  10, 'T28', '28',                            '28',                            370, 1),
+(38,  10, 'T30', '30',                            '30',                            380, 1),
+(39,  10, 'T32', '32',                            '32',                            390, 1),
+(40,  10, 'T34', '34',                            '34',                            400, 1),
+(41,  10, 'T36', '36',                            '36',                            410, 1),
+(42,  10, 'TS',  'S',                             'S',                             420, 1),
+(43,  10, 'TM',  'M',                             'M',                             430, 1),
+(44,  10, 'TL',  'L',                             'L',                             440, 1),
+(45,  11, 'TIH', 'Pago honorarios',               'Pago honorarios',               450, 1),
+(46,  11, 'TIX', 'Horas Extras',                  'Horas Extras',                  460, 1),
+(47,  11, 'TIR', 'Reconocimiento',                'Reconocimiento',                470, 1),
+(48,  12, 'TPE', 'Empleado',                      'Empleado',                      480, 1),
+(49,  12, 'TPS', 'Secretaria',                    'Secretaria',                    490, 1),
+(50,  12, 'TPP', 'Profesor',                      'Profesor',                      500, 1),
+(51,  12, 'TPT', 'Asistente',                     'Asistente',                     510, 1),
+(52,  13, 'TEA', 'Anticipo',                      'Anticipo',                      520, 1),
+(53,  13, 'TEM', 'Multa',                         'Multa',                         530, 1),
+(54,  15, 'PEM', 'Mensual',                       'Mensual',                       540, 1),
+(55,  15, 'PEQ', 'Quincenal',                     'Quincenal',                     550, 1),
+(56,  15, 'PES', 'Semanal',                       'Semanal',                       560, 1),
+(57,  16, 'EIT', 'Transferencia',                 'Transferencia',                 570, 1),
+(58,  16, 'EIE', 'Efectivo',                      'Efectivo',                      580, 1),
+(59,  16, 'EIC', 'Cheque',                        'Cheque',                        590, 1),
+(60,  16, 'EID', 'Descuento',                     'Descuento',                     600, 1),
+(61,  17, 'BIA', 'Auspicio',                      'Auspicio',                      610, 1),
+(62,  17, 'BID', 'Donación',                      'Donación',                      620, 1),
+(63,  17, 'BIO', 'Otros ingresos',                'Otros ingresos',                630, 1),
+(64,  18, 'BEA', 'Arriendos',                     'Arriendos',                     640, 1),
+(65,  18, 'BEP', 'Publicidad',                    'Publicidad',                    650, 1),
+(66,  18, 'BEO', 'Otros Egresos',                 'Otros Egresos',                 660, 1),
+(67,  5,  'RPC', 'Campeonato',                    'Campeonato',                    670, 1);
+
+-- --------------------------------------------------------
+
+--
 -- Estructura de tabla para la tabla `seguridad_tarifas`
 --
 
@@ -3328,7 +3539,7 @@ CREATE TABLE IF NOT EXISTS `seguridad_tenants` (
 
 INSERT INTO `seguridad_tenants` (`ten_tenant_id`, `ten_ruc`, `ten_ruc_hash`, `ten_razon_social`, `ten_nombre_comercial`, `ten_tipo_empresa`, `ten_direccion`, `ten_telefono`, `ten_celular`, `ten_email`, `ten_email_hash`, `ten_sitio_web`, `ten_representante_nombre`, `ten_representante_identificacion`, `ten_representante_identificacion_hash`, `ten_representante_email`, `ten_representante_email_hash`, `ten_representante_telefono`, `ten_plan_id`, `ten_fecha_inicio`, `ten_fecha_vencimiento`, `ten_estado_suscripcion`, `ten_usuarios_permitidos`, `ten_sedes_permitidas`, `ten_almacenamiento_gb`, `ten_logo`, `ten_favicon`, `ten_color_primario`, `ten_color_secundario`, `ten_color_acento`, `ten_tiene_sistema_antiguo`, `ten_bd_antigua`, `ten_tenant_id_antiguo`, `ten_monto_mensual`, `ten_dia_corte`, `ten_metodo_pago_preferido`, `ten_timezone`, `ten_idioma`, `ten_moneda`, `ten_estado`, `ten_motivo_suspension`, `ten_fecha_suspension`, `ten_fecha_registro`, `ten_fecha_actualizacion`, `ten_usuario_registro`, `ten_usuario_actualizacion`) VALUES
 (1, 'ENC::7SuLBbk0pbyKTZEkVoprbVcSvLxBhAG4/GT90gcocPo=', '61fdfa41b29b7fd7e6e97822c91fe2ce', 'DigiSports Administracion', 'DigiSports Admin', '', 'Rey david y los Olivos', 'ENC::5WcG1kzwHpNpzRXO0wV1uJ9E/6PznVdS2dQ1Ep33kHA=', '', 'ENC::gBJ0k7Pn9HF0ZLpfx4ZVa/QTIg6Mhb0YeSR0YDHtSMAF41yVt/S2defgKJp2FW2m', 'fa2536059c2cfc78fe680f0629a1859d', '', '', '', NULL, '', NULL, '', 4, '2026-01-24', '2028-01-24', 'ACTIVA', 5, 0, 10, NULL, NULL, '', '', '#28a745', 'N', NULL, NULL, 0.00, 1, NULL, 'America/Guayaquil', 'es', 'USD', 'A', NULL, NULL, '2026-01-25 00:35:10', '2026-02-08 04:32:07', NULL, NULL),
-(2, 'ENC::Wkpz81eaqDd9AwyDQhiL97cBKazg6X96xt+SdpOQurc=', '426abbcb34966d2c6650f86367f4f54d', 'Champions', 'Champios CF 2013', '', '', 'ENC::tu3EN4ic7MvxlkCI5SCUg5K/AhDlbqyivf8wTlB4qBE=', '', 'ENC::h+fuV9Q+MzDBrFrqs6ORBjf6CBhkPojOwa16oMuOR8G2OU5tXZf3tpv+W43ysZeV', 'fa2536059c2cfc78fe680f0629a1859d', '', '', '', NULL, '', NULL, '', 2, '2026-01-27', '2029-03-27', 'ACTIVA', 6, 0, 10, NULL, NULL, '', '', '#28a745', 'N', NULL, NULL, 0.00, 1, NULL, 'America/Guayaquil', 'es', 'USD', 'A', NULL, NULL, '2026-01-27 05:27:48', '2026-02-19 13:45:46', NULL, NULL);
+(2, 'ENC::IRuyMXryh/re4HRZoFBPRxRWFZO9bEjkAVEjSDsdW6M=', '426abbcb34966d2c6650f86367f4f54d', 'Champions', 'Champios CF 2013', '', '', 'ENC::uRb97yrqjUQEYQV/SCiwdC/S3QtW+LfKfa2u9+sWI7I=', '', 'ENC::KgWA/bE3BuMncDklgyqCsA0wWzR8UiOmxJfPp+dBC53y74VuUaXiC18/nFaEM7PM', 'fa2536059c2cfc78fe680f0629a1859d', '', '', '', NULL, '', NULL, '', 2, '2026-01-27', '2029-03-27', 'ACTIVA', 6, 0, 10, NULL, NULL, '', '', '#28a745', 'N', NULL, NULL, 0.00, 1, NULL, 'America/Guayaquil', 'es', 'USD', 'A', NULL, NULL, '2026-01-27 05:27:48', '2026-03-03 19:41:13', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -3380,7 +3591,7 @@ CREATE TABLE IF NOT EXISTS `seguridad_tenant_modulos` (
   KEY `idx_tenant` (`tmo_tenant_id`),
   KEY `idx_modulo` (`tmo_modulo_id`),
   KEY `idx_estado` (`tmo_estado`)
-) ENGINE=InnoDB AUTO_INCREMENT=513 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Suscripciones de tenants a módulos';
+) ENGINE=InnoDB AUTO_INCREMENT=526 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Suscripciones de tenants a módulos';
 
 --
 -- Volcado de datos para la tabla `seguridad_tenant_modulos`
@@ -3404,22 +3615,20 @@ INSERT INTO `seguridad_tenant_modulos` (`tmo_id`, `tmo_tenant_id`, `tmo_modulo_i
 (489, 1, 22, NULL, NULL, NULL, 0, 'S', '2026-02-07', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-02-07 23:59:19', '2026-02-07 23:59:19'),
 (492, 1, 27, NULL, NULL, NULL, 0, 'S', '2026-02-07', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-02-07 23:59:19', '2026-02-07 23:59:19'),
 (495, 1, 30, NULL, NULL, NULL, 0, 'S', '2026-02-07', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-02-07 23:59:19', '2026-02-07 23:59:19'),
-(497, 2, 1, NULL, NULL, NULL, 0, 'N', '2026-02-19', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-02-19 13:45:46', '2026-02-25 17:33:07'),
-(498, 2, 3, NULL, NULL, NULL, 0, 'N', '2026-02-19', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-02-19 13:45:46', '2026-02-25 17:33:07'),
-(499, 2, 4, NULL, NULL, NULL, 0, 'N', '2026-02-19', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-02-19 13:45:46', '2026-02-19 13:45:46'),
-(500, 2, 5, NULL, NULL, NULL, 0, 'N', '2026-02-19', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-02-19 13:45:46', '2026-02-19 13:45:46'),
-(501, 2, 6, NULL, NULL, NULL, 0, 'N', '2026-02-19', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-02-19 13:45:46', '2026-02-25 17:33:07'),
-(502, 2, 8, NULL, NULL, NULL, 0, 'N', '2026-02-19', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-02-19 13:45:46', '2026-02-25 17:33:07'),
-(503, 2, 15, NULL, NULL, NULL, 0, 'N', '2026-02-19', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-02-19 13:45:46', '2026-02-25 17:33:07'),
-(504, 2, 16, NULL, NULL, NULL, 0, 'N', '2026-02-19', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-02-19 13:45:46', '2026-02-19 13:45:46'),
-(505, 2, 18, NULL, NULL, NULL, 0, 'N', '2026-02-19', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-02-19 13:45:46', '2026-02-19 13:45:46'),
-(506, 2, 19, NULL, NULL, NULL, 0, 'N', '2026-02-19', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-02-19 13:45:46', '2026-02-19 13:45:46'),
-(507, 2, 20, NULL, NULL, NULL, 0, 'N', '2026-02-19', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-02-19 13:45:46', '2026-02-19 13:45:46'),
-(508, 2, 21, NULL, NULL, NULL, 0, 'N', '2026-02-19', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-02-19 13:45:46', '2026-02-19 13:45:46'),
-(509, 2, 22, NULL, NULL, NULL, 0, 'N', '2026-02-19', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-02-19 13:45:46', '2026-02-19 13:45:46'),
-(510, 2, 30, NULL, NULL, NULL, 0, 'N', '2026-02-19', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-02-19 13:45:46', '2026-02-19 13:45:46'),
 (511, 0, 0, NULL, NULL, NULL, 0, 'S', '2026-02-25', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-02-25 17:23:43', '2026-02-25 17:23:43'),
-(512, 2, 0, NULL, NULL, NULL, 0, 'S', '2026-02-25', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-02-25 17:33:07', '2026-02-25 17:33:07');
+(513, 2, 1, NULL, NULL, NULL, 0, 'N', '2026-03-03', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-03-03 19:41:13', '2026-03-03 19:41:13'),
+(514, 2, 3, NULL, NULL, NULL, 0, 'N', '2026-03-03', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-03-03 19:41:13', '2026-03-03 19:41:13'),
+(515, 2, 4, NULL, NULL, NULL, 0, 'N', '2026-03-03', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-03-03 19:41:13', '2026-03-03 19:41:13'),
+(516, 2, 5, NULL, NULL, NULL, 0, 'N', '2026-03-03', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-03-03 19:41:13', '2026-03-03 19:41:13'),
+(517, 2, 6, NULL, NULL, NULL, 0, 'N', '2026-03-03', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-03-03 19:41:13', '2026-03-03 19:41:13'),
+(518, 2, 8, NULL, NULL, NULL, 0, 'N', '2026-03-03', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-03-03 19:41:13', '2026-03-03 19:41:13'),
+(519, 2, 15, NULL, NULL, NULL, 0, 'N', '2026-03-03', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-03-03 19:41:13', '2026-03-03 19:41:13'),
+(520, 2, 16, NULL, NULL, NULL, 0, 'N', '2026-03-03', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-03-03 19:41:13', '2026-03-03 19:41:13'),
+(521, 2, 18, NULL, NULL, NULL, 0, 'N', '2026-03-03', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-03-03 19:41:13', '2026-03-03 19:41:13'),
+(522, 2, 19, NULL, NULL, NULL, 0, 'N', '2026-03-03', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-03-03 19:41:13', '2026-03-03 19:41:13'),
+(523, 2, 20, NULL, NULL, NULL, 0, 'N', '2026-03-03', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-03-03 19:41:13', '2026-03-03 19:41:13'),
+(524, 2, 21, NULL, NULL, NULL, 0, 'N', '2026-03-03', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-03-03 19:41:13', '2026-03-03 19:41:13'),
+(525, 2, 22, NULL, NULL, NULL, 0, 'N', '2026-03-03', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-03-03 19:41:13', '2026-03-03 19:41:13');
 
 -- --------------------------------------------------------
 
@@ -3484,7 +3693,7 @@ CREATE TABLE IF NOT EXISTS `seguridad_usuarios` (
 --
 
 INSERT INTO `seguridad_usuarios` (`usu_usuario_id`, `usu_tenant_id`, `usu_identificacion`, `usu_identificacion_hash`, `usu_nombres`, `usu_apellidos`, `usu_email`, `usu_email_hash`, `usu_telefono`, `usu_celular`, `usu_username`, `usu_password`, `usu_requiere_2fa`, `usu_codigo_2fa`, `usu_codigo_2fa_expira`, `usu_intentos_2fa`, `usu_token_recuperacion`, `usu_token_recuperacion_expira`, `usu_rol_id`, `usu_permisos_especiales`, `usu_ultimo_login`, `usu_ip_ultimo_login`, `usu_token_sesion`, `usu_token_sesion_expira`, `usu_sedes_acceso`, `usu_sede_principal_id`, `usu_avatar`, `usu_tema`, `usu_idioma`, `usu_notificaciones_email`, `usu_notificaciones_push`, `usu_debe_cambiar_password`, `usu_password_expira`, `usu_intentos_fallidos`, `usu_bloqueado_hasta`, `usu_estado`, `usu_fecha_registro`, `usu_fecha_actualizacion`) VALUES
-(1, 1, 'ENC::1IeSjwyCnY1tTslc8FJ7WUme8b1HuxmAhl0cjF78U/c=', '46e867782d4667050ad7bf37c46a7107', 'Freddy', 'Pinzón', 'ENC::N8M5PUSsUol/X8uKN/PMBHj5PJ5em+R7qqqImEVO3qiGtF07Q21IhWHHlC/S6Qsa', 'c0e957495bb43b36f0ff7dea96030260', 'ENC::yeNJ1lTl5ufG6m0IduQTxMBubjp17a3yFRRgPbnBpdk=', 'ENC::tYpnIfZI5bK0QOhffMikZeAxzkzK4bcvtvdEChSNhxA=', 'superadmin', '$argon2id$v=19$m=65536,t=4,p=3$Qm9TcVczOThmQkh4N0hDTg$gdL3FkFtDnw+MnyyE+VIxagpRB019YMCK0w+fOpeydg', 'N', '798279', '2026-01-24 20:21:48', 0, NULL, NULL, 1, NULL, '2026-02-26 17:28:35', '::1', 'd46c1a54c78b28260bf588612ead286bf1e0d7218452375938c70b356bcff026', '2026-02-24 17:56:18', NULL, NULL, NULL, 'light', 'es', 'S', 'S', 'N', '2027-01-01', 0, NULL, 'A', '2026-01-25 00:35:10', '2026-02-26 22:28:35'),
+(1, 1, 'ENC::1IeSjwyCnY1tTslc8FJ7WUme8b1HuxmAhl0cjF78U/c=', '46e867782d4667050ad7bf37c46a7107', 'Freddy', 'Pinzón', 'ENC::N8M5PUSsUol/X8uKN/PMBHj5PJ5em+R7qqqImEVO3qiGtF07Q21IhWHHlC/S6Qsa', 'c0e957495bb43b36f0ff7dea96030260', 'ENC::yeNJ1lTl5ufG6m0IduQTxMBubjp17a3yFRRgPbnBpdk=', 'ENC::tYpnIfZI5bK0QOhffMikZeAxzkzK4bcvtvdEChSNhxA=', 'superadmin', '$argon2id$v=19$m=65536,t=4,p=3$Qm9TcVczOThmQkh4N0hDTg$gdL3FkFtDnw+MnyyE+VIxagpRB019YMCK0w+fOpeydg', 'N', '798279', '2026-01-24 20:21:48', 0, NULL, NULL, 1, NULL, '2026-03-04 10:25:29', '::1', 'd46c1a54c78b28260bf588612ead286bf1e0d7218452375938c70b356bcff026', '2026-02-24 17:56:18', NULL, NULL, NULL, 'light', 'es', 'S', 'S', 'N', '2027-01-01', 0, NULL, 'A', '2026-01-25 00:35:10', '2026-03-04 15:25:29'),
 (3, 2, 'ENC::4i0U6033Xu31fjUOOi2ZzeXGZr+5UNQcImt6cx6XtGY=', '46e867782d4667050ad7bf37c46a7107', 'Bolívar', 'Pinzón', 'ENC::aG7Jk4au40KYzfi95x20TBEOCTM6/H4YHvEeXnXrT0qOSFaMN92H8Jom6nvoEcsc', 'fa2536059c2cfc78fe680f0629a1859d', 'ENC::O1kxV+oUWhj3YETC2fl1HYNagPPFEvuyaQYmn7lJElo=', '', 'fbpinzon', '$argon2id$v=19$m=65536,t=4,p=1$ek8zOE9QbEtsZU5heWNGSw$gCwhDpX6hVMCYRs0VCbryQ9j1+8XL38U5XnkUmMkOyo', 'N', NULL, NULL, 0, NULL, NULL, 1, NULL, '2026-02-25 15:21:17', '::1', NULL, NULL, NULL, NULL, NULL, 'light', 'es', 'S', 'S', 'S', NULL, 0, NULL, 'A', '2026-01-29 22:22:55', '2026-02-26 04:58:40');
 
 -- --------------------------------------------------------
@@ -4319,6 +4528,31 @@ CREATE TABLE IF NOT EXISTS `store_venta_pagos` (
 -- --------------------------------------------------------
 
 --
+-- Estructura Stand-in para la vista `usuarios`
+-- (Véase abajo para la vista actual)
+--
+DROP VIEW IF EXISTS `usuarios`;
+CREATE TABLE IF NOT EXISTS `usuarios` (
+`apellidos` varchar(150)
+,`celular` varchar(255)
+,`email` varchar(500)
+,`estado` char(1)
+,`fecha_actualizacion` timestamp
+,`fecha_registro` timestamp
+,`identificacion` varchar(255)
+,`nombres` varchar(150)
+,`password` varchar(255)
+,`requiere_2fa` char(1)
+,`rol_id` int
+,`telefono` varchar(255)
+,`tenant_id` int
+,`username` varchar(50)
+,`usuario_id` int
+);
+
+-- --------------------------------------------------------
+
+--
 -- Estructura de tabla para la tabla `vw_estadisticas_canchas`
 --
 
@@ -4354,6 +4588,36 @@ CREATE TABLE IF NOT EXISTS `vw_tarifas_por_dia` (
   `estado` varchar(20) COLLATE utf16_spanish2_ci DEFAULT NULL,
   `tenant_id` int DEFAULT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=utf16 COLLATE=utf16_spanish2_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura para la vista `mantenimientos`
+--
+DROP TABLE IF EXISTS `mantenimientos`;
+
+DROP VIEW IF EXISTS `mantenimientos`;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `mantenimientos`  AS SELECT `instalaciones_mantenimientos`.`man_mantenimiento_id` AS `mantenimiento_id`, `instalaciones_mantenimientos`.`man_tenant_id` AS `tenant_id`, `instalaciones_mantenimientos`.`man_cancha_id` AS `cancha_id`, `instalaciones_mantenimientos`.`man_tipo` AS `tipo`, `instalaciones_mantenimientos`.`man_descripcion` AS `descripcion`, `instalaciones_mantenimientos`.`man_notas` AS `notas`, `instalaciones_mantenimientos`.`man_fecha_inicio` AS `fecha_inicio`, `instalaciones_mantenimientos`.`man_fecha_fin` AS `fecha_fin`, `instalaciones_mantenimientos`.`man_responsable_id` AS `responsable_id`, `instalaciones_mantenimientos`.`man_recurrir` AS `recurrir`, `instalaciones_mantenimientos`.`man_cadencia_recurrencia` AS `cadencia_recurrencia`, `instalaciones_mantenimientos`.`man_estado` AS `estado`, `instalaciones_mantenimientos`.`man_fecha_creacion` AS `fecha_creacion`, `instalaciones_mantenimientos`.`man_fecha_actualizacion` AS `fecha_actualizacion`, `instalaciones_mantenimientos`.`man_usuario_creacion` AS `usuario_creacion`, `instalaciones_mantenimientos`.`man_usuario_actualizacion` AS `usuario_actualizacion` FROM `instalaciones_mantenimientos` ;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura para la vista `roles`
+--
+DROP TABLE IF EXISTS `roles`;
+
+DROP VIEW IF EXISTS `roles`;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `roles`  AS SELECT `seguridad_roles`.`rol_rol_id` AS `rol_id`, `seguridad_roles`.`rol_tenant_id` AS `tenant_id`, `seguridad_roles`.`rol_codigo` AS `codigo`, `seguridad_roles`.`rol_nombre` AS `nombre`, `seguridad_roles`.`rol_descripcion` AS `descripcion`, `seguridad_roles`.`rol_permisos` AS `permisos`, `seguridad_roles`.`rol_estado` AS `estado`, `seguridad_roles`.`rol_fecha_registro` AS `fecha_registro` FROM `seguridad_roles` ;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura para la vista `usuarios`
+--
+DROP TABLE IF EXISTS `usuarios`;
+
+DROP VIEW IF EXISTS `usuarios`;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `usuarios`  AS SELECT `seguridad_usuarios`.`usu_usuario_id` AS `usuario_id`, `seguridad_usuarios`.`usu_tenant_id` AS `tenant_id`, `seguridad_usuarios`.`usu_identificacion` AS `identificacion`, `seguridad_usuarios`.`usu_nombres` AS `nombres`, `seguridad_usuarios`.`usu_apellidos` AS `apellidos`, `seguridad_usuarios`.`usu_email` AS `email`, `seguridad_usuarios`.`usu_telefono` AS `telefono`, `seguridad_usuarios`.`usu_celular` AS `celular`, `seguridad_usuarios`.`usu_username` AS `username`, `seguridad_usuarios`.`usu_password` AS `password`, `seguridad_usuarios`.`usu_requiere_2fa` AS `requiere_2fa`, `seguridad_usuarios`.`usu_rol_id` AS `rol_id`, `seguridad_usuarios`.`usu_estado` AS `estado`, `seguridad_usuarios`.`usu_fecha_registro` AS `fecha_registro`, `seguridad_usuarios`.`usu_fecha_actualizacion` AS `fecha_actualizacion` FROM `seguridad_usuarios` ;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

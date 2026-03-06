@@ -177,7 +177,7 @@ $sedeActiva  = $sede_activa ?? null;
 </div>
 
 <?php ob_start(); ?>
-<script>
+<script nonce="<?= cspNonce() ?>">
 var urlCrear    = '<?= url('futbol', 'sede', 'crear') ?>';
 var urlEditar   = '<?= url('futbol', 'sede', 'editar') ?>';
 var urlSeleccionar = '<?= url('futbol', 'sede', 'seleccionar') ?>';

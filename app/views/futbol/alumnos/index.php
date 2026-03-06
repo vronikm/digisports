@@ -201,7 +201,7 @@ $moduloColor = $modulo_actual['color'] ?? '#22C55E';
 </section>
 
 <?php ob_start(); ?>
-<script>
+<script nonce="<?= cspNonce() ?>">
 $(function() {
     if ($('#tablaAlumnos').length && $('#tablaAlumnos tbody tr').length > 0) {
         $('#tablaAlumnos').DataTable({

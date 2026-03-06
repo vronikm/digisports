@@ -229,7 +229,7 @@ $moduloIcon = 'fas fa-futbol';
 </div>
 
 <?php ob_start(); ?>
-<script>
+<script nonce="<?= cspNonce() ?>">
 $(document).ready(function() {
     // Asegurar que hold-transition se remueva (AdminLTE lo necesita para modales)
     $('body').removeClass('hold-transition');

@@ -25,9 +25,20 @@ class Router {
      * Parsear y procesar URL
      */
     private function parseUrl() {
-        // Verificar si es URL encriptada
+        // Verificar si es URL encriptada (primero GET, luego POST para URLs largas)
         if (isset($_GET['r'])) {
             $this->parseEncryptedUrl($_GET['r']);
+        } elseif (isset($_POST['r'])) {
+            // Soportar POST para URLs muy largas que excedan límite de GET
+            $this->parseEncryptedUrl($_POST['r']);
+        } elseif (isset($_POST['token'])) {
+            // Soportar tokens cortos almacenados en sesión
+            $encrypted = Security::getClientTokenData($_POST['token']);
+            if ($encrypted) {
+                $this->parseEncryptedUrl($encrypted);
+            } else {
+                $this->redirectToError('Token inválido o expirado');
+            }
         } else {
             $this->parseStandardUrl();
         }
@@ -40,43 +51,73 @@ class Router {
      */
     private function parseEncryptedUrl($encrypted) {
         try {
+            // Limpiar la URL encriptada
+            $encrypted = trim($encrypted);
+            if (empty($encrypted)) {
+                throw new Exception('URL encriptada vacía');
+            }
+
+            // DETECCIÓN DE URL TRUNCADA (DESHABILITADA - Ya no usamos comas)
+            // El sistema sólo usa comas si realmente hay error de desencriptación
+            // if (Security::isUrlTruncated($encrypted)) {
+            //     throw new Exception('URL truncada...');
+            // }
+            
             $data = Security::decodeSecureUrl($encrypted);
             if (!$data || !is_array($data)) {
-                throw new Exception('URL inválida o expirada');
+                throw new Exception('No se pudo desencriptar o URL expirada (> 8 horas)');
             }
+            
+            // Validar que tenga los campos mínimos requeridos
+            if (!isset($data['c']) || !isset($data['a'])) {
+                throw new Exception('Estructura de URL inválida (falta controlador o acción)');
+            }
+            
             // Validar módulo, controlador y acción
             $mod = $data['m'] ?? 'core';
             $ctrl = $data['c'] ?? 'Dashboard';
             $act = $data['a'] ?? 'index';
+            
             if (!$this->isValidModule($mod)) {
-                Security::logSecurityEvent('INVALID_MODULE', $mod);
-                throw new Exception('Módulo no permitido');
+                Security::logSecurityEvent('INVALID_MODULE', "Módulo: $mod");
+                throw new Exception("Módulo '$mod' no permitido");
             }
-            $controllerPath = Config::MODULES[$mod]['path'] . ucfirst($ctrl) . 'Controller.php';
+            
+            $controllerPath = Config::MODULES[$mod]['path'] . $this->toPascalCase($ctrl) . 'Controller.php';
             if (!file_exists(BASE_PATH . $controllerPath)) {
-                Security::logSecurityEvent('INVALID_CONTROLLER', $ctrl);
-                throw new Exception('Controlador no permitido');
+                Security::logSecurityEvent('INVALID_CONTROLLER', "Controlador: $ctrl en módulo: $mod");
+                throw new Exception("Controlador '$ctrl' no encontrado en módulo '$mod'");
             }
+            
             // Validar acción (solo letras y guiones bajos)
             if (!preg_match('/^[a-zA-Z_][a-zA-Z0-9_]*$/', $act)) {
-                Security::logSecurityEvent('INVALID_ACTION', $act);
-                throw new Exception('Acción no permitida');
+                Security::logSecurityEvent('INVALID_ACTION', "Acción: $act");
+                throw new Exception("Acción '$act' no permitida (caracteres inválidos)");
             }
+            
             $this->module = $mod;
             $this->controller = $ctrl;
             $this->action = $act;
             $this->params = $data['p'] ?? [];
+            
             if (is_array($this->params)) {
                 foreach ($this->params as $key => $value) {
                     $_GET[$key] = $value;
                 }
             }
+            
             $this->logAccess('ENCRYPTED_URL');
+            
         } catch (Exception $e) {
-            Security::logSecurityEvent('INVALID_URL', $e->getMessage());
+            $errorMsg = $e->getMessage();
+            Security::logSecurityEvent('INVALID_URL', $errorMsg);
+            
+            // Mostrar mensaje más informativo
+            $_SESSION['error_message'] = "Error de navegación: $errorMsg";
             $this->redirectToError('URL inválida o expirada');
         }
     }
+
     
     /**
      * Procesar URL estándar (solo para desarrollo si está habilitado)
@@ -124,8 +165,25 @@ class Router {
     }
     
     /**
+     * Convertir snake_case a PascalCase para nombres de controlador.
+     * Permite que la función url() reciba 'seguridad_tabla' y el Router
+     * encuentre el archivo 'SeguridadTablaController.php'.
+     *
+     * Ejemplos:
+     *   'dashboard'              → 'Dashboard'
+     *   'seguridad_tabla'        → 'SeguridadTabla'
+     *   'seguridad_tabla_catalogo' → 'SeguridadTablaCatalogo'
+     *
+     * @param string $name Nombre en snake_case o PascalCase
+     * @return string PascalCase
+     */
+    private function toPascalCase(string $name): string {
+        return str_replace('_', '', ucwords($name, '_'));
+    }
+
+    /**
      * Verificar si el módulo es válido
-     * 
+     *
      * @param string $module Nombre del módulo
      * @return bool
      */
@@ -139,16 +197,10 @@ class Router {
      */
     public function dispatch() {
         try {
-            // Verificar IP bloqueada (desactivado en desarrollo)
-            // if (Security::isIPBlocked()) {
-            //     $this->redirectToError('Su IP ha sido bloqueada temporalmente');
-            //     return;
-            // }
-            
-            // Verificar sesión si no es login (desactivado en desarrollo)
-            // if ($this->controller !== 'Auth' && !$this->isPublicRoute()) {
-            //     $this->checkAuthentication();
-            // }
+            // Verificar autenticación para rutas protegidas
+            if (!$this->isPublicRoute()) {
+                $this->checkAuthentication();
+            }
             
             // Obtener ruta del controlador
             $controllerPath = $this->getControllerPath();
@@ -188,7 +240,7 @@ class Router {
      */
     private function getControllerPath() {
         $modulePath = Config::MODULES[$this->module]['path'] ?? '/app/controllers/';
-        return BASE_PATH . $modulePath . ucfirst($this->controller) . 'Controller.php';
+        return BASE_PATH . $modulePath . $this->toPascalCase($this->controller) . 'Controller.php';
     }
     
     /**
@@ -198,24 +250,25 @@ class Router {
      */
     private function getControllerClass() {
         $namespace = Config::MODULES[$this->module]['namespace'] ?? '';
-        $class = ucfirst($this->controller) . 'Controller';
+        $class = $this->toPascalCase($this->controller) . 'Controller';
         return $namespace ? $namespace . '\\' . $class : $class;
     }
     
     /**
      * Verificar autenticación
+     * La sesión ya está iniciada por Security::init() en index.php
      */
     private function checkAuthentication() {
-        session_start();
-        
         if (!isset($_SESSION['user_id']) || !isset($_SESSION['tenant_id'])) {
             // Guardar URL solicitada para redirigir después del login
             $_SESSION['redirect_after_login'] = $_SERVER['REQUEST_URI'];
-            
-            header('Location: ' . $this->generateUrl('auth', 'login'));
+            if (session_status() === PHP_SESSION_ACTIVE) {
+                session_write_close();
+            }
+            header('Location: ' . $this->generateUrl('core', 'auth', 'login'));
             exit;
         }
-        
+
         // Verificar que el tenant esté activo
         $this->checkTenantStatus();
     }
@@ -227,26 +280,26 @@ class Router {
         $db = Database::getInstance()->getConnection();
         
         $stmt = $db->prepare("
-            SELECT estado_suscripcion, fecha_vencimiento 
-            FROM tenants 
-            WHERE tenant_id = ?
+            SELECT ten_estado_suscripcion, ten_fecha_vencimiento
+            FROM seguridad_tenants
+            WHERE ten_tenant_id = ?
         ");
-        
+
         $stmt->execute([$_SESSION['tenant_id']]);
         $tenant = $stmt->fetch();
-        
+
         if (!$tenant) {
             $this->redirectToError('Tenant no encontrado');
             return;
         }
-        
+
         // Verificar estado de suscripción
-        if ($tenant['estado_suscripcion'] === 'SUSPENDIDA') {
+        if ($tenant['ten_estado_suscripcion'] === 'SUSPENDIDA') {
             $this->redirectToError('Su suscripción ha sido suspendida. Contacte a soporte.');
             return;
         }
-        
-        if ($tenant['estado_suscripcion'] === 'VENCIDA') {
+
+        if ($tenant['ten_estado_suscripcion'] === 'VENCIDA') {
             // Permitir solo acceso a renovación
             if ($this->controller !== 'Suscripcion') {
                 header('Location: ' . $this->generateUrl('core', 'suscripcion', 'renovar'));
@@ -256,22 +309,29 @@ class Router {
     }
     
     /**
-     * Verificar si es una ruta pública
-     * 
+     * Verificar si es una ruta pública (no requiere autenticación)
+     * La comparación es case-insensitive para soportar URLs encriptadas y estándar
      * @return bool
      */
     private function isPublicRoute() {
         $publicRoutes = [
-            'auth' => ['login', 'logout', '2fa', 'recuperar', 'reset', 'authenticate'],
-            'registro' => ['index', 'crear'],
+            'auth' => [
+                'login', 'authenticate',
+                'twofactorauth', 'validate2fa', 'resend2fa',
+                'recuperar', 'enviarrecuperacion',
+                'reset', 'procesarreset',
+                'register', 'creartenant',
+                'logout',
+            ],
             'welcome' => ['index', 'status'],
-            'error' => ['show', 'notFound', 'forbidden', 'serverError']
+            'error'   => ['show', 'notfound', 'forbidden', 'servererror'],
         ];
-        
+
         $controller = strtolower($this->controller);
-        
-        return isset($publicRoutes[$controller]) && 
-               in_array($this->action, $publicRoutes[$controller]);
+        $action     = strtolower($this->action);
+
+        return isset($publicRoutes[$controller]) &&
+               in_array($action, $publicRoutes[$controller]);
     }
     
     /**

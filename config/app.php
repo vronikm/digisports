@@ -27,9 +27,9 @@ class Config {
     
     /**
      * Configuración de base de datos
+     * Los valores sensibles se leen desde .env vía Config::getDB()
      */
     const DB = [
-        // Base de datos principal (nueva)
         'core' => [
             'host' => 'localhost',
             'port' => '3306',
@@ -39,7 +39,6 @@ class Config {
             'charset' => 'utf8mb4',
             'collation' => 'utf8mb4_unicode_ci'
         ],
-        // Base de datos legacy (sistema antiguo de escuelas)
         'legacy' => [
             'host' => 'localhost',
             'port' => '3306',
@@ -233,6 +232,12 @@ class Config {
             'path' => '/app/controllers/store/',
             'namespace' => 'App\Controllers\Store'
         ],
+        // DigiSports Arena — sistema de eventos y espectáculos
+        'arena' => [
+            'enabled' => true,
+            'path' => '/app/controllers/arena/',
+            'namespace' => 'App\Controllers\Arena'
+        ],
         // Módulo de Seguridad (Administración del Sistema)
         'seguridad' => [
             'enabled' => true,
@@ -341,20 +346,66 @@ class Config {
     
     /**
      * Verificar si estamos en modo debug
-     * 
+     * Lee APP_DEBUG desde .env con fallback a la constante DEBUG
      * @return bool
      */
     public static function isDebug() {
+        if (function_exists('env')) {
+            $envDebug = env('APP_DEBUG');
+            if ($envDebug !== null) {
+                return filter_var($envDebug, FILTER_VALIDATE_BOOLEAN);
+            }
+        }
         return self::DEBUG['enabled'];
     }
-    
+
+    /**
+     * Obtener configuración de base de datos desde .env
+     * Usar este método en lugar de Config::DB directamente
+     * @param string $connection 'core' | 'legacy'
+     * @return array
+     */
+    public static function getDB(string $connection = 'core'): array {
+        if (function_exists('env')) {
+            if ($connection === 'legacy') {
+                return array_merge(self::DB['legacy'], [
+                    'host'     => env('DB_HOST', self::DB['legacy']['host']),
+                    'port'     => env('DB_PORT', self::DB['legacy']['port']),
+                    'database' => env('DB_LEGACY_NAME', self::DB['legacy']['database']),
+                    'username' => env('DB_USER', self::DB['legacy']['username']),
+                    'password' => env('DB_PASS', self::DB['legacy']['password']),
+                ]);
+            }
+            return array_merge(self::DB['core'], [
+                'host'     => env('DB_HOST', self::DB['core']['host']),
+                'port'     => env('DB_PORT', self::DB['core']['port']),
+                'database' => env('DB_NAME', self::DB['core']['database']),
+                'username' => env('DB_USER', self::DB['core']['username']),
+                'password' => env('DB_PASS', self::DB['core']['password']),
+            ]);
+        }
+        return self::DB[$connection] ?? self::DB['core'];
+    }
+
+    /**
+     * Obtener clave maestra de encriptación desde .env
+     * @return string
+     */
+    public static function getAppKey(): string {
+        if (function_exists('env')) {
+            return env('APP_KEY', self::SECURITY['master_key']);
+        }
+        return self::SECURITY['master_key'];
+    }
+
     /**
      * Obtener URL base
-     * 
+     * Lee APP_URL desde .env con fallback a la constante ROUTES
+     * @param string $path Path adicional
      * @return string
      */
     public static function baseUrl($path = '') {
-        $base = self::ROUTES['base_url'];
+        $base = function_exists('env') ? env('APP_URL', self::ROUTES['base_url']) : self::ROUTES['base_url'];
         return $path ? rtrim($base, '/') . '/' . ltrim($path, '/') : $base;
     }
     

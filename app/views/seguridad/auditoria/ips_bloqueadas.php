@@ -169,7 +169,8 @@ include __DIR__ . '/../partials/header.php';
     </div>
 </section>
 
-<script>
+<?php ob_start(); ?>
+<script nonce="<?= cspNonce() ?>">
 document.addEventListener('DOMContentLoaded', function() {
     // Desbloquear IP
     document.querySelectorAll('.btn-desbloquear').forEach(function(btn) {
@@ -248,3 +249,4 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+<?php $scripts = ob_get_clean(); ?>

@@ -226,7 +226,7 @@ $estados = [
 </div>
 
 <?php ob_start(); ?>
-<script>
+<script nonce="<?= cspNonce() ?>">
 var urlCrear  = '<?= url('futbol', 'cancha', 'crear') ?>';
 var urlEditar = '<?= url('futbol', 'cancha', 'editar') ?>';
 

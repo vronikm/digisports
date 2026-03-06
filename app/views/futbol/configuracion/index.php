@@ -121,21 +121,194 @@ $grupoIconos = [
 </section>
 
 <?php ob_start(); ?>
-<script>
+<script nonce="<?= cspNonce() ?>">
+// Función para convertir objeto a query string
+function objectToFormData(obj, prefix = '') {
+    var str = [];
+    for (var key in obj) {
+        if (obj.hasOwnProperty(key)) {
+            var k = prefix ? prefix + '[' + key + ']' : key;
+            if (typeof obj[key] === 'object' && obj[key] !== null) {
+                str.push(objectToFormData(obj[key], k));
+            } else {
+                str.push(encodeURIComponent(k) + '=' + encodeURIComponent(obj[key]));
+            }
+        }
+    }
+    return str.join('&');
+}
+
+// Serializar datos de un formulario
+function serializeFormData(form) {
+    var data = {};
+    var inputs = form.querySelectorAll('[name^="config"]');
+    
+    inputs.forEach(function(input) {
+        var match = input.name.match(/^config\[(\d+)\]$/);
+        if (match) {
+            if (!data['config']) data['config'] = {};
+            data['config'][match[1]] = input.value;
+        }
+    });
+    
+    // Agregar CSRF y grupo
+    data['csrf_token'] = form.querySelector('input[name="csrf_token"]').value;
+    data['grupo'] = form.getAttribute('data-grupo');
+    
+    return data;
+}
+
 function guardarConfiguracion(grupo) {
     var form = document.getElementById('formGrupo_' + grupo);
-    if (!form) return;
+    if (!form) {
+        console.error('[ERROR] No se encontró formulario para grupo: ' + grupo);
+        return;
+    }
 
-    var formData = $(form).serialize();
+    console.log('[DEBUG] Guardando grupo: ' + grupo);
+    
+    var serialized = serializeFormData(form);
+    var bodyData = objectToFormData(serialized);
+    var url = '<?= url('futbol', 'configuracion', 'guardar') ?>';
+    
+    console.log('[DEBUG] URL:', url);
+    console.log('[DEBUG] Datos:', bodyData.substring(0, 150) + '...');
 
-    $.post('<?= url('futbol', 'configuracion', 'guardar') ?>', formData, function(res) {
-        if (res.success) {
-            Swal.fire({ icon: 'success', title: '¡Guardado!', text: 'Configuración del grupo "' + grupo + '" guardada correctamente.', timer: 2000, showConfirmButton: false });
-        } else {
-            Swal.fire('Error', res.message || 'No se pudo guardar la configuración.', 'error');
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: bodyData
+    })
+    .then(response => {
+        console.log('[DEBUG] === RESPUESTA RECIBIDA ===');
+        console.log('[DEBUG] HTTP Status:', response.status);
+        console.log('[DEBUG] HTTP StatusText:', response.statusText);
+        console.log('[DEBUG] Content-Type:', response.headers.get('Content-Type'));
+        
+        if (!response.ok) {
+            console.error('[ERROR] HTTP error:', response.status, response.statusText);
+            throw new Error('HTTP ' + response.status + ' ' + response.statusText);
         }
-    }, 'json').fail(function() {
-        Swal.fire('Error', 'Error de conexión al guardar.', 'error');
+        
+        return response.text();
+    })
+    .then(text => {
+        console.log('[DEBUG] === ANÁLISIS DE RESPUESTA ===');
+        console.log('[DEBUG] Longitud total:', text.length, 'bytes');
+        
+        if (text.length === 0) {
+            console.error('[ERROR] Respuesta VACÍA (0 bytes)');
+            throw new Error('Servidor devolvió respuesta vacía');
+        }
+        
+        console.log('[DEBUG] Primeros 100 chars:', text.substring(0, 100));
+        console.log('[DEBUG] Últimos 50 chars:', text.substring(Math.max(0, text.length - 50)));
+        
+        // Mostrar como hex los primeros 10 bytes
+        var hexChars = [];
+        for (var i = 0; i < Math.min(10, text.length); i++) {
+            hexChars.push((text.charCodeAt(i).toString(16).padStart(2, '0')));
+        }
+        console.log('[DEBUG] Bytes iniciales (hex):', hexChars.join(' '));
+        
+        // Limpiar BOM y espacios
+        var cleanedText = text.replace(/^\uFEFF/, '').trim();
+        console.log('[DEBUG] Después de cleanup - longitud:', cleanedText.length);
+        
+        // Verificar si parece JSON
+        if (!cleanedText.startsWith('{') && !cleanedText.startsWith('[')) {
+            console.error('[ERROR] Response NO comienza con { o [');
+            console.error('[ERROR] Comienza con:', cleanedText.substring(0, 200));
+            
+            // Detectar HTML
+            if (cleanedText.indexOf('<') !== -1) {
+                console.error('[ERROR] Parece ser HTML (contiene <)');
+                console.error('[ERROR] Contenido HTML:', cleanedText.substring(0, 500));
+            }
+            
+            throw new SyntaxError('Response no es JSON - comienza con: ' + cleanedText.substring(0, 50));
+        }
+        
+        try {
+            var res = JSON.parse(cleanedText);
+            console.log('[DEBUG] === JSON PARSEADO EXITOSAMENTE ===');
+            console.log('[DEBUG] Objeto:', res);
+            console.log('[DEBUG] success =', res.success);
+            console.log('[DEBUG] message =', res.message);
+            
+            if (res && typeof res === 'object' && res.success === true) {
+                console.log('[SUCCESS] ¡Grupo guardado!');
+                
+                Swal.fire({
+                    position: 'top-end',
+                    icon: 'success',
+                    title: 'Guardado',
+                    text: res.message || 'Grupo guardado correctamente',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    toast: true,
+                    didOpen: function(toast) {
+                        toast.addEventListener('mouseenter', Swal.stopTimer);
+                        toast.addEventListener('mouseleave', Swal.resumeTimer);
+                    }
+                });
+            } else if (res && res.success === false) {
+                console.error('[ERROR]', res.message);
+                
+                Swal.fire({
+                    position: 'top-end',
+                    icon: 'error',
+                    title: 'Error',
+                    text: res.message || 'No se pudo guardar',
+                    showConfirmButton: false,
+                    timer: 4000,
+                    timerProgressBar: true,
+                    toast: true,
+                    didOpen: function(toast) {
+                        toast.addEventListener('mouseenter', Swal.stopTimer);
+                        toast.addEventListener('mouseleave', Swal.resumeTimer);
+                    }
+                });
+            } else {
+                console.error('[ERROR] JSON válido pero no tiene estructura esperada');
+                throw new Error('JSON no tiene campo success');
+            }
+        } catch (e) {
+            console.error('[ERROR] === FALLO EN JSON.parse() ===');
+            console.error('[ERROR] Error:', e.message);
+            console.error('[ERROR] Stack:', e.stack);
+            console.error('[ERROR] Intentó parsear:', cleanedText.substring(0, 300));
+            
+            Swal.fire({
+                position: 'top-end',
+                icon: 'error',
+                title: 'Error',
+                text: 'Respuesta inválida del servidor. Abre F12 Console.',
+                showConfirmButton: false,
+                timer: 5000,
+                timerProgressBar: true,
+                toast: true
+            });
+            
+            throw e;
+        }
+    })
+    .catch(error => {
+        console.error('[ERROR] Fetch error:', error);
+        Swal.fire({
+            position: 'top-end',
+            icon: 'error',
+            title: 'Error de conexión',
+            text: error.message,
+            showConfirmButton: false,
+            timer: 4000,
+            timerProgressBar: true,
+            toast: true
+        });
     });
 }
 
@@ -145,36 +318,190 @@ function guardarTodo() {
     var csrfToken = '<?= htmlspecialchars($csrf_token ?? '') ?>';
 
     forms.forEach(function(form) {
-        var entries = $(form).serializeArray();
-        entries.forEach(function(entry) {
-            if (entry.name.startsWith('config[')) {
-                allData[entry.name] = entry.value;
+        var inputs = form.querySelectorAll('[name^="config"]');
+        inputs.forEach(function(input) {
+            var match = input.name.match(/^config\[(\d+)\]$/);
+            if (match) {
+                if (!allData['config']) allData['config'] = {};
+                allData['config'][match[1]] = input.value;
             }
         });
     });
 
     // Recoger checkboxes no marcados
     forms.forEach(function(form) {
-        $(form).find('input[type="checkbox"].custom-control-input').each(function() {
-            var name = $(this).attr('name');
-            if (name && name.startsWith('config[') && !this.checked) {
-                allData[name] = '0';
+        form.querySelectorAll('input[type="checkbox"].custom-control-input').forEach(function(input) {
+            var name = input.name;
+            if (name && name.match(/^config\[\d+\]$/)) {
+                var match = name.match(/^config\[(\d+)\]$/);
+                if (match && !input.checked) {
+                    if (!allData['config']) allData['config'] = {};
+                    allData['config'][match[1]] = '0';
+                }
             }
         });
     });
 
-    var postData = $.param(allData) + '&csrf_token=' + encodeURIComponent(csrfToken) + '&grupo=TODOS';
+    allData['csrf_token'] = csrfToken;
+    allData['grupo'] = 'TODOS';
 
-    Swal.fire({ title: 'Guardando...', allowOutsideClick: false, didOpen: function() { Swal.showLoading(); } });
+    console.log('[DEBUG] Guardando todo');
+    console.log('[DEBUG] Datos:', allData);
 
-    $.post('<?= url('futbol', 'configuracion', 'guardar') ?>', postData, function(res) {
-        if (res.success) {
-            Swal.fire({ icon: 'success', title: '¡Guardado!', text: 'Toda la configuración fue guardada correctamente.', timer: 2000, showConfirmButton: false });
-        } else {
-            Swal.fire('Error', res.message || 'No se pudo guardar.', 'error');
+    // Mostrar confirmación
+    Swal.fire({
+        title: '¿Guardar todo?',
+        text: '¿Deseas guardar toda la configuración?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#22C55E',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Sí, guardar todo',
+        cancelButtonText: 'Cancelar',
+        allowOutsideClick: false,
+        allowEscapeKey: false
+    }).then(function(result) {
+        if (result.isConfirmed) {
+            var bodyData = objectToFormData(allData);
+            var url = '<?= url('futbol', 'configuracion', 'guardar') ?>';
+            
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: bodyData
+            })
+            .then(response => {
+                console.log('[DEBUG] === RESPUESTA RECIBIDA ===');
+                console.log('[DEBUG] HTTP Status:', response.status);
+                console.log('[DEBUG] HTTP StatusText:', response.statusText);
+                console.log('[DEBUG] Content-Type:', response.headers.get('Content-Type'));
+                
+                if (!response.ok) {
+                    console.error('[ERROR] HTTP error:', response.status, response.statusText);
+                    throw new Error('HTTP ' + response.status + ' ' + response.statusText);
+                }
+                
+                return response.text();
+            })
+            .then(text => {
+                console.log('[DEBUG] === ANÁLISIS DE RESPUESTA ===');
+                console.log('[DEBUG] Longitud total:', text.length, 'bytes');
+                
+                if (text.length === 0) {
+                    console.error('[ERROR] Respuesta VACÍA (0 bytes)');
+                    throw new Error('Servidor devolvió respuesta vacía');
+                }
+                
+                console.log('[DEBUG] Primeros 100 chars:', text.substring(0, 100));
+                console.log('[DEBUG] Últimos 50 chars:', text.substring(Math.max(0, text.length - 50)));
+                
+                // Mostrar como hex los primeros 10 bytes
+                var hexChars = [];
+                for (var i = 0; i < Math.min(10, text.length); i++) {
+                    hexChars.push((text.charCodeAt(i).toString(16).padStart(2, '0')));
+                }
+                console.log('[DEBUG] Bytes iniciales (hex):', hexChars.join(' '));
+                
+                // Limpiar BOM y espacios
+                var cleanedText = text.replace(/^\uFEFF/, '').trim();
+                console.log('[DEBUG] Después de cleanup - longitud:', cleanedText.length);
+                
+                // Verificar si parece JSON
+                if (!cleanedText.startsWith('{') && !cleanedText.startsWith('[')) {
+                    console.error('[ERROR] Response NO comienza con { o [');
+                    console.error('[ERROR] Comienza con:', cleanedText.substring(0, 200));
+                    
+                    // Detectar HTML
+                    if (cleanedText.indexOf('<') !== -1) {
+                        console.error('[ERROR] Parece ser HTML (contiene <)');
+                        console.error('[ERROR] Contenido HTML:', cleanedText.substring(0, 500));
+                    }
+                    
+                    throw new SyntaxError('Response no es JSON - comienza con: ' + cleanedText.substring(0, 50));
+                }
+                
+                try {
+                    var res = JSON.parse(cleanedText);
+                    console.log('[DEBUG] === JSON PARSEADO EXITOSAMENTE ===');
+                    console.log('[DEBUG] Objeto:', res);
+                    console.log('[DEBUG] success =', res.success);
+                    console.log('[DEBUG] message =', res.message);
+                    
+                    if (res && typeof res === 'object' && res.success === true) {
+                        console.log('[SUCCESS] ¡Todo guardado!');
+                        
+                        Swal.fire({
+                            position: 'top-end',
+                            icon: 'success',
+                            title: 'Guardado',
+                            text: res.message || 'Toda la configuración guardada',
+                            showConfirmButton: false,
+                            timer: 3000,
+                            timerProgressBar: true,
+                            toast: true,
+                            didOpen: function(toast) {
+                                toast.addEventListener('mouseenter', Swal.stopTimer);
+                                toast.addEventListener('mouseleave', Swal.resumeTimer);
+                            }
+                        });
+                    } else if (res && res.success === false) {
+                        console.error('[ERROR]', res.message);
+                        
+                        Swal.fire({
+                            position: 'top-end',
+                            icon: 'error',
+                            title: 'Error',
+                            text: res.message || 'No se pudo guardar',
+                            showConfirmButton: false,
+                            timer: 4000,
+                            timerProgressBar: true,
+                            toast: true,
+                            didOpen: function(toast) {
+                                toast.addEventListener('mouseenter', Swal.stopTimer);
+                                toast.addEventListener('mouseleave', Swal.resumeTimer);
+                            }
+                        });
+                    } else {
+                        console.error('[ERROR] JSON válido pero no tiene estructura esperada');
+                        throw new Error('JSON no tiene campo success');
+                    }
+                } catch (e) {
+                    console.error('[ERROR] === FALLO EN JSON.parse() ===');
+                    console.error('[ERROR] Error:', e.message);
+                    console.error('[ERROR] Stack:', e.stack);
+                    console.error('[ERROR] Intentó parsear:', cleanedText.substring(0, 300));
+                    
+                    Swal.fire({
+                        position: 'top-end',
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Respuesta inválida del servidor. Abre F12 Console.',
+                        showConfirmButton: false,
+                        timer: 5000,
+                        timerProgressBar: true,
+                        toast: true
+                    });
+                    
+                    throw e;
+                }
+            })
+            .catch(error => {
+                console.error('[ERROR] Fetch error:', error);
+                Swal.fire({
+                    position: 'top-end',
+                    icon: 'error',
+                    title: 'Error de conexión',
+                    text: error.message,
+                    showConfirmButton: false,
+                    timer: 4000,
+                    timerProgressBar: true,
+                    toast: true
+                });
+            });
         }
-    }, 'json').fail(function() {
-        Swal.fire('Error', 'Error de conexión al guardar.', 'error');
     });
 }
 

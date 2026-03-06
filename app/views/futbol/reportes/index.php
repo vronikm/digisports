@@ -159,7 +159,7 @@ $reportes = [
 </section>
 
 <?php ob_start(); ?>
-<script>
+<script nonce="<?= cspNonce() ?>">
 function generarReporte(tipo, formato) {
     var desde = document.getElementById('fechaDesde').value;
     var hasta = document.getElementById('fechaHasta').value;

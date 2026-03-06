@@ -119,7 +119,7 @@ $totalGeneral = array_sum($resumen);
 </section>
 
 <?php ob_start(); ?>
-<script>
+<script nonce="<?= cspNonce() ?>">
 <?php if ($totalGeneral > 0): ?>
 var ctx = document.getElementById('chartAsistencia');
 if (ctx) {

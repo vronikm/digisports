@@ -266,7 +266,7 @@ $categoriasConfig = [
 </div>
 
 <?php ob_start(); ?>
-<script>
+<script nonce="<?= cspNonce() ?>">
 $(document).ready(function() {
     // DataTable
     if ($('#tablaEgresos tbody tr').length > 0 && !$('#tablaEgresos tbody .text-center').length) {

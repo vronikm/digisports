@@ -327,7 +327,7 @@ if (!empty($pagos)) {
 </div>
 
 <?php ob_start(); ?>
-<script>
+<script nonce="<?= cspNonce() ?>">
 $(document).ready(function() {
     // Inicializar DataTable
     if ($('#tablaPagos tbody tr').length > 0 && !$('#tablaPagos tbody .text-center').length) {

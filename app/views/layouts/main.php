@@ -265,7 +265,7 @@ require_once APP_PATH . '/helpers/functions.php';
 <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-<script>
+<script nonce="<?= cspNonce() ?>">
 // =====================================================
 // DigiSports - SweetAlert2 Helper Functions
 // =====================================================
@@ -419,39 +419,25 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 
-<!-- Mostrar flash message si existe -->
-<?php 
+<?php
 $flash = getFlashMessage();
-if ($flash): 
+if ($flash):
     $type = $flash['type'] === 'error' ? 'error' : ($flash['type'] === 'warning' ? 'warning' : 'success');
-    $msg = addslashes(htmlspecialchars($flash['message']));
+    $msg  = addslashes(e($flash['message']));
 ?>
-<script>
+<script nonce="<?= cspNonce() ?>">
 document.addEventListener('DOMContentLoaded', function() {
     if (typeof DigiAlert !== 'undefined') {
         DigiAlert.<?= $type ?>('<?= $msg ?>');
     } else {
         Swal.fire({
-            toast: true,
-            position: 'top-end',
-            icon: '<?= $type ?>',
-            title: '<?= $msg ?>',
-            showConfirmButton: false,
-            timer: 3500,
-            timerProgressBar: true
+            toast: true, position: 'top-end',
+            icon: '<?= $type ?>', title: '<?= $msg ?>',
+            showConfirmButton: false, timer: 3500, timerProgressBar: true
         });
     }
 });
 </script>
 <?php endif; ?>
-
-// DEBUG: Mostrar variables de sesión y flash para diagnóstico
-<?php if (isset($_SESSION) && is_array($_SESSION)): ?>
-<div style="background:#ffeeba;color:#856404;padding:10px;margin:10px 0;border:1px solid #ffeeba;">
-  <strong>DEBUG SESSION:</strong><br>
-  <pre><?= print_r($_SESSION, true) ?></pre>
-</div>
-<?php endif; ?>
-</script>
 </body>
 </html>

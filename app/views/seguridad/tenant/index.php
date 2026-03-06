@@ -171,113 +171,10 @@ include __DIR__ . '/../partials/header.php';
                                         <a href="#" class="btn btn-warning btn-suspender" data-url="<?= url('seguridad', 'tenant', 'suspender', ['id' => $t['ten_tenant_id']]) ?>" title="Suspender">
                                             <i class="fas fa-pause"></i>
                                         </a>
-                                        <?php /* SweetAlert2 para suspender tenant */ ?>
-                                        <script>
-                                        document.addEventListener('DOMContentLoaded', function() {
-                                            document.querySelectorAll('.btn-suspender').forEach(function(btn) {
-                                                btn.addEventListener('click', function(e) {
-                                                    e.preventDefault();
-                                                    const url = btn.getAttribute('data-url');
-                                                    Swal.fire({
-                                                        title: '¿Suspender tenant?',
-                                                        text: 'Esta acción suspenderá el acceso del tenant. ¿Desea continuar?',
-                                                        icon: 'warning',
-                                                        showCancelButton: true,
-                                                        confirmButtonColor: '#d33',
-                                                        cancelButtonColor: '#3085d6',
-                                                        confirmButtonText: 'Sí, suspender',
-                                                        cancelButtonText: 'Cancelar'
-                                                    }).then((result) => {
-                                                        if (result.isConfirmed) {
-                                                            fetch(url, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-                                                                .then(response => response.json())
-                                                                .then(data => {
-                                                                    if (data.success) {
-                                                                        Swal.fire({
-                                                                            toast: true,
-                                                                            position: 'top-end',
-                                                                            icon: 'success',
-                                                                            title: 'Tenant suspendido correctamente',
-                                                                            showConfirmButton: false,
-                                                                            timer: 2000
-                                                                        });
-                                                                        setTimeout(function() { location.reload(); }, 1200);
-                                                                    } else {
-                                                                        Swal.fire({
-                                                                            icon: 'error',
-                                                                            title: 'Error',
-                                                                            text: data.message || 'No se pudo suspender el tenant.'
-                                                                        });
-                                                                    }
-                                                                })
-                                                                .catch(() => {
-                                                                    Swal.fire({
-                                                                        icon: 'error',
-                                                                        title: 'Error',
-                                                                        text: 'No se pudo conectar con el servidor.'
-                                                                    });
-                                                                });
-                                                        }
-                                                    });
-                                                });
-                                            });
-                                        });
-                                        </script>
                                         <?php else: ?>
                                         <a href="#" class="btn btn-success btn-reactivar" data-url="<?= url('seguridad', 'tenant', 'reactivar', ['id' => $t['ten_tenant_id']]) ?>" title="Reactivar">
                                             <i class="fas fa-play"></i>
                                         </a>
-                                        <script>
-                                        document.addEventListener('DOMContentLoaded', function() {
-                                            document.querySelectorAll('.btn-reactivar').forEach(function(btn) {
-                                                btn.addEventListener('click', function(e) {
-                                                    e.preventDefault();
-                                                    const url = btn.getAttribute('data-url');
-                                                    Swal.fire({
-                                                        title: '¿Reactivar tenant?',
-                                                        text: 'Esta acción reactivará el acceso del tenant. ¿Desea continuar?',
-                                                        icon: 'question',
-                                                        showCancelButton: true,
-                                                        confirmButtonColor: '#28a745',
-                                                        cancelButtonColor: '#3085d6',
-                                                        confirmButtonText: 'Sí, reactivar',
-                                                        cancelButtonText: 'Cancelar'
-                                                    }).then((result) => {
-                                                        if (result.isConfirmed) {
-                                                            fetch(url, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-                                                                .then(response => response.json())
-                                                                .then(data => {
-                                                                    if (data.success) {
-                                                                        Swal.fire({
-                                                                            toast: true,
-                                                                            position: 'top-end',
-                                                                            icon: 'success',
-                                                                            title: 'Tenant reactivado correctamente',
-                                                                            showConfirmButton: false,
-                                                                            timer: 1800
-                                                                        });
-                                                                        setTimeout(function() { location.reload(); }, 1800);
-                                                                    } else {
-                                                                        Swal.fire({
-                                                                            icon: 'error',
-                                                                            title: 'Error',
-                                                                            text: data.message || 'No se pudo reactivar el tenant.'
-                                                                        });
-                                                                    }
-                                                                })
-                                                                .catch(() => {
-                                                                    Swal.fire({
-                                                                        icon: 'error',
-                                                                        title: 'Error',
-                                                                        text: 'No se pudo conectar con el servidor.'
-                                                                    });
-                                                                });
-                                                        }
-                                                    });
-                                                });
-                                            });
-                                        });
-                                        </script>
                                         <?php endif; ?>
                                     </div>
                                 </td>
@@ -306,3 +203,103 @@ include __DIR__ . '/../partials/header.php';
         </div>
     </div>
 </section>
+
+<?php ob_start(); ?>
+<script nonce="<?= cspNonce() ?>">
+(function () {
+    function postAction(endpointUrl, mensajeOk, mensajeError) {
+        fetch(endpointUrl, {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            if (data.success) {
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'success',
+                    title: data.message || mensajeOk,
+                    showConfirmButton: false,
+                    timer: 2000,
+                    timerProgressBar: true
+                });
+                setTimeout(function () { location.reload(); }, 1400);
+            } else {
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'error',
+                    title: data.message || mensajeError,
+                    showConfirmButton: false,
+                    timer: 4000,
+                    timerProgressBar: true
+                });
+            }
+        })
+        .catch(function () {
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'error',
+                title: 'Error de comunicación con el servidor',
+                showConfirmButton: false,
+                timer: 4000
+            });
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+
+        // Delegación de eventos en la tabla — cubre todos los botones sin importar cuántos tenants haya
+        document.querySelector('table tbody').addEventListener('click', function (e) {
+
+            // ── Suspender ────────────────────────────────────────────
+            var btnSuspender = e.target.closest('.btn-suspender');
+            if (btnSuspender) {
+                e.preventDefault();
+                var endpointUrl = btnSuspender.dataset.url;
+                Swal.fire({
+                    title: '¿Suspender tenant?',
+                    text: 'El tenant será suspendido y no podrá acceder al sistema.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: '<i class="fas fa-pause"></i> Sí, suspender',
+                    cancelButtonText: 'Cancelar'
+                }).then(function (result) {
+                    if (result.isConfirmed) {
+                        postAction(endpointUrl, 'Tenant suspendido correctamente', 'No se pudo suspender el tenant');
+                    }
+                });
+                return;
+            }
+
+            // ── Reactivar ─────────────────────────────────────────────
+            var btnReactivar = e.target.closest('.btn-reactivar');
+            if (btnReactivar) {
+                e.preventDefault();
+                var endpointUrl = btnReactivar.dataset.url;
+                Swal.fire({
+                    title: '¿Reactivar tenant?',
+                    text: 'El tenant recuperará acceso completo al sistema.',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#28a745',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: '<i class="fas fa-play"></i> Sí, reactivar',
+                    cancelButtonText: 'Cancelar'
+                }).then(function (result) {
+                    if (result.isConfirmed) {
+                        postAction(endpointUrl, 'Tenant reactivado correctamente', 'No se pudo reactivar el tenant');
+                    }
+                });
+                return;
+            }
+
+        });
+    });
+}());
+</script>
+<?php $scripts = ob_get_clean(); ?>

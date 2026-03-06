@@ -241,7 +241,7 @@ $moduloIcon = 'fas fa-futbol';
 </div>
 
 <?php ob_start(); ?>
-<script>
+<script nonce="<?= cspNonce() ?>">
 $(document).ready(function() {
     // DataTable
     if ($('#tablaEvaluaciones tbody tr').length > 0 && !$('#tablaEvaluaciones tbody .text-center').length) {

@@ -378,6 +378,12 @@ $title = $title ?? 'DigiSports Hub';
             font-size: 0.9rem;
             transition: background 0.15s;
             cursor: pointer;
+            /* reset de estilos nativos de <button> */
+            width: 100%;
+            background: none;
+            border: none;
+            text-align: left;
+            font-family: inherit;
         }
         
         .hub-dropdown-item:hover {
@@ -607,7 +613,7 @@ $title = $title ?? 'DigiSports Hub';
                     <div class="tenant"><?= htmlspecialchars($tenantNombre) ?></div>
                 </div>
                 <div class="hub-user-menu-wrapper" style="position:relative;">
-                    <div class="hub-user-avatar" title="Mi perfil" onclick="toggleUserMenu(event)">
+                    <div class="hub-user-avatar" id="hubUserAvatar" title="Mi perfil">
                         <i class="fas fa-user"></i>
                     </div>
                     <!-- Dropdown -->
@@ -617,12 +623,12 @@ $title = $title ?? 'DigiSports Hub';
                             <small><?= htmlspecialchars($userEmail) ?></small>
                         </div>
                         <div class="hub-dropdown-divider"></div>
-                        <a href="#" class="hub-dropdown-item" onclick="abrirModalPerfil(); return false;">
+                        <button type="button" class="hub-dropdown-item" id="btnAbrirPerfil">
                             <i class="fas fa-user-edit"></i> Actualizar Perfil
-                        </a>
-                        <a href="#" class="hub-dropdown-item" onclick="abrirModalClave(); return false;">
+                        </button>
+                        <button type="button" class="hub-dropdown-item" id="btnAbrirClave">
                             <i class="fas fa-key"></i> Cambiar Contraseña
-                        </a>
+                        </button>
                         <div class="hub-dropdown-divider"></div>
                         <a href="<?= url('core', 'auth', 'logout') ?>" class="hub-dropdown-item hub-dropdown-danger">
                             <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
@@ -671,16 +677,15 @@ $title = $title ?? 'DigiSports Hub';
                 $nombre = isset($modulo['nombre']) ? $modulo['nombre'] : 'Módulo';
                 $descripcion = isset($modulo['descripcion']) ? $modulo['descripcion'] : '';
             ?>
-            <div class="module-card" 
-                 style="--module-color: <?= htmlspecialchars((string)$color) ?>;"
-                 data-url="<?= htmlspecialchars((string)$urlModulo) ?>"
-                 onclick="accederModulo(this)">
+            <a href="<?= htmlspecialchars((string)$urlModulo) ?>"
+               class="module-card"
+               style="--module-color: <?= htmlspecialchars((string)$color) ?>; display:block; text-decoration:none; color:inherit;">
                 <div class="module-icon" style="background: <?= htmlspecialchars((string)$color) ?>;">
                     <i class="<?= htmlspecialchars((string)$iconClass) ?>"></i>
                 </div>
                 <h3 class="module-name"><?= htmlspecialchars((string)$nombre) ?></h3>
                 <p class="module-description"><?= htmlspecialchars((string)$descripcion) ?></p>
-            </div>
+            </a>
             <?php endforeach; ?>
         </div>
         
@@ -695,11 +700,11 @@ $title = $title ?? 'DigiSports Hub';
         <div class="hub-modal">
             <div class="hub-modal-header">
                 <h3><i class="fas fa-user-edit"></i> Actualizar Perfil</h3>
-                <button class="hub-modal-close" onclick="cerrarModal('modalPerfil')">&times;</button>
+                <button class="hub-modal-close" data-close-modal="modalPerfil">&times;</button>
             </div>
             <div class="hub-modal-body">
                 <div class="hub-form-msg" id="perfilMsg"></div>
-                <form id="formPerfil" onsubmit="guardarPerfil(event)">
+                <form id="formPerfil">
                     <div class="hub-form-group">
                         <label for="perfNombres"><i class="fas fa-user"></i> Nombres</label>
                         <input type="text" id="perfNombres" name="nombres" value="<?= htmlspecialchars($_SESSION['nombres'] ?? '') ?>" required>
@@ -721,7 +726,7 @@ $title = $title ?? 'DigiSports Hub';
                         <input type="text" id="perfCelular" name="celular" value="<?= htmlspecialchars($_SESSION['celular'] ?? '') ?>">
                     </div>
                     <div class="hub-modal-footer">
-                        <button type="button" class="hub-btn hub-btn-cancel" onclick="cerrarModal('modalPerfil')">Cancelar</button>
+                        <button type="button" class="hub-btn hub-btn-cancel" data-close-modal="modalPerfil">Cancelar</button>
                         <button type="submit" class="hub-btn hub-btn-primary" id="btnGuardarPerfil">
                             <i class="fas fa-save"></i> Guardar
                         </button>
@@ -736,19 +741,18 @@ $title = $title ?? 'DigiSports Hub';
         <div class="hub-modal">
             <div class="hub-modal-header">
                 <h3><i class="fas fa-key"></i> Cambiar Contraseña</h3>
-                <button class="hub-modal-close" onclick="cerrarModal('modalClave')">&times;</button>
+                <button class="hub-modal-close" data-close-modal="modalClave">&times;</button>
             </div>
             <div class="hub-modal-body">
                 <div class="hub-form-msg" id="claveMsg"></div>
-                <form id="formClave" onsubmit="guardarClave(event)">
+                <form id="formClave">
                     <div class="hub-form-group">
                         <label for="claveActual"><i class="fas fa-lock"></i> Contraseña Actual</label>
                         <input type="password" id="claveActual" name="password_actual" required autocomplete="current-password">
                     </div>
                     <div class="hub-form-group">
                         <label for="claveNueva"><i class="fas fa-lock-open"></i> Nueva Contraseña</label>
-                        <input type="password" id="claveNueva" name="password_nueva" required autocomplete="new-password"
-                               oninput="evaluarFortaleza(this.value)">
+                        <input type="password" id="claveNueva" name="password_nueva" required autocomplete="new-password">
                         <div class="password-strength"><div class="password-strength-bar" id="strengthBar"></div></div>
                         <div class="field-hint">Mínimo 8 caracteres, incluya mayúsculas, números y símbolos</div>
                     </div>
@@ -757,7 +761,7 @@ $title = $title ?? 'DigiSports Hub';
                         <input type="password" id="claveConfirmar" name="password_confirmar" required autocomplete="new-password">
                     </div>
                     <div class="hub-modal-footer">
-                        <button type="button" class="hub-btn hub-btn-cancel" onclick="cerrarModal('modalClave')">Cancelar</button>
+                        <button type="button" class="hub-btn hub-btn-cancel" data-close-modal="modalClave">Cancelar</button>
                         <button type="submit" class="hub-btn hub-btn-primary" id="btnGuardarClave">
                             <i class="fas fa-save"></i> Cambiar
                         </button>
@@ -767,181 +771,186 @@ $title = $title ?? 'DigiSports Hub';
         </div>
     </div>
     
-    <script>
-        function accederModulo(element) {
-            const url = element.getAttribute('data-url');
-            if (url) {
-                window.location.href = url;
-            }
-        }
-        
-        // Efecto de hover en móviles
-        document.querySelectorAll('.module-card').forEach(card => {
-            card.addEventListener('touchstart', function() {
-                this.style.transform = 'translateY(-5px)';
-            });
-            card.addEventListener('touchend', function() {
-                this.style.transform = '';
-            });
+    <script nonce="<?= cspNonce() ?>">
+    document.addEventListener('DOMContentLoaded', function () {
+
+        /* ── Tarjetas de módulo: efecto touch en móviles ── */
+        document.querySelectorAll('.module-card').forEach(function (card) {
+            card.addEventListener('touchstart', function () { this.style.transform = 'translateY(-5px)'; });
+            card.addEventListener('touchend',   function () { this.style.transform = ''; });
         });
-        
+
         /* ── Dropdown de usuario ── */
-        function toggleUserMenu(e) {
-            e.stopPropagation();
-            document.getElementById('hubUserDropdown').classList.toggle('show');
+        var avatar = document.getElementById('hubUserAvatar');
+        if (avatar) {
+            avatar.addEventListener('click', function (e) {
+                e.stopPropagation();
+                document.getElementById('hubUserDropdown').classList.toggle('show');
+            });
         }
-        
-        document.addEventListener('click', function(e) {
-            const dd = document.getElementById('hubUserDropdown');
-            if (dd && !dd.contains(e.target) && !e.target.closest('.hub-user-avatar')) {
+
+        document.addEventListener('click', function (e) {
+            var dd = document.getElementById('hubUserDropdown');
+            if (dd && !dd.contains(e.target) && !e.target.closest('#hubUserAvatar')) {
                 dd.classList.remove('show');
             }
         });
-        
-        /* ── Modales ── */
-        function abrirModalPerfil() {
-            document.getElementById('hubUserDropdown').classList.remove('show');
-            document.getElementById('modalPerfil').classList.add('show');
-            resetMsg('perfilMsg');
+
+        /* ── Abrir modales desde el dropdown ── */
+        var btnPerfil = document.getElementById('btnAbrirPerfil');
+        if (btnPerfil) {
+            btnPerfil.addEventListener('click', function () {
+                document.getElementById('hubUserDropdown').classList.remove('show');
+                document.getElementById('modalPerfil').classList.add('show');
+                resetMsg('perfilMsg');
+            });
         }
-        
-        function abrirModalClave() {
-            document.getElementById('hubUserDropdown').classList.remove('show');
-            document.getElementById('modalClave').classList.add('show');
-            document.getElementById('formClave').reset();
-            resetMsg('claveMsg');
-            document.getElementById('strengthBar').style.width = '0';
+
+        var btnClave = document.getElementById('btnAbrirClave');
+        if (btnClave) {
+            btnClave.addEventListener('click', function () {
+                document.getElementById('hubUserDropdown').classList.remove('show');
+                document.getElementById('modalClave').classList.add('show');
+                document.getElementById('formClave').reset();
+                resetMsg('claveMsg');
+                document.getElementById('strengthBar').style.width = '0';
+            });
         }
-        
-        function cerrarModal(id) {
-            document.getElementById(id).classList.remove('show');
-        }
-        
-        // Cerrar modal con Escape o clic fuera
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                document.querySelectorAll('.hub-modal-overlay.show').forEach(m => m.classList.remove('show'));
-            }
+
+        /* ── Cerrar modales: botones con data-close-modal ── */
+        document.querySelectorAll('[data-close-modal]').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var id = this.getAttribute('data-close-modal');
+                document.getElementById(id).classList.remove('show');
+            });
         });
-        
-        document.querySelectorAll('.hub-modal-overlay').forEach(ov => {
-            ov.addEventListener('click', function(e) {
+
+        /* ── Cerrar modales: clic fuera o Escape ── */
+        document.querySelectorAll('.hub-modal-overlay').forEach(function (ov) {
+            ov.addEventListener('click', function (e) {
                 if (e.target === this) this.classList.remove('show');
             });
         });
-        
-        function showMsg(id, msg, type) {
-            const el = document.getElementById(id);
-            el.textContent = msg;
-            el.className = 'hub-form-msg ' + type;
-            el.style.display = 'block';
+
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.hub-modal-overlay.show').forEach(function (m) {
+                    m.classList.remove('show');
+                });
+            }
+        });
+
+        /* ── Forms ── */
+        var formPerfil = document.getElementById('formPerfil');
+        if (formPerfil) formPerfil.addEventListener('submit', guardarPerfil);
+
+        var formClave = document.getElementById('formClave');
+        if (formClave) formClave.addEventListener('submit', guardarClave);
+
+        /* ── Indicador de fortaleza de contraseña ── */
+        var inputClave = document.getElementById('claveNueva');
+        if (inputClave) {
+            inputClave.addEventListener('input', function () { evaluarFortaleza(this.value); });
         }
-        
-        function resetMsg(id) {
-            const el = document.getElementById(id);
-            el.style.display = 'none';
-            el.className = 'hub-form-msg';
-        }
-        
-        /* ── Guardar perfil ── */
-        function guardarPerfil(e) {
-            e.preventDefault();
-            const btn = document.getElementById('btnGuardarPerfil');
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
-            resetMsg('perfilMsg');
-            
-            const data = new FormData(document.getElementById('formPerfil'));
-            
-            fetch('<?= url('core', 'hub', 'actualizarPerfil') ?>', {
-                method: 'POST',
-                body: data
-            })
-            .then(r => r.json())
-            .then(res => {
+    });
+
+    /* ── Helpers de mensajes ── */
+    function showMsg(id, msg, type) {
+        var el = document.getElementById(id);
+        el.textContent = msg;
+        el.className = 'hub-form-msg ' + type;
+        el.style.display = 'block';
+    }
+
+    function resetMsg(id) {
+        var el = document.getElementById(id);
+        el.style.display = 'none';
+        el.className = 'hub-form-msg';
+    }
+
+    /* ── Guardar perfil ── */
+    function guardarPerfil(e) {
+        e.preventDefault();
+        var btn = document.getElementById('btnGuardarPerfil');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+        resetMsg('perfilMsg');
+
+        var data = new FormData(document.getElementById('formPerfil'));
+
+        fetch('<?= url('core', 'hub', 'actualizarPerfil') ?>', { method: 'POST', body: data })
+            .then(function (r) { return r.json(); })
+            .then(function (res) {
                 if (res.success) {
                     showMsg('perfilMsg', res.message || 'Perfil actualizado correctamente', 'success');
-                    // Actualizar nombre en la UI
-                    const nuevoNombre = data.get('nombres') + ' ' + data.get('apellidos');
-                    document.querySelectorAll('.hub-user-info .name').forEach(el => el.textContent = nuevoNombre);
+                    var nuevoNombre = data.get('nombres') + ' ' + data.get('apellidos');
+                    document.querySelectorAll('.hub-user-info .name').forEach(function (el) { el.textContent = nuevoNombre; });
                     document.querySelector('.hub-dropdown-header strong').textContent = nuevoNombre;
                     document.querySelector('.hub-dropdown-header small').textContent = data.get('email');
-                    setTimeout(() => cerrarModal('modalPerfil'), 1500);
+                    setTimeout(function () { document.getElementById('modalPerfil').classList.remove('show'); }, 1500);
                 } else {
                     showMsg('perfilMsg', res.message || 'Error al actualizar', 'error');
                 }
             })
-            .catch(() => showMsg('perfilMsg', 'Error de conexión', 'error'))
-            .finally(() => {
+            .catch(function () { showMsg('perfilMsg', 'Error de conexión', 'error'); })
+            .finally(function () {
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fas fa-save"></i> Guardar';
             });
-        }
-        
-        /* ── Cambiar contraseña ── */
-        function guardarClave(e) {
-            e.preventDefault();
-            const nueva = document.getElementById('claveNueva').value;
-            const confirmar = document.getElementById('claveConfirmar').value;
-            
-            if (nueva !== confirmar) {
-                showMsg('claveMsg', 'Las contraseñas no coinciden', 'error');
-                return;
-            }
-            
-            if (nueva.length < 8) {
-                showMsg('claveMsg', 'La contraseña debe tener al menos 8 caracteres', 'error');
-                return;
-            }
-            
-            const btn = document.getElementById('btnGuardarClave');
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cambiando...';
-            resetMsg('claveMsg');
-            
-            const data = new FormData(document.getElementById('formClave'));
-            
-            fetch('<?= url('core', 'hub', 'cambiarClave') ?>', {
-                method: 'POST',
-                body: data
-            })
-            .then(r => r.json())
-            .then(res => {
+    }
+
+    /* ── Cambiar contraseña ── */
+    function guardarClave(e) {
+        e.preventDefault();
+        var nueva     = document.getElementById('claveNueva').value;
+        var confirmar = document.getElementById('claveConfirmar').value;
+
+        if (nueva !== confirmar) { showMsg('claveMsg', 'Las contraseñas no coinciden', 'error'); return; }
+        if (nueva.length < 8)   { showMsg('claveMsg', 'La contraseña debe tener al menos 8 caracteres', 'error'); return; }
+
+        var btn = document.getElementById('btnGuardarClave');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cambiando...';
+        resetMsg('claveMsg');
+
+        var data = new FormData(document.getElementById('formClave'));
+
+        fetch('<?= url('core', 'hub', 'cambiarClave') ?>', { method: 'POST', body: data })
+            .then(function (r) { return r.json(); })
+            .then(function (res) {
                 if (res.success) {
                     showMsg('claveMsg', res.message || 'Contraseña cambiada correctamente', 'success');
                     document.getElementById('formClave').reset();
                     document.getElementById('strengthBar').style.width = '0';
-                    setTimeout(() => cerrarModal('modalClave'), 1500);
+                    setTimeout(function () { document.getElementById('modalClave').classList.remove('show'); }, 1500);
                 } else {
                     showMsg('claveMsg', res.message || 'Error al cambiar contraseña', 'error');
                 }
             })
-            .catch(() => showMsg('claveMsg', 'Error de conexión', 'error'))
-            .finally(() => {
+            .catch(function () { showMsg('claveMsg', 'Error de conexión', 'error'); })
+            .finally(function () {
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fas fa-save"></i> Cambiar';
             });
-        }
-        
-        /* ── Indicador de fortaleza ── */
-        function evaluarFortaleza(pwd) {
-            let score = 0;
-            if (pwd.length >= 8) score++;
-            if (pwd.length >= 12) score++;
-            if (/[A-Z]/.test(pwd)) score++;
-            if (/[0-9]/.test(pwd)) score++;
-            if (/[^A-Za-z0-9]/.test(pwd)) score++;
-            
-            const bar = document.getElementById('strengthBar');
-            const pct = (score / 5) * 100;
-            bar.style.width = pct + '%';
-            
-            if (score <= 1) bar.style.background = '#ef4444';
-            else if (score <= 2) bar.style.background = '#f97316';
-            else if (score <= 3) bar.style.background = '#eab308';
-            else if (score <= 4) bar.style.background = '#22c55e';
-            else bar.style.background = '#10b981';
-        }
+    }
+
+    /* ── Indicador de fortaleza ── */
+    function evaluarFortaleza(pwd) {
+        var score = 0;
+        if (pwd.length >= 8) score++;
+        if (pwd.length >= 12) score++;
+        if (/[A-Z]/.test(pwd)) score++;
+        if (/[0-9]/.test(pwd)) score++;
+        if (/[^A-Za-z0-9]/.test(pwd)) score++;
+
+        var bar = document.getElementById('strengthBar');
+        bar.style.width = (score / 5 * 100) + '%';
+        bar.style.background = score <= 1 ? '#ef4444'
+                             : score <= 2 ? '#f97316'
+                             : score <= 3 ? '#eab308'
+                             : score <= 4 ? '#22c55e'
+                             :              '#10b981';
+    }
     </script>
 </body>
 </html>

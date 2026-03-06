@@ -3,24 +3,21 @@ abstract class BaseController {
 
     /**
      * Middleware de autorización centralizado
-     * Valida permisos antes de ejecutar acciones sensibles
-     * @param string $action Acción (crear, editar, eliminar, ver)
+     * Valida permisos antes de ejecutar acciones sensibles.
+     * En peticiones AJAX devuelve JSON 403. En navegación redirige al Hub.
+     *
+     * @param string      $action   Acción (crear, editar, eliminar, ver)
      * @param string|null $resource Recurso (ej: 'usuarios')
      */
     protected function authorize($action, $resource = null) {
         $perm = $resource ? "$resource.$action" : $action;
-        if (!function_exists('hasPermission')) {
-            require_once BASE_PATH . '/app/helpers/functions.php';
-        }
         if (!hasPermission($perm)) {
-            if (function_exists('setFlashMessage')) {
-                setFlashMessage('error', 'No tienes permiso para esta acción.');
+            $this->logSecurityEvent("Acceso denegado: {$perm}");
+            if ($this->isAjax()) {
+                $this->error('No tienes permiso para realizar esta acción.', 403);
             }
-            if (function_exists('redirect')) {
-                redirect('seguridad', 'dashboard');
-            } else {
-                header('Location: /public/index.php?r=seguridad/dashboard');
-            }
+            setFlashMessage('error', 'No tienes permiso para realizar esta acción.');
+            redirect('core', 'hub', 'index');
             exit;
         }
     }
@@ -86,50 +83,74 @@ abstract class BaseController {
     }
     
     /**
-     * Obtener información del tenant
-     * 
+     * Obtener información del tenant con caché de sesión (TTL: 5 minutos)
+     * Evita queries repetidas en cada request para datos que rara vez cambian.
+     *
      * @return array|null
      */
     private function getTenantInfo() {
+        $cacheKey = 'sess_tenant_' . $this->tenantId;
+        $cacheTsKey = 'sess_tenant_ts_' . $this->tenantId;
+
+        if (isset($_SESSION[$cacheKey]) && (time() - ($_SESSION[$cacheTsKey] ?? 0)) < 300) {
+            return $_SESSION[$cacheKey];
+        }
+
         try {
             $stmt = $this->db->prepare("
-                SELECT 
+                SELECT
                     t.*,
-                    p.nombre as plan_nombre
-                FROM tenants t
-                LEFT JOIN planes_suscripcion p ON t.plan_id = p.plan_id
-                WHERE t.tenant_id = ?
+                    p.pla_nombre as plan_nombre
+                FROM seguridad_tenants t
+                LEFT JOIN seguridad_planes p ON t.ten_plan_id = p.pla_plan_id
+                WHERE t.ten_tenant_id = ?
             ");
-            
             $stmt->execute([$this->tenantId]);
-            return $stmt->fetch();
-            
+            $result = $stmt->fetch();
+
+            $_SESSION[$cacheKey]   = $result;
+            $_SESSION[$cacheTsKey] = time();
+            return $result;
+
         } catch (Exception $e) {
             $this->logError("Error al obtener tenant: " . $e->getMessage());
             return null;
         }
     }
-    
+
     /**
-     * Obtener módulos activos del usuario
-     * 
+     * Obtener módulos activos del tenant con caché de sesión (TTL: 5 minutos)
+     * Usa la misma consulta que AuthController::getUserModules() (seguridad_tenant_modulos).
+     *
      * @return array
      */
     private function getUserModules() {
+        $cacheKey = 'sess_modules_' . $this->tenantId;
+        $cacheTsKey = 'sess_modules_ts_' . $this->tenantId;
+
+        if (isset($_SESSION[$cacheKey]) && (time() - ($_SESSION[$cacheTsKey] ?? 0)) < 300) {
+            return $_SESSION[$cacheKey];
+        }
+
         try {
             $stmt = $this->db->prepare("
-                SELECT 
-                    m.modulo_id,
-                    m.codigo,
-                    m.nombre,
-                    m.descripcion
-                FROM modulos m
-                INNER JOIN usuario_modulo um ON m.modulo_id = um.modulo_id
-                WHERE um.usuario_id = ? AND um.tenant_id = ? AND m.activo = 1
-                ORDER BY m.orden ASC
+                SELECT
+                    m.mod_id       AS modulo_id,
+                    m.mod_codigo   AS codigo,
+                    m.mod_nombre   AS nombre,
+                    m.mod_descripcion AS descripcion
+                FROM seguridad_modulos m
+                INNER JOIN seguridad_tenant_modulos tm ON m.mod_id = tm.tmo_modulo_id
+                WHERE tm.tmo_tenant_id = ? AND tm.tmo_activo = 'S' AND m.mod_activo = 1
+                ORDER BY m.mod_orden ASC
             ");
-            $stmt->execute([$this->userId, $this->tenantId]);
-            return $stmt->fetchAll();
+            $stmt->execute([$this->tenantId]);
+            $result = $stmt->fetchAll();
+
+            $_SESSION[$cacheKey]   = $result;
+            $_SESSION[$cacheTsKey] = time();
+            return $result;
+
         } catch (Exception $e) {
             $this->logError("Error al obtener módulos: " . $e->getMessage());
             return [];

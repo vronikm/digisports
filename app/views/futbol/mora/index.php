@@ -199,7 +199,7 @@ $resumen     = $resumen ?? ['total_en_mora' => 0, 'monto_total_adeudado' => 0, '
 </div>
 
 <?php ob_start(); ?>
-<script>
+<script nonce="<?= cspNonce() ?>">
 $(document).ready(function() {
     if ($('#tblMorosos tbody tr').length > 0) {
         $('#tblMorosos').DataTable({

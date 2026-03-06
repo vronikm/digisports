@@ -174,7 +174,7 @@ $moduloNombre = $modulo_actual['nombre'] ?? 'Fútbol';
 <!-- SCRIPTS -->
 <!-- ============================================================= -->
 <?php ob_start(); ?>
-<script>
+<script nonce="<?= cspNonce() ?>">
 $(document).ready(function() {
     $('#tblComprobantes').DataTable({
         language: { url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json' },

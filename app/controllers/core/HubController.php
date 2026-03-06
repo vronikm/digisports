@@ -270,17 +270,21 @@ class HubController extends \BaseController {
      */
     private function generarTokenExterno() {
         $datos = [
-            'user_id' => $_SESSION['user_id'],
+            'user_id'   => $_SESSION['user_id'],
             'tenant_id' => $_SESSION['tenant_id'],
-            'rol_id' => $_SESSION['rol_id'],
+            'rol_id'    => $_SESSION['rol_id'],
+            'username'  => $_SESSION['username'] ?? '',
+            'email'     => $_SESSION['email']    ?? '',
             'timestamp' => time(),
-            'expires' => time() + 300, // 5 minutos
+            'expires'   => time() + 300, // 5 minutos
         ];
-        
+
         $token = base64_encode(json_encode($datos));
-        $key = defined('ENCRYPTION_KEY') ? ENCRYPTION_KEY : (defined('\ENCRYPTION_KEY') ? \ENCRYPTION_KEY : 'digisports_secret');
+        $key   = function_exists('env')
+            ? env('APP_KEY', 'DigiSports2024SecureKeyMasterEncryption')
+            : 'DigiSports2024SecureKeyMasterEncryption';
         $signature = hash_hmac('sha256', $token, $key);
-        
+
         return $token . '.' . $signature;
     }
     

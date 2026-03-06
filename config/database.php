@@ -10,14 +10,21 @@ class Database {
     private static $instance = null;
     private $conn;
     
-    // Configuración de la base de datos
-    private $host = 'localhost';
-    private $db_name = 'digisports_core';
-    private $username = 'root';
-    private $password = '';
+    // Configuración cargada desde .env vía Config::getDB()
+    private $host;
+    private $db_name;
+    private $username;
+    private $password;
     private $charset = 'utf8mb4';
-    
+
     private function __construct() {
+        $cfg = class_exists('Config') ? Config::getDB('core') : [];
+        $this->host     = $cfg['host']     ?? (function_exists('env') ? env('DB_HOST', 'localhost') : 'localhost');
+        $this->db_name  = $cfg['database'] ?? (function_exists('env') ? env('DB_NAME', 'digisports_core') : 'digisports_core');
+        $this->username = $cfg['username'] ?? (function_exists('env') ? env('DB_USER', 'root') : 'root');
+        $this->password = $cfg['password'] ?? (function_exists('env') ? env('DB_PASS', '') : '');
+        $this->charset  = $cfg['charset']  ?? 'utf8mb4';
+
         try {
             $dsn = "mysql:host={$this->host};dbname={$this->db_name};charset={$this->charset}";
             $options = [

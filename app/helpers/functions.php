@@ -4,16 +4,21 @@
 // ===================================================================
 
 /**
- * Inicializar sesión SSO para sistemas legacy y nuevos
- * @param array $userData Datos mínimos requeridos para sesión cruzada
+ * Inicializar sesión SSO para sistemas externos y legacy
+ * Usa las mismas claves canónicas que AuthController::completeLogin()
+ * @param array $userData Datos del usuario (acepta múltiples formatos de clave)
  */
 function initSSOSession($userData) {
-    $_SESSION['usr_id'] = $userData['usr_id'];
-    $_SESSION['usr_tenant_id'] = $userData['usr_tenant_id'];
-    $_SESSION['usr_role'] = $userData['usr_role'];
-    $_SESSION['usr_username'] = $userData['usr_username'];
-    if (isset($userData['usr_email'])) {
-        $_SESSION['usr_email'] = $userData['usr_email'];
+    // Resolver user_id aceptando múltiples formatos de entrada
+    $_SESSION['user_id']   = $userData['user_id']   ?? $userData['usu_usuario_id'] ?? $userData['usr_id']     ?? null;
+    $_SESSION['tenant_id'] = $userData['tenant_id'] ?? $userData['usu_tenant_id']  ?? $userData['usr_tenant_id'] ?? null;
+    $_SESSION['role']      = $userData['role']      ?? $userData['rol_codigo']      ?? $userData['usr_role']   ?? '';
+    $_SESSION['username']  = $userData['username']  ?? $userData['usu_username']    ?? $userData['usr_username'] ?? '';
+    $_SESSION['nombres']   = $userData['nombres']   ?? $userData['usu_nombres']     ?? '';
+    $_SESSION['apellidos'] = $userData['apellidos'] ?? $userData['usu_apellidos']   ?? '';
+
+    if (!empty($userData['email'] ?? $userData['usu_email'] ?? '')) {
+        $_SESSION['email'] = $userData['email'] ?? $userData['usu_email'];
     }
     if (isset($userData['permissions'])) {
         $_SESSION['permissions'] = $userData['permissions'];
@@ -21,7 +26,8 @@ function initSSOSession($userData) {
     if (isset($userData['modules'])) {
         $_SESSION['modules'] = $userData['modules'];
     }
-    // Agregar otras variables necesarias para compatibilidad SSO
+
+    $_SESSION['LAST_ACTIVITY'] = time();
 }
 // ...existing code...
 /**
@@ -81,24 +87,27 @@ function getTenantId() {
 }
 
 /**
- * Obtener información completa del usuario
- * 
+ * Obtener información completa del usuario desde las claves canónicas de sesión
+ * Claves establecidas por AuthController::completeLogin()
  * @return array|null
  */
 function getCurrentUser() {
     if (!isAuthenticated()) {
         return null;
     }
-    
+
     return [
-        'usu_usuario_id' => $_SESSION['usu_usuario_id'] ?? null,
-        'usu_tenant_id' => $_SESSION['usu_tenant_id'] ?? null,
-        'usu_username' => $_SESSION['usu_username'] ?? '',
-        'usu_nombres' => $_SESSION['usu_nombres'] ?? '',
-        'usu_apellidos' => $_SESSION['usu_apellidos'] ?? '',
-        'usu_email' => $_SESSION['usu_email'] ?? '',
-        'usu_rol_id' => $_SESSION['usu_rol_id'] ?? null,
-        // ...otros campos según nueva estructura
+        'usu_usuario_id' => $_SESSION['user_id']      ?? null,
+        'usu_tenant_id'  => $_SESSION['tenant_id']    ?? null,
+        'usu_username'   => $_SESSION['username']     ?? '',
+        'usu_nombres'    => $_SESSION['nombres']      ?? '',
+        'usu_apellidos'  => $_SESSION['apellidos']    ?? '',
+        'usu_email'      => $_SESSION['email']        ?? '',
+        'usu_rol_id'     => $_SESSION['rol_id']       ?? null,
+        'usu_role'       => $_SESSION['role']         ?? '',
+        'usu_avatar'     => $_SESSION['avatar']       ?? null,
+        'usu_nivel'      => $_SESSION['nivel_acceso'] ?? 1,
+        'ten_nombre'     => $_SESSION['tenant_nombre'] ?? '',
     ];
 }
 
@@ -107,26 +116,25 @@ function getCurrentUser() {
 // ===================================================================
 
 /**
- * Generar URL encriptada
+/**
+ * Generar URL segura con encriptación
+ * 
+ * IMPORTANTE: Esta función SOLO genera URLs GET encriptadas.
+ * Para URLs muy largas, NO intenta generar tokens POST automáticamente
+ * porque puede causar redirecciones infinitas si la sesión no está lista.
+ * 
+ * Usar secureLink() o redirectSecure() para URLs POST cuando sea necesario.
  * 
  * @param string $module Módulo
  * @param string $controller Controlador
  * @param string $action Acción
  * @param array $params Parámetros
- * @return string
+ * @return string URL encriptada en formato GET
  */
 function url($module, $controller, $action = 'index', $params = []) {
-    // Siempre generar URL encriptada para seguridad
-    $data = [
-        'm' => $module,
-        'c' => $controller,
-        'a' => $action,
-        'p' => $params,
-        't' => time()
-    ];
-    
-    $encrypted = Security::encryptUrl(json_encode($data));
-    return Config::baseUrl('index.php?r=' . $encrypted);
+    // Generar URL encriptada normal (método GET)
+    // Siempre usar método GET directo para garantizar estabilidad
+    return Security::encodeSecureUrl($module, $controller, $action, $params);
 }
 
 /**
@@ -195,8 +203,16 @@ function asset($path) {
 // ===================================================================
 
 /**
+ * Obtener el nonce CSP del request actual para usarlo en etiquetas <script>.
+ * Uso en vistas: <script nonce="<?= cspNonce() ?>">
+ */
+function cspNonce(): string {
+    return class_exists('Security') ? Security::getCspNonce() : '';
+}
+
+/**
  * Escapar HTML
- * 
+ *
  * @param string $string Texto a escapar
  * @return string
  */

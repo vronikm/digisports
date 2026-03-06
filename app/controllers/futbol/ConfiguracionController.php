@@ -45,7 +45,6 @@ class ConfiguracionController extends \App\Controllers\ModuleController {
             $this->renderModule('futbol/configuracion/index', $this->viewData);
 
         } catch (\Exception $e) {
-            $this->logError("Error cargando configuración: " . $e->getMessage());
             $this->error('Error al cargar configuración');
         }
     }
@@ -55,8 +54,13 @@ class ConfiguracionController extends \App\Controllers\ModuleController {
      */
     public function guardar() {
         try {
-            if ($_SERVER['REQUEST_METHOD'] !== 'POST') return $this->jsonResponse(['success' => false, 'message' => 'POST requerido']);
-            if (!\Security::validateCsrfToken($this->post('csrf_token'))) return $this->jsonResponse(['success' => false, 'message' => 'Token inválido']);
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+                return $this->jsonResponse(['success' => false, 'message' => 'POST requerido']);
+            }
+            
+            if (!\Security::validateCsrfToken($this->post('csrf_token'))) {
+                return $this->jsonResponse(['success' => false, 'message' => 'Token inválido']);
+            }
 
             $configs = $this->post('config');
             if (!is_array($configs) || empty($configs)) {
@@ -77,15 +81,33 @@ class ConfiguracionController extends \App\Controllers\ModuleController {
                 $actualizados += $stm->rowCount();
             }
 
-            return $this->jsonResponse([
+            // Limpiar output y enviar JSON
+            if (ob_get_level() > 0) {
+                ob_end_clean();
+            }
+            ob_start();
+            header('Content-Type: application/json; charset=utf-8');
+            $response = [
                 'success' => true,
                 'message' => "Configuración guardada ({$actualizados} parámetros actualizados)",
                 'actualizados' => $actualizados,
-            ]);
+            ];
+            echo json_encode($response, JSON_UNESCAPED_UNICODE);
+            ob_end_flush();
+            exit;
 
         } catch (\Exception $e) {
-            $this->logError("Error guardando configuración: " . $e->getMessage());
-            return $this->jsonResponse(['success' => false, 'message' => 'Error al guardar configuración']);
+            
+            // Limpiar output y enviar JSON con error
+            if (ob_get_level() > 0) {
+                ob_end_clean();
+            }
+            ob_start();
+            header('Content-Type: application/json; charset=utf-8');
+            $response = ['success' => false, 'message' => 'Error al guardar configuración: ' . $e->getMessage()];
+            echo json_encode($response, JSON_UNESCAPED_UNICODE);
+            ob_end_flush();
+            exit;
         }
     }
 

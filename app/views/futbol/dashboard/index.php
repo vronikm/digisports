@@ -236,7 +236,7 @@ $sedeActiva          = $sede_activa ?? null;
 </section>
 
 <?php ob_start(); ?>
-<script>
+<script nonce="<?= cspNonce() ?>">
 // Gráfico de Asistencia
 var ctx = document.getElementById('chartAsistencia');
 if (ctx) {

@@ -520,7 +520,7 @@ $moduloColor  = $modulo_actual['color'] ?? '#22C55E';
 </section>
 
 <?php ob_start(); ?>
-<script>
+<script nonce="<?= cspNonce() ?>">
 $(function() {
     // Calcular edad al cambiar fecha de nacimiento
     $('#fecha_nacimiento').on('change', calcularEdad).trigger('change');
