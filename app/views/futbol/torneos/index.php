@@ -1,10 +1,9 @@
 <?php
-$moduloColor = $modulo_actual['color'] ?? '#22C55E';
-$moduloIcono = $modulo_actual['icono'] ?? 'fas fa-futbol';
+$moduloColor  = $modulo_actual['color']  ?? '#22C55E';
+$moduloIcono  = $modulo_actual['icono']  ?? 'fas fa-futbol';
 $moduloNombre = $modulo_actual['nombre'] ?? 'Fútbol';
 ?>
 
-<!-- Content Header -->
 <div class="content-header">
     <div class="container-fluid">
         <div class="row mb-2">
@@ -24,14 +23,13 @@ $moduloNombre = $modulo_actual['nombre'] ?? 'Fútbol';
     </div>
 </div>
 
-<!-- Main Content -->
 <section class="content">
     <div class="container-fluid">
 
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center" style="border-top: 3px solid <?= $moduloColor ?>">
                 <h3 class="card-title"><i class="fas fa-trophy mr-2" style="color: <?= $moduloColor ?>"></i>Torneos</h3>
-                <button class="btn btn-sm text-white" style="background-color: <?= $moduloColor ?>" onclick="abrirModalTorneo()">
+                <button class="btn btn-sm text-white" id="btnNuevoTorneo" style="background-color: <?= $moduloColor ?>">
                     <i class="fas fa-plus mr-1"></i> Nuevo Torneo
                 </button>
             </div>
@@ -61,20 +59,14 @@ $moduloNombre = $modulo_actual['nombre'] ?? 'Fútbol';
                                 <td>
                                     <?php
                                     $tipoBadge = match($torneo['fto_tipo']) {
-                                        'INTERNO'  => 'primary',
-                                        'EXTERNO'  => 'warning',
-                                        'AMISTOSO' => 'info',
-                                        'LIGA'     => 'success',
-                                        'COPA'     => 'danger',
-                                        default    => 'secondary'
+                                        'INTERNO'  => 'primary', 'EXTERNO'  => 'warning',
+                                        'AMISTOSO' => 'info',    'LIGA'     => 'success',
+                                        'COPA'     => 'danger',  default    => 'secondary'
                                     };
                                     $tipoIcon = match($torneo['fto_tipo']) {
-                                        'INTERNO'  => 'fas fa-home',
-                                        'EXTERNO'  => 'fas fa-external-link-alt',
-                                        'AMISTOSO' => 'fas fa-handshake',
-                                        'LIGA'     => 'fas fa-list-ol',
-                                        'COPA'     => 'fas fa-trophy',
-                                        default    => 'fas fa-tag'
+                                        'INTERNO'  => 'fas fa-home',      'EXTERNO'  => 'fas fa-external-link-alt',
+                                        'AMISTOSO' => 'fas fa-handshake', 'LIGA'     => 'fas fa-list-ol',
+                                        'COPA'     => 'fas fa-trophy',    default    => 'fas fa-tag'
                                     };
                                     ?>
                                     <span class="badge badge-<?= $tipoBadge ?>">
@@ -87,10 +79,8 @@ $moduloNombre = $modulo_actual['nombre'] ?? 'Fútbol';
                                 <td>
                                     <?php
                                     $estadoBadge = match($torneo['fto_estado']) {
-                                        'PLANIFICADO' => 'info',
-                                        'EN_CURSO'    => 'success',
-                                        'FINALIZADO'  => 'secondary',
-                                        'CANCELADO'   => 'danger',
+                                        'PLANIFICADO' => 'info', 'EN_CURSO'   => 'success',
+                                        'FINALIZADO'  => 'secondary', 'CANCELADO' => 'danger',
                                         default       => 'secondary'
                                     };
                                     ?>
@@ -103,13 +93,17 @@ $moduloNombre = $modulo_actual['nombre'] ?? 'Fútbol';
                                 </td>
                                 <td class="text-right">$<?= number_format($torneo['fto_costo_inscripcion'] ?? 0, 2) ?></td>
                                 <td>
-                                    <a href="<?= url('futbol', 'torneo', 'convocatoria') ?>&id=<?= $torneo['fto_torneo_id'] ?>" class="btn btn-xs btn-outline-success" title="Convocatoria">
+                                    <a href="<?= url('futbol', 'torneo', 'convocatoria') ?>&id=<?= $torneo['fto_torneo_id'] ?>"
+                                       class="btn btn-xs btn-outline-success" title="Convocatoria">
                                         <i class="fas fa-users"></i>
                                     </a>
-                                    <button class="btn btn-xs btn-outline-primary" onclick="editarTorneo(<?= htmlspecialchars(json_encode($torneo)) ?>)" title="Editar">
+                                    <button class="btn btn-xs btn-outline-primary js-editar-torneo" title="Editar"
+                                        data-torneo="<?= htmlspecialchars(json_encode($torneo, JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP), ENT_QUOTES) ?>">
                                         <i class="fas fa-edit"></i>
                                     </button>
-                                    <button class="btn btn-xs btn-outline-danger" onclick="eliminarTorneo(<?= $torneo['fto_torneo_id'] ?>)" title="Eliminar">
+                                    <button class="btn btn-xs btn-outline-danger js-eliminar-torneo" title="Cancelar"
+                                        data-id="<?= $torneo['fto_torneo_id'] ?>"
+                                        data-nombre="<?= htmlspecialchars($torneo['fto_nombre'], ENT_QUOTES) ?>">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </td>
@@ -122,7 +116,7 @@ $moduloNombre = $modulo_actual['nombre'] ?? 'Fútbol';
                 <div class="text-center py-5">
                     <i class="fas fa-trophy fa-3x opacity-50 text-muted mb-3"></i>
                     <p class="text-muted">No hay torneos registrados.</p>
-                    <button class="btn btn-sm text-white" style="background-color: <?= $moduloColor ?>" onclick="abrirModalTorneo()">
+                    <button class="btn btn-sm text-white" id="btnNuevoTorneoEmpty" style="background-color: <?= $moduloColor ?>">
                         <i class="fas fa-plus mr-1"></i> Crear primer torneo
                     </button>
                 </div>
@@ -133,9 +127,7 @@ $moduloNombre = $modulo_actual['nombre'] ?? 'Fútbol';
     </div>
 </section>
 
-<!-- ============================================================= -->
-<!-- MODAL: TORNEO -->
-<!-- ============================================================= -->
+<!-- Modal Torneo -->
 <div class="modal fade" id="modalTorneo" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -143,8 +135,10 @@ $moduloNombre = $modulo_actual['nombre'] ?? 'Fútbol';
                 <h5 class="modal-title" id="modalTorneoTitle"><i class="fas fa-trophy mr-2"></i>Nuevo Torneo</h5>
                 <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
             </div>
-            <form id="formTorneo" method="POST" action="<?= url('futbol', 'torneo', 'crear') ?>">
-                <input type="hidden" name="csrf_token" value="<?= $csrf_token ?>">
+            <form id="formTorneo" method="POST"
+                data-url-crear="<?= url('futbol', 'torneo', 'crear') ?>"
+                data-url-editar="<?= url('futbol', 'torneo', 'editar') ?>">
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token ?? '') ?>">
                 <input type="hidden" name="id" id="torneo_id">
                 <div class="modal-body">
                     <div class="row">
@@ -185,11 +179,9 @@ $moduloNombre = $modulo_actual['nombre'] ?? 'Fútbol';
                                 <label>Sede</label>
                                 <select name="sede_id" id="torneo_sede" class="form-control">
                                     <option value="">Sin sede asignada</option>
-                                    <?php if (!empty($sedes)): ?>
-                                        <?php foreach ($sedes as $sede): ?>
-                                        <option value="<?= $sede['sed_sede_id'] ?>"><?= htmlspecialchars($sede['sed_nombre']) ?></option>
-                                        <?php endforeach; ?>
-                                    <?php endif; ?>
+                                    <?php foreach ($sedes as $sede): ?>
+                                    <option value="<?= $sede['sed_sede_id'] ?>"><?= htmlspecialchars($sede['sed_nombre']) ?></option>
+                                    <?php endforeach; ?>
                                 </select>
                             </div>
                         </div>
@@ -239,64 +231,93 @@ $moduloNombre = $modulo_actual['nombre'] ?? 'Fútbol';
     </div>
 </div>
 
-<!-- ============================================================= -->
-<!-- SCRIPTS -->
-<!-- ============================================================= -->
 <?php ob_start(); ?>
 <script nonce="<?= cspNonce() ?>">
-$(document).ready(function() {
-    $('#tblTorneos').DataTable({
-        language: { url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json' },
-        responsive: true,
-        order: [[4, 'desc']]
+$(function() {
+    var Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true });
+    var csrfToken = '<?= addslashes($csrf_token ?? '') ?>';
+
+    try {
+        $('#tblTorneos').DataTable({
+            language: { url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json' },
+            responsive: true,
+            order: [[4, 'desc']]
+        });
+    } catch(e) { console.warn('DataTable:', e); }
+
+    function abrirModalNuevo() {
+        $('#formTorneo')[0].reset();
+        $('#torneo_id').val('');
+        $('#torneo_estado').val('PLANIFICADO');
+        $('#modalTorneoTitle').html('<i class="fas fa-trophy mr-2"></i>Nuevo Torneo');
+        $('#formTorneo').data('mode', 'crear');
+        $('#modalTorneo').modal('show');
+    }
+
+    $('#btnNuevoTorneo, #btnNuevoTorneoEmpty').on('click', abrirModalNuevo);
+
+    $(document).on('click', '.js-editar-torneo', function() {
+        var obj = JSON.parse($(this).attr('data-torneo'));
+        $('#formTorneo')[0].reset();
+        $('#torneo_id').val(obj.fto_torneo_id);
+        $('#torneo_nombre').val(obj.fto_nombre || '');
+        $('#torneo_tipo').val(obj.fto_tipo || '');
+        $('#torneo_estado').val(obj.fto_estado || 'PLANIFICADO');
+        $('#torneo_sede').val(obj.fto_sede_id || '');
+        $('#torneo_lugar').val(obj.fto_sede_torneo || '');
+        $('#torneo_fecha_inicio').val(obj.fto_fecha_inicio || '');
+        $('#torneo_fecha_fin').val(obj.fto_fecha_fin || '');
+        $('#torneo_presupuesto').val(obj.fto_costo_inscripcion || '');
+        $('#torneo_descripcion').val(obj.fto_descripcion || '');
+        $('#modalTorneoTitle').html('<i class="fas fa-edit mr-2"></i>Editar Torneo');
+        $('#formTorneo').data('mode', 'editar');
+        $('#modalTorneo').modal('show');
+    });
+
+    $('#formTorneo').on('submit', function(e) {
+        e.preventDefault();
+        var mode   = $(this).data('mode') || 'crear';
+        var action = $(this).attr(mode === 'editar' ? 'data-url-editar' : 'data-url-crear');
+        var $btn   = $(this).find('[type=submit]').prop('disabled', true);
+        $.post(action, $(this).serialize(), function(res) {
+            if (res.success) {
+                $('#modalTorneo').modal('hide');
+                Toast.fire({ icon: 'success', title: res.message });
+                setTimeout(function() { location.reload(); }, 1200);
+            } else {
+                Toast.fire({ icon: 'error', title: res.message });
+            }
+        }, 'json').fail(function() {
+            Toast.fire({ icon: 'error', title: 'Error de comunicación' });
+        }).always(function() { $btn.prop('disabled', false); });
+    });
+
+    $(document).on('click', '.js-eliminar-torneo', function() {
+        var id     = $(this).data('id');
+        var nombre = $(this).data('nombre');
+        var $row   = $(this).closest('tr');
+        Swal.fire({
+            title: '¿Cancelar torneo?',
+            html: '<strong>' + nombre + '</strong>',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'Sí, cancelar',
+            cancelButtonText: 'No'
+        }).then(function(r) {
+            if (!r.isConfirmed) return;
+            $.post('<?= url('futbol', 'torneo', 'eliminar') ?>', { id: id, csrf_token: csrfToken }, function(res) {
+                if (res.success) {
+                    Toast.fire({ icon: 'success', title: res.message });
+                    $row.fadeOut(400, function() { location.reload(); });
+                } else {
+                    Toast.fire({ icon: 'error', title: res.message });
+                }
+            }, 'json').fail(function() {
+                Toast.fire({ icon: 'error', title: 'Error de comunicación' });
+            });
+        });
     });
 });
-
-function abrirModalTorneo() {
-    $('#formTorneo')[0].reset();
-    $('#torneo_id').val('');
-    $('#torneo_estado').val('PLANIFICADO');
-    $('#modalTorneoTitle').html('<i class="fas fa-trophy mr-2"></i>Nuevo Torneo');
-    $('#formTorneo').attr('action', '<?= url('futbol', 'torneo', 'crear') ?>');
-    $('#modalTorneo').modal('show');
-}
-
-function editarTorneo(obj) {
-    $('#formTorneo')[0].reset();
-    $('#torneo_id').val(obj.fto_torneo_id);
-    $('#torneo_nombre').val(obj.fto_nombre);
-    $('#torneo_tipo').val(obj.fto_tipo);
-    $('#torneo_estado').val(obj.fto_estado);
-    $('#torneo_sede').val(obj.fto_sede_id || '');
-    $('#torneo_lugar').val(obj.fto_sede_torneo || '');
-    $('#torneo_fecha_inicio').val(obj.fto_fecha_inicio);
-    $('#torneo_fecha_fin').val(obj.fto_fecha_fin || '');
-    $('#torneo_presupuesto').val(obj.fto_costo_inscripcion || '');
-    $('#torneo_descripcion').val(obj.fto_descripcion || '');
-    $('#modalTorneoTitle').html('<i class="fas fa-edit mr-2"></i>Editar Torneo');
-    $('#formTorneo').attr('action', '<?= url('futbol', 'torneo', 'editar') ?>');
-    $('#modalTorneo').modal('show');
-}
-
-function eliminarTorneo(id) {
-    Swal.fire({
-        title: '¿Eliminar torneo?',
-        text: 'Esta acción eliminará el torneo y todos sus datos asociados.',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#6c757d',
-        confirmButtonText: 'Sí, eliminar',
-        cancelButtonText: 'Cancelar'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            window.location.href = '<?= url('futbol', 'torneo', 'eliminar') ?>&id=' + id + '&csrf_token=<?= $csrf_token ?>';
-        }
-    });
-}
-
-function verConvocatoria(id) {
-    window.location.href = '<?= url('futbol', 'torneo', 'convocatoria') ?>&id=' + id;
-}
 </script>
 <?php $scripts = ob_get_clean(); ?>

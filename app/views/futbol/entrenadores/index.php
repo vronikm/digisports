@@ -12,7 +12,7 @@ $moduloColor  = $modulo_actual['color'] ?? '#22C55E';
     <div class="container-fluid">
         <div class="row mb-2">
             <div class="col-sm-6"><h1 class="m-0"><i class="fas fa-futbol mr-2" style="color:<?= $moduloColor ?>"></i>Entrenadores</h1></div>
-            <div class="col-sm-6"><div class="float-sm-right"><button class="btn btn-sm" style="background:<?= $moduloColor ?>;color:white;" onclick="abrirModal()"><i class="fas fa-plus mr-1"></i>Nuevo Entrenador</button></div></div>
+            <div class="col-sm-6"><div class="float-sm-right"><button class="btn btn-sm" id="btnNuevoEntrenador" style="background:<?= $moduloColor ?>;color:white;"><i class="fas fa-plus mr-1"></i>Nuevo Entrenador</button></div></div>
         </div>
     </div>
 </div>
@@ -54,8 +54,15 @@ $moduloColor  = $modulo_actual['color'] ?? '#22C55E';
                                 <td class="text-center"><?= $ent['fen_activo'] ? '<span class="badge badge-success">Activo</span>' : '<span class="badge badge-secondary">Inactivo</span>' ?></td>
                                 <td class="text-center">
                                     <div class="btn-group btn-group-sm">
-                                        <button class="btn btn-outline-primary" onclick='editarEntrenador(<?= json_encode($ent) ?>)' title="Editar"><i class="fas fa-edit"></i></button>
-                                        <button class="btn btn-outline-danger" onclick="eliminarEntrenador(<?= $ent['fen_entrenador_id'] ?>,'<?= htmlspecialchars($ent['fen_nombres']) ?>')" title="Desactivar"><i class="fas fa-trash"></i></button>
+                                        <button class="btn btn-outline-primary js-editar-entrenador" title="Editar"
+                                            data-entrenador="<?= htmlspecialchars(json_encode($ent, JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP), ENT_QUOTES) ?>">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-outline-danger js-eliminar-entrenador" title="Desactivar"
+                                            data-id="<?= $ent['fen_entrenador_id'] ?>"
+                                            data-nombre="<?= htmlspecialchars($ent['fen_nombres'], ENT_QUOTES) ?>">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
@@ -73,7 +80,9 @@ $moduloColor  = $modulo_actual['color'] ?? '#22C55E';
 <div class="modal fade" id="modalEntrenador" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form id="formEntrenador" method="POST">
+            <form id="formEntrenador"
+                data-url-crear="<?= url('futbol', 'entrenador', 'crear') ?>"
+                data-url-editar="<?= url('futbol', 'entrenador', 'editar') ?>">
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token ?? '') ?>">
                 <input type="hidden" name="id" id="ent_id">
                 <div class="modal-header" style="background:<?= $moduloColor ?>;color:white;">
@@ -136,32 +145,87 @@ $moduloColor  = $modulo_actual['color'] ?? '#22C55E';
 
 <?php ob_start(); ?>
 <script nonce="<?= cspNonce() ?>">
-var urlCrear = '<?= url('futbol', 'entrenador', 'crear') ?>';
-var urlEditar = '<?= url('futbol', 'entrenador', 'editar') ?>';
-function abrirModal() {
-    document.getElementById('formEntrenador').reset(); document.getElementById('ent_id').value = '';
-    document.getElementById('modalTitulo').innerHTML = '<i class="fas fa-futbol mr-2"></i>Nuevo Entrenador';
-    document.getElementById('formEntrenador').action = urlCrear; $('#modalEntrenador').modal('show');
-}
-function editarEntrenador(ent) {
-    document.getElementById('ent_id').value = ent.fen_entrenador_id;
-    document.getElementById('ent_nombres').value = ent.fen_nombres || '';
-    document.getElementById('ent_apellidos').value = ent.fen_apellidos || '';
-    document.getElementById('ent_rol').value = ent.fen_rol || '';
-    document.getElementById('ent_sede').value = ent.fen_sede_id || '';
-    document.getElementById('ent_identif').value = ent.fen_identificacion || '';
-    document.getElementById('ent_especialidad').value = ent.fen_especialidad || '';
-    document.getElementById('ent_telefono').value = ent.fen_telefono || '';
-    document.getElementById('ent_email').value = ent.fen_email || '';
-    document.getElementById('ent_certificaciones').value = ent.fen_certificaciones || '';
-    document.getElementById('ent_color').value = ent.fen_color || '#22C55E';
-    document.getElementById('ent_notas').value = ent.fen_notas || '';
-    document.getElementById('modalTitulo').innerHTML = '<i class="fas fa-edit mr-2"></i>Editar Entrenador';
-    document.getElementById('formEntrenador').action = urlEditar; $('#modalEntrenador').modal('show');
-}
-function eliminarEntrenador(id, nombre) {
-    Swal.fire({ title: '¿Desactivar entrenador?', html: 'Se desactivará a <strong>' + nombre + '</strong>', icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Sí, desactivar', cancelButtonText: 'Cancelar'
-    }).then(function(r) { if (r.isConfirmed) window.location.href = '<?= url('futbol', 'entrenador', 'eliminar') ?>&id=' + id; });
-}
+$(function() {
+    var Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true });
+    var csrfToken    = '<?= addslashes($csrf_token ?? '') ?>';
+    var urlEliminar  = '<?= url('futbol', 'entrenador', 'eliminar') ?>';
+
+    function abrirModalNuevo() {
+        $('#formEntrenador')[0].reset();
+        $('#ent_id').val('');
+        $('#modalTitulo').html('<i class="fas fa-futbol mr-2"></i>Nuevo Entrenador');
+        $('#formEntrenador').data('mode', 'crear');
+        $('#modalEntrenador').modal('show');
+    }
+
+    function abrirModalEditar(ent) {
+        $('#ent_id').val(ent.fen_entrenador_id);
+        $('#ent_nombres').val(ent.fen_nombres || '');
+        $('#ent_apellidos').val(ent.fen_apellidos || '');
+        $('#ent_rol').val(ent.fen_rol || '');
+        $('#ent_sede').val(ent.fen_sede_id || '');
+        $('#ent_identif').val(ent.fen_identificacion || '');
+        $('#ent_especialidad').val(ent.fen_especialidad || '');
+        $('#ent_telefono').val(ent.fen_telefono || '');
+        $('#ent_email').val(ent.fen_email || '');
+        $('#ent_certificaciones').val(ent.fen_certificaciones || '');
+        $('#ent_color').val(ent.fen_color || '#22C55E');
+        $('#ent_notas').val(ent.fen_notas || '');
+        $('#modalTitulo').html('<i class="fas fa-edit mr-2"></i>Editar Entrenador');
+        $('#formEntrenador').data('mode', 'editar');
+        $('#modalEntrenador').modal('show');
+    }
+
+    $('#btnNuevoEntrenador').on('click', abrirModalNuevo);
+
+    $(document).on('click', '.js-editar-entrenador', function() {
+        var ent = JSON.parse($(this).attr('data-entrenador'));
+        abrirModalEditar(ent);
+    });
+
+    $(document).on('click', '.js-eliminar-entrenador', function() {
+        var id     = $(this).data('id');
+        var nombre = $(this).data('nombre');
+        Swal.fire({
+            title: '¿Desactivar entrenador?',
+            html: 'Se desactivará a <strong>' + $('<div>').text(nombre).html() + '</strong>',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'Sí, desactivar',
+            cancelButtonText: 'Cancelar'
+        }).then(function(r) {
+            if (!r.isConfirmed) return;
+            $.post(urlEliminar, { id: id, csrf_token: csrfToken }, function(res) {
+                if (res.success) {
+                    Toast.fire({ icon: 'success', title: res.message });
+                    setTimeout(function() { location.reload(); }, 1200);
+                } else {
+                    Swal.fire('Error', res.message, 'error');
+                }
+            }, 'json').fail(function() {
+                Toast.fire({ icon: 'error', title: 'Error de conexión' });
+            });
+        });
+    });
+
+    $('#formEntrenador').on('submit', function(e) {
+        e.preventDefault();
+        var mode = $(this).data('mode') || 'crear';
+        var url  = mode === 'editar' ? $(this).data('url-editar') : $(this).data('url-crear');
+        var $btn = $(this).find('[type=submit]').prop('disabled', true);
+        $.post(url, $(this).serialize(), function(res) {
+            if (res.success) {
+                $('#modalEntrenador').modal('hide');
+                Toast.fire({ icon: 'success', title: res.message });
+                setTimeout(function() { location.reload(); }, 1200);
+            } else {
+                Toast.fire({ icon: 'error', title: res.message });
+            }
+        }, 'json').fail(function() {
+            Toast.fire({ icon: 'error', title: 'Error de comunicación' });
+        }).always(function() { $btn.prop('disabled', false); });
+    });
+});
 </script>
 <?php $scripts = ob_get_clean(); ?>

@@ -14,9 +14,9 @@ $sedeActiva  = $sede_activa ?? null;
             <div class="col-sm-6">
                 <div class="float-sm-right">
                     <?php if ($sedeActiva): ?>
-                    <button class="btn btn-outline-warning btn-sm mr-2" onclick="limpiarFiltroSede()"><i class="fas fa-times mr-1"></i>Quitar filtro sede</button>
+                    <button class="btn btn-outline-warning btn-sm mr-2" id="btnLimpiarFiltro"><i class="fas fa-times mr-1"></i>Quitar filtro sede</button>
                     <?php endif; ?>
-                    <button class="btn btn-sm" style="background:<?= $moduloColor ?>;color:white;" onclick="abrirModal()"><i class="fas fa-plus mr-1"></i>Nueva Sede</button>
+                    <button class="btn btn-sm" id="btnNuevaSede" style="background:<?= $moduloColor ?>;color:white;"><i class="fas fa-plus mr-1"></i>Nueva Sede</button>
                 </div>
             </div>
         </div>
@@ -42,7 +42,7 @@ $sedeActiva  = $sede_activa ?? null;
                                 <option value="<?= $y ?>"><?= $y ?></option>
                                 <?php endfor; ?>
                             </select>
-                            <button class="btn btn-sm btn-primary ml-1" onclick="cargarResumen()"><i class="fas fa-sync-alt"></i></button>
+                            <button class="btn btn-sm btn-primary ml-1" id="btnCargarResumen"><i class="fas fa-sync-alt"></i></button>
                         </div>
                     </div>
                     <div class="card-body p-0">
@@ -59,7 +59,7 @@ $sedeActiva  = $sede_activa ?? null;
         <div class="text-center py-5 text-muted">
             <i class="fas fa-building fa-3x mb-3 opacity-50"></i>
             <p>No hay sedes registradas</p>
-            <button class="btn btn-sm" style="background:<?= $moduloColor ?>;color:white;" onclick="abrirModal()"><i class="fas fa-plus mr-1"></i>Crear primera sede</button>
+            <button class="btn btn-sm" id="btnNuevaSedaEmpty" style="background:<?= $moduloColor ?>;color:white;"><i class="fas fa-plus mr-1"></i>Crear primera sede</button>
         </div>
         <?php else: ?>
         <div class="row">
@@ -121,10 +121,20 @@ $sedeActiva  = $sede_activa ?? null;
                     </div>
                     <div class="card-footer py-2 text-center">
                         <div class="btn-group btn-group-sm">
-                            <button class="btn btn-outline-primary" onclick="seleccionarSede(<?= $s['sed_sede_id'] ?>)" title="Filtrar por esta sede"><i class="fas fa-filter mr-1"></i>Seleccionar</button>
-                            <button class="btn btn-outline-secondary" onclick='editarSede(<?= json_encode($s) ?>)' title="Editar"><i class="fas fa-edit"></i></button>
+                            <button class="btn btn-outline-primary js-seleccionar-sede" title="Filtrar por esta sede"
+                                data-id="<?= $s['sed_sede_id'] ?>">
+                                <i class="fas fa-filter mr-1"></i>Seleccionar
+                            </button>
+                            <button class="btn btn-outline-secondary js-editar-sede" title="Editar"
+                                data-sede="<?= htmlspecialchars(json_encode($s, JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP), ENT_QUOTES) ?>">
+                                <i class="fas fa-edit"></i>
+                            </button>
                             <?php if (($s['sed_es_principal'] ?? '') !== 'S'): ?>
-                            <button class="btn btn-outline-danger" onclick="desactivarSede(<?= $s['sed_sede_id'] ?>,'<?= htmlspecialchars($s['sed_nombre']) ?>')" title="Desactivar"><i class="fas fa-power-off"></i></button>
+                            <button class="btn btn-outline-danger js-desactivar-sede" title="Desactivar"
+                                data-id="<?= $s['sed_sede_id'] ?>"
+                                data-nombre="<?= htmlspecialchars($s['sed_nombre'], ENT_QUOTES) ?>">
+                                <i class="fas fa-power-off"></i>
+                            </button>
                             <?php endif; ?>
                         </div>
                     </div>
@@ -140,12 +150,14 @@ $sedeActiva  = $sede_activa ?? null;
 <div class="modal fade" id="modalSede" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form id="formSede" method="POST">
+            <form id="formSede" method="POST"
+                data-url-crear="<?= url('futbol', 'sede', 'crear') ?>"
+                data-url-editar="<?= url('futbol', 'sede', 'editar') ?>">
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token ?? '') ?>">
                 <input type="hidden" name="id" id="sed_id">
                 <div class="modal-header" style="background:<?= $moduloColor ?>;color:white;">
                     <h5 class="modal-title" id="modalTitulo"><i class="fas fa-building mr-2"></i>Nueva Sede</h5>
-                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar" onclick="cerrarModal()">&times;</button>
+                    <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
                 </div>
                 <div class="modal-body">
                     <div class="row">
@@ -168,7 +180,7 @@ $sedeActiva  = $sede_activa ?? null;
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="cerrarModal()">Cancelar</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
                     <button type="submit" class="btn" style="background:<?= $moduloColor ?>;color:white;"><i class="fas fa-save mr-1"></i>Guardar</button>
                 </div>
             </form>
@@ -178,168 +190,129 @@ $sedeActiva  = $sede_activa ?? null;
 
 <?php ob_start(); ?>
 <script nonce="<?= cspNonce() ?>">
-var urlCrear    = '<?= url('futbol', 'sede', 'crear') ?>';
-var urlEditar   = '<?= url('futbol', 'sede', 'editar') ?>';
-var urlSeleccionar = '<?= url('futbol', 'sede', 'seleccionar') ?>';
-var urlResumen  = '<?= url('futbol', 'sede', 'resumenFinanciero') ?>';
+$(function() {
+    var Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true });
+    var csrfToken = '<?= addslashes($csrf_token ?? '') ?>';
+    var urlSeleccionar = '<?= url('futbol', 'sede', 'seleccionar') ?>';
+    var urlEliminar    = '<?= url('futbol', 'sede', 'eliminar') ?>';
+    var urlResumen     = '<?= url('futbol', 'sede', 'resumenFinanciero') ?>';
 
-function abrirModal() {
-    var modal = document.getElementById('modalSede');
-    if (!modal) {
-        Swal.fire('Error', 'Modal no encontrado', 'error');
-        return;
+    // ── Abrir modal nuevo ──
+    function abrirModalNueva() {
+        $('#formSede')[0].reset();
+        $('#sed_id').val('');
+        $('#modalTitulo').html('<i class="fas fa-building mr-2"></i>Nueva Sede');
+        $('#formSede').data('mode', 'crear');
+        $('#modalSede').modal('show');
     }
-    document.getElementById('formSede').reset();
-    document.getElementById('sed_id').value = '';
-    document.getElementById('modalTitulo').innerHTML = '<i class="fas fa-building mr-2"></i>Nueva Sede';
-    document.getElementById('formSede').action = urlCrear;
-    document.body.classList.remove('hold-transition');
-    
-    var modalShown = false;
-    try {
-        if (typeof jQuery !== 'undefined' && jQuery.fn && jQuery.fn.modal) {
-            jQuery('#modalSede').modal('show');
-            modalShown = true;
-            setTimeout(function() {
-                if (!modal.classList.contains('show')) {
-                    abrirModalManual(modal);
-                }
-            }, 300);
-            return;
-        }
-    } catch(e) {
-        console.warn('Bootstrap modal falló:', e);
-        modalShown = false;
-    }
-    
-    abrirModalManual(modal);
-}
 
-function editarSede(s) {
-    var modal = document.getElementById('modalSede');
-    if (!modal) {
-        Swal.fire('Error', 'Modal no encontrado', 'error');
-        return;
-    }
-    document.getElementById('sed_id').value = s.sed_sede_id;
-    document.getElementById('sed_nombre').value = s.sed_nombre || '';
-    document.getElementById('sed_codigo').value = s.sed_codigo || '';
-    document.getElementById('sed_direccion').value = s.sed_direccion || '';
-    document.getElementById('sed_ciudad').value = s.sed_ciudad || '';
-    document.getElementById('sed_telefono').value = s.sed_telefono || '';
-    document.getElementById('sed_email').value = s.sed_email || '';
-    document.getElementById('sed_principal').checked = (s.sed_es_principal === 'S');
-    document.getElementById('modalTitulo').innerHTML = '<i class="fas fa-edit mr-2"></i>Editar Sede';
-    document.getElementById('formSede').action = urlEditar;
-    document.body.classList.remove('hold-transition');
-    
-    var modalShown = false;
-    try {
-        if (typeof jQuery !== 'undefined' && jQuery.fn && jQuery.fn.modal) {
-            jQuery('#modalSede').modal('show');
-            modalShown = true;
-            setTimeout(function() {
-                if (!modal.classList.contains('show')) {
-                    abrirModalManual(modal);
-                }
-            }, 300);
-            return;
-        }
-    } catch(e) {
-        console.warn('Bootstrap modal falló:', e);
-        modalShown = false;
-    }
-    
-    abrirModalManual(modal);
-}
+    $('#btnNuevaSede, #btnNuevaSedaEmpty').on('click', abrirModalNueva);
 
-function abrirModalManual(modal) {
-    if (!modal) return;
-    modal.style.display = 'block';
-    modal.classList.add('show');
-    
-    var backdrop = document.querySelector('.modal-backdrop');
-    if (!backdrop) {
-        backdrop = document.createElement('div');
-        backdrop.className = 'modal-backdrop fade show';
-        document.body.appendChild(backdrop);
-    }
-    
-    if (!document.body.classList.contains('modal-open')) {
-        document.body.style.overflow = 'hidden';
-        document.body.classList.add('modal-open');
-    }
-}
-
-function cerrarModal() {
-    var modal = document.getElementById('modalSede');
-    if (!modal) return;
-    
-    try {
-        if (typeof jQuery !== 'undefined' && jQuery.fn && jQuery.fn.modal) {
-            jQuery('#modalSede').modal('hide');
-            return;
-        }
-    } catch(e) {
-        console.warn('Bootstrap modal falló al cerrar:', e);
-    }
-    
-    modal.style.display = 'none';
-    modal.classList.remove('show');
-    document.body.classList.remove('modal-open');
-    document.body.style.overflow = '';
-    
-    var backdrop = document.querySelector('.modal-backdrop');
-    if (backdrop) {
-        backdrop.remove();
-    }
-}
-
-function seleccionarSede(id) {
-    $.post(urlSeleccionar, { id: id }, function() { location.reload(); }, 'json');
-}
-
-function limpiarFiltroSede() {
-    $.post(urlSeleccionar, { id: 0 }, function() { location.reload(); }, 'json');
-}
-
-function desactivarSede(id, nombre) {
-    Swal.fire({
-        title: '¿Desactivar sede?', html: 'Se desactivará <strong>' + nombre + '</strong>',
-        icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33',
-        confirmButtonText: 'Sí, desactivar', cancelButtonText: 'Cancelar'
-    }).then(function(r) {
-        if (r.isConfirmed) window.location.href = '<?= url('futbol', 'sede', 'eliminar') ?>&id=' + id;
+    // ── Editar sede ──
+    $(document).on('click', '.js-editar-sede', function() {
+        var s = JSON.parse($(this).attr('data-sede'));
+        $('#formSede')[0].reset();
+        $('#sed_id').val(s.sed_sede_id);
+        $('#sed_nombre').val(s.sed_nombre || '');
+        $('#sed_codigo').val(s.sed_codigo || '');
+        $('#sed_direccion').val(s.sed_direccion || '');
+        $('#sed_ciudad').val(s.sed_ciudad || '');
+        $('#sed_telefono').val(s.sed_telefono || '');
+        $('#sed_email').val(s.sed_email || '');
+        $('#sed_principal').prop('checked', s.sed_es_principal === 'S');
+        $('#modalTitulo').html('<i class="fas fa-edit mr-2"></i>Editar Sede');
+        $('#formSede').data('mode', 'editar');
+        $('#modalSede').modal('show');
     });
-}
 
-function cargarResumen() {
-    var mes  = document.getElementById('resMes').value;
-    var year = document.getElementById('resYear').value;
-    $('#resumenFinanciero').html('<div class="text-center py-3"><i class="fas fa-spinner fa-spin mr-1"></i>Cargando...</div>');
-    $.getJSON(urlResumen + '&mes=' + mes + '&year=' + year, function(res) {
-        if (!res.success || !res.data.length) {
-            $('#resumenFinanciero').html('<div class="text-center py-3 text-muted">Sin datos para el período seleccionado</div>');
-            return;
-        }
-        var html = '<table class="table table-sm mb-0"><thead class="thead-light"><tr><th>Sede</th><th class="text-right text-success">Ingresos</th><th class="text-right text-danger">Egresos</th><th class="text-right">Utilidad</th></tr></thead><tbody>';
-        var totI = 0, totE = 0;
-        res.data.forEach(function(r) {
-            var ing = parseFloat(r.total_ingresos) || 0;
-            var egr = parseFloat(r.total_egresos) || 0;
-            var util = parseFloat(r.utilidad) || 0;
-            totI += ing;
-            totE += egr;
-            html += '<tr><td><strong>' + r.sed_nombre + '</strong></td>';
-            html += '<td class="text-right text-success">$' + ing.toFixed(2) + '</td>';
-            html += '<td class="text-right text-danger">$' + egr.toFixed(2) + '</td>';
-            html += '<td class="text-right ' + (util >= 0 ? 'text-success' : 'text-danger') + ' font-weight-bold">$' + util.toFixed(2) + '</td></tr>';
+    // ── Submit crear/editar (AJAX) ──
+    $('#formSede').on('submit', function(e) {
+        e.preventDefault();
+        var mode   = $(this).data('mode') || 'crear';
+        var action = $(this).attr(mode === 'editar' ? 'data-url-editar' : 'data-url-crear');
+        var $btn   = $(this).find('[type=submit]').prop('disabled', true);
+        $.post(action, $(this).serialize(), function(res) {
+            if (res.success) {
+                $('#modalSede').modal('hide');
+                Toast.fire({ icon: 'success', title: res.message });
+                setTimeout(function() { location.reload(); }, 1200);
+            } else {
+                Toast.fire({ icon: 'error', title: res.message });
+            }
+        }, 'json').fail(function() {
+            Toast.fire({ icon: 'error', title: 'Error de comunicación' });
+        }).always(function() { $btn.prop('disabled', false); });
+    });
+
+    // ── Seleccionar sede activa ──
+    $(document).on('click', '.js-seleccionar-sede', function() {
+        var id = $(this).data('id');
+        $.post(urlSeleccionar, { id: id }, function() { location.reload(); }, 'json');
+    });
+
+    // ── Quitar filtro sede ──
+    $('#btnLimpiarFiltro').on('click', function() {
+        $.post(urlSeleccionar, { id: 0 }, function() { location.reload(); }, 'json');
+    });
+
+    // ── Desactivar sede ──
+    $(document).on('click', '.js-desactivar-sede', function() {
+        var id     = $(this).data('id');
+        var nombre = $(this).data('nombre');
+        var $row   = $(this).closest('.col-lg-4, .col-md-6');
+        Swal.fire({
+            title: '¿Desactivar sede?',
+            html: 'Se desactivará <strong>' + nombre + '</strong>',
+            icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33',
+            confirmButtonText: 'Sí, desactivar', cancelButtonText: 'Cancelar'
+        }).then(function(r) {
+            if (!r.isConfirmed) return;
+            $.post(urlEliminar, { id: id, csrf_token: csrfToken }, function(res) {
+                if (res.success) {
+                    Toast.fire({ icon: 'success', title: res.message });
+                    $row.fadeOut(400, function() { location.reload(); });
+                } else {
+                    Toast.fire({ icon: 'error', title: res.message });
+                }
+            }, 'json').fail(function() {
+                Toast.fire({ icon: 'error', title: 'Error de comunicación' });
+            });
         });
-        html += '</tbody><tfoot class="thead-light"><tr><th>TOTAL</th><th class="text-right text-success">$' + totI.toFixed(2) + '</th><th class="text-right text-danger">$' + totE.toFixed(2) + '</th><th class="text-right font-weight-bold ' + ((totI-totE) >= 0 ? 'text-success' : 'text-danger') + '">$' + (totI-totE).toFixed(2) + '</th></tr></tfoot></table>';
-        $('#resumenFinanciero').html(html);
     });
-}
 
-$(function() { cargarResumen(); });
+    // ── Cargar resumen financiero ──
+    function cargarResumen() {
+        var mes  = $('#resMes').val();
+        var year = $('#resYear').val();
+        $('#resumenFinanciero').html('<div class="text-center py-3"><i class="fas fa-spinner fa-spin mr-1"></i>Cargando...</div>');
+        $.getJSON(urlResumen + '&mes=' + mes + '&year=' + year, function(res) {
+            if (!res.success || !res.data || !res.data.length) {
+                $('#resumenFinanciero').html('<div class="text-center py-3 text-muted">Sin datos para el período seleccionado</div>');
+                return;
+            }
+            var html = '<table class="table table-sm mb-0"><thead class="thead-light"><tr><th>Sede</th><th class="text-right text-success">Ingresos</th><th class="text-right text-danger">Egresos</th><th class="text-right">Utilidad</th></tr></thead><tbody>';
+            var totI = 0, totE = 0;
+            res.data.forEach(function(r) {
+                var ing  = parseFloat(r.total_ingresos) || 0;
+                var egr  = parseFloat(r.total_egresos) || 0;
+                var util = parseFloat(r.utilidad) || 0;
+                totI += ing; totE += egr;
+                html += '<tr><td><strong>' + r.sed_nombre + '</strong></td>'
+                      + '<td class="text-right text-success">$' + ing.toFixed(2) + '</td>'
+                      + '<td class="text-right text-danger">$' + egr.toFixed(2) + '</td>'
+                      + '<td class="text-right ' + (util >= 0 ? 'text-success' : 'text-danger') + ' font-weight-bold">$' + util.toFixed(2) + '</td></tr>';
+            });
+            html += '</tbody><tfoot class="thead-light"><tr><th>TOTAL</th>'
+                  + '<th class="text-right text-success">$' + totI.toFixed(2) + '</th>'
+                  + '<th class="text-right text-danger">$' + totE.toFixed(2) + '</th>'
+                  + '<th class="text-right font-weight-bold ' + ((totI-totE) >= 0 ? 'text-success' : 'text-danger') + '">$' + (totI-totE).toFixed(2) + '</th>'
+                  + '</tr></tfoot></table>';
+            $('#resumenFinanciero').html(html);
+        });
+    }
+
+    $('#btnCargarResumen').on('click', cargarResumen);
+    cargarResumen();
+});
 </script>
 <?php $scripts = ob_get_clean(); ?>

@@ -43,7 +43,7 @@ $grupoIconos = [
 
         <!-- Botón guardar global -->
         <div class="mb-3 text-right">
-            <button type="button" class="btn" style="background:<?= $moduloColor ?>;color:white;" onclick="guardarTodo()">
+            <button type="button" id="btnGuardarTodo" class="btn" style="background:<?= $moduloColor ?>;color:white;">
                 <i class="fas fa-save mr-1"></i>Guardar Todo
             </button>
         </div>
@@ -54,7 +54,7 @@ $grupoIconos = [
             <div class="card-header">
                 <h3 class="card-title"><i class="<?= $icono ?> mr-2"></i><?= htmlspecialchars(ucfirst(strtolower(str_replace('_', ' ', $grupo)))) ?></h3>
                 <div class="card-tools">
-                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="guardarConfiguracion('<?= htmlspecialchars($grupo) ?>')">
+                    <button type="button" class="btn btn-sm btn-outline-primary js-guardar-grupo" data-grupo="<?= htmlspecialchars($grupo) ?>">
                         <i class="fas fa-save mr-1"></i>Guardar grupo
                     </button>
                     <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
@@ -509,6 +509,16 @@ function guardarTodo() {
 $(document).on('change', '.custom-control-input[type="checkbox"]', function() {
     var label = $(this).next('label');
     label.text(this.checked ? 'Activado' : 'Desactivado');
+});
+
+// Botón guardar grupo
+$(document).on('click', '.js-guardar-grupo', function() {
+    guardarConfiguracion($(this).data('grupo'));
+});
+
+// Botón guardar todo
+$('#btnGuardarTodo').on('click', function() {
+    guardarTodo();
 });
 </script>
 <?php $scripts = ob_get_clean(); ?>

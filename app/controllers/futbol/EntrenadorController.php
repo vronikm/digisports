@@ -120,7 +120,10 @@ class EntrenadorController extends \App\Controllers\ModuleController {
 
     public function eliminar() {
         try {
-            $id = (int)($this->get('id') ?? 0);
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') return $this->jsonResponse(['success' => false, 'message' => 'POST requerido']);
+            if (!\Security::validateCsrfToken($this->post('csrf_token'))) return $this->jsonResponse(['success' => false, 'message' => 'Token inválido']);
+
+            $id = (int)($this->post('id') ?? 0);
             if (!$id) return $this->jsonResponse(['success' => false, 'message' => 'ID requerido']);
 
             $this->db->prepare("UPDATE futbol_entrenadores SET fen_activo = 0 WHERE fen_entrenador_id = ? AND fen_tenant_id = ?")->execute([$id, $this->tenantId]);

@@ -8,9 +8,9 @@
  *     fto_fecha_inicio, fto_fecha_fin, fto_sede_torneo, fto_descripcion, fto_costo_inscripcion,
  *     fto_estado, fto_created_at, fto_updated_at
  *   futbol_torneo_jugadores: ftj_id, ftj_tenant_id, ftj_torneo_id, ftj_alumno_id,
- *     ftj_posicion, ftj_numero, ftj_estado, ftj_created_at
- *   NO existen: fto_organizador, fto_sede_torneo, fto_categoria_id, fto_costo_inscripcion, fto_resultado
- *   NO existen: ftj_numero, ftj_es_capitan
+ *     ftj_posicion, ftj_numero, ftj_es_capitan, ftj_estado(CONVOCADO|CONFIRMADO|BAJA), ftj_notas, ftj_created_at
+ *   futbol_ficha_alumno: ffa_categoria_id existe; ffa_grupo_id NO existe (grupo via futbol_inscripciones)
+ *   NO existen: fto_organizador, fto_categoria_id, fto_resultado
  * 
  * @package DigiSports\Controllers\Futbol
  */
@@ -165,7 +165,10 @@ class TorneoController extends \App\Controllers\ModuleController {
      */
     public function eliminar() {
         try {
-            $id = (int)($this->get('id') ?? 0);
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') return $this->jsonResponse(['success' => false, 'message' => 'POST requerido']);
+            if (!\Security::validateCsrfToken($this->post('csrf_token'))) return $this->jsonResponse(['success' => false, 'message' => 'Token inválido']);
+
+            $id = (int)($this->post('id') ?? 0);
             if (!$id) return $this->jsonResponse(['success' => false, 'message' => 'ID requerido']);
 
             $this->db->prepare("UPDATE futbol_torneos SET fto_estado = 'CANCELADO', fto_updated_at = NOW() WHERE fto_torneo_id = ? AND fto_tenant_id = ?")
@@ -186,7 +189,31 @@ class TorneoController extends \App\Controllers\ModuleController {
         try {
             $this->setupModule();
             $torneoId = (int)($this->get('id') ?? 0);
-            if (!$torneoId) { $this->error('Torneo no especificado'); return; }
+
+            // Sin ID: mostrar selector de torneos
+            if (!$torneoId) {
+                $stm = $this->db->prepare("
+                    SELECT fto.*,
+                           s.sed_nombre AS sede_nombre,
+                           (SELECT COUNT(*) FROM futbol_torneo_jugadores ftj
+                            WHERE ftj.ftj_torneo_id = fto.fto_torneo_id
+                              AND ftj.ftj_tenant_id = fto.fto_tenant_id
+                              AND ftj.ftj_estado IN ('CONVOCADO','CONFIRMADO')) AS total_jugadores
+                    FROM futbol_torneos fto
+                    LEFT JOIN instalaciones_sedes s ON fto.fto_sede_id = s.sed_sede_id
+                    WHERE fto.fto_tenant_id = ?
+                    ORDER BY fto.fto_fecha_inicio DESC
+                ");
+                $stm->execute([$this->tenantId]);
+                $this->viewData['torneos_selector'] = $stm->fetchAll(\PDO::FETCH_ASSOC);
+                $this->viewData['torneo']            = null;
+                $this->viewData['jugadores']         = [];
+                $this->viewData['alumnos_disponibles'] = [];
+                $this->viewData['csrf_token']        = \Security::generateCsrfToken();
+                $this->viewData['title']             = 'Convocatorias';
+                $this->renderModule('futbol/torneos/convocatoria', $this->viewData);
+                return;
+            }
 
             // Datos del torneo
             $stm = $this->db->prepare("
@@ -202,9 +229,17 @@ class TorneoController extends \App\Controllers\ModuleController {
 
             // Jugadores convocados
             $stm2 = $this->db->prepare("
-                SELECT ftj.*, a.alu_nombres, a.alu_apellidos, a.alu_fecha_nacimiento
+                SELECT ftj.*,
+                       CONCAT(a.alu_nombres, ' ', a.alu_apellidos) AS alumno_nombre,
+                       a.alu_alumno_id AS alumno_id,
+                       fct.fct_nombre AS categoria_nombre,
+                       fgr.fgr_nombre AS grupo_nombre
                 FROM futbol_torneo_jugadores ftj
-                JOIN alumnos a ON ftj.ftj_alumno_id = a.alu_alumno_id
+                JOIN alumnos a ON ftj.ftj_alumno_id = a.alu_alumno_id AND a.alu_tenant_id = ftj.ftj_tenant_id
+                LEFT JOIN futbol_ficha_alumno ffa ON ffa.ffa_alumno_id = a.alu_alumno_id AND ffa.ffa_tenant_id = a.alu_tenant_id AND ffa.ffa_activo = 1
+                LEFT JOIN futbol_categorias fct ON ffa.ffa_categoria_id = fct.fct_categoria_id
+                LEFT JOIN futbol_inscripciones fi ON fi.fin_alumno_id = a.alu_alumno_id AND fi.fin_tenant_id = a.alu_tenant_id AND fi.fin_estado = 'ACTIVA'
+                LEFT JOIN futbol_grupos fgr ON fi.fin_grupo_id = fgr.fgr_grupo_id
                 WHERE ftj.ftj_torneo_id = ? AND ftj.ftj_tenant_id = ?
                 ORDER BY ftj.ftj_numero, a.alu_apellidos
             ");
@@ -213,7 +248,8 @@ class TorneoController extends \App\Controllers\ModuleController {
 
             // Alumnos disponibles (activos y no ya convocados en este torneo)
             $stm3 = $this->db->prepare("
-                SELECT a.alu_alumno_id, a.alu_nombres, a.alu_apellidos
+                SELECT a.alu_alumno_id AS id,
+                       CONCAT(a.alu_nombres, ' ', a.alu_apellidos) AS nombre
                 FROM alumnos a
                 WHERE a.alu_tenant_id = ? AND a.alu_estado = 'ACTIVO'
                   AND a.alu_alumno_id NOT IN (
@@ -223,7 +259,7 @@ class TorneoController extends \App\Controllers\ModuleController {
                 ORDER BY a.alu_apellidos, a.alu_nombres
             ");
             $stm3->execute([$this->tenantId, $torneoId]);
-            $this->viewData['disponibles'] = $stm3->fetchAll(\PDO::FETCH_ASSOC);
+            $this->viewData['alumnos_disponibles'] = $stm3->fetchAll(\PDO::FETCH_ASSOC);
 
             $this->viewData['csrf_token'] = \Security::generateCsrfToken();
             $this->viewData['title'] = 'Convocatoria - ' . $torneo['fto_nombre'];
@@ -243,8 +279,20 @@ class TorneoController extends \App\Controllers\ModuleController {
             if ($_SERVER['REQUEST_METHOD'] !== 'POST') return $this->jsonResponse(['success' => false, 'message' => 'POST requerido']);
             if (!\Security::validateCsrfToken($this->post('csrf_token'))) return $this->jsonResponse(['success' => false, 'message' => 'Token inválido']);
 
-            $torneoId = (int)($this->post('torneo_id') ?? 0);
+            $torneoId = (int)($this->post('fto_torneo_id') ?? $this->post('torneo_id') ?? 0);
             $alumnoId = (int)($this->post('alumno_id') ?? 0);
+            $ftjId    = (int)($this->post('ftj_id') ?? 0);
+
+            // Modo edición
+            if ($ftjId) {
+                $posicion = $this->post('ftj_posicion') ?? $this->post('posicion') ?: null;
+                $numero   = (int)($this->post('ftj_numero') ?? $this->post('dorsal') ?? 0) ?: null;
+                $estado   = $this->post('ftj_estado') ?: 'CONVOCADO';
+                $this->db->prepare("UPDATE futbol_torneo_jugadores SET ftj_posicion=?, ftj_numero=?, ftj_estado=? WHERE ftj_id=? AND ftj_tenant_id=?")
+                    ->execute([$posicion, $numero, $estado, $ftjId, $this->tenantId]);
+                return $this->jsonResponse(['success' => true, 'message' => 'Convocado actualizado']);
+            }
+
             if (!$torneoId || !$alumnoId) return $this->jsonResponse(['success' => false, 'message' => 'Torneo y alumno son obligatorios']);
 
             // Verificar que no esté ya convocado
@@ -254,7 +302,7 @@ class TorneoController extends \App\Controllers\ModuleController {
                 return $this->jsonResponse(['success' => false, 'message' => 'El jugador ya está convocado']);
             }
 
-            $posicion = $this->post('posicion') ?: null;
+            $posicion = $this->post('ftj_posicion') ?? $this->post('posicion') ?: null;
             if ($posicion && !in_array($posicion, ['PORTERO', 'DEFENSA', 'MEDIOCAMPISTA', 'DELANTERO'])) {
                 return $this->jsonResponse(['success' => false, 'message' => 'Posición inválida']);
             }
@@ -269,7 +317,7 @@ class TorneoController extends \App\Controllers\ModuleController {
                 $torneoId,
                 $alumnoId,
                 $posicion,
-                (int)($this->post('dorsal') ?? 0) ?: null,
+                (int)($this->post('ftj_numero') ?? $this->post('dorsal') ?? 0) ?: null,
             ]);
 
             return $this->jsonResponse(['success' => true, 'message' => 'Jugador agregado a la convocatoria']);
@@ -281,14 +329,39 @@ class TorneoController extends \App\Controllers\ModuleController {
     }
 
     /**
+     * Confirmar jugador (CONVOCADO → CONFIRMADO)
+     */
+    public function confirmarJugador() {
+        try {
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') return $this->jsonResponse(['success' => false, 'message' => 'POST requerido']);
+            if (!\Security::validateCsrfToken($this->post('csrf_token'))) return $this->jsonResponse(['success' => false, 'message' => 'Token inválido']);
+
+            $id = (int)($this->post('id') ?? 0);
+            if (!$id) return $this->jsonResponse(['success' => false, 'message' => 'ID requerido']);
+
+            $this->db->prepare("UPDATE futbol_torneo_jugadores SET ftj_estado = 'CONFIRMADO' WHERE ftj_id = ? AND ftj_tenant_id = ? AND ftj_estado = 'CONVOCADO'")
+                ->execute([$id, $this->tenantId]);
+
+            return $this->jsonResponse(['success' => true, 'message' => 'Jugador confirmado']);
+
+        } catch (\Exception $e) {
+            $this->logError("Error confirmando jugador: " . $e->getMessage());
+            return $this->jsonResponse(['success' => false, 'message' => 'Error al confirmar jugador']);
+        }
+    }
+
+    /**
      * Quitar jugador del torneo (marcar como DESCARTADO)
      */
     public function quitarJugador() {
         try {
-            $id = (int)($this->get('id') ?? $this->post('id') ?? 0);
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') return $this->jsonResponse(['success' => false, 'message' => 'POST requerido']);
+            if (!\Security::validateCsrfToken($this->post('csrf_token'))) return $this->jsonResponse(['success' => false, 'message' => 'Token inválido']);
+
+            $id = (int)($this->post('id') ?? 0);
             if (!$id) return $this->jsonResponse(['success' => false, 'message' => 'ID requerido']);
 
-            $this->db->prepare("UPDATE futbol_torneo_jugadores SET ftj_estado = 'DESCARTADO' WHERE ftj_id = ? AND ftj_tenant_id = ?")
+            $this->db->prepare("UPDATE futbol_torneo_jugadores SET ftj_estado = 'BAJA' WHERE ftj_id = ? AND ftj_tenant_id = ?")
                 ->execute([$id, $this->tenantId]);
 
             return $this->jsonResponse(['success' => true, 'message' => 'Jugador dado de baja del torneo']);

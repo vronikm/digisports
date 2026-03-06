@@ -187,7 +187,10 @@ class NotificacionController extends \App\Controllers\ModuleController {
      */
     public function eliminar() {
         try {
-            $id = (int)($this->get('id') ?? 0);
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') return $this->jsonResponse(['success' => false, 'message' => 'POST requerido']);
+            if (!\Security::validateCsrfToken($this->post('csrf_token'))) return $this->jsonResponse(['success' => false, 'message' => 'Token inválido']);
+
+            $id = (int)($this->post('id') ?? 0);
             if (!$id) return $this->jsonResponse(['success' => false, 'message' => 'ID requerido']);
 
             $this->db->prepare("DELETE FROM futbol_notificaciones WHERE fno_notificacion_id = ? AND fno_tenant_id = ?")

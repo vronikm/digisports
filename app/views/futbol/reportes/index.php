@@ -127,13 +127,13 @@ $reportes = [
                     </div>
                     <div class="card-footer bg-white text-center py-2">
                         <div class="btn-group btn-group-sm">
-                            <button class="btn btn-outline-primary" onclick="generarReporte('<?= $r['tipo'] ?>', 'vista')" title="Ver en pantalla">
+                            <button class="btn btn-outline-primary js-generar-reporte" data-tipo="<?= $r['tipo'] ?>" data-formato="vista" title="Ver en pantalla">
                                 <i class="fas fa-eye mr-1"></i>Vista
                             </button>
-                            <button class="btn btn-outline-danger" onclick="generarReporte('<?= $r['tipo'] ?>', 'pdf')" title="Descargar PDF">
+                            <button class="btn btn-outline-danger js-generar-reporte" data-tipo="<?= $r['tipo'] ?>" data-formato="pdf" title="Descargar PDF">
                                 <i class="fas fa-file-pdf mr-1"></i>PDF
                             </button>
-                            <button class="btn btn-outline-success" onclick="generarReporte('<?= $r['tipo'] ?>', 'excel')" title="Descargar Excel">
+                            <button class="btn btn-outline-success js-generar-reporte" data-tipo="<?= $r['tipo'] ?>" data-formato="excel" title="Descargar Excel">
                                 <i class="fas fa-file-excel mr-1"></i>Excel
                             </button>
                         </div>
@@ -148,7 +148,7 @@ $reportes = [
             <div class="card-header py-2" style="background:<?= $moduloColor ?>;color:white;">
                 <h3 class="card-title" id="reporteTitulo"><i class="fas fa-chart-bar mr-2"></i>Resultado del Reporte</h3>
                 <div class="card-tools">
-                    <button type="button" class="btn btn-tool text-white" onclick="cerrarReporte()"><i class="fas fa-times"></i></button>
+                    <button type="button" class="btn btn-tool text-white js-cerrar-reporte"><i class="fas fa-times"></i></button>
                 </div>
             </div>
             <div class="card-body" id="reporteContenido">
@@ -160,74 +160,80 @@ $reportes = [
 
 <?php ob_start(); ?>
 <script nonce="<?= cspNonce() ?>">
-function generarReporte(tipo, formato) {
-    var desde = document.getElementById('fechaDesde').value;
-    var hasta = document.getElementById('fechaHasta').value;
+$(function() {
+    var urlFinanciero   = '<?= url('futbol', 'reporte', 'financiero') ?>';
+    var urlAsistencia   = '<?= url('futbol', 'reporte', 'asistencia') ?>';
+    var urlInscripciones = '<?= url('futbol', 'reporte', 'inscripciones') ?>';
 
-    if (!desde || !hasta) {
-        Swal.fire('Fechas requeridas', 'Seleccione el rango de fechas para el reporte.', 'info');
-        return;
-    }
+    function generarReporte(tipo, formato) {
+        var desde = $('#fechaDesde').val();
+        var hasta = $('#fechaHasta').val();
 
-    // Mapear tipo de reporte al método del controlador
-    var metodoMap = {
-        'inscripciones': 'inscripciones',
-        'pagos':         'financiero',
-        'asistencia':    'asistencia',
-        'evaluaciones':  'financiero',
-        'egresos':       'financiero',
-        'morosidad':     'financiero',
-        'categorias':    'inscripciones',
-        'torneos':       'inscripciones'
-    };
-    var metodo = metodoMap[tipo] || 'financiero';
-
-    var url = '<?= url('futbol', 'reporte', '') ?>'.replace(/&$/, '') + '&action=' + metodo + '&tipo=' + tipo + '&formato=' + formato + '&desde=' + desde + '&hasta=' + hasta;
-
-    // Construir URL según método real
-    if (metodo === 'financiero') {
-        url = '<?= url('futbol', 'reporte', 'financiero') ?>&anio=' + desde.substring(0, 4);
-    } else if (metodo === 'asistencia') {
-        url = '<?= url('futbol', 'reporte', 'asistencia') ?>&mes=' + desde.substring(0, 7);
-    } else if (metodo === 'inscripciones') {
-        url = '<?= url('futbol', 'reporte', 'inscripciones') ?>';
-    }
-
-    if (formato === 'pdf' || formato === 'excel') {
-        // Descarga directa (pendiente de implementar en controlador)
-        Swal.fire('Próximamente', 'La descarga en ' + formato.toUpperCase() + ' está en desarrollo.', 'info');
-        return;
-    }
-
-    // Vista en pantalla via AJAX
-    Swal.fire({ title: 'Generando reporte...', html: '<i class="fas fa-spinner fa-spin fa-2x"></i>', allowOutsideClick: false, showConfirmButton: false });
-
-    $.get(url, function(res) {
-        Swal.close();
-        if (typeof res === 'object' && !res.success) {
-            Swal.fire('Error', res.message || 'No se pudo generar el reporte.', 'error');
+        if (!desde || !hasta) {
+            Swal.fire('Fechas requeridas', 'Seleccione el rango de fechas para el reporte.', 'info');
             return;
         }
-        var html = '';
-        if (typeof res === 'object' && res.data) {
-            html = '<pre class="p-3 bg-light">' + JSON.stringify(res.data, null, 2) + '</pre>';
-        } else if (typeof res === 'string') {
-            html = res;
-        } else {
-            html = '<p class="text-muted">Sin datos para mostrar.</p>';
-        }
-        $('#reporteResultado').removeClass('d-none');
-        $('#reporteContenido').html(html);
-        $('html, body').animate({ scrollTop: $('#reporteResultado').offset().top - 80 }, 300);
-    }).fail(function() {
-        Swal.close();
-        Swal.fire('Error', 'Error de conexión al generar el reporte.', 'error');
-    });
-}
 
-function cerrarReporte() {
-    $('#reporteResultado').addClass('d-none');
-    $('#reporteContenido').html('');
-}
+        if (formato === 'pdf' || formato === 'excel') {
+            Swal.fire('Próximamente', 'La descarga en ' + formato.toUpperCase() + ' está en desarrollo.', 'info');
+            return;
+        }
+
+        // Mapear tipo al método del controlador
+        var metodoMap = {
+            'inscripciones': 'inscripciones',
+            'pagos':         'financiero',
+            'asistencia':    'asistencia',
+            'evaluaciones':  'financiero',
+            'egresos':       'financiero',
+            'morosidad':     'financiero',
+            'categorias':    'inscripciones',
+            'torneos':       'inscripciones'
+        };
+        var metodo = metodoMap[tipo] || 'financiero';
+
+        var url;
+        if (metodo === 'financiero') {
+            url = urlFinanciero + '&anio=' + desde.substring(0, 4);
+        } else if (metodo === 'asistencia') {
+            url = urlAsistencia + '&mes=' + desde.substring(0, 7);
+        } else {
+            url = urlInscripciones;
+        }
+
+        Swal.fire({ title: 'Generando reporte...', html: '<i class="fas fa-spinner fa-spin fa-2x"></i>', allowOutsideClick: false, showConfirmButton: false });
+
+        $.get(url, function(res) {
+            Swal.close();
+            if (typeof res === 'object' && !res.success) {
+                Swal.fire('Error', res.message || 'No se pudo generar el reporte.', 'error');
+                return;
+            }
+            var html = '';
+            if (typeof res === 'object' && res.data) {
+                html = '<pre class="p-3 bg-light">' + JSON.stringify(res.data, null, 2) + '</pre>';
+            } else if (typeof res === 'string') {
+                html = res;
+            } else {
+                html = '<p class="text-muted">Sin datos para mostrar.</p>';
+            }
+            $('#reporteResultado').removeClass('d-none');
+            $('#reporteContenido').html(html);
+            $('html, body').animate({ scrollTop: $('#reporteResultado').offset().top - 80 }, 300);
+        }).fail(function() {
+            Swal.close();
+            Swal.fire('Error', 'Error de conexión al generar el reporte.', 'error');
+        });
+    }
+
+    $(document).on('click', '.js-generar-reporte', function() {
+        generarReporte($(this).data('tipo'), $(this).data('formato'));
+    });
+
+    $(document).on('click', '.js-cerrar-reporte', function() {
+        $('#reporteResultado').addClass('d-none');
+        $('#reporteContenido').html('');
+    });
+});
 </script>
 <?php $scripts = ob_get_clean(); ?>

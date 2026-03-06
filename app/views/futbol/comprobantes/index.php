@@ -1,10 +1,8 @@
 <?php
 $moduloColor = $modulo_actual['color'] ?? '#22C55E';
 $moduloIcono = $modulo_actual['icono'] ?? 'fas fa-futbol';
-$moduloNombre = $modulo_actual['nombre'] ?? 'Fútbol';
 ?>
 
-<!-- Content Header -->
 <div class="content-header">
     <div class="container-fluid">
         <div class="row mb-2">
@@ -24,14 +22,13 @@ $moduloNombre = $modulo_actual['nombre'] ?? 'Fútbol';
     </div>
 </div>
 
-<!-- Main Content -->
 <section class="content">
     <div class="container-fluid">
 
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center" style="border-top: 3px solid <?= $moduloColor ?>">
                 <h3 class="card-title"><i class="fas fa-file-invoice mr-2" style="color: <?= $moduloColor ?>"></i>Listado de Comprobantes</h3>
-                <button class="btn btn-sm text-white" style="background-color: <?= $moduloColor ?>" onclick="abrirModalComprobante()">
+                <button class="btn btn-sm text-white" id="btnGenerarComprobante" style="background-color: <?= $moduloColor ?>">
                     <i class="fas fa-plus mr-1"></i> Generar Comprobante
                 </button>
             </div>
@@ -54,59 +51,57 @@ $moduloNombre = $modulo_actual['nombre'] ?? 'Fútbol';
                         </thead>
                         <tbody>
                             <?php foreach ($comprobantes as $i => $comp): ?>
+                            <?php
+                            $tipoCompBadge = match($comp['fcm_tipo']) {
+                                'RECIBO'       => 'primary',
+                                'FACTURA'      => 'info',
+                                'NOTA_CREDITO' => 'warning',
+                                default        => 'secondary'
+                            };
+                            $tipoCompIcon = match($comp['fcm_tipo']) {
+                                'RECIBO'       => 'fas fa-receipt',
+                                'FACTURA'      => 'fas fa-file-invoice-dollar',
+                                'NOTA_CREDITO' => 'fas fa-file-alt',
+                                default        => 'fas fa-file'
+                            };
+                            $tipoCompTexto = match($comp['fcm_tipo']) {
+                                'RECIBO'       => 'Recibo',
+                                'FACTURA'      => 'Factura',
+                                'NOTA_CREDITO' => 'Nota de Crédito',
+                                default        => $comp['fcm_tipo']
+                            };
+                            $estadoCompBadge = match($comp['fcm_estado']) {
+                                'EMITIDO' => 'success',
+                                'ANULADO' => 'danger',
+                                default   => 'secondary'
+                            };
+                            ?>
                             <tr>
                                 <td><?= $i + 1 ?></td>
+                                <td><span class="font-weight-bold"><?= htmlspecialchars($comp['fcm_numero']) ?></span></td>
                                 <td>
-                                    <span class="font-weight-bold"><?= htmlspecialchars($comp['fcm_numero']) ?></span>
-                                </td>
-                                <td>
-                                    <?php
-                                    $tipoCompIcon = match($comp['fcm_tipo']) {
-                                        'RECIBO'       => 'fas fa-receipt',
-                                        'FACTURA'      => 'fas fa-file-invoice-dollar',
-                                        'NOTA_CREDITO' => 'fas fa-file-alt',
-                                        default        => 'fas fa-file'
-                                    };
-                                    $tipoCompBadge = match($comp['fcm_tipo']) {
-                                        'RECIBO'       => 'primary',
-                                        'FACTURA'      => 'info',
-                                        'NOTA_CREDITO' => 'warning',
-                                        default        => 'secondary'
-                                    };
-                                    $tipoCompTexto = match($comp['fcm_tipo']) {
-                                        'RECIBO'       => 'Recibo',
-                                        'FACTURA'      => 'Factura',
-                                        'NOTA_CREDITO' => 'Nota de Crédito',
-                                        default        => $comp['fcm_tipo']
-                                    };
-                                    ?>
                                     <span class="badge badge-<?= $tipoCompBadge ?>">
                                         <i class="<?= $tipoCompIcon ?> mr-1"></i><?= $tipoCompTexto ?>
                                     </span>
                                 </td>
                                 <td><?= htmlspecialchars(trim(($comp['alu_nombres'] ?? '') . ' ' . ($comp['alu_apellidos'] ?? ''))) ?></td>
                                 <td><?= htmlspecialchars($comp['fcm_concepto'] ?? '') ?></td>
-                                <td class="text-right font-weight-bold">$<?= number_format($comp['fcm_monto'] ?? 0, 2) ?></td>
+                                <td class="text-right font-weight-bold">$<?= number_format($comp['fcm_total'] ?? $comp['fcm_monto'] ?? 0, 2) ?></td>
                                 <td><?= date('d/m/Y', strtotime($comp['fcm_fecha_emision'])) ?></td>
+                                <td><span class="badge badge-<?= $estadoCompBadge ?>"><?= $comp['fcm_estado'] ?></span></td>
                                 <td>
-                                    <?php
-                                    $estadoCompBadge = match($comp['fcm_estado']) {
-                                        'EMITIDO' => 'success',
-                                        'ANULADO' => 'danger',
-                                        default   => 'secondary'
-                                    };
-                                    ?>
-                                    <span class="badge badge-<?= $estadoCompBadge ?>"><?= $comp['fcm_estado'] ?></span>
-                                </td>
-                                <td>
-                                    <button class="btn btn-xs btn-outline-primary" onclick="verComprobante(<?= $comp['fcm_comprobante_id'] ?>)" title="Ver Detalle">
+                                    <button class="btn btn-xs btn-outline-primary js-ver-comprobante" title="Ver Detalle"
+                                        data-id="<?= $comp['fcm_comprobante_id'] ?>">
                                         <i class="fas fa-eye"></i>
                                     </button>
-                                    <button class="btn btn-xs btn-outline-info" onclick="imprimirComprobante(<?= $comp['fcm_comprobante_id'] ?>)" title="Imprimir">
+                                    <button class="btn btn-xs btn-outline-info js-imprimir-comprobante" title="Imprimir"
+                                        data-id="<?= $comp['fcm_comprobante_id'] ?>">
                                         <i class="fas fa-print"></i>
                                     </button>
                                     <?php if ($comp['fcm_estado'] === 'EMITIDO'): ?>
-                                    <button class="btn btn-xs btn-outline-danger" onclick="anularComprobante(<?= $comp['fcm_comprobante_id'] ?>, '<?= htmlspecialchars(addslashes($comp['fcm_numero'])) ?>')" title="Anular">
+                                    <button class="btn btn-xs btn-outline-danger js-anular-comprobante" title="Anular"
+                                        data-id="<?= $comp['fcm_comprobante_id'] ?>"
+                                        data-numero="<?= htmlspecialchars($comp['fcm_numero'], ENT_QUOTES) ?>">
                                         <i class="fas fa-times-circle"></i>
                                     </button>
                                     <?php endif; ?>
@@ -128,9 +123,7 @@ $moduloNombre = $modulo_actual['nombre'] ?? 'Fútbol';
     </div>
 </section>
 
-<!-- ============================================================= -->
-<!-- MODAL: GENERAR COMPROBANTE (opcional, normalmente se genera desde pagos) -->
-<!-- ============================================================= -->
+<!-- Modal Generar Comprobante -->
 <div class="modal fade" id="modalComprobante" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -138,8 +131,9 @@ $moduloNombre = $modulo_actual['nombre'] ?? 'Fútbol';
                 <h5 class="modal-title"><i class="fas fa-file-invoice mr-2"></i>Generar Comprobante</h5>
                 <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
             </div>
-            <form id="formComprobante" method="POST" action="<?= url('futbol', 'comprobante', 'crear') ?>">
-                <input type="hidden" name="csrf_token" value="<?= $csrf_token ?>">
+            <form id="formComprobante" method="POST"
+                data-url="<?= url('futbol', 'comprobante', 'crear') ?>">
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token ?? '') ?>">
                 <div class="modal-body">
                     <div class="form-group">
                         <label>ID de Pago <span class="text-danger">*</span></label>
@@ -170,78 +164,104 @@ $moduloNombre = $modulo_actual['nombre'] ?? 'Fútbol';
     </div>
 </div>
 
-<!-- ============================================================= -->
-<!-- SCRIPTS -->
-<!-- ============================================================= -->
 <?php ob_start(); ?>
 <script nonce="<?= cspNonce() ?>">
-$(document).ready(function() {
-    $('#tblComprobantes').DataTable({
-        language: { url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json' },
-        responsive: true,
-        order: [[6, 'desc']]
+$(function() {
+    var Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true });
+    var csrfToken = '<?= addslashes($csrf_token ?? '') ?>';
+    var urlVer     = '<?= url('futbol', 'comprobante', 'ver') ?>';
+    var urlImpr    = '<?= url('futbol', 'comprobante', 'imprimir') ?>';
+    var urlAnular  = '<?= url('futbol', 'comprobante', 'anular') ?>';
+
+    try {
+        $('#tblComprobantes').DataTable({
+            language: { url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json' },
+            responsive: true,
+            order: [[6, 'desc']]
+        });
+    } catch(e) { console.warn('DataTable:', e); }
+
+    // Abrir modal nuevo comprobante
+    $('#btnGenerarComprobante').on('click', function() {
+        $('#formComprobante')[0].reset();
+        $('#modalComprobante').modal('show');
     });
-});
 
-function abrirModalComprobante() {
-    $('#formComprobante')[0].reset();
-    $('#comprobante_pago_id').val('');
-    $('#formComprobante').attr('action', '<?= url('futbol', 'comprobante', 'crear') ?>');
-    $('#modalComprobante').modal('show');
-}
-
-function verComprobante(id) {
-    $.getJSON('<?= url('futbol', 'comprobante', 'ver') ?>&id=' + id, function(response) {
-        if (response.success && response.data) {
-            var d = response.data;
-            var html = '<table class="table table-sm">';
-            html += '<tr><th>Número</th><td>' + (d.fcm_numero || '') + '</td></tr>';
-            html += '<tr><th>Tipo</th><td>' + (d.fcm_tipo || '') + '</td></tr>';
-            html += '<tr><th>Concepto</th><td>' + (d.fcm_concepto || '') + '</td></tr>';
-            html += '<tr><th>Monto</th><td>$' + parseFloat(d.fcm_monto || 0).toFixed(2) + '</td></tr>';
-            html += '<tr><th>Fecha</th><td>' + (d.fcm_fecha_emision || '') + '</td></tr>';
-            html += '<tr><th>Estado</th><td>' + (d.fcm_estado || '') + '</td></tr>';
-            html += '<tr><th>Alumno</th><td>' + ((d.alu_nombres || '') + ' ' + (d.alu_apellidos || '')).trim() + '</td></tr>';
-            html += '</table>';
-            Swal.fire({ title: 'Comprobante ' + (d.fcm_numero || ''), html: html, width: 600, confirmButtonText: 'Cerrar' });
-        } else {
-            Swal.fire('Error', response.message || 'No se pudo cargar.', 'error');
-        }
-    }).fail(function() {
-        Swal.fire('Error', 'Error de conexión.', 'error');
+    // Submit generar comprobante (AJAX)
+    $('#formComprobante').on('submit', function(e) {
+        e.preventDefault();
+        var action = $(this).attr('data-url');
+        var $btn   = $(this).find('[type=submit]').prop('disabled', true);
+        $.post(action, $(this).serialize(), function(res) {
+            if (res.success) {
+                $('#modalComprobante').modal('hide');
+                Toast.fire({ icon: 'success', title: res.message });
+                setTimeout(function() { location.reload(); }, 1200);
+            } else {
+                Toast.fire({ icon: 'error', title: res.message });
+            }
+        }, 'json').fail(function() {
+            Toast.fire({ icon: 'error', title: 'Error de comunicación' });
+        }).always(function() { $btn.prop('disabled', false); });
     });
-}
 
-function imprimirComprobante(id) {
-    window.open('<?= url('futbol', 'comprobante', 'imprimir') ?>&id=' + id, '_blank');
-}
+    // Ver detalle comprobante
+    $(document).on('click', '.js-ver-comprobante', function() {
+        var id = $(this).data('id');
+        $.getJSON(urlVer + '&id=' + id, function(res) {
+            if (res.success && res.data) {
+                var d = res.data;
+                var html = '<table class="table table-sm">'
+                    + '<tr><th>Número</th><td>' + (d.fcm_numero || '') + '</td></tr>'
+                    + '<tr><th>Tipo</th><td>' + (d.fcm_tipo || '') + '</td></tr>'
+                    + '<tr><th>Concepto</th><td>' + (d.fcm_concepto || '') + '</td></tr>'
+                    + '<tr><th>Monto</th><td>$' + parseFloat(d.fcm_total || d.fcm_monto || 0).toFixed(2) + '</td></tr>'
+                    + '<tr><th>Fecha</th><td>' + (d.fcm_fecha_emision || '') + '</td></tr>'
+                    + '<tr><th>Estado</th><td>' + (d.fcm_estado || '') + '</td></tr>'
+                    + '<tr><th>Alumno</th><td>' + ((d.alu_nombres || '') + ' ' + (d.alu_apellidos || '')).trim() + '</td></tr>'
+                    + '</table>';
+                Swal.fire({ title: 'Comprobante ' + (d.fcm_numero || ''), html: html, width: 600, confirmButtonText: 'Cerrar' });
+            } else {
+                Swal.fire('Error', res.message || 'No se pudo cargar.', 'error');
+            }
+        }).fail(function() {
+            Swal.fire('Error', 'Error de conexión.', 'error');
+        });
+    });
 
-function anularComprobante(id, numero) {
-    Swal.fire({
-        title: '¿Anular comprobante?',
-        html: 'Se anulará el comprobante <strong>' + numero + '</strong>. Esta acción no se puede deshacer.',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#6c757d',
-        confirmButtonText: '<i class="fas fa-times-circle mr-1"></i> Anular',
-        cancelButtonText: 'Cancelar'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            $.post('<?= url('futbol', 'comprobante', 'anular') ?>', {
-                csrf_token: '<?= $csrf_token ?>',
-                id: id
-            }, function(response) {
-                if (response.success) {
-                    Swal.fire('Anulado', response.message, 'success').then(() => location.reload());
+    // Imprimir comprobante
+    $(document).on('click', '.js-imprimir-comprobante', function() {
+        window.open(urlImpr + '&id=' + $(this).data('id'), '_blank');
+    });
+
+    // Anular comprobante
+    $(document).on('click', '.js-anular-comprobante', function() {
+        var id     = $(this).data('id');
+        var numero = $(this).data('numero');
+        var $row   = $(this).closest('tr');
+        Swal.fire({
+            title: '¿Anular comprobante?',
+            html: 'Se anulará el comprobante <strong>' + numero + '</strong>. Esta acción no se puede deshacer.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: '<i class="fas fa-times-circle mr-1"></i> Anular',
+            cancelButtonText: 'Cancelar'
+        }).then(function(r) {
+            if (!r.isConfirmed) return;
+            $.post(urlAnular, { csrf_token: csrfToken, id: id }, function(res) {
+                if (res.success) {
+                    Toast.fire({ icon: 'success', title: res.message });
+                    $row.fadeOut(400, function() { location.reload(); });
                 } else {
-                    Swal.fire('Error', response.message, 'error');
+                    Toast.fire({ icon: 'error', title: res.message });
                 }
             }, 'json').fail(function() {
-                Swal.fire('Error', 'Error de conexión.', 'error');
+                Toast.fire({ icon: 'error', title: 'Error de comunicación' });
             });
-        }
+        });
     });
-}
+});
 </script>
 <?php $scripts = ob_get_clean(); ?>
