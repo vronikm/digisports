@@ -31,14 +31,14 @@ class BecaController extends \App\Controllers\ModuleController {
             $this->setupModule();
             $sedeId = $_SESSION['futbol_sede_id'] ?? null;
 
-            // Listar becas activas con total de asignaciones activas
+            // Listar TODAS las becas (activas e inactivas) con total de asignaciones activas
             $stm = $this->db->prepare("
                 SELECT b.*,
-                       (SELECT COUNT(*) FROM futbol_beca_asignaciones fba 
+                       (SELECT COUNT(*) FROM futbol_beca_asignaciones fba
                         WHERE fba.fba_beca_id = b.fbe_beca_id AND fba.fba_tenant_id = b.fbe_tenant_id AND fba.fba_estado = 'ACTIVA') AS total_asignaciones
                 FROM futbol_becas b
-                WHERE b.fbe_tenant_id = ? AND b.fbe_activo = 1
-                ORDER BY b.fbe_nombre
+                WHERE b.fbe_tenant_id = ?
+                ORDER BY b.fbe_activo DESC, b.fbe_nombre
             ");
             $stm->execute([$this->tenantId]);
             $this->viewData['becas'] = $stm->fetchAll(\PDO::FETCH_ASSOC);
@@ -95,7 +95,7 @@ class BecaController extends \App\Controllers\ModuleController {
             $tipo = $this->post('tipo') ?: 'PORCENTAJE';
             $valor = (float)($this->post('valor') ?? 0);
             if (empty($nombre)) return $this->jsonResponse(['success' => false, 'message' => 'El nombre es obligatorio']);
-            if (!in_array($tipo, ['PORCENTAJE', 'MONTO_FIJO'])) return $this->jsonResponse(['success' => false, 'message' => 'Tipo de beca inválido']);
+            if (!in_array($tipo, ['PORCENTAJE', 'MONTO_FIJO', 'EXONERACION'])) return $this->jsonResponse(['success' => false, 'message' => 'Tipo de beca inválido']);
 
             $stm = $this->db->prepare("
                 INSERT INTO futbol_becas (fbe_tenant_id, fbe_nombre, fbe_tipo, fbe_valor, fbe_descripcion, fbe_activo)
@@ -131,7 +131,7 @@ class BecaController extends \App\Controllers\ModuleController {
             $nombre = trim($this->post('nombre') ?? '');
             $tipo = $this->post('tipo') ?: 'PORCENTAJE';
             if (empty($nombre)) return $this->jsonResponse(['success' => false, 'message' => 'El nombre es obligatorio']);
-            if (!in_array($tipo, ['PORCENTAJE', 'MONTO_FIJO'])) return $this->jsonResponse(['success' => false, 'message' => 'Tipo de beca inválido']);
+            if (!in_array($tipo, ['PORCENTAJE', 'MONTO_FIJO', 'EXONERACION'])) return $this->jsonResponse(['success' => false, 'message' => 'Tipo de beca inválido']);
 
             $stm = $this->db->prepare("
                 UPDATE futbol_becas 
@@ -160,7 +160,10 @@ class BecaController extends \App\Controllers\ModuleController {
      */
     public function eliminar() {
         try {
-            $id = (int)($this->get('id') ?? 0);
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') return $this->jsonResponse(['success' => false, 'message' => 'POST requerido']);
+            if (!\Security::validateCsrfToken($this->post('csrf_token'))) return $this->jsonResponse(['success' => false, 'message' => 'Token inválido']);
+
+            $id = (int)($this->post('id') ?? 0);
             if (!$id) return $this->jsonResponse(['success' => false, 'message' => 'ID requerido']);
 
             $this->db->prepare("UPDATE futbol_becas SET fbe_activo = 0, fbe_updated_at = NOW() WHERE fbe_beca_id = ? AND fbe_tenant_id = ?")
@@ -252,6 +255,28 @@ class BecaController extends \App\Controllers\ModuleController {
         } catch (\Exception $e) {
             $this->logError("Error revocando beca: " . $e->getMessage());
             return $this->jsonResponse(['success' => false, 'message' => 'Error al revocar beca']);
+        }
+    }
+
+    /**
+     * Activar beca previamente desactivada
+     */
+    public function activar() {
+        try {
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') return $this->jsonResponse(['success' => false, 'message' => 'POST requerido']);
+            if (!\Security::validateCsrfToken($this->post('csrf_token'))) return $this->jsonResponse(['success' => false, 'message' => 'Token inválido']);
+
+            $id = (int)($this->post('id') ?? 0);
+            if (!$id) return $this->jsonResponse(['success' => false, 'message' => 'ID requerido']);
+
+            $this->db->prepare("UPDATE futbol_becas SET fbe_activo = 1, fbe_updated_at = NOW() WHERE fbe_beca_id = ? AND fbe_tenant_id = ?")
+                ->execute([$id, $this->tenantId]);
+
+            return $this->jsonResponse(['success' => true, 'message' => 'Beca activada correctamente']);
+
+        } catch (\Exception $e) {
+            $this->logError("Error activando beca: " . $e->getMessage());
+            return $this->jsonResponse(['success' => false, 'message' => 'Error al activar beca']);
         }
     }
 

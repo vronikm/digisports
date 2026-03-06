@@ -27,7 +27,6 @@ foreach ($horarios as $h) {
         $calendario[$dia]['items'][] = $h;
     }
 }
-// Ordenar ítems por hora inicio
 foreach ($calendario as &$dia) {
     usort($dia['items'], function($a, $b) {
         return strcmp($a['fgh_hora_inicio'] ?? '', $b['fgh_hora_inicio'] ?? '');
@@ -39,8 +38,16 @@ unset($dia);
 <div class="content-header">
     <div class="container-fluid">
         <div class="row mb-2">
-            <div class="col-sm-6"><h1 class="m-0"><i class="fas fa-calendar-week mr-2" style="color:<?= $moduloColor ?>"></i>Horario Semanal</h1></div>
-            <div class="col-sm-6"><div class="float-sm-right"><button class="btn btn-sm" style="background:<?= $moduloColor ?>;color:white;" onclick="abrirModal()"><i class="fas fa-plus mr-1"></i>Nuevo Horario</button></div></div>
+            <div class="col-sm-6">
+                <h1 class="m-0"><i class="fas fa-calendar-week mr-2" style="color:<?= $moduloColor ?>"></i>Horario Semanal</h1>
+            </div>
+            <div class="col-sm-6">
+                <div class="float-sm-right">
+                    <button id="btnNuevoHorario" class="btn btn-sm" style="background:<?= $moduloColor ?>;color:white;">
+                        <i class="fas fa-plus mr-1"></i>Nuevo Horario
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -50,11 +57,11 @@ unset($dia);
         <!-- Filtros -->
         <div class="card card-outline" style="border-top-color:<?= $moduloColor ?>">
             <div class="card-body py-2">
-                <form method="GET" action="<?= url('futbol', 'horario', 'index') ?>" class="row align-items-end">
+                <form id="formFiltros" method="GET" action="<?= url('futbol', 'horario', 'index') ?>" class="row align-items-end">
                     <?php if (!empty($sedes) && count($sedes) > 1): ?>
                     <div class="col-md-3">
                         <label class="small">Sede</label>
-                        <select name="sede_id" class="form-control form-control-sm" onchange="this.form.submit()">
+                        <select id="filtroSede" name="sede_id" class="form-control form-control-sm">
                             <option value="">— Todas —</option>
                             <?php foreach ($sedes as $s): ?>
                             <option value="<?= $s['sed_sede_id'] ?>" <?= $sedeActiva == $s['sed_sede_id'] ? 'selected' : '' ?>><?= htmlspecialchars($s['sed_nombre']) ?></option>
@@ -64,7 +71,7 @@ unset($dia);
                     <?php endif; ?>
                     <div class="col-md-3">
                         <label class="small">Cancha</label>
-                        <select name="cancha_id" class="form-control form-control-sm" onchange="this.form.submit()">
+                        <select id="filtroCancha" name="cancha_id" class="form-control form-control-sm">
                             <option value="">— Todas —</option>
                             <?php foreach ($canchas as $ca): ?>
                             <option value="<?= $ca['can_cancha_id'] ?>" <?= ($cancha_id ?? '') == $ca['can_cancha_id'] ? 'selected' : '' ?>><?= htmlspecialchars($ca['can_nombre']) ?></option>
@@ -73,7 +80,7 @@ unset($dia);
                     </div>
                     <div class="col-md-3">
                         <label class="small">Entrenador</label>
-                        <select name="entrenador_id" class="form-control form-control-sm" onchange="this.form.submit()">
+                        <select id="filtroEntrenador" name="entrenador_id" class="form-control form-control-sm">
                             <option value="">— Todos —</option>
                             <?php foreach ($entrenadores as $e): ?>
                             <option value="<?= $e['fen_entrenador_id'] ?>" <?= ($entrenador_id ?? '') == $e['fen_entrenador_id'] ? 'selected' : '' ?>><?= htmlspecialchars(($e['fen_nombres'] ?? '') . ' ' . ($e['fen_apellidos'] ?? '')) ?></option>
@@ -106,8 +113,14 @@ unset($dia);
                             <div class="text-muted"><i class="fas fa-futbol mr-1"></i><?= htmlspecialchars($h['cancha_nombre'] ?? '') ?></div>
                             <div class="text-muted"><small><i class="fas fa-user mr-1"></i><?= htmlspecialchars(($h['entrenador_nombre'] ?? '') . ' ' . ($h['entrenador_apellido'] ?? '')) ?></small></div>
                             <div class="mt-1">
-                                <button class="btn btn-outline-primary btn-xs" onclick='editarHorario(<?= json_encode($h) ?>)'><i class="fas fa-edit"></i></button>
-                                <button class="btn btn-outline-danger btn-xs" onclick="eliminarHorario(<?= $h['fgh_horario_id'] ?>)"><i class="fas fa-trash"></i></button>
+                                <button class="btn btn-outline-primary btn-xs js-editar-horario"
+                                        data-horario="<?= htmlspecialchars(json_encode($h, JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP), ENT_QUOTES) ?>">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-outline-danger btn-xs js-eliminar-horario"
+                                        data-id="<?= (int)$h['fgh_horario_id'] ?>">
+                                    <i class="fas fa-trash"></i>
+                                </button>
                             </div>
                         </div>
                         <?php endforeach; ?>
@@ -162,8 +175,16 @@ unset($dia);
                                 <td><small class="text-muted"><?= htmlspecialchars($h['fgh_notas'] ?? '') ?></small></td>
                                 <td class="text-center">
                                     <div class="btn-group btn-group-sm">
-                                        <button class="btn btn-outline-primary" onclick='editarHorario(<?= json_encode($h) ?>)' title="Editar"><i class="fas fa-edit"></i></button>
-                                        <button class="btn btn-outline-danger" onclick="eliminarHorario(<?= $h['fgh_horario_id'] ?>)" title="Eliminar"><i class="fas fa-trash"></i></button>
+                                        <button class="btn btn-outline-primary js-editar-horario"
+                                                data-horario="<?= htmlspecialchars(json_encode($h, JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP), ENT_QUOTES) ?>"
+                                                title="Editar">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-outline-danger js-eliminar-horario"
+                                                data-id="<?= (int)$h['fgh_horario_id'] ?>"
+                                                title="Eliminar">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
@@ -181,7 +202,9 @@ unset($dia);
 <div class="modal fade" id="modalHorario" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form id="formHorario" method="POST">
+            <form id="formHorario" method="POST"
+                  data-url-crear="<?= url('futbol', 'horario', 'crear') ?>"
+                  data-url-editar="<?= url('futbol', 'horario', 'editar') ?>">
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token ?? '') ?>">
                 <input type="hidden" name="id" id="hor_id">
                 <div class="modal-header" style="background:<?= $moduloColor ?>;color:white;">
@@ -235,9 +258,13 @@ unset($dia);
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-info" onclick="verificarDisponibilidad()"><i class="fas fa-search mr-1"></i>Verificar Disponibilidad</button>
+                    <button type="button" id="btnVerificar" class="btn btn-outline-info">
+                        <i class="fas fa-search mr-1"></i>Verificar Disponibilidad
+                    </button>
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn" style="background:<?= $moduloColor ?>;color:white;"><i class="fas fa-save mr-1"></i>Guardar</button>
+                    <button type="submit" class="btn" style="background:<?= $moduloColor ?>;color:white;">
+                        <i class="fas fa-save mr-1"></i>Guardar
+                    </button>
                 </div>
             </form>
         </div>
@@ -246,67 +273,116 @@ unset($dia);
 
 <?php ob_start(); ?>
 <script nonce="<?= cspNonce() ?>">
-var urlCrear  = '<?= url('futbol', 'horario', 'crear') ?>';
-var urlEditar = '<?= url('futbol', 'horario', 'editar') ?>';
-
 $(function() {
-    if ($('#tablaHorarios').length && $('#tablaHorarios tbody tr').length > 0) {
+    var csrf = '<?= htmlspecialchars($csrf_token ?? '') ?>';
+
+    var Toast = Swal.mixin({
+        toast: true, position: 'top-end',
+        showConfirmButton: false, timer: 3000, timerProgressBar: true
+    });
+
+    /* ── DataTable ── */
+    if ($('#tablaHorarios tbody tr').length) {
         $('#tablaHorarios').DataTable({
             language: { url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json' },
-            pageLength: 25,
-            order: [[2, 'asc'], [3, 'asc']],
-            responsive: true
+            pageLength: 25, order: [[2,'asc'],[3,'asc']], responsive: true
         });
     }
-});
 
-function abrirModal() {
-    document.getElementById('formHorario').reset();
-    document.getElementById('hor_id').value = '';
-    document.getElementById('modalTitulo').innerHTML = '<i class="fas fa-clock mr-2"></i>Nuevo Horario';
-    document.getElementById('formHorario').action = urlCrear;
-    $('#modalHorario').modal('show');
-}
-
-function editarHorario(obj) {
-    document.getElementById('hor_id').value     = obj.fgh_horario_id;
-    document.getElementById('hor_grupo').value   = obj.fgh_grupo_id || '';
-    document.getElementById('hor_dia').value     = obj.fgh_dia_semana || 'LUN';
-    document.getElementById('hor_inicio').value  = (obj.fgh_hora_inicio || '').substring(0, 5);
-    document.getElementById('hor_fin').value     = (obj.fgh_hora_fin || '').substring(0, 5);
-    document.getElementById('hor_cancha').value  = obj.can_cancha_id || '';
-    document.getElementById('hor_notas').value   = obj.fgh_notas || '';
-    document.getElementById('modalTitulo').innerHTML = '<i class="fas fa-edit mr-2"></i>Editar Horario';
-    document.getElementById('formHorario').action = urlEditar;
-    $('#modalHorario').modal('show');
-}
-
-function eliminarHorario(id) {
-    Swal.fire({
-        title: '¿Eliminar horario?',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        confirmButtonText: 'Sí, eliminar',
-        cancelButtonText: 'Cancelar'
-    }).then(function(r) {
-        if (r.isConfirmed) window.location.href = '<?= url('futbol', 'horario', 'eliminar') ?>&id=' + id;
+    /* ── Filtros: auto-submit al cambiar selects ── */
+    $('#filtroSede, #filtroCancha, #filtroEntrenador').on('change', function() {
+        $('#formFiltros').submit();
     });
-}
 
-function verificarDisponibilidad() {
-    var dia    = document.getElementById('hor_dia').value;
-    var inicio = document.getElementById('hor_inicio').value;
-    var fin    = document.getElementById('hor_fin').value;
-    var cancha = document.getElementById('hor_cancha').value;
+    /* ── Abrir modal NUEVO horario ── */
+    $('#btnNuevoHorario').on('click', function() {
+        $('#formHorario')[0].reset();
+        $('#hor_id').val('');
+        $('#modalTitulo').html('<i class="fas fa-clock mr-2"></i>Nuevo Horario');
+        $('#formHorario').data('mode', 'crear');
+        $('#modalHorario').modal('show');
+    });
 
-    if (!dia || !inicio || !fin) {
-        Swal.fire('Datos incompletos', 'Seleccione día, hora inicio y hora fin.', 'info');
-        return;
-    }
+    /* ── Abrir modal EDITAR horario ── */
+    $(document).on('click', '.js-editar-horario', function() {
+        var obj = JSON.parse($(this).attr('data-horario'));
+        $('#formHorario')[0].reset();
+        $('#hor_id').val(obj.fgh_horario_id || '');
+        $('#hor_grupo').val(obj.fgh_grupo_id || '');
+        $('#hor_dia').val(obj.fgh_dia_semana || 'LUN');
+        $('#hor_inicio').val((obj.fgh_hora_inicio || '').substring(0, 5));
+        $('#hor_fin').val((obj.fgh_hora_fin || '').substring(0, 5));
+        $('#hor_cancha').val(obj.can_cancha_id || '');
+        $('#hor_notas').val(obj.fgh_notas || '');
+        $('#modalTitulo').html('<i class="fas fa-edit mr-2"></i>Editar Horario');
+        $('#formHorario').data('mode', 'editar');
+        $('#modalHorario').modal('show');
+    });
 
-    // TODO: Implementar método 'verificarDisponibilidad' en HorarioController
-    Swal.fire('Info', 'La verificación de disponibilidad se realizará automáticamente al guardar el horario.', 'info');
-}
+    /* ── SUBMIT: guardar horario (AJAX) ── */
+    $('#formHorario').on('submit', function(e) {
+        e.preventDefault();
+        var mode   = $(this).data('mode') || 'crear';
+        var action = $(this).attr(mode === 'editar' ? 'data-url-editar' : 'data-url-crear');
+        var $btn   = $(this).find('[type=submit]').prop('disabled', true);
+
+        $.post(action, $(this).serialize(), function(res) {
+            if (res.success) {
+                $('#modalHorario').modal('hide');
+                Toast.fire({ icon: 'success', title: res.message });
+                setTimeout(function() { location.reload(); }, 1500);
+            } else {
+                Swal.fire('Error', res.message, 'error');
+            }
+        }, 'json').fail(function() {
+            Swal.fire('Error', 'Error de conexión al guardar.', 'error');
+        }).always(function() { $btn.prop('disabled', false); });
+    });
+
+    /* ── Eliminar horario (AJAX POST) ── */
+    $(document).on('click', '.js-eliminar-horario', function() {
+        var id   = $(this).data('id');
+        var $row = $(this).closest('tr');
+        var url  = '<?= url('futbol', 'horario', 'eliminar') ?>';
+
+        Swal.fire({
+            title: '¿Eliminar horario?',
+            text: 'Esta acción no se puede deshacer.',
+            icon: 'warning', showCancelButton: true,
+            confirmButtonColor: '#d33', cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Sí, eliminar', cancelButtonText: 'Cancelar'
+        }).then(function(r) {
+            if (!r.isConfirmed) return;
+            $.post(url, { csrf_token: csrf, id: id }, function(res) {
+                if (res.success) {
+                    Toast.fire({ icon: 'success', title: res.message });
+                    // Quitar fila de la tabla si existe; reload para actualizar el calendario
+                    if ($row.length) {
+                        $row.fadeOut(300, function() { $(this).remove(); });
+                    }
+                    setTimeout(function() { location.reload(); }, 1500);
+                } else {
+                    Swal.fire('Error', res.message, 'error');
+                }
+            }, 'json').fail(function() {
+                Swal.fire('Error', 'Error de conexión al eliminar.', 'error');
+            });
+        });
+    });
+
+    /* ── Verificar disponibilidad ── */
+    $('#btnVerificar').on('click', function() {
+        var dia    = $('#hor_dia').val();
+        var inicio = $('#hor_inicio').val();
+        var fin    = $('#hor_fin').val();
+
+        if (!dia || !inicio || !fin) {
+            Swal.fire('Datos incompletos', 'Seleccione día, hora inicio y hora fin.', 'info');
+            return;
+        }
+        Swal.fire('Info', 'La verificación de disponibilidad se realizará automáticamente al guardar.', 'info');
+    });
+
+});
 </script>
 <?php $scripts = ob_get_clean(); ?>

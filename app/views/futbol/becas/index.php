@@ -34,17 +34,18 @@ $moduloNombre = $modulo_actual['nombre'] ?? 'Fútbol';
         <div class="row mb-3">
             <div class="col-12 d-flex justify-content-between align-items-center">
                 <h4><i class="fas fa-graduation-cap mr-2" style="color: <?= $moduloColor ?>"></i>Tipos de Beca</h4>
-                <button class="btn btn-sm text-white" style="background-color: <?= $moduloColor ?>" onclick="abrirModalBeca()">
+                <button class="btn btn-sm text-white js-abrir-modal-beca" style="background-color: <?= $moduloColor ?>">
                     <i class="fas fa-plus mr-1"></i> Nuevo Tipo de Beca
                 </button>
             </div>
         </div>
 
         <?php if (!empty($becas)): ?>
-        <div class="row">
+        <div class="row" id="rowBecas">
             <?php foreach ($becas as $beca): ?>
             <div class="col-md-4 col-lg-3">
-                <div class="card card-outline" style="border-top-color: <?= $moduloColor ?>">
+                <div class="card card-outline<?= $beca['fbe_activo'] ? '' : ' bg-light' ?>"
+                     style="border-top-color: <?= $beca['fbe_activo'] ? $moduloColor : '#adb5bd' ?>; <?= $beca['fbe_activo'] ? '' : 'opacity:.75;' ?>">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-start mb-2">
                             <h5 class="card-title mb-0"><?= htmlspecialchars($beca['fbe_nombre']) ?></h5>
@@ -55,10 +56,20 @@ $moduloNombre = $modulo_actual['nombre'] ?? 'Fútbol';
                         <p class="text-muted small mb-2"><?= htmlspecialchars($beca['fbe_descripcion'] ?? 'Sin descripción') ?></p>
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <span class="badge badge-info">
-                                <?= $beca['fbe_tipo'] === 'PORCENTAJE' ? 'Porcentaje' : 'Monto Fijo' ?>
+                                <?php
+                                $tipoBadge = match($beca['fbe_tipo']) {
+                                    'PORCENTAJE'  => 'Porcentaje',
+                                    'MONTO_FIJO'  => 'Monto Fijo',
+                                    'EXONERACION' => 'Exoneración',
+                                    default       => $beca['fbe_tipo']
+                                };
+                                ?>
+                                <?= $tipoBadge ?>
                             </span>
                             <span class="font-weight-bold" style="color: <?= $moduloColor ?>; font-size: 1.2em;">
-                                <?php if ($beca['fbe_tipo'] === 'PORCENTAJE'): ?>
+                                <?php if ($beca['fbe_tipo'] === 'EXONERACION'): ?>
+                                    100%
+                                <?php elseif ($beca['fbe_tipo'] === 'PORCENTAJE'): ?>
                                     <?= number_format($beca['fbe_valor'], 0) ?>%
                                 <?php else: ?>
                                     $<?= number_format($beca['fbe_valor'], 2) ?>
@@ -69,12 +80,24 @@ $moduloNombre = $modulo_actual['nombre'] ?? 'Fútbol';
                             <i class="fas fa-users mr-1"></i> <?= $beca['total_asignaciones'] ?? 0 ?> asignados
                         </div>
                         <div class="d-flex justify-content-end">
-                            <button class="btn btn-xs btn-outline-primary mr-1" onclick="editarBeca(<?= htmlspecialchars(json_encode($beca)) ?>)" title="Editar">
+                            <?php if ($beca['fbe_activo']): ?>
+                            <button class="btn btn-xs btn-outline-primary mr-1 js-editar-beca"
+                                    data-beca="<?= htmlspecialchars(json_encode($beca, JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP), ENT_QUOTES) ?>"
+                                    title="Editar">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <button class="btn btn-xs btn-outline-danger" onclick="eliminarBeca(<?= $beca['fbe_beca_id'] ?>)" title="Desactivar">
+                            <button class="btn btn-xs btn-outline-danger js-eliminar-beca"
+                                    data-id="<?= (int)$beca['fbe_beca_id'] ?>"
+                                    title="Desactivar">
                                 <i class="fas fa-ban"></i>
                             </button>
+                            <?php else: ?>
+                            <button class="btn btn-xs btn-outline-success js-activar-beca"
+                                    data-id="<?= (int)$beca['fbe_beca_id'] ?>"
+                                    title="Activar beca">
+                                <i class="fas fa-check-circle mr-1"></i> Activar
+                            </button>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
@@ -88,7 +111,7 @@ $moduloNombre = $modulo_actual['nombre'] ?? 'Fútbol';
                     <div class="card-body text-center py-5">
                         <i class="fas fa-graduation-cap fa-3x opacity-50 text-muted mb-3"></i>
                         <p class="text-muted">No hay tipos de beca registrados.</p>
-                        <button class="btn btn-sm text-white" style="background-color: <?= $moduloColor ?>" onclick="abrirModalBeca()">
+                        <button class="btn btn-sm text-white js-abrir-modal-beca" style="background-color: <?= $moduloColor ?>">
                             <i class="fas fa-plus mr-1"></i> Crear primer tipo de beca
                         </button>
                     </div>
@@ -103,7 +126,7 @@ $moduloNombre = $modulo_actual['nombre'] ?? 'Fútbol';
         <div class="row mt-4 mb-3">
             <div class="col-12 d-flex justify-content-between align-items-center">
                 <h4><i class="fas fa-user-graduate mr-2" style="color: <?= $moduloColor ?>"></i>Asignaciones de Becas</h4>
-                <button class="btn btn-sm text-white" style="background-color: <?= $moduloColor ?>" onclick="abrirModalAsignacion()">
+                <button class="btn btn-sm text-white" id="btnNuevaAsignacion" style="background-color: <?= $moduloColor ?>">
                     <i class="fas fa-plus mr-1"></i> Nueva Asignación
                 </button>
             </div>
@@ -134,11 +157,11 @@ $moduloNombre = $modulo_actual['nombre'] ?? 'Fútbol';
                                 <td><?= htmlspecialchars($asig['fbe_nombre'] ?? '') ?></td>
                                 <td>
                                     <span class="badge badge-info">
-                                        <?= ($asig['fbe_tipo'] ?? '') === 'PORCENTAJE' ? 'Porcentaje' : 'Monto Fijo' ?>
+                                        <?= ($asig['fbe_tipo'] ?? '') === 'PORCENTAJE' ? 'Porcentaje' : (($asig['fbe_tipo'] ?? '') === 'EXONERACION' ? 'Exoneración' : 'Monto Fijo') ?>
                                     </span>
                                 </td>
                                 <td class="text-right">
-                                    <?php if (($asig['fbe_tipo'] ?? '') === 'PORCENTAJE'): ?>
+                                    <?php if (($asig['fbe_tipo'] ?? '') === 'PORCENTAJE' || ($asig['fbe_tipo'] ?? '') === 'EXONERACION'): ?>
                                         <?= number_format($asig['fbe_valor'] ?? 0, 0) ?>%
                                     <?php else: ?>
                                         $<?= number_format($asig['fbe_valor'] ?? 0, 2) ?>
@@ -148,17 +171,20 @@ $moduloNombre = $modulo_actual['nombre'] ?? 'Fútbol';
                                 <td>
                                     <?php
                                     $estadoBadge = match($asig['fba_estado']) {
-                                        'ACTIVA' => 'success',
+                                        'ACTIVA'     => 'success',
                                         'SUSPENDIDA' => 'warning',
-                                        'FINALIZADA' => 'secondary',
-                                        default => 'secondary'
+                                        'VENCIDA'    => 'danger',
+                                        'REVOCADA'   => 'dark',
+                                        default      => 'secondary'
                                     };
                                     ?>
                                     <span class="badge badge-<?= $estadoBadge ?>"><?= $asig['fba_estado'] ?></span>
                                 </td>
                                 <td>
                                     <?php if ($asig['fba_estado'] === 'ACTIVA'): ?>
-                                    <button class="btn btn-xs btn-outline-danger" onclick="revocarAsignacion(<?= $asig['fba_asignacion_id'] ?>)" title="Revocar">
+                                    <button class="btn btn-xs btn-outline-danger js-revocar"
+                                            data-id="<?= (int)$asig['fba_asignacion_id'] ?>"
+                                            title="Revocar">
                                         <i class="fas fa-times-circle"></i>
                                     </button>
                                     <?php endif; ?>
@@ -190,7 +216,9 @@ $moduloNombre = $modulo_actual['nombre'] ?? 'Fútbol';
                 <h5 class="modal-title" id="modalBecaTitle"><i class="fas fa-graduation-cap mr-2"></i>Nuevo Tipo de Beca</h5>
                 <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
             </div>
-            <form id="formBeca" method="POST" action="<?= url('futbol', 'beca', 'crear') ?>">
+            <form id="formBeca" method="POST"
+                  data-url-crear="<?= url('futbol', 'beca', 'crear') ?>"
+                  data-url-editar="<?= url('futbol', 'beca', 'editar') ?>">
                 <input type="hidden" name="csrf_token" value="<?= $csrf_token ?>">
                 <input type="hidden" name="id" id="beca_id">
                 <div class="modal-body">
@@ -204,12 +232,13 @@ $moduloNombre = $modulo_actual['nombre'] ?? 'Fútbol';
                             <option value="">Seleccione...</option>
                             <option value="PORCENTAJE">Porcentaje</option>
                             <option value="MONTO_FIJO">Monto Fijo</option>
+                            <option value="EXONERACION">Exoneración Total</option>
                         </select>
                     </div>
                     <div class="form-group">
                         <label>Valor <span class="text-danger">*</span></label>
                         <input type="number" name="valor" id="beca_valor" class="form-control" step="0.01" min="0" required>
-                        <small class="text-muted">Para porcentaje ingrese un valor entre 0 y 100. Para monto fijo ingrese el valor en dólares.</small>
+                        <small class="text-muted">Porcentaje: 0–100. Monto fijo: valor en USD. Exoneración: dejar en 100.</small>
                     </div>
                     <div class="form-group">
                         <label>Descripción</label>
@@ -234,10 +263,11 @@ $moduloNombre = $modulo_actual['nombre'] ?? 'Fútbol';
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header text-white" style="background-color: <?= $moduloColor ?>">
-                <h5 class="modal-title" id="modalAsignacionTitle"><i class="fas fa-user-graduate mr-2"></i>Nueva Asignación</h5>
+                <h5 class="modal-title"><i class="fas fa-user-graduate mr-2"></i>Nueva Asignación</h5>
                 <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
             </div>
-            <form id="formAsignacion" method="POST" action="<?= url('futbol', 'beca', 'asignar') ?>">
+            <form id="formAsignacion" method="POST"
+                  data-url="<?= url('futbol', 'beca', 'asignar') ?>">
                 <input type="hidden" name="csrf_token" value="<?= $csrf_token ?>">
                 <div class="modal-body">
                     <div class="form-group">
@@ -258,7 +288,7 @@ $moduloNombre = $modulo_actual['nombre'] ?? 'Fútbol';
                             <?php if (!empty($becas)): ?>
                                 <?php foreach ($becas as $beca): ?>
                                     <?php if ($beca['fbe_activo']): ?>
-                                    <option value="<?= $beca['fbe_beca_id'] ?>"><?= htmlspecialchars($beca['fbe_nombre']) ?> (<?= $beca['fbe_tipo'] === 'PORCENTAJE' ? $beca['fbe_valor'] . '%' : '$' . number_format($beca['fbe_valor'], 2) ?>)</option>
+                                    <option value="<?= $beca['fbe_beca_id'] ?>"><?= htmlspecialchars($beca['fbe_nombre']) ?> (<?= $beca['fbe_tipo'] === 'PORCENTAJE' || $beca['fbe_tipo'] === 'EXONERACION' ? $beca['fbe_valor'] . '%' : '$' . number_format($beca['fbe_valor'], 2) ?>)</option>
                                     <?php endif; ?>
                                 <?php endforeach; ?>
                             <?php endif; ?>
@@ -285,93 +315,189 @@ $moduloNombre = $modulo_actual['nombre'] ?? 'Fútbol';
 </div>
 
 <!-- ============================================================= -->
-<!-- SCRIPTS -->
+<!-- SCRIPTS — sin inline onclick: todo vía jQuery event binding   -->
 <!-- ============================================================= -->
 <?php ob_start(); ?>
 <script nonce="<?= cspNonce() ?>">
-$(document).ready(function() {
-    $('#tblAsignaciones').DataTable({
-        language: { url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json' },
-        responsive: true,
-        order: [[5, 'desc']]
+$(function() {
+
+    /* ── Toast helper ── */
+    var Toast = Swal.mixin({
+        toast: true, position: 'top-end',
+        showConfirmButton: false, timer: 3000, timerProgressBar: true
     });
 
+    /* ── DataTable asignaciones ── */
+    if ($('#tblAsignaciones tbody tr').length) {
+        $('#tblAsignaciones').DataTable({
+            language: { url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json' },
+            responsive: true, order: [[5, 'desc']]
+        });
+    }
+
+    /* ── Select2 ── */
     if ($.fn.select2) {
         $('.select2').select2({ theme: 'bootstrap4', width: '100%' });
     }
-});
 
-function abrirModalBeca() {
-    $('#formBeca')[0].reset();
-    $('#beca_id').val('');
-    $('#modalBecaTitle').html('<i class="fas fa-graduation-cap mr-2"></i>Nuevo Tipo de Beca');
-    $('#formBeca').attr('action', '<?= url('futbol', 'beca', 'crear') ?>');
-    $('#modalBeca').modal('show');
-}
-
-function editarBeca(obj) {
-    $('#formBeca')[0].reset();
-    $('#beca_id').val(obj.fbe_beca_id);
-    $('#beca_nombre').val(obj.fbe_nombre);
-    $('#beca_tipo').val(obj.fbe_tipo);
-    $('#beca_valor').val(obj.fbe_valor);
-    $('#beca_descripcion').val(obj.fbe_descripcion || '');
-    $('#modalBecaTitle').html('<i class="fas fa-edit mr-2"></i>Editar Tipo de Beca');
-    $('#formBeca').attr('action', '<?= url('futbol', 'beca', 'editar') ?>');
-    $('#modalBeca').modal('show');
-}
-
-function eliminarBeca(id) {
-    Swal.fire({
-        title: '¿Desactivar tipo de beca?',
-        text: 'La beca será desactivada.',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#6c757d',
-        confirmButtonText: 'Sí, desactivar',
-        cancelButtonText: 'Cancelar'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            window.location.href = '<?= url('futbol', 'beca', 'eliminar') ?>&id=' + id;
-        }
+    /* ── Abrir modal NUEVO tipo de beca ── */
+    $(document).on('click', '.js-abrir-modal-beca', function() {
+        $('#formBeca')[0].reset();
+        $('#beca_id').val('');
+        $('#modalBecaTitle').html('<i class="fas fa-graduation-cap mr-2"></i>Nuevo Tipo de Beca');
+        $('#formBeca').data('mode', 'crear');
+        $('#modalBeca').modal('show');
     });
-}
 
-function abrirModalAsignacion() {
-    $('#formAsignacion')[0].reset();
-    $('#modalAsignacionTitle').html('<i class="fas fa-user-graduate mr-2"></i>Nueva Asignación');
-    $('#formAsignacion').attr('action', '<?= url('futbol', 'beca', 'asignar') ?>');
-    if ($.fn.select2) { $('.select2').val('').trigger('change'); }
-    $('#modalAsignacion').modal('show');
-}
+    /* ── Abrir modal EDITAR beca ── */
+    $(document).on('click', '.js-editar-beca', function() {
+        var obj = JSON.parse($(this).attr('data-beca'));
+        $('#formBeca')[0].reset();
+        $('#beca_id').val(obj.fbe_beca_id);
+        $('#beca_nombre').val(obj.fbe_nombre);
+        $('#beca_tipo').val(obj.fbe_tipo);
+        $('#beca_valor').val(obj.fbe_valor);
+        $('#beca_descripcion').val(obj.fbe_descripcion || '');
+        $('#modalBecaTitle').html('<i class="fas fa-edit mr-2"></i>Editar Tipo de Beca');
+        $('#formBeca').data('mode', 'editar');
+        $('#modalBeca').modal('show');
+    });
 
-function revocarAsignacion(id) {
-    Swal.fire({
-        title: '¿Revocar asignación?',
-        text: 'Se finalizará la beca asignada al alumno.',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#6c757d',
-        confirmButtonText: 'Sí, revocar',
-        cancelButtonText: 'Cancelar'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            $.post('<?= url('futbol', 'beca', 'revocar') ?>', {
-                csrf_token: '<?= $csrf_token ?>',
-                asignacion_id: id
-            }, function(response) {
-                if (response.success) {
-                    Swal.fire('Revocada', response.message, 'success').then(() => location.reload());
+    /* ── SUBMIT: guardar beca (crear / editar) ── */
+    $('#formBeca').on('submit', function(e) {
+        e.preventDefault();
+        var mode   = $(this).data('mode') || 'crear';
+        var urlKey = mode === 'editar' ? 'data-url-editar' : 'data-url-crear';
+        var action = $(this).attr(urlKey);
+        var $btn   = $(this).find('[type=submit]').prop('disabled', true);
+
+        $.post(action, $(this).serialize(), function(res) {
+            if (res.success) {
+                $('#modalBeca').modal('hide');
+                Toast.fire({ icon: 'success', title: res.message });
+                setTimeout(function() { location.reload(); }, 1500);
+            } else {
+                Swal.fire('Error', res.message, 'error');
+            }
+        }, 'json').fail(function() {
+            Swal.fire('Error', 'Error de conexión al guardar.', 'error');
+        }).always(function() { $btn.prop('disabled', false); });
+    });
+
+    /* ── Desactivar beca ── */
+    $(document).on('click', '.js-eliminar-beca', function() {
+        var id    = $(this).data('id');
+        var $card = $(this).closest('.col-md-4, .col-lg-3');
+        var url   = '<?= url('futbol', 'beca', 'eliminar') ?>';
+        var csrf  = '<?= $csrf_token ?>';
+
+        Swal.fire({
+            title: '¿Desactivar tipo de beca?',
+            text: 'La beca será desactivada y no aparecerá en nuevas asignaciones.',
+            icon: 'warning', showCancelButton: true,
+            confirmButtonColor: '#d33', cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Sí, desactivar', cancelButtonText: 'Cancelar'
+        }).then(function(result) {
+            if (!result.isConfirmed) return;
+            $.post(url, { csrf_token: csrf, id: id }, function(res) {
+                if (res.success) {
+                    Toast.fire({ icon: 'success', title: res.message });
+                    $card.fadeOut(400, function() { $(this).remove(); });
                 } else {
-                    Swal.fire('Error', response.message, 'error');
+                    Swal.fire('Error', res.message, 'error');
                 }
             }, 'json').fail(function() {
-                Swal.fire('Error', 'Error de conexión.', 'error');
+                Swal.fire('Error', 'Error de conexión al desactivar.', 'error');
             });
-        }
+        });
     });
-}
+
+    /* ── Activar beca inactiva ── */
+    $(document).on('click', '.js-activar-beca', function() {
+        var id    = $(this).data('id');
+        var $card = $(this).closest('.col-md-4, .col-lg-3');
+        var url   = '<?= url('futbol', 'beca', 'activar') ?>';
+        var csrf  = '<?= $csrf_token ?>';
+
+        Swal.fire({
+            title: '¿Activar esta beca?',
+            text: 'La beca volverá a estar disponible para nuevas asignaciones.',
+            icon: 'question', showCancelButton: true,
+            confirmButtonColor: '#22C55E', cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Sí, activar', cancelButtonText: 'Cancelar'
+        }).then(function(result) {
+            if (!result.isConfirmed) return;
+            $.post(url, { csrf_token: csrf, id: id }, function(res) {
+                if (res.success) {
+                    Toast.fire({ icon: 'success', title: res.message });
+                    setTimeout(function() { location.reload(); }, 1500);
+                } else {
+                    Swal.fire('Error', res.message, 'error');
+                }
+            }, 'json').fail(function() {
+                Swal.fire('Error', 'Error de conexión al activar.', 'error');
+            });
+        });
+    });
+
+    /* ── Abrir modal NUEVA asignación ── */
+    $('#btnNuevaAsignacion').on('click', function() {
+        $('#formAsignacion')[0].reset();
+        if ($.fn.select2) { $('.select2').val(null).trigger('change'); }
+        $('#modalAsignacion').modal('show');
+    });
+
+    /* ── SUBMIT: guardar asignación ── */
+    $('#formAsignacion').on('submit', function(e) {
+        e.preventDefault();
+        var action = $(this).attr('data-url');
+        var $btn   = $(this).find('[type=submit]').prop('disabled', true);
+
+        $.post(action, $(this).serialize(), function(res) {
+            if (res.success) {
+                $('#modalAsignacion').modal('hide');
+                Toast.fire({ icon: 'success', title: res.message });
+                setTimeout(function() { location.reload(); }, 1500);
+            } else {
+                Swal.fire('Error', res.message, 'error');
+            }
+        }, 'json').fail(function() {
+            Swal.fire('Error', 'Error de conexión al asignar.', 'error');
+        }).always(function() { $btn.prop('disabled', false); });
+    });
+
+    /* ── Revocar asignación ── */
+    $(document).on('click', '.js-revocar', function() {
+        var id   = $(this).data('id');
+        var $btn = $(this);
+        var url  = '<?= url('futbol', 'beca', 'revocar') ?>';
+        var csrf = '<?= $csrf_token ?>';
+
+        Swal.fire({
+            title: '¿Revocar asignación?',
+            text: 'Se revocará la beca asignada al alumno.',
+            icon: 'warning', showCancelButton: true,
+            confirmButtonColor: '#d33', cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Sí, revocar', cancelButtonText: 'Cancelar'
+        }).then(function(result) {
+            if (!result.isConfirmed) return;
+            $.post(url, { csrf_token: csrf, asignacion_id: id }, function(res) {
+                if (res.success) {
+                    Toast.fire({ icon: 'success', title: res.message });
+                    var $row = $btn.closest('tr');
+                    $row.find('td:nth-child(7) .badge')
+                        .removeClass('badge-success badge-warning badge-danger badge-dark badge-secondary')
+                        .addClass('badge-dark').text('REVOCADA');
+                    $btn.remove();
+                } else {
+                    Swal.fire('Error', res.message, 'error');
+                }
+            }, 'json').fail(function() {
+                Swal.fire('Error', 'Error de conexión al revocar.', 'error');
+            });
+        });
+    });
+
+});
 </script>
 <?php $scripts = ob_get_clean(); ?>

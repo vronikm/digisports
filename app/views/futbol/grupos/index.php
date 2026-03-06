@@ -16,7 +16,7 @@ $moduloColor  = $modulo_actual['color'] ?? '#22C55E';
     <div class="container-fluid">
         <div class="row mb-2">
             <div class="col-sm-6"><h1 class="m-0"><i class="fas fa-users mr-2" style="color:<?= $moduloColor ?>"></i>Grupos</h1></div>
-            <div class="col-sm-6"><div class="float-sm-right"><button class="btn btn-sm" style="background:<?= $moduloColor ?>;color:white;" onclick="abrirModal()"><i class="fas fa-plus mr-1"></i>Nuevo Grupo</button></div></div>
+            <div class="col-sm-6"><div class="float-sm-right"><button class="btn btn-sm" id="btnNuevoGrupo" style="background:<?= $moduloColor ?>;color:white;"><i class="fas fa-plus mr-1"></i>Nuevo Grupo</button></div></div>
         </div>
     </div>
 </div>
@@ -32,13 +32,13 @@ $moduloColor  = $modulo_actual['color'] ?? '#22C55E';
                 <div class="text-center py-5 text-muted"><i class="fas fa-users fa-3x mb-3 opacity-50"></i><p>No hay grupos registrados</p></div>
                 <?php else: ?>
                 <div class="table-responsive">
-                    <table class="table table-hover mb-0">
+                    <table class="table table-hover mb-0" id="tablaGrupos">
                         <thead class="thead-light">
                             <tr><th width="40">#</th><th>Grupo</th><th>Categoría</th><th>Entrenador</th><th>Cancha</th><?php if (!$sedeActiva): ?><th>Sede</th><?php endif; ?><th class="text-center">Cupo</th><th class="text-center">Estado</th><th width="130" class="text-center">Acciones</th></tr>
                         </thead>
                         <tbody>
                             <?php foreach ($grupos as $i => $g): ?>
-                            <tr>
+                            <tr data-id="<?= $g['fgr_grupo_id'] ?>">
                                 <td class="text-muted"><?= $i + 1 ?></td>
                                 <td>
                                     <?php if (!empty($g['fgr_color'])): ?><span class="badge mr-1" style="background:<?= htmlspecialchars($g['fgr_color']) ?>">&nbsp;</span><?php endif; ?>
@@ -64,8 +64,13 @@ $moduloColor  = $modulo_actual['color'] ?? '#22C55E';
                                 </td>
                                 <td class="text-center">
                                     <div class="btn-group btn-group-sm">
-                                        <button class="btn btn-outline-primary" onclick='editarGrupo(<?= json_encode($g) ?>)' title="Editar"><i class="fas fa-edit"></i></button>
-                                        <button class="btn btn-outline-danger" onclick="eliminarGrupo(<?= $g['fgr_grupo_id'] ?>,'<?= htmlspecialchars($g['fgr_nombre']) ?>')" title="Cerrar"><i class="fas fa-times"></i></button>
+                                        <button class="btn btn-outline-primary js-editar-grupo"
+                                            data-grupo="<?= htmlspecialchars(json_encode($g, JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP), ENT_QUOTES) ?>"
+                                            title="Editar"><i class="fas fa-edit"></i></button>
+                                        <button class="btn btn-outline-danger js-eliminar-grupo"
+                                            data-id="<?= $g['fgr_grupo_id'] ?>"
+                                            data-nombre="<?= htmlspecialchars($g['fgr_nombre'], ENT_QUOTES) ?>"
+                                            title="Cerrar"><i class="fas fa-times"></i></button>
                                     </div>
                                 </td>
                             </tr>
@@ -83,7 +88,9 @@ $moduloColor  = $modulo_actual['color'] ?? '#22C55E';
 <div class="modal fade" id="modalGrupo" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <form id="formGrupo" method="POST">
+            <form id="formGrupo" method="POST"
+                data-url-crear="<?= url('futbol', 'grupo', 'crear') ?>"
+                data-url-editar="<?= url('futbol', 'grupo', 'editar') ?>">
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token ?? '') ?>">
                 <input type="hidden" name="id" id="gr_id">
                 <div class="modal-header" style="background:<?= $moduloColor ?>;color:white;">
@@ -130,32 +137,87 @@ $moduloColor  = $modulo_actual['color'] ?? '#22C55E';
 
 <?php ob_start(); ?>
 <script nonce="<?= cspNonce() ?>">
-var urlCrear = '<?= url('futbol', 'grupo', 'crear') ?>';
-var urlEditar = '<?= url('futbol', 'grupo', 'editar') ?>';
-function abrirModal() {
-    document.getElementById('formGrupo').reset(); document.getElementById('gr_id').value = '';
-    document.getElementById('modalTitulo').innerHTML = '<i class="fas fa-users mr-2"></i>Nuevo Grupo';
-    document.getElementById('formGrupo').action = urlCrear; $('#modalGrupo').modal('show');
-}
-function editarGrupo(g) {
-    document.getElementById('gr_id').value = g.fgr_grupo_id;
-    document.getElementById('gr_nombre').value = g.fgr_nombre || '';
-    document.getElementById('gr_sede').value = g.fgr_sede_id || '';
-    document.getElementById('gr_color').value = g.fgr_color || '#22C55E';
-    document.getElementById('gr_categoria').value = g.fgr_categoria_id || '';
-    document.getElementById('gr_entrenador').value = g.fgr_entrenador_id || '';
-    document.getElementById('gr_cancha').value = g.fgr_cancha_id || '';
-    document.getElementById('gr_periodo').value = g.fgr_periodo_id || '';
-    document.getElementById('gr_cupo').value = g.fgr_cupo_maximo || 20;
-    document.getElementById('gr_precio').value = g.fgr_precio || '';
-    document.getElementById('gr_estado').value = g.fgr_estado || 'ABIERTO';
-    document.getElementById('gr_desc').value = g.fgr_descripcion || '';
-    document.getElementById('modalTitulo').innerHTML = '<i class="fas fa-edit mr-2"></i>Editar Grupo';
-    document.getElementById('formGrupo').action = urlEditar; $('#modalGrupo').modal('show');
-}
-function eliminarGrupo(id, nombre) {
-    Swal.fire({ title: '¿Cerrar grupo?', html: '<strong>' + nombre + '</strong>', icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Sí, cerrar', cancelButtonText: 'Cancelar'
-    }).then(function(r) { if (r.isConfirmed) window.location.href = '<?= url('futbol', 'grupo', 'eliminar') ?>&id=' + id; });
-}
+$(function() {
+    var Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true });
+    var csrfToken = '<?= addslashes($csrf_token ?? '') ?>';
+
+    // Nuevo grupo
+    $('#btnNuevoGrupo').on('click', function() {
+        $('#formGrupo')[0].reset();
+        $('#gr_id').val('');
+        $('#gr_color').val('#22C55E');
+        $('#gr_estado').val('ABIERTO');
+        $('#modalTitulo').html('<i class="fas fa-users mr-2"></i>Nuevo Grupo');
+        $('#formGrupo').data('mode', 'crear');
+        $('#modalGrupo').modal('show');
+    });
+
+    // Editar grupo
+    $(document).on('click', '.js-editar-grupo', function() {
+        var g = JSON.parse($(this).attr('data-grupo'));
+        $('#gr_id').val(g.fgr_grupo_id);
+        $('#gr_nombre').val(g.fgr_nombre || '');
+        $('#gr_sede').val(g.fgr_sede_id || '');
+        $('#gr_color').val(g.fgr_color || '#22C55E');
+        $('#gr_categoria').val(g.fgr_categoria_id || '');
+        $('#gr_entrenador').val(g.fgr_entrenador_id || '');
+        $('#gr_cancha').val(g.fgr_cancha_id || '');
+        $('#gr_periodo').val(g.fgr_periodo_id || '');
+        $('#gr_cupo').val(g.fgr_cupo_maximo || 20);
+        $('#gr_precio').val(g.fgr_precio || '');
+        $('#gr_estado').val(g.fgr_estado || 'ABIERTO');
+        $('#gr_desc').val(g.fgr_descripcion || '');
+        $('#modalTitulo').html('<i class="fas fa-edit mr-2"></i>Editar Grupo');
+        $('#formGrupo').data('mode', 'editar');
+        $('#modalGrupo').modal('show');
+    });
+
+    // Submit crear/editar
+    $('#formGrupo').on('submit', function(e) {
+        e.preventDefault();
+        var mode = $(this).data('mode') || 'crear';
+        var action = $(this).attr(mode === 'editar' ? 'data-url-editar' : 'data-url-crear');
+        var $btn = $(this).find('[type=submit]').prop('disabled', true);
+        $.post(action, $(this).serialize(), function(res) {
+            if (res.success) {
+                $('#modalGrupo').modal('hide');
+                Toast.fire({ icon: 'success', title: res.message });
+                setTimeout(function() { location.reload(); }, 1200);
+            } else {
+                Toast.fire({ icon: 'error', title: res.message });
+            }
+        }, 'json').fail(function() {
+            Toast.fire({ icon: 'error', title: 'Error de comunicación' });
+        }).always(function() { $btn.prop('disabled', false); });
+    });
+
+    // Cerrar grupo
+    $(document).on('click', '.js-eliminar-grupo', function() {
+        var id = $(this).data('id');
+        var nombre = $(this).data('nombre');
+        var $row = $(this).closest('tr');
+        Swal.fire({
+            title: '¿Cerrar grupo?',
+            html: '<strong>' + nombre + '</strong>',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'Sí, cerrar',
+            cancelButtonText: 'Cancelar'
+        }).then(function(r) {
+            if (!r.isConfirmed) return;
+            $.post('<?= url('futbol', 'grupo', 'eliminar') ?>', { id: id, csrf_token: csrfToken }, function(res) {
+                if (res.success) {
+                    Toast.fire({ icon: 'success', title: res.message });
+                    $row.fadeOut(400, function() { location.reload(); });
+                } else {
+                    Toast.fire({ icon: 'error', title: res.message });
+                }
+            }, 'json').fail(function() {
+                Toast.fire({ icon: 'error', title: 'Error de comunicación' });
+            });
+        });
+    });
+});
 </script>
 <?php $scripts = ob_get_clean(); ?>

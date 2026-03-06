@@ -12,7 +12,7 @@ $moduloColor  = $modulo_actual['color'] ?? '#22C55E';
     <div class="container-fluid">
         <div class="row mb-2">
             <div class="col-sm-6"><h1 class="m-0"><i class="fas fa-sliders-h mr-2" style="color:<?= $moduloColor ?>"></i>Campos de Ficha</h1></div>
-            <div class="col-sm-6"><div class="float-sm-right"><button class="btn btn-sm" style="background:<?= $moduloColor ?>;color:white;" onclick="abrirModal()"><i class="fas fa-plus mr-1"></i>Nuevo Campo</button></div></div>
+            <div class="col-sm-6"><div class="float-sm-right"><button class="btn btn-sm" id="btnNuevoCampo" style="background:<?= $moduloColor ?>;color:white;"><i class="fas fa-plus mr-1"></i>Nuevo Campo</button></div></div>
         </div>
     </div>
 </div>
@@ -57,16 +57,16 @@ $moduloColor  = $modulo_actual['color'] ?? '#22C55E';
                                 <td><span class="badge badge-light"><?= htmlspecialchars($c['fcf_tipo'] ?? 'TEXT') ?></span></td>
                                 <td>
                                     <?php
-                                        $opciones = $c['fcf_opciones'] ?? '';
-                                        if (!empty($opciones)) {
-                                            $decoded = json_decode($opciones, true);
-                                            $listOps = is_array($decoded) ? $decoded : explode(',', $opciones);
-                                            foreach ($listOps as $op) {
-                                                echo '<span class="badge badge-outline-secondary mr-1">' . htmlspecialchars(trim($op)) . '</span>';
-                                            }
-                                        } else {
-                                            echo '<span class="text-muted">—</span>';
+                                    $opciones = $c['fcf_opciones'] ?? '';
+                                    if (!empty($opciones)) {
+                                        $decoded = json_decode($opciones, true);
+                                        $listOps = is_array($decoded) ? $decoded : explode(',', $opciones);
+                                        foreach ($listOps as $op) {
+                                            echo '<span class="badge badge-outline-secondary mr-1">' . htmlspecialchars(trim($op)) . '</span>';
                                         }
+                                    } else {
+                                        echo '<span class="text-muted">—</span>';
+                                    }
                                     ?>
                                 </td>
                                 <td class="text-center">
@@ -77,8 +77,15 @@ $moduloColor  = $modulo_actual['color'] ?? '#22C55E';
                                 </td>
                                 <td class="text-center">
                                     <div class="btn-group btn-group-sm">
-                                        <button class="btn btn-outline-primary" onclick='editarCampo(<?= json_encode($c) ?>)' title="Editar"><i class="fas fa-edit"></i></button>
-                                        <button class="btn btn-outline-danger" onclick="eliminarCampo(<?= $c['fcf_campo_id'] ?>, '<?= htmlspecialchars($c['fcf_etiqueta'] ?? $c['fcf_clave'] ?? '') ?>')" title="Desactivar"><i class="fas fa-trash"></i></button>
+                                        <button class="btn btn-outline-primary js-editar-campo" title="Editar"
+                                            data-campo="<?= htmlspecialchars(json_encode($c, JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP), ENT_QUOTES) ?>">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-outline-danger js-eliminar-campo" title="Desactivar"
+                                            data-id="<?= $c['fcf_campo_id'] ?>"
+                                            data-nombre="<?= htmlspecialchars($c['fcf_etiqueta'] ?? $c['fcf_clave'] ?? '', ENT_QUOTES) ?>">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
@@ -96,12 +103,14 @@ $moduloColor  = $modulo_actual['color'] ?? '#22C55E';
 <div class="modal fade" id="modalCampo" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form id="formCampo" method="POST">
+            <form id="formCampo" method="POST"
+                data-url-crear="<?= url('futbol', 'campoficha', 'crear') ?>"
+                data-url-editar="<?= url('futbol', 'campoficha', 'editar') ?>">
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token ?? '') ?>">
                 <input type="hidden" name="id" id="cf_id">
                 <div class="modal-header" style="background:<?= $moduloColor ?>;color:white;">
                     <h5 class="modal-title" id="modalTitulo"><i class="fas fa-sliders-h mr-2"></i>Nuevo Campo</h5>
-                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar" onclick="cerrarModalCampo()">&times;</button>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar">&times;</button>
                 </div>
                 <div class="modal-body">
                     <div class="row">
@@ -124,7 +133,7 @@ $moduloColor  = $modulo_actual['color'] ?? '#22C55E';
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label>Tipo</label>
-                                <select name="tipo" id="cf_tipo" class="form-control" onchange="toggleTipo()">
+                                <select name="tipo" id="cf_tipo" class="form-control">
                                     <?php foreach ($tipos_campo as $t): ?>
                                     <option value="<?= $t ?>"><?= $t ?></option>
                                     <?php endforeach; ?>
@@ -157,7 +166,7 @@ $moduloColor  = $modulo_actual['color'] ?? '#22C55E';
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="cerrarModalCampo()">Cancelar</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
                     <button type="submit" class="btn" style="background:<?= $moduloColor ?>;color:white;"><i class="fas fa-save mr-1"></i>Guardar</button>
                 </div>
             </form>
@@ -167,310 +176,119 @@ $moduloColor  = $modulo_actual['color'] ?? '#22C55E';
 
 <?php ob_start(); ?>
 <script nonce="<?= cspNonce() ?>">
-var urlCrear  = '<?= url('futbol', 'campoficha', 'crear') ?>';
-var urlEditar = '<?= url('futbol', 'campoficha', 'editar') ?>';
+$(function() {
+    var Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true });
+    var csrfToken = '<?= addslashes($csrf_token ?? '') ?>';
 
-// Submit via AJAX con confirmación previa - VERSIÓN MEJORADA
-var isSubmittingCampo = false;
-
-// Usar DOMContentLoaded + MutationObserver para asegurar que el formulario exista
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('[DEBUG] DOMContentLoaded ejecutado');
-    
-    function setupFormListener() {
-        var form = document.getElementById('formCampo');
-        console.log('[DEBUG] Buscando formulario #formCampo:', form);
-        
-        if (!form) {
-            console.warn('[WARN] Formulario #formCampo no encontrado');
-            return false;
-        }
-        
-        // Remover listener anterior si existe
-        form.removeEventListener('submit', handleFormSubmit);
-        
-        // Agregar nuevo listener
-        form.addEventListener('submit', handleFormSubmit);
-        console.log('[SUCCESS] Listener del formulario agregado correctamente');
-        return true;
+    function toggleTipo() {
+        $('#divOpciones').toggle($('#cf_tipo').val() === 'SELECT');
     }
-    
-    function handleFormSubmit(e) {
-        console.log('[DEBUG] Evento submit capturado');
-        e.preventDefault();
-        e.stopPropagation();
-        
-        // Prevenir doble-click
-        if (isSubmittingCampo) {
-            console.log('[WARN] Ya hay un envío en curso, se ignoró');
-            return false;
+
+    // Tipo change
+    $('#cf_tipo').on('change', toggleTipo);
+
+    // Nuevo campo
+    $('#btnNuevoCampo').on('click', function() {
+        $('#formCampo')[0].reset();
+        $('#cf_id').val('');
+        $('#cf_activo').prop('checked', true);
+        $('#modalTitulo').html('<i class="fas fa-sliders-h mr-2"></i>Nuevo Campo');
+        $('#formCampo').data('mode', 'crear');
+        toggleTipo();
+        $('#modalCampo').modal('show');
+    });
+
+    // Editar campo
+    $(document).on('click', '.js-editar-campo', function() {
+        var c = JSON.parse($(this).attr('data-campo'));
+        $('#cf_id').val(c.fcf_campo_id);
+        $('#cf_nombre').val(c.fcf_clave || '');
+        $('#cf_etiqueta').val(c.fcf_etiqueta || '');
+        $('#cf_tipo').val(c.fcf_tipo || 'TEXT');
+        $('#cf_orden').val(c.fcf_orden || 0);
+        $('#cf_requerido').prop('checked', !!parseInt(c.fcf_requerido));
+        $('#cf_activo').prop('checked', !!parseInt(c.fcf_activo));
+
+        var ops = c.fcf_opciones || '';
+        if (ops) {
+            try {
+                var parsed = JSON.parse(ops);
+                ops = Array.isArray(parsed) ? parsed.join(', ') : ops;
+            } catch(e) {}
         }
-        
-        var cfId = document.getElementById('cf_id').value;
-        var isEditing = cfId && cfId.length > 0;
-        var titulo = isEditing ? '¿Guardar cambios?' : '¿Crear nuevo campo?';
-        var texto = isEditing ? '¿Deseas confirmar la actualización de este campo?' : '¿Deseas crear este campo?';
-        
-        console.log('[DEBUG] Mostrando confirmación SweetAlert2:', { titulo, isEditing });
-        
-        // Mostrar confirmación con SweetAlert2
+        $('#cf_opciones').val(ops);
+
+        $('#modalTitulo').html('<i class="fas fa-edit mr-2"></i>Editar Campo');
+        $('#formCampo').data('mode', 'editar');
+        toggleTipo();
+        $('#modalCampo').modal('show');
+    });
+
+    // Submit crear/editar (con confirmación)
+    $('#formCampo').on('submit', function(e) {
+        e.preventDefault();
+        var mode    = $(this).data('mode') || 'crear';
+        var action  = $(this).attr(mode === 'editar' ? 'data-url-editar' : 'data-url-crear');
+        var isEdit  = mode === 'editar';
+        var $form   = $(this);
+        var $btn    = $form.find('[type=submit]');
+
         Swal.fire({
-            title: titulo,
-            text: texto,
+            title: isEdit ? '¿Guardar cambios?' : '¿Crear nuevo campo?',
+            text:  isEdit ? '¿Deseas confirmar la actualización?' : '¿Deseas crear este campo?',
             icon: 'question',
             showCancelButton: true,
-            confirmButtonColor: '#22C55E',
+            confirmButtonColor: '<?= $moduloColor ?>',
             cancelButtonColor: '#6c757d',
-            confirmButtonText: isEditing ? 'Sí, guardar' : 'Sí, crear',
-            cancelButtonText: 'Cancelar',
-            allowOutsideClick: false,
-            allowEscapeKey: false
-        }).then(function(result) {
-            console.log('[DEBUG] Resultado SweetAlert:', result.isConfirmed);
-            
-            if (result.isConfirmed) {
-                isSubmittingCampo = true;
-                var formData = new FormData(document.getElementById('formCampo'));
-                var url = document.getElementById('formCampo').getAttribute('action');
-                var params = new URLSearchParams(formData);
-                
-                console.log('[DEBUG] Enviando AJAX a:', url);
-                
-                $.ajax({
-                    url: url,
-                    type: 'POST',
-                    data: params.toString(),
-                    contentType: 'application/x-www-form-urlencoded',
-                    dataType: 'json',
-                    success: function(res) {
-                        console.log('[DEBUG] Respuesta AJAX:', res);
-                        
-                        if (res.success) {
-                            cerrarModalCampo();
-                            
-                            // Toast de éxito
-                            Swal.fire({
-                                toast: true,
-                                position: 'top-end',
-                                icon: 'success',
-                                title: isEditing ? 'Campo actualizado correctamente' : 'Campo creado correctamente',
-                                showConfirmButton: false,
-                                timer: 3000,
-                                timerProgressBar: true,
-                                didOpen: function(toast) {
-                                    toast.addEventListener('mouseenter', Swal.stopTimer);
-                                    toast.addEventListener('mouseleave', Swal.resumeTimer);
-                                }
-                            });
-                            
-                            setTimeout(function() {
-                                location.reload();
-                            }, 500);
-                        } else {
-                            // Toast de error
-                            Swal.fire({
-                                toast: true,
-                                position: 'top-end',
-                                icon: 'error',
-                                title: res.message || 'No se pudo guardar el campo',
-                                showConfirmButton: false,
-                                timer: 4000,
-                                timerProgressBar: true,
-                                didOpen: function(toast) {
-                                    toast.addEventListener('mouseenter', Swal.stopTimer);
-                                    toast.addEventListener('mouseleave', Swal.resumeTimer);
-                                }
-                            });
-                        }
-                        isSubmittingCampo = false;
-                    },
-                    error: function(xhr, status, error) {
-                        console.log('[ERROR] AJAX Error:', { status, error });
-                        
-                        // Toast de error de conexión
-                        Swal.fire({
-                            toast: true,
-                            position: 'top-end',
-                            icon: 'error',
-                            title: 'Error de conexión: ' + (xhr.statusText || 'Error desconocido'),
-                            showConfirmButton: false,
-                            timer: 4000,
-                            timerProgressBar: true,
-                            didOpen: function(toast) {
-                                toast.addEventListener('mouseenter', Swal.stopTimer);
-                                toast.addEventListener('mouseleave', Swal.resumeTimer);
-                            }
-                        });
-                        isSubmittingCampo = false;
-                    }
-                });
-            }
-        });
-    }
-    
-    // Intentar setup inmediatamente
-    if (!setupFormListener()) {
-        // Si falla, usar MutationObserver para esperar por el elemento
-        console.log('[INFO] Esperando por elemento #formCampo...');
-        var observer = new MutationObserver(function() {
-            if (setupFormListener()) {
-                observer.disconnect();
-            }
-        });
-        
-        observer.observe(document.body, {
-            childList: true,
-            subtree: true
-        });
-    }
-});
-
-function toggleTipo() {
-    var tipo = document.getElementById('cf_tipo').value;
-    document.getElementById('divOpciones').style.display = (tipo === 'SELECT') ? '' : 'none';
-}
-
-function abrirModal() {
-    var modal = document.getElementById('modalCampo');
-    if (!modal) {
-        Swal.fire('Error', 'Modal no encontrado', 'error');
-        return;
-    }
-    document.getElementById('formCampo').reset();
-    document.getElementById('cf_id').value = '';
-    document.getElementById('cf_activo').checked = true;
-    document.getElementById('modalTitulo').innerHTML = '<i class="fas fa-sliders-h mr-2"></i>Nuevo Campo';
-    document.getElementById('formCampo').action = urlCrear;
-    toggleTipo();
-    document.body.classList.remove('hold-transition');
-    
-    var modalShown = false;
-    try {
-        if (typeof jQuery !== 'undefined' && jQuery.fn && jQuery.fn.modal) {
-            jQuery('#modalCampo').modal('show');
-            modalShown = true;
-            setTimeout(function() {
-                if (!modal.classList.contains('show')) {
-                    abrirModalManual(modal);
+            confirmButtonText: isEdit ? 'Sí, guardar' : 'Sí, crear',
+            cancelButtonText: 'Cancelar'
+        }).then(function(r) {
+            if (!r.isConfirmed) return;
+            $btn.prop('disabled', true);
+            $.post(action, $form.serialize(), function(res) {
+                if (res.success) {
+                    $('#modalCampo').modal('hide');
+                    Toast.fire({ icon: 'success', title: res.message });
+                    setTimeout(function() { location.reload(); }, 1200);
+                } else {
+                    Toast.fire({ icon: 'error', title: res.message });
                 }
-            }, 300);
-            return;
-        }
-    } catch(e) {
-        console.warn('Bootstrap modal falló:', e);
-        modalShown = false;
-    }
-    
-    abrirModalManual(modal);
-}
-
-function editarCampo(c) {
-    var modal = document.getElementById('modalCampo');
-    if (!modal) {
-        Swal.fire('Error', 'Modal no encontrado', 'error');
-        return;
-    }
-    document.getElementById('cf_id').value       = c.fcf_campo_id;
-    document.getElementById('cf_nombre').value    = c.fcf_clave || '';
-    document.getElementById('cf_etiqueta').value  = c.fcf_etiqueta || '';
-    document.getElementById('cf_tipo').value      = c.fcf_tipo || 'TEXT';
-    document.getElementById('cf_orden').value     = c.fcf_orden || 0;
-    document.getElementById('cf_requerido').checked = !!parseInt(c.fcf_requerido);
-    document.getElementById('cf_activo').checked    = !!parseInt(c.fcf_activo);
-
-    var ops = c.fcf_opciones || '';
-    if (ops) {
-        try {
-            var parsed = JSON.parse(ops);
-            ops = Array.isArray(parsed) ? parsed.join(', ') : ops;
-        } catch(e) { }
-    }
-    document.getElementById('cf_opciones').value = ops;
-
-    document.getElementById('modalTitulo').innerHTML = '<i class="fas fa-edit mr-2"></i>Editar Campo';
-    document.getElementById('formCampo').action = urlEditar;
-    toggleTipo();
-    document.body.classList.remove('hold-transition');
-    
-    var modalShown = false;
-    try {
-        if (typeof jQuery !== 'undefined' && jQuery.fn && jQuery.fn.modal) {
-            jQuery('#modalCampo').modal('show');
-            modalShown = true;
-            setTimeout(function() {
-                if (!modal.classList.contains('show')) {
-                    abrirModalManual(modal);
-                }
-            }, 300);
-            return;
-        }
-    } catch(e) {
-        console.warn('Bootstrap modal falló:', e);
-        modalShown = false;
-    }
-    
-    abrirModalManual(modal);
-}
-
-function abrirModalManual(modal) {
-    if (!modal) return;
-    modal.style.display = 'block';
-    modal.classList.add('show');
-    
-    var backdrop = document.querySelector('.modal-backdrop');
-    if (!backdrop) {
-        backdrop = document.createElement('div');
-        backdrop.className = 'modal-backdrop fade show';
-        document.body.appendChild(backdrop);
-    }
-    
-    if (!document.body.classList.contains('modal-open')) {
-        document.body.style.overflow = 'hidden';
-        document.body.classList.add('modal-open');
-    }
-}
-
-function cerrarModalCampo() {
-    var modal = document.getElementById('modalCampo');
-    if (!modal) return;
-    
-    try {
-        if (typeof jQuery !== 'undefined' && jQuery.fn && jQuery.fn.modal) {
-            jQuery('#modalCampo').modal('hide');
-            return;
-        }
-    } catch(e) {
-        console.warn('Bootstrap modal falló al cerrar:', e);
-    }
-    
-    modal.style.display = 'none';
-    modal.classList.remove('show');
-    document.body.classList.remove('modal-open');
-    document.body.style.overflow = '';
-    
-    var backdrop = document.querySelector('.modal-backdrop');
-    if (backdrop) {
-        backdrop.remove();
-    }
-}
-
-function eliminarCampo(id, nombre) {
-    Swal.fire({
-        title: '¿Desactivar campo?',
-        html: 'Se desactivará el campo <strong>' + nombre + '</strong>',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        confirmButtonText: 'Sí, desactivar',
-        cancelButtonText: 'Cancelar'
-    }).then(function(r) {
-        if (r.isConfirmed) window.location.href = '<?= url('futbol', 'campoficha', 'eliminar') ?>&id=' + id;
+            }, 'json').fail(function() {
+                Toast.fire({ icon: 'error', title: 'Error de comunicación' });
+            }).always(function() { $btn.prop('disabled', false); });
+        });
     });
-}
 
-// Drag-to-reorder (si Sortable.js está disponible)
-$(function() {
-    if (typeof Sortable !== 'undefined' && document.getElementById('tbodyCampos')) {
+    // Desactivar campo
+    $(document).on('click', '.js-eliminar-campo', function() {
+        var id     = $(this).data('id');
+        var nombre = $(this).data('nombre');
+        var $row   = $(this).closest('tr');
+        Swal.fire({
+            title: '¿Desactivar campo?',
+            html: 'Se desactivará el campo <strong>' + nombre + '</strong>',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'Sí, desactivar',
+            cancelButtonText: 'Cancelar'
+        }).then(function(r) {
+            if (!r.isConfirmed) return;
+            $.post('<?= url('futbol', 'campoficha', 'eliminar') ?>', { id: id, csrf_token: csrfToken }, function(res) {
+                if (res.success) {
+                    Toast.fire({ icon: 'success', title: res.message });
+                    $row.fadeOut(400, function() { location.reload(); });
+                } else {
+                    Toast.fire({ icon: 'error', title: res.message });
+                }
+            }, 'json').fail(function() {
+                Toast.fire({ icon: 'error', title: 'Error de comunicación' });
+            });
+        });
+    });
+
+    // Drag-to-reorder
+    if (typeof Sortable !== 'undefined' && $('#tbodyCampos').length) {
         new Sortable(document.getElementById('tbodyCampos'), {
             animation: 150,
             handle: 'tr',
@@ -480,12 +298,10 @@ $(function() {
                     orden.push({ id: $(this).data('id'), orden: i + 1 });
                 });
                 $.post('<?= url('futbol', 'campoficha', 'reordenar') ?>', {
-                    csrf_token: '<?= $csrf_token ?? '' ?>',
+                    csrf_token: csrfToken,
                     orden: JSON.stringify(orden)
                 }, function(res) {
-                    if (res.success) {
-                        Swal.fire({ icon: 'success', title: 'Orden actualizado', timer: 1500, showConfirmButton: false });
-                    }
+                    if (res.success) Toast.fire({ icon: 'success', title: 'Orden actualizado' });
                 }, 'json');
             }
         });

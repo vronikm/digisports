@@ -4,14 +4,13 @@
  */
 $categorias  = $categorias ?? [];
 $moduloColor = $modulo_actual['color'] ?? '#22C55E';
-$colores     = ['#22C55E','#3B82F6','#F59E0B','#EF4444','#8B5CF6','#EC4899','#14B8A6','#F97316'];
 ?>
 
 <div class="content-header">
     <div class="container-fluid">
         <div class="row mb-2">
             <div class="col-sm-6"><h1 class="m-0"><i class="fas fa-layer-group mr-2" style="color:<?= $moduloColor ?>"></i>Categorías</h1></div>
-            <div class="col-sm-6"><div class="float-sm-right"><button class="btn btn-sm" style="background:<?= $moduloColor ?>;color:white;" onclick="abrirModal()"><i class="fas fa-plus mr-1"></i>Nueva Categoría</button></div></div>
+            <div class="col-sm-6"><div class="float-sm-right"><button class="btn btn-sm" id="btnNuevaCategoria" style="background:<?= $moduloColor ?>;color:white;"><i class="fas fa-plus mr-1"></i>Nueva Categoría</button></div></div>
         </div>
     </div>
 </div>
@@ -46,9 +45,17 @@ $colores     = ['#22C55E','#3B82F6','#F59E0B','#EF4444','#8B5CF6','#EC4899','#14
                     </div>
                     <div class="card-footer bg-white py-2">
                         <div class="btn-group btn-group-sm">
-                            <button class="btn btn-outline-primary" onclick='editarCategoria(<?= json_encode($cat) ?>)' title="Editar"><i class="fas fa-edit"></i></button>
-                            <button class="btn btn-outline-info" onclick="verHabilidades(<?= $cat['fct_categoria_id'] ?>,'<?= htmlspecialchars($cat['fct_nombre']) ?>')" title="Habilidades"><i class="fas fa-tasks"></i></button>
-                            <button class="btn btn-outline-danger" onclick="eliminarCategoria(<?= $cat['fct_categoria_id'] ?>,'<?= htmlspecialchars($cat['fct_nombre']) ?>')" title="Desactivar"><i class="fas fa-trash"></i></button>
+                            <button class="btn btn-outline-primary js-editar-categoria"
+                                data-cat="<?= htmlspecialchars(json_encode($cat, JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP), ENT_QUOTES) ?>"
+                                title="Editar"><i class="fas fa-edit"></i></button>
+                            <button class="btn btn-outline-info js-ver-habilidades"
+                                data-id="<?= $cat['fct_categoria_id'] ?>"
+                                data-nombre="<?= htmlspecialchars($cat['fct_nombre'], ENT_QUOTES) ?>"
+                                title="Habilidades"><i class="fas fa-tasks"></i></button>
+                            <button class="btn btn-outline-danger js-eliminar-categoria"
+                                data-id="<?= $cat['fct_categoria_id'] ?>"
+                                data-nombre="<?= htmlspecialchars($cat['fct_nombre'], ENT_QUOTES) ?>"
+                                title="Desactivar"><i class="fas fa-trash"></i></button>
                         </div>
                     </div>
                 </div>
@@ -59,11 +66,13 @@ $colores     = ['#22C55E','#3B82F6','#F59E0B','#EF4444','#8B5CF6','#EC4899','#14
     </div>
 </section>
 
-<!-- Modal -->
+<!-- Modal Categoría -->
 <div class="modal fade" id="modalCategoria" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form id="formCategoria" method="POST">
+            <form id="formCategoria" method="POST"
+                data-url-crear="<?= url('futbol', 'categoria', 'crear') ?>"
+                data-url-editar="<?= url('futbol', 'categoria', 'editar') ?>">
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token ?? '') ?>">
                 <input type="hidden" name="id" id="cat_id">
                 <div class="modal-header" style="background:<?= $moduloColor ?>;color:white;">
@@ -73,7 +82,7 @@ $colores     = ['#22C55E','#3B82F6','#F59E0B','#EF4444','#8B5CF6','#EC4899','#14
                 <div class="modal-body">
                     <div class="row">
                         <div class="col-md-8"><div class="form-group"><label>Nombre <span class="text-danger">*</span></label><input type="text" name="nombre" id="cat_nombre" class="form-control" required></div></div>
-                        <div class="col-md-4"><div class="form-group"><label>Código</label><input type="text" name="codigo" id="cat_codigo" class="form-control" maxlength="10"></div></div>
+                        <div class="col-md-4"><div class="form-group"><label>Código <span class="text-danger">*</span></label><input type="text" name="codigo" id="cat_codigo" class="form-control" maxlength="10" required></div></div>
                     </div>
                     <div class="form-group"><label>Descripción</label><textarea name="descripcion" id="cat_desc" class="form-control" rows="2"></textarea></div>
                     <div class="row">
@@ -112,7 +121,7 @@ $colores     = ['#22C55E','#3B82F6','#F59E0B','#EF4444','#8B5CF6','#EC4899','#14
                     </div>
                 </div>
                 <hr>
-                <form id="formHabilidad" class="form-inline" onsubmit="return agregarHabilidad(event)">
+                <form id="formHabilidad" class="form-inline">
                     <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token ?? '') ?>">
                     <input type="hidden" name="categoria_id" id="hab_cat_id">
                     <input type="text" name="nombre" id="hab_nombre" class="form-control form-control-sm mr-2" placeholder="Nombre habilidad" required>
@@ -129,74 +138,150 @@ $colores     = ['#22C55E','#3B82F6','#F59E0B','#EF4444','#8B5CF6','#EC4899','#14
 
 <?php ob_start(); ?>
 <script nonce="<?= cspNonce() ?>">
-var urlCrear = '<?= url('futbol', 'categoria', 'crear') ?>';
-var urlEditar = '<?= url('futbol', 'categoria', 'editar') ?>';
-function abrirModal() {
-    document.getElementById('formCategoria').reset(); document.getElementById('cat_id').value = '';
-    document.getElementById('modalTitulo').innerHTML = '<i class="fas fa-layer-group mr-2"></i>Nueva Categoría';
-    document.getElementById('formCategoria').action = urlCrear; $('#modalCategoria').modal('show');
-}
-function editarCategoria(cat) {
-    document.getElementById('cat_id').value = cat.fct_categoria_id;
-    document.getElementById('cat_nombre').value = cat.fct_nombre || '';
-    document.getElementById('cat_codigo').value = cat.fct_codigo || '';
-    document.getElementById('cat_desc').value = cat.fct_descripcion || '';
-    document.getElementById('cat_orden').value = cat.fct_orden || 0;
-    document.getElementById('cat_emin').value = cat.fct_edad_min || '';
-    document.getElementById('cat_emax').value = cat.fct_edad_max || '';
-    document.getElementById('cat_color').value = cat.fct_color || '#22C55E';
-    document.getElementById('modalTitulo').innerHTML = '<i class="fas fa-edit mr-2"></i>Editar Categoría';
-    document.getElementById('formCategoria').action = urlEditar; $('#modalCategoria').modal('show');
-}
-function eliminarCategoria(id, nombre) {
-    Swal.fire({ title: '¿Desactivar categoría?', html: '<strong>' + nombre + '</strong>', icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Sí, desactivar', cancelButtonText: 'Cancelar'
-    }).then(function(r) { if (r.isConfirmed) window.location.href = '<?= url('futbol', 'categoria', 'eliminar') ?>&id=' + id; });
-}
+$(function() {
+    var Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true });
+    var csrfToken = '<?= addslashes($csrf_token ?? '') ?>';
+    var urlHabilidades = '<?= url('futbol', 'categoria', 'habilidades') ?>';
+    var urlCrearHab    = '<?= url('futbol', 'categoria', 'crearHabilidad') ?>';
 
-var urlHabilidades = '<?= url('futbol', 'categoria', 'habilidades') ?>';
-var urlCrearHab    = '<?= url('futbol', 'categoria', 'crearHabilidad') ?>';
-
-function verHabilidades(catId, catNombre) {
-    document.getElementById('habTitulo').innerHTML = '<i class="fas fa-tasks mr-2"></i>Habilidades: ' + catNombre;
-    document.getElementById('hab_cat_id').value = catId;
-    document.getElementById('habLoading').style.display = 'block';
-    document.getElementById('habContent').style.display = 'none';
-    $('#modalHabilidades').modal('show');
-
-    $.getJSON(urlHabilidades + '&id=' + catId, function(res) {
-        document.getElementById('habLoading').style.display = 'none';
-        document.getElementById('habContent').style.display = 'block';
-        var body = document.getElementById('habBody');
-        body.innerHTML = '';
-        if (res.success && res.data && res.data.length > 0) {
-            document.getElementById('tablaHabilidades').style.display = '';
-            document.getElementById('habEmpty').style.display = 'none';
-            res.data.forEach(function(h) {
-                body.innerHTML += '<tr><td>' + (h.fch_nombre||'') + '</td><td>' + (h.fch_descripcion||'—') + '</td><td>' + (h.fch_orden||0) + '</td></tr>';
-            });
-        } else {
-            document.getElementById('tablaHabilidades').style.display = 'none';
-            document.getElementById('habEmpty').style.display = 'block';
-        }
-    }).fail(function() {
-        document.getElementById('habLoading').style.display = 'none';
-        Swal.fire('Error', 'No se pudieron cargar las habilidades', 'error');
+    // Nueva categoría
+    $('#btnNuevaCategoria').on('click', function() {
+        $('#formCategoria')[0].reset();
+        $('#cat_id').val('');
+        $('#cat_color').val('#22C55E');
+        $('#modalTitulo').html('<i class="fas fa-layer-group mr-2"></i>Nueva Categoría');
+        $('#formCategoria').data('mode', 'crear');
+        $('#modalCategoria').modal('show');
     });
-}
 
-function agregarHabilidad(e) {
-    e.preventDefault();
-    var form = document.getElementById('formHabilidad');
-    $.post(urlCrearHab, $(form).serialize(), function(res) {
-        if (res.success) {
-            Swal.fire('Éxito', res.message, 'success');
-            document.getElementById('hab_nombre').value = '';
-            verHabilidades(document.getElementById('hab_cat_id').value, document.getElementById('habTitulo').textContent.replace('Habilidades: ', ''));
-        } else {
-            Swal.fire('Error', res.message, 'error');
-        }
-    }, 'json').fail(function() { Swal.fire('Error', 'Error de conexión', 'error'); });
-    return false;
-}
+    // Editar categoría
+    $(document).on('click', '.js-editar-categoria', function() {
+        var cat = JSON.parse($(this).attr('data-cat'));
+        $('#cat_id').val(cat.fct_categoria_id);
+        $('#cat_nombre').val(cat.fct_nombre || '');
+        $('#cat_codigo').val(cat.fct_codigo || '');
+        $('#cat_desc').val(cat.fct_descripcion || '');
+        $('#cat_orden').val(cat.fct_orden || 0);
+        $('#cat_emin').val(cat.fct_edad_min || '');
+        $('#cat_emax').val(cat.fct_edad_max || '');
+        $('#cat_color').val(cat.fct_color || '#22C55E');
+        $('#modalTitulo').html('<i class="fas fa-edit mr-2"></i>Editar Categoría');
+        $('#formCategoria').data('mode', 'editar');
+        $('#modalCategoria').modal('show');
+    });
+
+    // Submit crear/editar
+    $('#formCategoria').on('submit', function(e) {
+        e.preventDefault();
+        var mode = $(this).data('mode') || 'crear';
+        var action = $(this).attr(mode === 'editar' ? 'data-url-editar' : 'data-url-crear');
+        var $btn = $(this).find('[type=submit]').prop('disabled', true);
+        $.post(action, $(this).serialize(), function(res) {
+            if (res.success) {
+                $('#modalCategoria').modal('hide');
+                Toast.fire({ icon: 'success', title: res.message });
+                setTimeout(function() { location.reload(); }, 1200);
+            } else {
+                Toast.fire({ icon: 'error', title: res.message });
+            }
+        }, 'json').fail(function() {
+            Toast.fire({ icon: 'error', title: 'Error de comunicación' });
+        }).always(function() { $btn.prop('disabled', false); });
+    });
+
+    // Desactivar categoría
+    $(document).on('click', '.js-eliminar-categoria', function() {
+        var id = $(this).data('id');
+        var nombre = $(this).data('nombre');
+        var $card = $(this).closest('.col-lg-4, .col-md-6');
+        Swal.fire({
+            title: '¿Desactivar categoría?',
+            html: '<strong>' + nombre + '</strong>',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'Sí, desactivar',
+            cancelButtonText: 'Cancelar'
+        }).then(function(r) {
+            if (!r.isConfirmed) return;
+            $.post('<?= url('futbol', 'categoria', 'eliminar') ?>', { id: id, csrf_token: csrfToken }, function(res) {
+                if (res.success) {
+                    Toast.fire({ icon: 'success', title: res.message });
+                    $card.fadeOut(400, function() { location.reload(); });
+                } else {
+                    Toast.fire({ icon: 'error', title: res.message });
+                }
+            }, 'json').fail(function() {
+                Toast.fire({ icon: 'error', title: 'Error de comunicación' });
+            });
+        });
+    });
+
+    // Ver habilidades
+    $(document).on('click', '.js-ver-habilidades', function() {
+        var catId = $(this).data('id');
+        var catNombre = $(this).data('nombre');
+        $('#habTitulo').html('<i class="fas fa-tasks mr-2"></i>Habilidades: ' + catNombre);
+        $('#hab_cat_id').val(catId);
+        $('#habLoading').show();
+        $('#habContent').hide();
+        $('#modalHabilidades').modal('show');
+
+        $.getJSON(urlHabilidades + '&id=' + catId, function(res) {
+            $('#habLoading').hide();
+            $('#habContent').show();
+            var $body = $('#habBody').empty();
+            if (res.success && res.data && res.data.length > 0) {
+                $('#tablaHabilidades').show();
+                $('#habEmpty').hide();
+                $.each(res.data, function(i, h) {
+                    $body.append('<tr><td>' + (h.fch_nombre || '') + '</td><td>' + (h.fch_descripcion || '—') + '</td><td>' + (h.fch_orden || 0) + '</td></tr>');
+                });
+            } else {
+                $('#tablaHabilidades').hide();
+                $('#habEmpty').show();
+            }
+        }).fail(function() {
+            $('#habLoading').hide();
+            Swal.fire('Error', 'No se pudieron cargar las habilidades', 'error');
+        });
+    });
+
+    // Agregar habilidad
+    $('#formHabilidad').on('submit', function(e) {
+        e.preventDefault();
+        var catId = $('#hab_cat_id').val();
+        var catNombre = $('#habTitulo').text().replace('Habilidades: ', '');
+        var $btn = $(this).find('[type=submit]').prop('disabled', true);
+        $.post(urlCrearHab, $(this).serialize(), function(res) {
+            if (res.success) {
+                Toast.fire({ icon: 'success', title: res.message });
+                $('#hab_nombre').val('');
+                // Recargar lista de habilidades
+                $('#habLoading').show();
+                $('#habContent').hide();
+                $.getJSON(urlHabilidades + '&id=' + catId, function(res2) {
+                    $('#habLoading').hide();
+                    $('#habContent').show();
+                    var $body = $('#habBody').empty();
+                    if (res2.success && res2.data && res2.data.length > 0) {
+                        $('#tablaHabilidades').show();
+                        $('#habEmpty').hide();
+                        $.each(res2.data, function(i, h) {
+                            $body.append('<tr><td>' + (h.fch_nombre || '') + '</td><td>' + (h.fch_descripcion || '—') + '</td><td>' + (h.fch_orden || 0) + '</td></tr>');
+                        });
+                    } else {
+                        $('#tablaHabilidades').hide();
+                        $('#habEmpty').show();
+                    }
+                });
+            } else {
+                Toast.fire({ icon: 'error', title: res.message });
+            }
+        }, 'json').fail(function() {
+            Toast.fire({ icon: 'error', title: 'Error de conexión' });
+        }).always(function() { $btn.prop('disabled', false); });
+    });
+});
 </script>
 <?php $scripts = ob_get_clean(); ?>
