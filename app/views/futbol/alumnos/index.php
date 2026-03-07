@@ -36,7 +36,7 @@ $moduloColor = $modulo_actual['color'] ?? '#22C55E';
             <div class="col-md-4">
                 <div class="input-group input-group-sm">
                     <div class="input-group-prepend"><span class="input-group-text"><i class="fas fa-building"></i></span></div>
-                    <select id="sedeFilter" class="form-control" onchange="filtrarPorSede(this.value)">
+                    <select id="sedeFilter" class="form-control">
                         <option value="">Todas las sedes</option>
                         <?php foreach ($sedes as $s): ?>
                         <option value="<?= $s['sed_sede_id'] ?>" <?= $sedeActiva == $s['sed_sede_id'] ? 'selected' : '' ?>><?= htmlspecialchars($s['sed_nombre']) ?></option>
@@ -184,8 +184,8 @@ $moduloColor = $modulo_actual['color'] ?? '#22C55E';
                                 </td>
                                 <td class="text-center">
                                     <div class="btn-group btn-group-sm">
-                                        <button class="btn btn-outline-info" onclick="verFicha(<?= $a['alu_alumno_id'] ?>)" title="Ver Ficha"><i class="fas fa-id-card"></i></button>
-                                        <button class="btn btn-outline-success" onclick="inscribirAlumno(<?= $a['alu_alumno_id'] ?>)" title="Inscribir"><i class="fas fa-user-plus"></i></button>
+                                        <button class="btn btn-outline-info js-ver-ficha" data-id="<?= $a['alu_alumno_id'] ?>" title="Ver Ficha"><i class="fas fa-id-card"></i></button>
+                                        <button class="btn btn-outline-success js-inscribir" data-id="<?= $a['alu_alumno_id'] ?>" data-nombre="<?= htmlspecialchars($a['alu_nombres'] . ' ' . $a['alu_apellidos'], ENT_QUOTES) ?>" title="Inscribir"><i class="fas fa-user-plus"></i></button>
                                         <a href="<?= url('futbol', 'alumno', 'editar') ?>&id=<?= $a['alu_alumno_id'] ?>" class="btn btn-outline-primary" title="Editar"><i class="fas fa-edit"></i></a>
                                     </div>
                                 </td>
@@ -211,18 +211,18 @@ $(function() {
             responsive: true
         });
     }
+
+    $('#sedeFilter').on('change', function() {
+        $.post('<?= url('futbol', 'sede', 'seleccionar') ?>', { id: $(this).val(), csrf_token: '<?= $csrf_token ?? '' ?>' }, function() { location.reload(); }, 'json');
+    });
+
+    $(document).on('click', '.js-ver-ficha', function() {
+        window.location.href = '<?= url('futbol', 'alumno', 'ver') ?>&id=' + $(this).data('id');
+    });
+
+    $(document).on('click', '.js-inscribir', function() {
+        window.location.href = '<?= url('futbol', 'inscripcion', 'index') ?>&alumno_id=' + $(this).data('id');
+    });
 });
-
-function filtrarPorSede(sedeId) {
-    $.post('<?= url('futbol', 'sede', 'seleccionar') ?>', { id: sedeId, csrf_token: '<?= $csrf_token ?? '' ?>' }, function() { location.reload(); }, 'json');
-}
-
-function verFicha(alumnoId) {
-    window.location.href = '<?= url('futbol', 'alumno', 'ver') ?>&id=' + alumnoId;
-}
-
-function inscribirAlumno(alumnoId) {
-    window.location.href = '<?= url('futbol', 'inscripcion', 'crear') ?>&alumno_id=' + alumnoId;
-}
 </script>
 <?php $scripts = ob_get_clean(); ?>

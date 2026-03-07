@@ -2,7 +2,7 @@
 /**
  * DigiSports Fútbol — Controlador de Canchas (Vista de solo lectura)
  * Consulta de canchas desde instalaciones_canchas filtradas por tipo fútbol
- * 
+ *
  * @package DigiSports\Controllers\Futbol
  */
 
@@ -26,8 +26,8 @@ class CanchaController extends \App\Controllers\ModuleController {
             $stm = $this->db->prepare("
                 SELECT can.*,
                        s.sed_nombre AS sede_nombre,
-                       (SELECT COUNT(*) FROM futbol_grupos fgr 
-                        WHERE fgr.fgr_cancha_id = can.can_cancha_id 
+                       (SELECT COUNT(*) FROM futbol_grupos fgr
+                        WHERE fgr.fgr_cancha_id = can.can_cancha_id
                           AND fgr.fgr_tenant_id = can.can_tenant_id
                           AND fgr.fgr_estado IN ('ABIERTO','EN_CURSO')) AS total_grupos
                 FROM instalaciones_canchas can
@@ -54,8 +54,6 @@ class CanchaController extends \App\Controllers\ModuleController {
             $this->error('Error al cargar canchas');
         }
     }
-
-    private function jsonResponse($data) { header('Content-Type: application/json'); echo json_encode($data, JSON_UNESCAPED_UNICODE); exit; }
 
     /**
      * Crear nueva cancha
@@ -97,15 +95,11 @@ class CanchaController extends \App\Controllers\ModuleController {
                 $this->post('notas') ?: null,
             ]);
 
-            $_SESSION['flash_success'] = 'Cancha creada correctamente';
-            header('Location: ' . url('futbol', 'cancha', 'index'));
-            exit;
+            return $this->jsonResponse(['success' => true, 'message' => 'Cancha creada correctamente']);
 
         } catch (\Exception $e) {
             $this->logError("Error creando cancha: " . $e->getMessage());
-            $_SESSION['flash_error'] = 'Error al crear cancha';
-            header('Location: ' . url('futbol', 'cancha', 'index'));
-            exit;
+            return $this->jsonResponse(['success' => false, 'message' => 'Error al crear cancha']);
         }
     }
 
@@ -138,15 +132,11 @@ class CanchaController extends \App\Controllers\ModuleController {
                 $id, $this->tenantId,
             ]);
 
-            $_SESSION['flash_success'] = 'Cancha actualizada correctamente';
-            header('Location: ' . url('futbol', 'cancha', 'index'));
-            exit;
+            return $this->jsonResponse(['success' => true, 'message' => 'Cancha actualizada correctamente']);
 
         } catch (\Exception $e) {
             $this->logError("Error editando cancha: " . $e->getMessage());
-            $_SESSION['flash_error'] = 'Error al actualizar cancha';
-            header('Location: ' . url('futbol', 'cancha', 'index'));
-            exit;
+            return $this->jsonResponse(['success' => false, 'message' => 'Error al actualizar cancha']);
         }
     }
 
@@ -155,53 +145,47 @@ class CanchaController extends \App\Controllers\ModuleController {
      */
     public function eliminar() {
         try {
-            $id = (int)($this->get('id') ?? 0);
-            if (!$id) {
-                $_SESSION['flash_error'] = 'ID requerido';
-                header('Location: ' . url('futbol', 'cancha', 'index'));
-                exit;
-            }
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') return $this->jsonResponse(['success' => false, 'message' => 'POST requerido']);
+            if (!\Security::validateCsrfToken($this->post('csrf_token'))) return $this->jsonResponse(['success' => false, 'message' => 'Token inválido']);
+
+            $id = (int)($this->post('id') ?? 0);
+            if (!$id) return $this->jsonResponse(['success' => false, 'message' => 'ID requerido']);
 
             $this->db->prepare("UPDATE instalaciones_canchas SET can_estado = 'FUERA_SERVICIO' WHERE can_cancha_id = ? AND can_tenant_id = ?")
                 ->execute([$id, $this->tenantId]);
 
-            $_SESSION['flash_success'] = 'Cancha eliminada correctamente';
-            header('Location: ' . url('futbol', 'cancha', 'index'));
-            exit;
+            return $this->jsonResponse(['success' => true, 'message' => 'Cancha eliminada correctamente']);
 
         } catch (\Exception $e) {
             $this->logError("Error eliminando cancha: " . $e->getMessage());
-            $_SESSION['flash_error'] = 'Error al eliminar cancha';
-            header('Location: ' . url('futbol', 'cancha', 'index'));
-            exit;
+            return $this->jsonResponse(['success' => false, 'message' => 'Error al eliminar cancha']);
         }
     }
 
     /**
-     * Cambiar estado de cancha (GET: id, estado)
+     * Cambiar estado de cancha
      */
     public function cambiarEstado() {
         try {
-            $id     = (int)($this->get('id') ?? 0);
-            $estado = $this->get('estado') ?? '';
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') return $this->jsonResponse(['success' => false, 'message' => 'POST requerido']);
+            if (!\Security::validateCsrfToken($this->post('csrf_token'))) return $this->jsonResponse(['success' => false, 'message' => 'Token inválido']);
+
+            $id     = (int)($this->post('id') ?? 0);
+            $estado = $this->post('estado') ?? '';
             if (!$id || !in_array($estado, ['DISPONIBLE', 'MANTENIMIENTO', 'FUERA_SERVICIO'])) {
-                $_SESSION['flash_error'] = 'Parámetros inválidos';
-                header('Location: ' . url('futbol', 'cancha', 'index'));
-                exit;
+                return $this->jsonResponse(['success' => false, 'message' => 'Parámetros inválidos']);
             }
 
             $this->db->prepare("UPDATE instalaciones_canchas SET can_estado = ? WHERE can_cancha_id = ? AND can_tenant_id = ?")
                 ->execute([$estado, $id, $this->tenantId]);
 
-            $_SESSION['flash_success'] = 'Estado de cancha actualizado';
-            header('Location: ' . url('futbol', 'cancha', 'index'));
-            exit;
+            return $this->jsonResponse(['success' => true, 'message' => 'Estado de cancha actualizado']);
 
         } catch (\Exception $e) {
             $this->logError("Error cambiando estado de cancha: " . $e->getMessage());
-            $_SESSION['flash_error'] = 'Error al cambiar estado';
-            header('Location: ' . url('futbol', 'cancha', 'index'));
-            exit;
+            return $this->jsonResponse(['success' => false, 'message' => 'Error al cambiar estado']);
         }
     }
+
+    private function jsonResponse($data) { header('Content-Type: application/json'); echo json_encode($data, JSON_UNESCAPED_UNICODE); exit; }
 }

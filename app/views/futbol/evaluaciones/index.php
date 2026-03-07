@@ -1,10 +1,12 @@
 <?php
 /**
  * Vista de Evaluaciones - Módulo Fútbol
- * @vars $evaluaciones, $grupos, $categorias, $periodos, $sedes, $sede_activa, $csrf_token, $modulo_actual
+ * @vars $evaluaciones, $grupos, $periodos, $alumnos, $entrenadores, $grupoFiltro, $periodoFiltro, $csrf_token, $modulo_actual
  */
 $moduloColor = '#22C55E';
-$moduloIcon = 'fas fa-futbol';
+$moduloIcon  = 'fas fa-futbol';
+$grupoFiltro  = $grupoFiltro ?? 0;
+$periodoFiltro = $periodoFiltro ?? 0;
 ?>
 
 <!-- Content Header -->
@@ -34,27 +36,30 @@ $moduloIcon = 'fas fa-futbol';
         <!-- Filtros -->
         <div class="row mb-3">
             <div class="col-md-3">
-                <select class="form-control" id="filtroGrupo" onchange="aplicarFiltros()">
+                <select class="form-control" id="filtroGrupo">
                     <option value="">Todos los grupos</option>
-                    <?php if (!empty($grupos)): ?>
-                        <?php foreach ($grupos as $grupo): ?>
-                            <option value="<?= $grupo['id'] ?>"><?= htmlspecialchars($grupo['nombre']) ?></option>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
+                    <?php foreach ($grupos as $grupo): ?>
+                        <option value="<?= $grupo['fgr_grupo_id'] ?>"
+                                <?= $grupoFiltro == $grupo['fgr_grupo_id'] ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($grupo['fgr_nombre']) ?>
+                        </option>
+                    <?php endforeach; ?>
                 </select>
             </div>
             <div class="col-md-3">
-                <select class="form-control" id="filtroPeriodo" onchange="aplicarFiltros()">
+                <select class="form-control" id="filtroPeriodo">
                     <option value="">Todos los periodos</option>
-                    <?php if (!empty($periodos)): ?>
-                        <?php foreach ($periodos as $periodo): ?>
-                            <option value="<?= $periodo['id'] ?>"><?= htmlspecialchars($periodo['nombre']) ?></option>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
+                    <?php foreach ($periodos as $periodo): ?>
+                        <option value="<?= $periodo['fpe_periodo_id'] ?>"
+                                <?= $periodoFiltro == $periodo['fpe_periodo_id'] ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($periodo['fpe_nombre']) ?>
+                        </option>
+                    <?php endforeach; ?>
                 </select>
             </div>
             <div class="col-md-3 text-right">
-                <button type="button" class="btn btn-success" data-toggle="modal" data-target="#modalEvaluacion" onclick="limpiarFormulario()">
+                <button type="button" class="btn btn-success" id="btnNuevaEvaluacion"
+                        data-toggle="modal" data-target="#modalEvaluacion">
                     <i class="fas fa-plus"></i> Nueva Evaluación
                 </button>
             </div>
@@ -95,21 +100,13 @@ $moduloIcon = 'fas fa-futbol';
                                         <td>
                                             <?php
                                             $calif = intval($eval['fev_calificacion'] ?? 0);
-                                            if ($calif >= 80) {
-                                                $barColor = 'bg-success';
-                                            } elseif ($calif >= 60) {
-                                                $barColor = 'bg-warning';
-                                            } else {
-                                                $barColor = 'bg-danger';
-                                            }
+                                            $barColor = $calif >= 80 ? 'bg-success' : ($calif >= 60 ? 'bg-warning' : 'bg-danger');
                                             ?>
-                                            <div class="d-flex align-items-center">
-                                                <div class="progress flex-grow-1 mr-2" style="height: 20px;">
-                                                    <div class="progress-bar <?= $barColor ?>" role="progressbar"
-                                                         style="width: <?= $calif ?>%"
-                                                         aria-valuenow="<?= $calif ?>" aria-valuemin="0" aria-valuemax="100">
-                                                        <?= $calif ?>/100
-                                                    </div>
+                                            <div class="progress" style="height: 20px;">
+                                                <div class="progress-bar <?= $barColor ?>" role="progressbar"
+                                                     style="width: <?= $calif ?>%"
+                                                     aria-valuenow="<?= $calif ?>" aria-valuemin="0" aria-valuemax="100">
+                                                    <?= $calif ?>/100
                                                 </div>
                                             </div>
                                         </td>
@@ -121,16 +118,16 @@ $moduloIcon = 'fas fa-futbol';
                                         <td><?= htmlspecialchars($eval['evaluador_nombre'] ?? '') ?></td>
                                         <td>
                                             <div class="btn-group btn-group-sm">
-                                                <button type="button" class="btn btn-primary" title="Ver Detalle"
-                                                    onclick="verDetalle(<?= $eval['fev_evaluacion_id'] ?? 0 ?>)">
+                                                <button type="button" class="btn btn-primary js-ver-detalle" title="Ver Detalle"
+                                                        data-id="<?= $eval['fev_evaluacion_id'] ?? 0 ?>">
                                                     <i class="fas fa-eye"></i>
                                                 </button>
-                                                <button type="button" class="btn btn-info" title="Editar"
-                                                    onclick='editarEvaluacion(<?= json_encode($eval) ?>)'>
+                                                <button type="button" class="btn btn-info js-editar-eval" title="Editar"
+                                                        data-eval="<?= htmlspecialchars(json_encode($eval, JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP), ENT_QUOTES) ?>">
                                                     <i class="fas fa-edit"></i>
                                                 </button>
-                                                <button type="button" class="btn btn-danger" title="Eliminar"
-                                                    onclick="eliminarEvaluacion(<?= $eval['fev_evaluacion_id'] ?? 0 ?>)">
+                                                <button type="button" class="btn btn-danger js-eliminar-eval" title="Eliminar"
+                                                        data-id="<?= $eval['fev_evaluacion_id'] ?? 0 ?>">
                                                     <i class="fas fa-trash"></i>
                                                 </button>
                                             </div>
@@ -144,7 +141,8 @@ $moduloIcon = 'fas fa-futbol';
                     <div class="text-center py-5">
                         <i class="fas fa-chart-line fa-3x opacity-50 text-muted mb-3"></i>
                         <p class="text-muted">No hay evaluaciones registradas.</p>
-                        <button class="btn btn-success btn-sm" data-toggle="modal" data-target="#modalEvaluacion" onclick="limpiarFormulario()">
+                        <button class="btn btn-success btn-sm" id="btnPrimeraEvaluacion"
+                                data-toggle="modal" data-target="#modalEvaluacion">
                             <i class="fas fa-plus"></i> Crear primera evaluación
                         </button>
                     </div>
@@ -185,11 +183,9 @@ $moduloIcon = 'fas fa-futbol';
                                 <label for="fev_grupo_id">Grupo <span class="text-danger">*</span></label>
                                 <select class="form-control" id="fev_grupo_id" name="grupo_id" required>
                                     <option value="">Seleccionar grupo</option>
-                                    <?php if (!empty($grupos)): ?>
-                                        <?php foreach ($grupos as $grupo): ?>
-                                            <option value="<?= $grupo['fgr_grupo_id'] ?>"><?= htmlspecialchars($grupo['fgr_nombre']) ?></option>
-                                        <?php endforeach; ?>
-                                    <?php endif; ?>
+                                    <?php foreach ($grupos as $grupo): ?>
+                                        <option value="<?= $grupo['fgr_grupo_id'] ?>"><?= htmlspecialchars($grupo['fgr_nombre']) ?></option>
+                                    <?php endforeach; ?>
                                 </select>
                             </div>
                         </div>
@@ -200,11 +196,9 @@ $moduloIcon = 'fas fa-futbol';
                                 <label for="fev_periodo_id">Periodo <span class="text-danger">*</span></label>
                                 <select class="form-control" id="fev_periodo_id" name="periodo_id" required>
                                     <option value="">Seleccionar periodo</option>
-                                    <?php if (!empty($periodos)): ?>
-                                        <?php foreach ($periodos as $periodo): ?>
-                                            <option value="<?= $periodo['fpe_periodo_id'] ?>"><?= htmlspecialchars($periodo['fpe_nombre']) ?></option>
-                                        <?php endforeach; ?>
-                                    <?php endif; ?>
+                                    <?php foreach ($periodos as $periodo): ?>
+                                        <option value="<?= $periodo['fpe_periodo_id'] ?>"><?= htmlspecialchars($periodo['fpe_nombre']) ?></option>
+                                    <?php endforeach; ?>
                                 </select>
                             </div>
                         </div>
@@ -244,13 +238,30 @@ $moduloIcon = 'fas fa-futbol';
 <script nonce="<?= cspNonce() ?>">
 $(document).ready(function() {
     // DataTable
-    if ($('#tablaEvaluaciones tbody tr').length > 0 && !$('#tablaEvaluaciones tbody .text-center').length) {
+    if ($('#tablaEvaluaciones tbody tr').length > 0) {
         $('#tablaEvaluaciones').DataTable({
             language: { url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json' },
             order: [[5, 'desc']],
             responsive: true
         });
     }
+
+    // Filtros → recargar con POST al cambiar
+    $('#filtroGrupo, #filtroPeriodo').on('change', aplicarFiltros);
+
+    // Botones Nueva Evaluación → limpiar form antes de abrir modal
+    $('#btnNuevaEvaluacion, #btnPrimeraEvaluacion').on('click', limpiarFormulario);
+
+    // Acciones en tabla (delegación)
+    $(document).on('click', '.js-ver-detalle', function() {
+        verDetalle($(this).data('id'));
+    });
+    $(document).on('click', '.js-editar-eval', function() {
+        editarEvaluacion(JSON.parse($(this).attr('data-eval')));
+    });
+    $(document).on('click', '.js-eliminar-eval', function() {
+        eliminarEvaluacion($(this).data('id'));
+    });
 
     // Select2 para alumno
     $('#fev_alumno_id').select2({
@@ -271,25 +282,23 @@ $(document).ready(function() {
 
     // Barra de calificación en tiempo real
     $('#fev_calificacion').on('input', function() {
-        var val = parseInt($(this).val()) || 0;
-        val = Math.min(100, Math.max(0, val));
+        var val = Math.min(100, Math.max(0, parseInt($(this).val()) || 0));
         var color = val >= 80 ? 'bg-success' : (val >= 60 ? 'bg-warning' : 'bg-danger');
         $('#barraCalificacion').css('width', val + '%').removeClass('bg-success bg-warning bg-danger').addClass(color);
     });
 
-    // Submit
+    // Submit form evaluación
     $('#formEvaluacion').on('submit', function(e) {
         e.preventDefault();
-        var formData = $(this).serialize();
         var id = $('#fev_id').val();
-        var urlAction = id
+        var url = id
             ? '<?= url("futbol", "evaluacion", "editar") ?>'
             : '<?= url("futbol", "evaluacion", "crear") ?>';
 
-        $.post(urlAction, formData, function(response) {
+        $.post(url, $(this).serialize(), function(response) {
             if (response.success) {
                 Swal.fire('¡Éxito!', response.message || 'Evaluación guardada correctamente.', 'success')
-                    .then(() => location.reload());
+                    .then(function() { location.reload(); });
             } else {
                 Swal.fire('Error', response.message || 'No se pudo guardar la evaluación.', 'error');
             }
@@ -304,7 +313,7 @@ function limpiarFormulario() {
     $('#fev_id').val('');
     $('#fev_alumno_id').val(null).trigger('change');
     $('#fev_fecha').val('<?= date("Y-m-d") ?>');
-    $('#barraCalificacion').css('width', '0%');
+    $('#barraCalificacion').css('width', '0%').removeClass('bg-warning bg-danger').addClass('bg-success');
     $('#modalEvaluacionTitle').html('<i class="<?= $moduloIcon ?>"></i> Nueva Evaluación');
 }
 
@@ -315,8 +324,8 @@ function editarEvaluacion(obj) {
         var option = new Option(obj.alumno, obj.fev_alumno_id, true, true);
         $('#fev_alumno_id').append(option).trigger('change');
     }
-    $('#fev_grupo_id').val(obj.fev_grupo_id || obj.grupo_id || '');
-    $('#fev_periodo_id').val(obj.fev_periodo_id || obj.periodo_id || '');
+    $('#fev_grupo_id').val(obj.fev_grupo_id || '');
+    $('#fev_periodo_id').val(obj.fev_periodo_id || '');
     $('#fev_fecha').val(obj.fev_fecha || '');
     $('#fev_calificacion').val(obj.fev_calificacion || '').trigger('input');
     $('#fev_observacion').val(obj.fev_observacion || '');
@@ -334,7 +343,7 @@ function eliminarEvaluacion(id) {
         cancelButtonColor: '#6c757d',
         confirmButtonText: 'Sí, eliminar',
         cancelButtonText: 'Cancelar'
-    }).then((result) => {
+    }).then(function(result) {
         if (result.isConfirmed) {
             $.post('<?= url("futbol", "evaluacion", "eliminar") ?>', {
                 csrf_token: '<?= $csrf_token ?? "" ?>',
@@ -342,7 +351,7 @@ function eliminarEvaluacion(id) {
             }, function(response) {
                 if (response.success) {
                     Swal.fire('Eliminada', response.message || 'Evaluación eliminada.', 'success')
-                        .then(() => location.reload());
+                        .then(function() { location.reload(); });
                 } else {
                     Swal.fire('Error', response.message || 'No se pudo eliminar.', 'error');
                 }
@@ -360,13 +369,13 @@ function verDetalle(id) {
             Swal.fire({
                 title: 'Evaluación de ' + (d.alumno || ''),
                 html: '<div class="text-left">' +
-                    '<p><strong>Grupo:</strong> ' + (d.grupo_nombre || '—') + '</p>' +
-                    '<p><strong>Categoría:</strong> ' + (d.categoria_nombre || '—') + '</p>' +
-                    '<p><strong>Periodo:</strong> ' + (d.periodo_nombre || '—') + '</p>' +
-                    '<p><strong>Fecha:</strong> ' + (d.fev_fecha || '—') + '</p>' +
-                    '<p><strong>Calificación:</strong> ' + (d.fev_calificacion || 0) + '/100</p>' +
-                    '<p><strong>Evaluador:</strong> ' + (d.evaluador_nombre || '—') + '</p>' +
-                    '<p><strong>Observaciones:</strong> ' + (d.fev_observacion || '—') + '</p>' +
+                    '<p><strong>Grupo:</strong> '        + (d.grupo_nombre      || '—') + '</p>' +
+                    '<p><strong>Categoría:</strong> '    + (d.categoria_nombre  || '—') + '</p>' +
+                    '<p><strong>Periodo:</strong> '      + (d.periodo_nombre     || '—') + '</p>' +
+                    '<p><strong>Fecha:</strong> '        + (d.fev_fecha          || '—') + '</p>' +
+                    '<p><strong>Calificación:</strong> ' + (d.fev_calificacion   || 0)   + '/100</p>' +
+                    '<p><strong>Evaluador:</strong> '    + (d.evaluador_nombre   || '—') + '</p>' +
+                    '<p><strong>Observaciones:</strong> '+ (d.fev_observacion    || '—') + '</p>' +
                     '</div>',
                 icon: 'info',
                 confirmButtonColor: '<?= $moduloColor ?>'
@@ -378,44 +387,26 @@ function verDetalle(id) {
 }
 
 function aplicarFiltros() {
-    var sede = $('#filtroSede').val();
-    var grupo = $('#filtroGrupo').val();
-    var periodo = $('#filtroPeriodo').val();
-    
     var form = document.createElement('form');
     form.method = 'POST';
     form.action = '<?= url("futbol", "evaluacion", "index") ?>';
-    
-    if (sede) {
-        var inputSede = document.createElement('input');
-        inputSede.type = 'hidden';
-        inputSede.name = 'sede';
-        inputSede.value = sede;
-        form.appendChild(inputSede);
-    }
-    
+
+    var grupo = $('#filtroGrupo').val();
+    var periodo = $('#filtroPeriodo').val();
+
     if (grupo) {
-        var inputGrupo = document.createElement('input');
-        inputGrupo.type = 'hidden';
-        inputGrupo.name = 'grupo';
-        inputGrupo.value = grupo;
-        form.appendChild(inputGrupo);
+        var ig = document.createElement('input');
+        ig.type = 'hidden'; ig.name = 'grupo'; ig.value = grupo;
+        form.appendChild(ig);
     }
-    
     if (periodo) {
-        var inputPeriodo = document.createElement('input');
-        inputPeriodo.type = 'hidden';
-        inputPeriodo.name = 'periodo';
-        inputPeriodo.value = periodo;
-        form.appendChild(inputPeriodo);
+        var ip = document.createElement('input');
+        ip.type = 'hidden'; ip.name = 'periodo'; ip.value = periodo;
+        form.appendChild(ip);
     }
-    
+
     document.body.appendChild(form);
     form.submit();
-}
-
-function filtrarPorSede(sedeId) {
-    aplicarFiltros();
 }
 </script>
 <?php $scripts = ob_get_clean(); ?>

@@ -36,7 +36,7 @@ $moduloColor  = $modulo_actual['color'] ?? '#22C55E';
 
 <section class="content">
     <div class="container-fluid">
-        <form id="formAlumnoFutbol" onsubmit="guardarAlumno(event)">
+        <form id="formAlumnoFutbol">
             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token ?? '') ?>">
             <?php if ($editando): ?>
             <input type="hidden" name="id" value="<?= $alumno['alu_alumno_id'] ?>">
@@ -51,8 +51,9 @@ $moduloColor  = $modulo_actual['color'] ?? '#22C55E';
                             <h3 class="card-title"><i class="fas fa-user mr-2"></i>Datos Personales</h3>
                         </div>
                         <div class="card-body">
+                            <!-- Fila 1: Nombre completo -->
                             <div class="row">
-                                <div class="col-md-5">
+                                <div class="col-md-6">
                                     <div class="form-group">
                                         <label>Nombres <span class="text-danger">*</span></label>
                                         <input type="text" name="nombres" class="form-control" required maxlength="150"
@@ -60,7 +61,7 @@ $moduloColor  = $modulo_actual['color'] ?? '#22C55E';
                                                placeholder="Nombres del alumno">
                                     </div>
                                 </div>
-                                <div class="col-md-5">
+                                <div class="col-md-6">
                                     <div class="form-group">
                                         <label>Apellidos <span class="text-danger">*</span></label>
                                         <input type="text" name="apellidos" class="form-control" required maxlength="150"
@@ -68,28 +69,31 @@ $moduloColor  = $modulo_actual['color'] ?? '#22C55E';
                                                placeholder="Apellidos del alumno">
                                     </div>
                                 </div>
-                                <div class="col-md-2">
-                                    <div class="form-group">
-                                        <label>Género</label>
-                                        <select name="genero" class="form-control">
-                                            <option value="">—</option>
-                                            <option value="M" <?= ($alumno['alu_genero'] ?? '') === 'M' ? 'selected' : '' ?>>Masculino</option>
-                                            <option value="F" <?= ($alumno['alu_genero'] ?? '') === 'F' ? 'selected' : '' ?>>Femenino</option>
-                                        </select>
-                                    </div>
-                                </div>
                             </div>
+                            <!-- Fila 2: Identificación, Nacimiento, Género, Estado -->
                             <div class="row">
                                 <div class="col-md-4">
                                     <div class="form-group">
-                                        <label>Identificación / Cédula</label>
-                                        <input type="text" name="identificacion" id="identificacion" class="form-control"
-                                               maxlength="20" value="<?= htmlspecialchars($alumno['alu_identificacion'] ?? '') ?>"
-                                               placeholder="Ej: 0912345678">
+                                        <label>Identificación</label>
+                                        <div class="row no-gutters">
+                                            <div class="col-auto">
+                                                <select name="tipo_identificacion" id="tipo_identificacion" class="form-control"
+                                                        style="border-radius:.25rem 0 0 .25rem; border-right:none; min-width:110px;">
+                                                    <option value="CED" <?= ($alumno['alu_tipo_identificacion'] ?? 'CED') === 'CED' ? 'selected' : '' ?>>Cédula/RUC</option>
+                                                    <option value="PAS" <?= ($alumno['alu_tipo_identificacion'] ?? '') === 'PAS' ? 'selected' : '' ?>>Pasaporte</option>
+                                                </select>
+                                            </div>
+                                            <div class="col">
+                                                <input type="text" name="identificacion" id="identificacion" class="form-control"
+                                                       style="border-radius:0 .25rem .25rem 0;" maxlength="20"
+                                                       value="<?= htmlspecialchars($alumno['alu_identificacion'] ?? '') ?>"
+                                                       placeholder="Ej: 0912345678">
+                                            </div>
+                                        </div>
                                         <small id="id_feedback" class="form-text"></small>
                                     </div>
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-3">
                                     <div class="form-group">
                                         <label>Fecha de Nacimiento <span class="text-danger">*</span></label>
                                         <input type="date" name="fecha_nacimiento" id="fecha_nacimiento" class="form-control" required
@@ -97,7 +101,17 @@ $moduloColor  = $modulo_actual['color'] ?? '#22C55E';
                                         <small id="edad_info" class="form-text text-info"></small>
                                     </div>
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label>Género</label>
+                                        <select name="genero" class="form-control">
+                                            <option value="">— Seleccionar —</option>
+                                            <option value="M" <?= ($alumno['alu_genero'] ?? '') === 'M' ? 'selected' : '' ?>>Masculino</option>
+                                            <option value="F" <?= ($alumno['alu_genero'] ?? '') === 'F' ? 'selected' : '' ?>>Femenino</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
                                     <div class="form-group">
                                         <label>Estado</label>
                                         <select name="estado" class="form-control">
@@ -107,29 +121,20 @@ $moduloColor  = $modulo_actual['color'] ?? '#22C55E';
                                     </div>
                                 </div>
                             </div>
-                            <div class="row">
-                                <div class="col-md-5">
-                                    <div class="form-group">
-                                        <label>Email</label>
-                                        <input type="email" name="email" class="form-control" maxlength="200"
-                                               value="<?= htmlspecialchars($alumno['alu_email'] ?? '') ?>" placeholder="correo@ejemplo.com">
+                            <!-- Panel: resultado búsqueda de alumno existente (cross-tenant) -->
+                            <?php if (!$editando): ?>
+                            <div id="panelAlumnoEncontrado" style="display:none;">
+                                <div id="alertAlumnoEncontrado" class="alert border p-3 mb-2">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div id="alumnoEncontradoInfo" class="flex-grow-1"></div>
+                                        <button type="button" class="btn btn-xs btn-outline-secondary ml-2" id="btnCerrarAlumnoFound">
+                                            <i class="fas fa-times"></i>
+                                        </button>
                                     </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="form-group">
-                                        <label>Teléfono</label>
-                                        <input type="text" name="telefono" class="form-control" maxlength="20"
-                                               value="<?= htmlspecialchars($alumno['alu_telefono'] ?? '') ?>" placeholder="09XX XXX XXX">
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="form-group">
-                                        <label>Dirección</label>
-                                        <input type="text" name="direccion" class="form-control" maxlength="300"
-                                               value="<?= htmlspecialchars($alumno['alu_direccion'] ?? '') ?>" placeholder="Ciudad, sector, calle...">
-                                    </div>
+                                    <div class="mt-2" id="alumnoEncontradoAcciones"></div>
                                 </div>
                             </div>
+                            <?php endif; ?>
                         </div>
                     </div>
 
@@ -242,6 +247,64 @@ $moduloColor  = $modulo_actual['color'] ?? '#22C55E';
                         </div>
                     </div>
 
+                    <!-- Campos de Ficha Adicionales -->
+                    <?php
+                    $campos_ficha = $campos_ficha ?? [];
+                    $datosCustom  = [];
+                    if (!empty($ficha['ffa_datos_custom'])) {
+                        $datosCustom = json_decode($ficha['ffa_datos_custom'], true) ?: [];
+                    }
+                    ?>
+                    <?php if (!empty($campos_ficha)): ?>
+                    <div class="card card-outline" style="border-top-color:<?= $moduloColor ?>">
+                        <div class="card-header">
+                            <h3 class="card-title"><i class="fas fa-clipboard-list mr-2" style="color:<?= $moduloColor ?>"></i>Campos Adicionales de Ficha</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                            <?php foreach ($campos_ficha as $campo): ?>
+                                <?php
+                                $clave      = $campo['fcf_clave'];
+                                $tipo       = $campo['fcf_tipo'] ?? 'TEXT';
+                                $requerido  = $campo['fcf_requerido'] ? 'required' : '';
+                                $placeholder = htmlspecialchars($campo['fcf_placeholder'] ?? '');
+                                $fieldValue  = $datosCustom[$clave] ?? '';
+                                $fieldName   = 'campo_custom[' . htmlspecialchars($clave) . ']';
+                                ?>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label><?= htmlspecialchars($campo['fcf_etiqueta']) ?><?= $campo['fcf_requerido'] ? ' <span class="text-danger">*</span>' : '' ?></label>
+                                        <?php if ($tipo === 'SELECT' && !empty($campo['fcf_opciones'])): ?>
+                                            <?php $opciones = json_decode($campo['fcf_opciones'], true) ?: []; ?>
+                                            <select name="<?= $fieldName ?>" class="form-control" <?= $requerido ?>>
+                                                <option value="">— Seleccionar —</option>
+                                                <?php foreach ($opciones as $opt): ?>
+                                                <option value="<?= htmlspecialchars($opt) ?>" <?= $fieldValue === $opt ? 'selected' : '' ?>><?= htmlspecialchars($opt) ?></option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                        <?php elseif ($tipo === 'TEXTAREA'): ?>
+                                            <textarea name="<?= $fieldName ?>" class="form-control" rows="3" placeholder="<?= $placeholder ?>" <?= $requerido ?>><?= htmlspecialchars($fieldValue) ?></textarea>
+                                        <?php elseif ($tipo === 'CHECKBOX'): ?>
+                                            <div class="custom-control custom-switch mt-2">
+                                                <input type="checkbox" class="custom-control-input" id="campo_<?= htmlspecialchars($clave) ?>"
+                                                       name="<?= $fieldName ?>" value="1" <?= !empty($fieldValue) ? 'checked' : '' ?>>
+                                                <label class="custom-control-label" for="campo_<?= htmlspecialchars($clave) ?>">Sí</label>
+                                            </div>
+                                        <?php elseif ($tipo === 'DATE'): ?>
+                                            <input type="date" name="<?= $fieldName ?>" class="form-control" value="<?= htmlspecialchars($fieldValue) ?>" <?= $requerido ?>>
+                                        <?php elseif ($tipo === 'NUMBER'): ?>
+                                            <input type="number" name="<?= $fieldName ?>" class="form-control" value="<?= htmlspecialchars($fieldValue) ?>" placeholder="<?= $placeholder ?>" <?= $requerido ?>>
+                                        <?php else: ?>
+                                            <input type="text" name="<?= $fieldName ?>" class="form-control" value="<?= htmlspecialchars($fieldValue) ?>" placeholder="<?= $placeholder ?>" maxlength="300" <?= $requerido ?>>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                            </div>
+                        </div>
+                    </div>
+                    <?php endif; ?>
+
                     <!-- Observaciones Médicas -->
                     <div class="card card-outline card-danger">
                         <div class="card-header">
@@ -337,15 +400,27 @@ $moduloColor  = $modulo_actual['color'] ?? '#22C55E';
                             <h3 class="card-title"><i class="fas fa-user-friends mr-2"></i>Representante / Padre de Familia</h3>
                         </div>
                         <div class="card-body">
-                            <!-- Buscador por cédula -->
+                            <!-- Buscador por identificación -->
                             <div class="form-group">
-                                <label>Cédula del Representante <span class="text-danger">*</span></label>
-                                <div class="input-group">
-                                    <input type="text" id="rep_cedula" class="form-control" maxlength="13"
-                                           value="<?= htmlspecialchars($rep['cli_identificacion'] ?? '') ?>"
-                                           placeholder="Ingrese cédula o RUC y presione buscar">
-                                    <div class="input-group-append">
-                                        <button type="button" class="btn btn-warning" id="btnBuscarRep" onclick="buscarRepresentante()">
+                                <label>Identificación del Representante <span class="text-danger">*</span></label>
+                                <div class="row no-gutters">
+                                    <div class="col-auto">
+                                        <select id="tipo_id_rep" class="form-control"
+                                                style="border-radius:.25rem 0 0 .25rem; border-right:none; min-width:115px;"
+                                                title="Tipo de documento">
+                                            <option value="CED" <?= ($rep['cli_tipo_identificacion'] ?? 'CED') !== 'PAS' ? 'selected' : '' ?>>Cédula/RUC</option>
+                                            <option value="PAS" <?= ($rep['cli_tipo_identificacion'] ?? '') === 'PAS' ? 'selected' : '' ?>>Pasaporte</option>
+                                        </select>
+                                    </div>
+                                    <div class="col">
+                                        <input type="text" id="rep_cedula" class="form-control" maxlength="20"
+                                               style="border-radius:0; border-right:none;"
+                                               value="<?= htmlspecialchars($rep['cli_identificacion'] ?? '') ?>"
+                                               placeholder="Ingrese cédula o RUC">
+                                    </div>
+                                    <div class="col-auto">
+                                        <button type="button" class="btn btn-warning" id="btnBuscarRep"
+                                                style="border-radius:0 .25rem .25rem 0;">
                                             <i class="fas fa-search mr-1"></i>Buscar
                                         </button>
                                     </div>
@@ -358,35 +433,90 @@ $moduloColor  = $modulo_actual['color'] ?? '#22C55E';
                                    value="<?= htmlspecialchars($rep['cli_cliente_id'] ?? '') ?>">
 
                             <!-- Panel de datos del representante (visible cuando se encuentra o se crea) -->
-                            <div id="panelRepresentante" style="<?= !empty($rep) ? '' : 'display:none;' ?>">
+                            <div id="panelRepresentante" style="<?= !empty($rep) ? '' : 'display:none;' ?>"
+                                 data-rep-nombres="<?= htmlspecialchars($rep['cli_nombres'] ?? '') ?>"
+                                 data-rep-apellidos="<?= htmlspecialchars($rep['cli_apellidos'] ?? '') ?>">
                                 <div class="alert alert-light border p-3 mb-3" id="repDatosCard">
-                                    <div class="d-flex justify-content-between align-items-start mb-2">
-                                        <h6 class="mb-0 text-dark">
-                                            <i class="fas fa-user-check mr-1 text-success"></i>
-                                            <span id="repNombreDisplay"><?= htmlspecialchars(trim(($rep['cli_nombres'] ?? '') . ' ' . ($rep['cli_apellidos'] ?? ''))) ?></span>
-                                        </h6>
-                                        <button type="button" class="btn btn-xs btn-outline-secondary" onclick="limpiarRepresentante()" title="Cambiar representante">
-                                            <i class="fas fa-times"></i>
-                                        </button>
+                                    <!-- Vista de solo lectura -->
+                                    <div id="repVistaLectura">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <h6 class="mb-0 text-dark">
+                                                <i class="fas fa-user-check mr-1 text-success"></i>
+                                                <span id="repNombreDisplay"><?= htmlspecialchars(trim(($rep['cli_nombres'] ?? '') . ' ' . ($rep['cli_apellidos'] ?? ''))) ?></span>
+                                            </h6>
+                                            <div class="btn-group btn-group-xs">
+                                                <button type="button" class="btn btn-xs btn-outline-primary" id="btnEditarRep" title="Editar datos del representante">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-xs btn-outline-secondary" id="btnLimpiarRep" title="Cambiar representante">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="row text-sm">
+                                            <div class="col-6">
+                                                <i class="fas fa-id-card mr-1 text-muted"></i>
+                                                <span id="repCedulaDisplay"><?= htmlspecialchars($rep['cli_identificacion'] ?? '') ?></span>
+                                            </div>
+                                            <div class="col-6">
+                                                <i class="fas fa-phone mr-1 text-muted"></i>
+                                                <span id="repTelefonoDisplay"><?= htmlspecialchars($rep['cli_telefono'] ?? $rep['cli_celular'] ?? '') ?></span>
+                                            </div>
+                                        </div>
+                                        <div class="row text-sm mt-1">
+                                            <div class="col-6">
+                                                <i class="fas fa-envelope mr-1 text-muted"></i>
+                                                <span id="repEmailDisplay"><?= htmlspecialchars($rep['cli_email'] ?? '') ?></span>
+                                            </div>
+                                            <div class="col-6">
+                                                <i class="fas fa-map-marker-alt mr-1 text-muted"></i>
+                                                <span id="repDireccionDisplay"><?= htmlspecialchars($rep['cli_direccion'] ?? '') ?></span>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="row text-sm">
-                                        <div class="col-6">
-                                            <i class="fas fa-id-card mr-1 text-muted"></i>
-                                            <span id="repCedulaDisplay"><?= htmlspecialchars($rep['cli_identificacion'] ?? '') ?></span>
+
+                                    <!-- Formulario de edición (oculto por defecto) -->
+                                    <div id="repVistaEdicion" style="display:none;">
+                                        <h6 class="mb-2 text-primary"><i class="fas fa-edit mr-1"></i>Editar datos del representante</h6>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="form-group mb-2">
+                                                    <label class="text-sm mb-1">Nombres <span class="text-danger">*</span></label>
+                                                    <input type="text" id="edit_rep_nombres" class="form-control form-control-sm" maxlength="150">
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-group mb-2">
+                                                    <label class="text-sm mb-1">Apellidos <span class="text-danger">*</span></label>
+                                                    <input type="text" id="edit_rep_apellidos" class="form-control form-control-sm" maxlength="150">
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div class="col-6">
-                                            <i class="fas fa-phone mr-1 text-muted"></i>
-                                            <span id="repTelefonoDisplay"><?= htmlspecialchars($rep['cli_telefono'] ?? $rep['cli_celular'] ?? '') ?></span>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="form-group mb-2">
+                                                    <label class="text-sm mb-1">Teléfono <span class="text-danger">*</span></label>
+                                                    <input type="text" id="edit_rep_telefono" class="form-control form-control-sm" maxlength="20">
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-group mb-2">
+                                                    <label class="text-sm mb-1">Email</label>
+                                                    <input type="email" id="edit_rep_email" class="form-control form-control-sm" maxlength="200">
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div class="row text-sm mt-1">
-                                        <div class="col-6">
-                                            <i class="fas fa-envelope mr-1 text-muted"></i>
-                                            <span id="repEmailDisplay"><?= htmlspecialchars($rep['cli_email'] ?? '') ?></span>
+                                        <div class="form-group mb-2">
+                                            <label class="text-sm mb-1">Dirección</label>
+                                            <input type="text" id="edit_rep_direccion" class="form-control form-control-sm" maxlength="300">
                                         </div>
-                                        <div class="col-6">
-                                            <i class="fas fa-map-marker-alt mr-1 text-muted"></i>
-                                            <span id="repDireccionDisplay"><?= htmlspecialchars($rep['cli_direccion'] ?? '') ?></span>
+                                        <div class="d-flex justify-content-end">
+                                            <button type="button" class="btn btn-xs btn-secondary mr-2" id="btnCancelarEditRep">
+                                                <i class="fas fa-times mr-1"></i>Cancelar
+                                            </button>
+                                            <button type="button" class="btn btn-xs btn-primary" id="btnGuardarEditRep">
+                                                <i class="fas fa-save mr-1"></i>Guardar cambios
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -471,7 +601,7 @@ $moduloColor  = $modulo_actual['color'] ?? '#22C55E';
                                         Autorizo el tratamiento de los datos personales de mi(s) representado(s) menores de edad.
                                     </label>
                                 </div>
-                                <button type="button" class="btn btn-success btn-sm btn-block" onclick="crearRepresentante()">
+                                <button type="button" class="btn btn-success btn-sm btn-block" id="btnCrearRep">
                                     <i class="fas fa-user-plus mr-1"></i>Registrar Representante
                                 </button>
                             </div>
@@ -525,10 +655,32 @@ $(function() {
     // Calcular edad al cambiar fecha de nacimiento
     $('#fecha_nacimiento').on('change', calcularEdad).trigger('change');
 
-    // Buscar representante al presionar Enter en el campo de cédula
+    // Buscar alumno existente (solo en modo crear)
+    <?php if (!$editando): ?>
+    $('#identificacion').on('blur', function() {
+        var val = $(this).val().trim();
+        if (!val) return;
+        var r = validarDoc(val, $('#tipo_identificacion').val());
+        if (r.valido) { buscarAlumnoExistente(); }
+    });
+    $('#btnCerrarAlumnoFound').on('click', function() {
+        $('#panelAlumnoEncontrado').slideUp();
+    });
+    <?php endif; ?>
+
+    // Buscar representante al presionar Enter o botón
     $('#rep_cedula').on('keypress', function(e) {
         if (e.which === 13) { e.preventDefault(); buscarRepresentante(); }
     });
+    $('#btnBuscarRep').on('click', buscarRepresentante);
+    $('#btnLimpiarRep').on('click', limpiarRepresentante);
+    $('#btnCrearRep').on('click', crearRepresentante);
+    $('#btnEditarRep').on('click', abrirEdicionRepresentante);
+    $('#btnCancelarEditRep').on('click', cerrarEdicionRepresentante);
+    $('#btnGuardarEditRep').on('click', guardarEdicionRepresentante);
+
+    // Submit del formulario
+    $('#formAlumnoFutbol').on('submit', guardarAlumno);
 });
 
 function calcularEdad() {
@@ -563,31 +715,271 @@ function calcularEdad() {
     }
 }
 
-// Validación de cédula Ecuador
+// ===================== BÚSQUEDA DE ALUMNO EXISTENTE =====================
+
+/**
+ * Busca en el sistema si ya existe un alumno con la identificación ingresada.
+ * Funciona cross-tenant para detectar registros previos de otros sistemas.
+ */
+function buscarAlumnoExistente() {
+    var val  = $('#identificacion').val().trim();
+    var tipo = $('#tipo_identificacion').val();
+
+    if (!val) {
+        $('#id_feedback').text('Ingrese la identificación para buscar').removeClass('text-success text-danger').addClass('text-warning');
+        return;
+    }
+    var r = validarDoc(val, tipo);
+    if (!r.valido) {
+        $('#id_feedback').text(r.mensaje).removeClass('text-success text-warning').addClass('text-danger');
+        return;
+    }
+
+    $('#panelAlumnoEncontrado').slideUp();
+    $('#id_feedback').text('Verificando...').removeClass('text-success text-danger text-warning').addClass('text-info');
+
+    $.ajax({
+        url: '<?= url('futbol', 'alumno', 'buscarAlumno') ?>',
+        type: 'GET',
+        data: { identificacion: val },
+        dataType: 'json',
+        success: function(res) {
+            if (res.success && res.data) {
+                mostrarAlumnoEncontrado(res.data, res.mismo_tenant);
+                $('#id_feedback').text('⚠ Identificación ya registrada en el sistema').removeClass('text-success text-danger text-info').addClass('text-warning');
+            } else {
+                $('#id_feedback').text(r.mensaje).removeClass('text-danger text-warning text-info').addClass('text-success');
+                $('#panelAlumnoEncontrado').slideUp();
+            }
+        },
+        error: function() {
+            $('#id_feedback').text('').removeClass('text-info');
+        }
+    });
+}
+
+/**
+ * Muestra el panel informativo con el alumno encontrado.
+ * - mismo_tenant=true  → el alumno ya está en ESTE sistema → ofrecer ir a editar
+ * - mismo_tenant=false → viene de otro tenant → ofrecer pre-cargar datos
+ */
+function mostrarAlumnoEncontrado(data, mismoTenant) {
+    var nombre = (data.alu_nombres || '') + ' ' + (data.alu_apellidos || '');
+    var detalle = '<strong>' + nombre.trim() + '</strong>';
+    if (data.alu_fecha_nacimiento) detalle += ' &nbsp;·&nbsp; Nac: ' + data.alu_fecha_nacimiento;
+    if (data.alu_genero) detalle += ' &nbsp;·&nbsp; ' + (data.alu_genero === 'M' ? 'Masculino' : data.alu_genero === 'F' ? 'Femenino' : data.alu_genero);
+
+    var alert = $('#alertAlumnoEncontrado');
+    var infoDiv = $('#alumnoEncontradoInfo');
+    var accionesDiv = $('#alumnoEncontradoAcciones');
+
+    if (mismoTenant) {
+        alert.removeClass('alert-info').addClass('alert-warning');
+        infoDiv.html(
+            '<i class="fas fa-exclamation-triangle text-warning mr-1"></i>' +
+            '<strong>Este alumno ya está registrado en este sistema.</strong><br>' +
+            '<span class="text-sm">' + detalle + '</span>'
+        );
+        accionesDiv.html(
+            '<a href="<?= url('futbol', 'alumno', 'editar') ?>&id=' + data.alu_alumno_id + '" class="btn btn-sm btn-warning">' +
+            '<i class="fas fa-edit mr-1"></i>Ir a editar este alumno</a>'
+        );
+    } else {
+        alert.removeClass('alert-warning').addClass('alert-info');
+        infoDiv.html(
+            '<i class="fas fa-info-circle text-info mr-1"></i>' +
+            '<strong>Datos encontrados en otro sistema.</strong><br>' +
+            '<span class="text-sm">' + detalle + '</span>'
+        );
+        accionesDiv.html(
+            '<button type="button" class="btn btn-sm btn-primary" id="btnCargarDatosAlumno">' +
+            '<i class="fas fa-file-import mr-1"></i>Cargar datos en el formulario</button> ' +
+            '<button type="button" class="btn btn-sm btn-outline-secondary ml-1" id="btnIgnorarAlumnoFound">' +
+            '<i class="fas fa-times mr-1"></i>Continuar sin cargar</button>'
+        );
+        // Guardar los datos en el panel para usarlos al pulsar "Cargar"
+        $('#panelAlumnoEncontrado').data('alumno-data', data);
+
+        // Event delegation para botones dinámicos
+        $(document).off('click.alumnoFound').on('click.alumnoFound', '#btnCargarDatosAlumno', function() {
+            cargarDatosAlumno($('#panelAlumnoEncontrado').data('alumno-data'));
+            $('#panelAlumnoEncontrado').slideUp();
+        }).on('click.alumnoFound', '#btnIgnorarAlumnoFound', function() {
+            $('#panelAlumnoEncontrado').slideUp();
+        });
+    }
+
+    $('#panelAlumnoEncontrado').slideDown();
+}
+
+/**
+ * Pre-carga en el formulario los datos personales y médicos del alumno encontrado.
+ * No toca los campos de ficha deportiva (son tenant-específicos).
+ */
+function cargarDatosAlumno(data) {
+    $('[name="nombres"]').val(data.alu_nombres || '');
+    $('[name="apellidos"]').val(data.alu_apellidos || '');
+    if (data.alu_genero)     $('[name="genero"]').val(data.alu_genero);
+    if (data.alu_fecha_nacimiento) $('[name="fecha_nacimiento"]').val(data.alu_fecha_nacimiento).trigger('change');
+    // Médicos
+    if (data.alu_tipo_sangre)           $('[name="tipo_sangre"]').val(data.alu_tipo_sangre);
+    if (data.alu_alergias)              $('[name="alergias"]').val(data.alu_alergias);
+    if (data.alu_condiciones_medicas)   $('[name="condiciones_medicas"]').val(data.alu_condiciones_medicas);
+    if (data.alu_medicamentos)          $('[name="medicamentos"]').val(data.alu_medicamentos);
+    if (data.alu_contacto_emergencia)   $('[name="contacto_emergencia"]').val(data.alu_contacto_emergencia);
+    if (data.alu_telefono_emergencia)   $('[name="telefono_emergencia"]').val(data.alu_telefono_emergencia);
+    if (data.alu_observaciones_medicas) $('[name="observaciones_medicas"]').val(data.alu_observaciones_medicas);
+
+    Swal.fire({ icon: 'success', title: 'Datos cargados', text: 'Revise y complete la información antes de guardar', timer: 2500, showConfirmButton: false });
+}
+
+// ===================== VALIDACIÓN IDENTIFICACIÓN ECUADOR =====================
+
+/**
+ * Enrutador principal: cédula/RUC o pasaporte según el tipo seleccionado.
+ * tipo: 'CED' (cédula/RUC) | 'PAS' (pasaporte)
+ */
+function validarDoc(val, tipo) {
+    if (tipo === 'PAS') return validarPasaporte(val);
+    return validarIdentificacion(val);
+}
+
+/**
+ * Valida número de pasaporte internacional.
+ * Acepta alfanumérico + guión, 5-20 caracteres.
+ */
+function validarPasaporte(val) {
+    val = (val || '').trim();
+    if (!val) return { valido: false, tipo: 'PAS', mensaje: 'Ingrese el número de pasaporte' };
+    if (val.length < 5 || val.length > 20) {
+        return { valido: false, tipo: 'PAS', mensaje: '⚠ El pasaporte debe tener entre 5 y 20 caracteres' };
+    }
+    if (!/^[A-Za-z0-9\-]+$/.test(val)) {
+        return { valido: false, tipo: 'PAS', mensaje: '⚠ Solo se permiten letras, números y guión' };
+    }
+    return { valido: true, tipo: 'PAS', mensaje: '✓ Pasaporte válido' };
+}
+
+/**
+ * Valida cédula (10 dígitos) o RUC (13 dígitos) ecuatoriano.
+ * Retorna { valido, tipo, mensaje }
+ *   tipo: 'CEDULA' | 'RUC_NATURAL' | 'RUC_JURIDICO' | 'RUC_PUBLICO' | ''
+ */
+function validarIdentificacion(val) {
+    val = (val || '').trim();
+    if (!/^\d+$/.test(val)) return { valido: false, tipo: '', mensaje: 'Solo se permiten dígitos' };
+
+    if (val.length === 10) {
+        return _validarCedula(val);
+    } else if (val.length === 13) {
+        return _validarRUC(val);
+    }
+    return { valido: false, tipo: '', mensaje: 'Debe tener 10 dígitos (cédula) o 13 dígitos (RUC)' };
+}
+
+function _validarCedula(val) {
+    var d = val.split('').map(Number);
+    var prov = d[0] * 10 + d[1];
+    if (prov < 1 || (prov > 24 && prov !== 30)) {
+        return { valido: false, tipo: '', mensaje: '⚠ Código de provincia inválido (' + prov + ')' };
+    }
+    if (d[2] > 5) {
+        return { valido: false, tipo: '', mensaje: '⚠ Tercer dígito inválido para persona natural' };
+    }
+    var sum = 0;
+    for (var i = 0; i < 9; i++) {
+        var k = d[i] * (i % 2 === 0 ? 2 : 1);
+        sum += k > 9 ? k - 9 : k;
+    }
+    var check = (10 - (sum % 10)) % 10;
+    if (check !== d[9]) return { valido: false, tipo: '', mensaje: '✗ Cédula inválida (dígito verificador)' };
+    return { valido: true, tipo: 'CEDULA', mensaje: '✓ Cédula válida' };
+}
+
+function _validarRUC(val) {
+    var d = val.split('').map(Number);
+    var prov = d[0] * 10 + d[1];
+    if (prov < 1 || (prov > 24 && prov !== 30)) {
+        return { valido: false, tipo: '', mensaje: '⚠ Código de provincia inválido (' + prov + ')' };
+    }
+    var ter = d[2];
+    if (ter >= 0 && ter <= 5) {
+        // Persona natural: primeros 10 = cédula válida + sufijo 001-999
+        var ced = val.substring(0, 10);
+        var cedResult = _validarCedula(ced);
+        if (!cedResult.valido) return { valido: false, tipo: '', mensaje: '✗ RUC inválido (base cédula incorrecta)' };
+        var sufijo = parseInt(val.substring(10), 10);
+        if (sufijo < 1) return { valido: false, tipo: '', mensaje: '✗ RUC inválido (sufijo debe ser ≥ 001)' };
+        return { valido: true, tipo: 'RUC_NATURAL', mensaje: '✓ RUC persona natural válido' };
+    } else if (ter === 6) {
+        // Entidad pública: verificador en posición 9 (base 1-8)
+        var coef6 = [3, 2, 7, 6, 5, 4, 3, 2];
+        var sum6 = 0;
+        for (var i = 0; i < 8; i++) sum6 += d[i] * coef6[i];
+        var check6 = 11 - (sum6 % 11);
+        if (check6 === 11) check6 = 0;
+        if (check6 === 10 || check6 !== d[8]) return { valido: false, tipo: '', mensaje: '✗ RUC entidad pública inválido' };
+        return { valido: true, tipo: 'RUC_PUBLICO', mensaje: '✓ RUC entidad pública válido' };
+    } else if (ter === 9) {
+        // Persona jurídica: verificador en posición 10 (base 1-9)
+        var coef9 = [4, 3, 2, 7, 6, 5, 4, 3, 2];
+        var sum9 = 0;
+        for (var i = 0; i < 9; i++) sum9 += d[i] * coef9[i];
+        var check9 = 11 - (sum9 % 11);
+        if (check9 === 11) check9 = 0;
+        if (check9 === 10 || check9 !== d[9]) return { valido: false, tipo: '', mensaje: '✗ RUC persona jurídica inválido' };
+        return { valido: true, tipo: 'RUC_JURIDICO', mensaje: '✓ RUC persona jurídica válido' };
+    }
+    return { valido: false, tipo: '', mensaje: '⚠ Tercer dígito de RUC inválido (' + ter + ')' };
+}
+
+// Feedback en tiempo real para identificación del alumno
 $('#identificacion').on('blur', function() {
     var val = $(this).val().trim();
+    var tipo = $('#tipo_identificacion').val();
     var fb = $('#id_feedback');
-    if (val.length === 10 && /^\d{10}$/.test(val)) {
-        var d = val.split('').map(Number);
-        var prov = d[0] * 10 + d[1];
-        if (prov < 1 || prov > 24) {
-            fb.text('⚠ Provincia inválida').removeClass('text-success').addClass('text-danger');
-            return;
-        }
-        var sum = 0;
-        for (var i = 0; i < 9; i++) {
-            var k = d[i] * (i % 2 === 0 ? 2 : 1);
-            sum += k > 9 ? k - 9 : k;
-        }
-        var check = (10 - (sum % 10)) % 10;
-        if (check === d[9]) {
-            fb.text('✓ Cédula válida').removeClass('text-danger').addClass('text-success');
-        } else {
-            fb.text('✗ Cédula inválida').removeClass('text-success').addClass('text-danger');
-        }
+    if (!val) { fb.text(''); return; }
+    var r = validarDoc(val, tipo);
+    fb.text(r.mensaje)
+      .removeClass('text-success text-danger text-warning')
+      .addClass(r.valido ? 'text-success' : (val.length >= 5 ? 'text-danger' : 'text-warning'));
+});
+
+// Al cambiar tipo de identificación del alumno: resetear feedback y ajustar placeholder
+$('#tipo_identificacion').on('change', function() {
+    var tipo = $(this).val();
+    $('#identificacion')
+        .attr('placeholder', tipo === 'PAS' ? 'Ej: AB123456' : 'Ej: 0912345678')
+        .attr('maxlength', tipo === 'PAS' ? '20' : '13');
+    $('#id_feedback').text('');
+});
+
+// Feedback en tiempo real para identificación del representante
+$('#rep_cedula').on('blur', function() {
+    var val = $(this).val().trim();
+    var tipo = $('#tipo_id_rep').val();
+    var fb = $('#rep_feedback');
+    if ($('#representante_id').val()) return; // ya hay representante cargado
+    if (!val) { fb.text(''); return; }
+    var r = validarDoc(val, tipo);
+    if (r.valido) {
+        fb.text(r.mensaje).removeClass('text-danger text-warning text-info').addClass('text-success');
+    } else if (val.length >= 5) {
+        fb.text(r.mensaje).removeClass('text-success text-warning text-info').addClass('text-danger');
     } else {
-        fb.text('');
+        fb.text('').removeClass('text-danger text-success text-info text-warning');
     }
+});
+
+// Al cambiar tipo de identificación del representante: resetear feedback y ajustar placeholder
+$('#tipo_id_rep').on('change', function() {
+    var tipo = $(this).val();
+    $('#rep_cedula')
+        .attr('placeholder', tipo === 'PAS' ? 'Ej: AB123456' : 'Ingrese cédula o RUC')
+        .attr('maxlength', tipo === 'PAS' ? '20' : '13');
+    $('#rep_feedback').text('');
+    // Si había un representante cargado, limpiarlo porque el tipo cambió
+    if ($('#representante_id').val()) { limpiarRepresentante(); }
 });
 
 // ===================== REPRESENTANTE =====================
@@ -597,8 +989,14 @@ $('#identificacion').on('blur', function() {
  */
 function buscarRepresentante() {
     var cedula = $('#rep_cedula').val().trim();
-    if (!cedula || cedula.length < 5) {
-        $('#rep_feedback').text('Ingrese al menos 5 dígitos de la cédula/RUC').removeClass('text-success').addClass('text-warning');
+    var tipo   = $('#tipo_id_rep').val();
+    if (!cedula) {
+        $('#rep_feedback').text('Ingrese la identificación del representante').removeClass('text-success text-danger text-info').addClass('text-warning');
+        return;
+    }
+    var r = validarDoc(cedula, tipo);
+    if (!r.valido) {
+        $('#rep_feedback').text(r.mensaje || 'Identificación inválida').removeClass('text-success text-info text-warning').addClass('text-danger');
         return;
     }
 
@@ -648,6 +1046,8 @@ function cargarRepresentante(data) {
     $('#repTelefonoDisplay').text(data.cli_telefono || data.cli_celular || '');
     $('#repEmailDisplay').text(data.cli_email || '');
     $('#repDireccionDisplay').text(data.cli_direccion || '');
+    // Guardar nombres/apellidos por separado para el formulario de edición
+    $('#panelRepresentante').data('rep-nombres', data.cli_nombres || '').data('rep-apellidos', data.cli_apellidos || '');
 
     // Marcar consentimiento si ya lo dio
     if (data.cli_consentimiento_datos == 1) {
@@ -656,6 +1056,78 @@ function cargarRepresentante(data) {
 
     $('#panelNuevoRep').hide();
     $('#panelRepresentante').slideDown();
+}
+
+/**
+ * Abrir modo edición del representante: rellena campos con valores actuales
+ */
+function abrirEdicionRepresentante() {
+    var nombre = $('#repNombreDisplay').text().trim().split(' ');
+    // Llenar campos con los valores mostrados actualmente
+    $('#edit_rep_telefono').val($('#repTelefonoDisplay').text().trim());
+    $('#edit_rep_email').val($('#repEmailDisplay').text().trim());
+    $('#edit_rep_direccion').val($('#repDireccionDisplay').text().trim());
+    // Para nombres/apellidos usamos atributos data guardados al cargar
+    $('#edit_rep_nombres').val($('#panelRepresentante').data('rep-nombres') || '');
+    $('#edit_rep_apellidos').val($('#panelRepresentante').data('rep-apellidos') || '');
+
+    $('#repVistaLectura').hide();
+    $('#repVistaEdicion').slideDown();
+}
+
+/**
+ * Cerrar modo edición sin guardar
+ */
+function cerrarEdicionRepresentante() {
+    $('#repVistaEdicion').hide();
+    $('#repVistaLectura').slideDown();
+}
+
+/**
+ * Guardar cambios del representante vía AJAX
+ */
+function guardarEdicionRepresentante() {
+    var clienteId = $('#representante_id').val();
+    if (!clienteId) { Swal.fire('Error', 'No hay representante seleccionado', 'error'); return; }
+
+    var nombres   = $('#edit_rep_nombres').val().trim();
+    var apellidos = $('#edit_rep_apellidos').val().trim();
+    var telefono  = $('#edit_rep_telefono').val().trim();
+
+    if (!nombres || !apellidos) { Swal.fire('Error', 'Nombres y apellidos son obligatorios', 'warning'); return; }
+    if (!telefono) { Swal.fire('Error', 'El teléfono es obligatorio', 'warning'); return; }
+
+    var btn = $('#btnGuardarEditRep');
+    btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i>Guardando...');
+
+    $.ajax({
+        url: '<?= url('futbol', 'alumno', 'actualizarRepresentante') ?>',
+        type: 'POST',
+        data: {
+            csrf_token: $('input[name="csrf_token"]').val(),
+            cliente_id: clienteId,
+            nombres:    nombres,
+            apellidos:  apellidos,
+            telefono:   telefono,
+            email:      $('#edit_rep_email').val().trim(),
+            direccion:  $('#edit_rep_direccion').val().trim()
+        },
+        dataType: 'json',
+        success: function(res) {
+            btn.prop('disabled', false).html('<i class="fas fa-save mr-1"></i>Guardar cambios');
+            if (res.success && res.data) {
+                cargarRepresentante(res.data);
+                cerrarEdicionRepresentante();
+                Swal.fire({ icon: 'success', title: 'Datos actualizados', timer: 1500, showConfirmButton: false });
+            } else {
+                Swal.fire('Error', res.message || 'No se pudo actualizar', 'error');
+            }
+        },
+        error: function() {
+            btn.prop('disabled', false).html('<i class="fas fa-save mr-1"></i>Guardar cambios');
+            Swal.fire('Error', 'Error de comunicación con el servidor', 'error');
+        }
+    });
 }
 
 /**
@@ -694,11 +1166,14 @@ function crearRepresentante() {
     var apellidos = $('#nuevo_rep_apellidos').val().trim();
     var telefono = $('#nuevo_rep_telefono').val().trim();
     var cedula = $('#rep_cedula').val().trim();
+    var tipo = $('#tipo_id_rep').val();
     var parentesco = $('#nuevo_rep_parentesco').val();
 
     if (!nombres || !apellidos) { Swal.fire('Error', 'Nombres y apellidos son obligatorios', 'warning'); return; }
     if (!telefono) { Swal.fire('Error', 'El teléfono es obligatorio', 'warning'); return; }
-    if (!cedula) { Swal.fire('Error', 'La cédula es obligatoria', 'warning'); return; }
+    if (!cedula) { Swal.fire('Error', 'La identificación es obligatoria', 'warning'); return; }
+    var rVal = validarDoc(cedula, tipo);
+    if (!rVal.valido) { Swal.fire('Identificación inválida', rVal.mensaje, 'warning'); return; }
     if (!parentesco) { Swal.fire('Error', 'Seleccione el parentesco', 'warning'); return; }
 
     $.ajax({
@@ -706,6 +1181,7 @@ function crearRepresentante() {
         type: 'POST',
         data: {
             csrf_token: $('input[name="csrf_token"]').val(),
+            tipo_identificacion: tipo,
             identificacion: cedula,
             nombres: nombres,
             apellidos: apellidos,

@@ -61,6 +61,15 @@ class InscripcionController extends \App\Controllers\ModuleController {
             ");
             $stmA->execute([$this->tenantId]);
 
+            // Pre-selección de alumno desde lista (botón "Inscribir")
+            $preAlumnoId = (int)($this->get('alumno_id') ?? 0);
+            $preAlumno   = null;
+            if ($preAlumnoId) {
+                $stmPre = $this->db->prepare("SELECT alu_alumno_id, CONCAT(alu_nombres, ' ', alu_apellidos) AS nombre FROM alumnos WHERE alu_alumno_id = ? AND alu_tenant_id = ? AND alu_estado = 'ACTIVO'");
+                $stmPre->execute([$preAlumnoId, $this->tenantId]);
+                $preAlumno = $stmPre->fetch(\PDO::FETCH_ASSOC) ?: null;
+            }
+
             $this->viewData['inscripciones'] = $stm->fetchAll(\PDO::FETCH_ASSOC);
             $this->viewData['grupos']        = $stmG->fetchAll(\PDO::FETCH_ASSOC);
             $this->viewData['alumnos']       = $stmA->fetchAll(\PDO::FETCH_ASSOC);
@@ -69,6 +78,7 @@ class InscripcionController extends \App\Controllers\ModuleController {
             $this->viewData['pagina']        = $pagina;
             $this->viewData['totalPaginas']  = $totalPaginas;
             $this->viewData['total']         = $total;
+            $this->viewData['preAlumno']     = $preAlumno;
             $this->viewData['csrf_token']    = \Security::generateCsrfToken();
             $this->viewData['title']         = 'Inscripciones';
             $this->renderModule('futbol/inscripciones/index', $this->viewData);

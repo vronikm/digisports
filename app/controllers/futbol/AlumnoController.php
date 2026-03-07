@@ -31,7 +31,7 @@ class AlumnoController extends \App\Controllers\ModuleController {
 
             // Filtro por búsqueda de texto
             $q = trim($this->get('q') ?? '');
-            if ($q !== '') { $where .= ' AND (a.alu_nombres LIKE ? OR a.alu_apellidos LIKE ? OR a.alu_identificacion LIKE ?)'; $like = "%{$q}%"; $params[] = $like; $params[] = $like; $params[] = $like; }
+            if ($q !== '') { $like = "%{$q}%"; $where .= ' AND (a.alu_nombres LIKE ? OR a.alu_apellidos LIKE ? OR a.alu_identificacion_hash = ?)'; $params[] = $like; $params[] = $like; $params[] = \DataProtection::blindIndex($q); }
 
             // Filtro por categoría
             $categoriaId = $this->get('categoria_id');
@@ -63,7 +63,7 @@ class AlumnoController extends \App\Controllers\ModuleController {
                 LIMIT 300
             ");
             $stm->execute($params);
-            $this->viewData['alumnos'] = $stm->fetchAll(\PDO::FETCH_ASSOC);
+            $this->viewData['alumnos'] = \DataProtection::decryptRows('alumnos', $stm->fetchAll(\PDO::FETCH_ASSOC));
 
             // Categorías para filtro/formulario
             $stmCat = $this->db->prepare("SELECT fct_categoria_id, fct_nombre, fct_edad_min, fct_edad_max, fct_color FROM futbol_categorias WHERE fct_tenant_id = ? AND fct_activo = 1 ORDER BY fct_orden");
@@ -113,6 +113,7 @@ class AlumnoController extends \App\Controllers\ModuleController {
                 $this->viewData['hermanos'] = [];
                 $this->viewData['categorias'] = $this->getCategoriasActivas();
                 $this->viewData['sedes'] = $this->getSedesActivas();
+                $this->viewData['campos_ficha'] = $this->getCamposActivos();
                 $this->viewData['csrf_token'] = \Security::generateCsrfToken();
                 $this->viewData['title'] = 'Nuevo Alumno';
                 $this->viewData['sede_activa'] = $_SESSION['futbol_sede_id'] ?? null;
@@ -139,21 +140,29 @@ class AlumnoController extends \App\Controllers\ModuleController {
                 $this->registrarConsentimiento($representanteId);
             }
 
+            $tipoId = $this->post('tipo_identificacion') === 'PAS' ? 'PAS' : 'CED';
+
+            // Cifrar identificación del alumno (LOPDP Ecuador)
+            $identPlain = $this->post('identificacion') ?: null;
+            $identEnc   = \DataProtection::encryptRow('alumnos', ['alu_identificacion' => $identPlain]);
+
             // Insertar en tabla alumnos (usando FK a clientes)
             $stm = $this->db->prepare("
                 INSERT INTO alumnos (alu_tenant_id, alu_sede_id, alu_nombres, alu_apellidos,
-                    alu_identificacion, alu_fecha_nacimiento,
+                    alu_tipo_identificacion, alu_identificacion, alu_identificacion_hash, alu_fecha_nacimiento,
                     alu_genero, alu_tipo_sangre, alu_alergias, alu_condiciones_medicas, alu_medicamentos,
                     alu_contacto_emergencia, alu_telefono_emergencia, alu_observaciones_medicas,
                     alu_representante_id, alu_parentesco, alu_notas, alu_estado)
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
             ");
             $stm->execute([
                 $this->tenantId,
                 $sedeId,
                 $nombres,
                 $apellidos,
-                $this->post('identificacion') ?: null,
+                $tipoId,
+                $identEnc['alu_identificacion'],
+                $identEnc['alu_identificacion_hash'] ?? null,
                 $this->post('fecha_nacimiento') ?: null,
                 $this->post('genero') ?: null,
                 $this->post('tipo_sangre') ?: null,
@@ -174,11 +183,19 @@ class AlumnoController extends \App\Controllers\ModuleController {
             $objetivo = $this->post('objetivo') ?: 'RECREATIVO';
             if (!in_array($objetivo, ['RECREATIVO', 'FORMATIVO', 'COMPETITIVO'])) $objetivo = 'RECREATIVO';
 
+            // Recopilar campos custom
+            $camposCustom = [];
+            foreach ($_POST['campo_custom'] ?? [] as $k => $v) {
+                $safeKey = preg_replace('/[^a-zA-Z0-9_]/', '', $k);
+                if ($safeKey) $camposCustom[$safeKey] = is_string($v) ? substr(trim($v), 0, 500) : '';
+            }
+            $datosCustomJson = !empty($camposCustom) ? json_encode($camposCustom, JSON_UNESCAPED_UNICODE) : null;
+
             $stm2 = $this->db->prepare("
                 INSERT INTO futbol_ficha_alumno (ffa_tenant_id, ffa_alumno_id, ffa_categoria_id, ffa_posicion_preferida,
                     ffa_pie_dominante, ffa_experiencia_previa, ffa_club_anterior, ffa_objetivo, ffa_talla_camiseta,
-                    ffa_numero_camiseta, ffa_autorizacion_medica, ffa_fecha_ingreso, ffa_activo)
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,CURDATE(),1)
+                    ffa_numero_camiseta, ffa_autorizacion_medica, ffa_datos_custom, ffa_fecha_ingreso, ffa_activo)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,CURDATE(),1)
             ");
             $stm2->execute([
                 $this->tenantId,
@@ -192,6 +209,7 @@ class AlumnoController extends \App\Controllers\ModuleController {
                 $this->post('talla_camiseta') ?: null,
                 (int)($this->post('numero_camiseta') ?? 0) ?: null,
                 (int)($this->post('autorizacion_medica') ?? 0),
+                $datosCustomJson,
             ]);
 
             $this->db->commit();
@@ -227,6 +245,9 @@ class AlumnoController extends \App\Controllers\ModuleController {
                 $alumno = $stm->fetch(\PDO::FETCH_ASSOC);
                 if (!$alumno) { header('Location: ' . url('futbol', 'alumno', 'index')); exit; }
 
+                // Descifrar PII del alumno (LOPDP)
+                $alumno = \DataProtection::decryptRow('alumnos', $alumno);
+
                 // Cargar datos del representante desde clientes
                 $representante = [];
                 $hermanos = [];
@@ -241,6 +262,7 @@ class AlumnoController extends \App\Controllers\ModuleController {
                 $this->viewData['hermanos'] = $hermanos;
                 $this->viewData['categorias'] = $this->getCategoriasActivas();
                 $this->viewData['sedes'] = $this->getSedesActivas();
+                $this->viewData['campos_ficha'] = $this->getCamposActivos();
                 $this->viewData['csrf_token'] = \Security::generateCsrfToken();
                 $this->viewData['title'] = 'Editar Alumno';
                 $this->viewData['sede_activa'] = $_SESSION['futbol_sede_id'] ?? null;
@@ -268,10 +290,16 @@ class AlumnoController extends \App\Controllers\ModuleController {
                 $this->registrarConsentimiento($representanteId);
             }
 
+            $tipoId = $this->post('tipo_identificacion') === 'PAS' ? 'PAS' : 'CED';
+
+            // Cifrar identificación del alumno (LOPDP Ecuador)
+            $identPlain = $this->post('identificacion') ?: null;
+            $identEnc   = \DataProtection::encryptRow('alumnos', ['alu_identificacion' => $identPlain]);
+
             // Actualizar datos base del alumno
             $stm = $this->db->prepare("
                 UPDATE alumnos SET alu_sede_id=?, alu_nombres=?, alu_apellidos=?,
-                    alu_identificacion=?, alu_fecha_nacimiento=?,
+                    alu_tipo_identificacion=?, alu_identificacion=?, alu_identificacion_hash=?, alu_fecha_nacimiento=?,
                     alu_genero=?, alu_tipo_sangre=?, alu_alergias=?, alu_condiciones_medicas=?, alu_medicamentos=?,
                     alu_contacto_emergencia=?, alu_telefono_emergencia=?, alu_observaciones_medicas=?,
                     alu_representante_id=?, alu_parentesco=?, alu_notas=?, alu_estado=?
@@ -281,7 +309,9 @@ class AlumnoController extends \App\Controllers\ModuleController {
                 (int)($this->post('sede_id') ?? 0) ?: ($_SESSION['futbol_sede_id'] ?? null),
                 $nombres,
                 $apellidos,
-                $this->post('identificacion') ?: null,
+                $tipoId,
+                $identEnc['alu_identificacion'],
+                $identEnc['alu_identificacion_hash'] ?? null,
                 $this->post('fecha_nacimiento') ?: null,
                 $this->post('genero') ?: null,
                 $this->post('tipo_sangre') ?: null,
@@ -302,6 +332,14 @@ class AlumnoController extends \App\Controllers\ModuleController {
             $objetivo = $this->post('objetivo') ?: 'RECREATIVO';
             if (!in_array($objetivo, ['RECREATIVO', 'FORMATIVO', 'COMPETITIVO'])) $objetivo = 'RECREATIVO';
 
+            // Recopilar campos custom
+            $camposCustom = [];
+            foreach ($_POST['campo_custom'] ?? [] as $k => $v) {
+                $safeKey = preg_replace('/[^a-zA-Z0-9_]/', '', $k);
+                if ($safeKey) $camposCustom[$safeKey] = is_string($v) ? substr(trim($v), 0, 500) : '';
+            }
+            $datosCustomJson = !empty($camposCustom) ? json_encode($camposCustom, JSON_UNESCAPED_UNICODE) : null;
+
             // Verificar si ya existe ficha
             $stmCheck = $this->db->prepare("SELECT COUNT(*) FROM futbol_ficha_alumno WHERE ffa_alumno_id = ? AND ffa_tenant_id = ?");
             $stmCheck->execute([$alumnoId, $this->tenantId]);
@@ -310,7 +348,7 @@ class AlumnoController extends \App\Controllers\ModuleController {
                 $stm2 = $this->db->prepare("
                     UPDATE futbol_ficha_alumno SET ffa_categoria_id=?, ffa_posicion_preferida=?, ffa_pie_dominante=?,
                         ffa_experiencia_previa=?, ffa_club_anterior=?, ffa_objetivo=?, ffa_talla_camiseta=?,
-                        ffa_numero_camiseta=?, ffa_autorizacion_medica=?
+                        ffa_numero_camiseta=?, ffa_autorizacion_medica=?, ffa_datos_custom=?
                     WHERE ffa_alumno_id=? AND ffa_tenant_id=?
                 ");
                 $stm2->execute([
@@ -323,6 +361,7 @@ class AlumnoController extends \App\Controllers\ModuleController {
                     $this->post('talla_camiseta') ?: null,
                     (int)($this->post('numero_camiseta') ?? 0) ?: null,
                     (int)($this->post('autorizacion_medica') ?? 0),
+                    $datosCustomJson,
                     $alumnoId, $this->tenantId,
                 ]);
             } else {
@@ -330,8 +369,8 @@ class AlumnoController extends \App\Controllers\ModuleController {
                 $stm2 = $this->db->prepare("
                     INSERT INTO futbol_ficha_alumno (ffa_tenant_id, ffa_alumno_id, ffa_categoria_id, ffa_posicion_preferida,
                         ffa_pie_dominante, ffa_experiencia_previa, ffa_club_anterior, ffa_objetivo, ffa_talla_camiseta,
-                        ffa_numero_camiseta, ffa_autorizacion_medica, ffa_fecha_ingreso, ffa_activo)
-                    VALUES (?,?,?,?,?,?,?,?,?,?,?,CURDATE(),1)
+                        ffa_numero_camiseta, ffa_autorizacion_medica, ffa_datos_custom, ffa_fecha_ingreso, ffa_activo)
+                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,CURDATE(),1)
                 ");
                 $stm2->execute([
                     $this->tenantId,
@@ -345,6 +384,7 @@ class AlumnoController extends \App\Controllers\ModuleController {
                     $this->post('talla_camiseta') ?: null,
                     (int)($this->post('numero_camiseta') ?? 0) ?: null,
                     (int)($this->post('autorizacion_medica') ?? 0),
+                    $datosCustomJson,
                 ]);
             }
 
@@ -447,6 +487,16 @@ class AlumnoController extends \App\Controllers\ModuleController {
             $alumno = $stm->fetch(\PDO::FETCH_ASSOC);
             if (!$alumno) { header('Location: ' . url('futbol', 'alumno', 'index')); exit; }
 
+            // Descifrar PII del alumno (LOPDP)
+            $alumno = \DataProtection::decryptRow('alumnos', $alumno);
+
+            // Descifrar PII del representante (campos aliased desde clientes)
+            foreach (['rep_identificacion', 'rep_telefono', 'rep_email'] as $field) {
+                if (!empty($alumno[$field])) {
+                    $alumno[$field] = \DataProtection::decrypt($alumno[$field]);
+                }
+            }
+
             // Hermanos (otros alumnos con el mismo representante)
             $hermanos = [];
             if (!empty($alumno['alu_representante_id'])) {
@@ -522,6 +572,49 @@ class AlumnoController extends \App\Controllers\ModuleController {
      * Buscar representante por cédula en tabla clientes (AJAX)
      * Usa blind index (hash) para búsqueda exacta sobre datos cifrados (LOPDP)
      */
+
+    /**
+     * Buscar alumno existente por identificación (AJAX GET, cross-tenant)
+     * Permite detectar alumnos ya registrados en cualquier tenant del sistema.
+     */
+    public function buscarAlumno() {
+        try {
+            $identificacion = trim($this->get('identificacion') ?? '');
+            if (empty($identificacion)) return $this->jsonResponse(['success' => false, 'message' => 'Identificación requerida']);
+
+            // Búsqueda cross-tenant por blind index (datos cifrados, LOPDP)
+            $idHash = \DataProtection::blindIndex($identificacion);
+            $stm = $this->db->prepare("
+                SELECT alu_alumno_id, alu_tenant_id, alu_nombres, alu_apellidos,
+                       alu_tipo_identificacion, alu_identificacion,
+                       alu_fecha_nacimiento, alu_genero,
+                       alu_tipo_sangre, alu_alergias, alu_condiciones_medicas, alu_medicamentos,
+                       alu_contacto_emergencia, alu_telefono_emergencia, alu_observaciones_medicas
+                FROM alumnos
+                WHERE alu_identificacion_hash = ?
+                ORDER BY alu_alumno_id ASC
+                LIMIT 1
+            ");
+            $stm->execute([$idHash]);
+            $alumno = $stm->fetch(\PDO::FETCH_ASSOC);
+            if ($alumno) { $alumno = \DataProtection::decryptRow('alumnos', $alumno); }
+
+            if (!$alumno) return $this->jsonResponse(['success' => false, 'message' => 'No encontrado']);
+
+            $mismoTenant = (int)$alumno['alu_tenant_id'] === (int)$this->tenantId;
+
+            return $this->jsonResponse([
+                'success'      => true,
+                'mismo_tenant' => $mismoTenant,
+                'data'         => $alumno,
+            ]);
+
+        } catch (\Exception $e) {
+            $this->logError("Error buscando alumno: " . $e->getMessage());
+            return $this->jsonResponse(['success' => false, 'message' => 'Error al buscar']);
+        }
+    }
+
     public function buscarRepresentante() {
         try {
             $cedula = trim($this->get('cedula') ?? '');
@@ -562,6 +655,76 @@ class AlumnoController extends \App\Controllers\ModuleController {
     }
 
     /**
+     * Actualizar datos del representante existente (AJAX POST)
+     */
+    public function actualizarRepresentante() {
+        try {
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') return $this->jsonResponse(['success' => false, 'message' => 'POST requerido']);
+            if (!\Security::validateCsrfToken($this->post('csrf_token'))) return $this->jsonResponse(['success' => false, 'message' => 'Token inválido']);
+
+            $clienteId = (int)($this->post('cliente_id') ?? 0);
+            if (!$clienteId) return $this->jsonResponse(['success' => false, 'message' => 'ID de representante requerido']);
+
+            $nombres   = trim($this->post('nombres') ?? '');
+            $apellidos = trim($this->post('apellidos') ?? '');
+            $telefono  = trim($this->post('telefono') ?? '');
+
+            if (empty($nombres) || empty($apellidos) || empty($telefono)) {
+                return $this->jsonResponse(['success' => false, 'message' => 'Nombres, apellidos y teléfono son obligatorios']);
+            }
+
+            // Verificar que el cliente pertenece a este tenant
+            $stmCheck = $this->db->prepare("SELECT cli_cliente_id FROM clientes WHERE cli_cliente_id = ? AND cli_tenant_id = ? AND cli_estado = 'A' LIMIT 1");
+            $stmCheck->execute([$clienteId, $this->tenantId]);
+            if (!$stmCheck->fetchColumn()) {
+                return $this->jsonResponse(['success' => false, 'message' => 'Representante no encontrado']);
+            }
+
+            // Cifrar campos sensibles
+            $protectedData = [
+                'cli_email'   => $this->post('email') ?: null,
+                'cli_telefono' => $telefono,
+                'cli_celular'  => null,
+            ];
+            $encrypted = \DataProtection::encryptRow('clientes', $protectedData);
+
+            $stm = $this->db->prepare("
+                UPDATE clientes SET
+                    cli_nombres  = ?,
+                    cli_apellidos = ?,
+                    cli_telefono  = ?,
+                    cli_email     = ?,
+                    cli_email_hash = ?,
+                    cli_direccion  = ?
+                WHERE cli_cliente_id = ? AND cli_tenant_id = ?
+            ");
+            $stm->execute([
+                $nombres,
+                $apellidos,
+                $encrypted['cli_telefono'],
+                $encrypted['cli_email'],
+                $encrypted['cli_email_hash'] ?? null,
+                $this->post('direccion') ?: null,
+                $clienteId,
+                $this->tenantId,
+            ]);
+
+            // Devolver datos actualizados (descifrados)
+            $cliente = $this->getClienteById($clienteId);
+
+            return $this->jsonResponse([
+                'success' => true,
+                'message' => 'Datos del representante actualizados',
+                'data'    => $cliente,
+            ]);
+
+        } catch (\Exception $e) {
+            $this->logError("Error actualizando representante: " . $e->getMessage());
+            return $this->jsonResponse(['success' => false, 'message' => 'Error al actualizar representante']);
+        }
+    }
+
+    /**
      * Crear representante como nuevo cliente (AJAX POST)
      */
     public function crearRepresentante() {
@@ -573,9 +736,10 @@ class AlumnoController extends \App\Controllers\ModuleController {
             $nombres   = trim($this->post('nombres') ?? '');
             $apellidos = trim($this->post('apellidos') ?? '');
             $telefono  = trim($this->post('telefono') ?? '');
+            $tipoId    = $this->post('tipo_identificacion') === 'PAS' ? 'PAS' : 'CED';
 
             if (empty($identificacion) || empty($nombres) || empty($apellidos) || empty($telefono)) {
-                return $this->jsonResponse(['success' => false, 'message' => 'Cédula, nombres, apellidos y teléfono son obligatorios']);
+                return $this->jsonResponse(['success' => false, 'message' => 'Identificación, nombres, apellidos y teléfono son obligatorios']);
             }
 
             // Verificar que no exista ya (usar blind index)
@@ -602,10 +766,11 @@ class AlumnoController extends \App\Controllers\ModuleController {
                     cli_nombres, cli_apellidos, cli_telefono, cli_email, cli_email_hash, cli_direccion,
                     cli_tipo_cliente, cli_estado, cli_fecha_registro,
                     cli_consentimiento_datos, cli_consentimiento_fecha, cli_consentimiento_ip)
-                VALUES (?, 'CEDULA', ?, ?, ?, ?, ?, ?, ?, ?, 'REPRESENTANTE', 'A', NOW(), ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'REPRESENTANTE', 'A', NOW(), ?, ?, ?)
             ");
             $stm->execute([
                 $this->tenantId,
+                $tipoId,
                 $encrypted['cli_identificacion'],
                 $encrypted['cli_identificacion_hash'] ?? $idHash,
                 $nombres,
@@ -697,6 +862,12 @@ class AlumnoController extends \App\Controllers\ModuleController {
             $clienteId,
             $this->tenantId,
         ]);
+    }
+
+    private function getCamposActivos() {
+        $stm = $this->db->prepare("SELECT * FROM futbol_campos_ficha WHERE fcf_tenant_id = ? AND fcf_activo = 1 ORDER BY fcf_orden, fcf_clave");
+        $stm->execute([$this->tenantId]);
+        return $stm->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     private function getCategoriasActivas() {

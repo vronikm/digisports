@@ -290,6 +290,14 @@ $(function() {
     $('#btnNuevaInscripcion').on('click', abrirModal);
     $('#btnNuevaInscripcionEmpty').on('click', abrirModal);
 
+    // Pre-selección desde botón "Inscribir" de lista de alumnos
+    var preAlumno = <?= json_encode($preAlumno ?? null, JSON_HEX_TAG | JSON_HEX_AMP) ?>;
+    if (preAlumno && preAlumno.alu_alumno_id) {
+        limpiarFormulario();
+        $('#fin_alumno_id').append(new Option(preAlumno.nombre, preAlumno.alu_alumno_id, true, true)).trigger('change');
+        $('#modalInscripcion').modal('show');
+    }
+
     // Editar inscripción
     $(document).on('click', '.js-editar-inscripcion', function() {
         var obj = JSON.parse($(this).attr('data-insc'));

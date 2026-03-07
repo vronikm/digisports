@@ -22,8 +22,8 @@ $superficies = [
     'CEMENTO'           => 'Cemento',
 ];
 $estados = [
-    'DISPONIBLE'      => ['label' => 'Disponible',      'color' => '#22C55E', 'badge' => 'success'],
-    'MANTENIMIENTO'   => ['label' => 'Mantenimiento',   'color' => '#F59E0B', 'badge' => 'warning'],
+    'DISPONIBLE'      => ['label' => 'Disponible',       'color' => '#22C55E', 'badge' => 'success'],
+    'MANTENIMIENTO'   => ['label' => 'Mantenimiento',    'color' => '#F59E0B', 'badge' => 'warning'],
     'FUERA_SERVICIO'  => ['label' => 'Fuera de Servicio','color' => '#EF4444', 'badge' => 'danger'],
 ];
 ?>
@@ -32,7 +32,7 @@ $estados = [
     <div class="container-fluid">
         <div class="row mb-2">
             <div class="col-sm-6"><h1 class="m-0"><i class="fas fa-futbol mr-2" style="color:<?= $moduloColor ?>"></i>Canchas</h1></div>
-            <div class="col-sm-6"><div class="float-sm-right"><button class="btn btn-sm" style="background:<?= $moduloColor ?>;color:white;" onclick="abrirModal()"><i class="fas fa-plus mr-1"></i>Nueva Cancha</button></div></div>
+            <div class="col-sm-6"><div class="float-sm-right"><button class="btn btn-sm" id="btnNuevaCancha" style="background:<?= $moduloColor ?>;color:white;"><i class="fas fa-plus mr-1"></i>Nueva Cancha</button></div></div>
         </div>
     </div>
 </div>
@@ -45,7 +45,7 @@ $estados = [
             <div class="col-md-4">
                 <div class="input-group input-group-sm">
                     <div class="input-group-prepend"><span class="input-group-text"><i class="fas fa-building"></i></span></div>
-                    <select id="sedeFilter" class="form-control" onchange="filtrarPorSede(this.value)">
+                    <select id="sedeFilter" class="form-control">
                         <option value="">Todas las sedes</option>
                         <?php foreach ($sedes as $s): ?>
                         <option value="<?= $s['sed_sede_id'] ?>" <?= $sedeActiva == $s['sed_sede_id'] ? 'selected' : '' ?>><?= htmlspecialchars($s['sed_nombre']) ?></option>
@@ -61,7 +61,7 @@ $estados = [
             <div class="card-body text-center py-5 text-muted">
                 <i class="fas fa-futbol fa-3x mb-3 opacity-50"></i>
                 <p>No hay canchas registradas</p>
-                <button class="btn btn-sm" style="background:<?= $moduloColor ?>;color:white;" onclick="abrirModal()"><i class="fas fa-plus mr-1"></i>Crear primera cancha</button>
+                <button class="btn btn-sm" id="btnNuevaCanchaEmpty" style="background:<?= $moduloColor ?>;color:white;"><i class="fas fa-plus mr-1"></i>Crear primera cancha</button>
             </div>
         </div>
         <?php else: ?>
@@ -117,15 +117,26 @@ $estados = [
                     </div>
                     <div class="card-footer bg-white py-2">
                         <div class="btn-group btn-group-sm">
-                            <button class="btn btn-outline-primary" onclick='editarCancha(<?= json_encode($c) ?>)' title="Editar"><i class="fas fa-edit"></i></button>
+                            <button class="btn btn-outline-primary js-editar-cancha" title="Editar"
+                                data-cancha="<?= htmlspecialchars(json_encode($c, JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP), ENT_QUOTES) ?>">
+                                <i class="fas fa-edit"></i>
+                            </button>
                             <?php if ($estCancha === 'DISPONIBLE'): ?>
-                            <button class="btn btn-outline-warning" onclick="cambiarEstado(<?= $c['can_cancha_id'] ?>,'MANTENIMIENTO')" title="Poner en Mantenimiento"><i class="fas fa-tools"></i></button>
-                            <?php elseif ($estCancha === 'MANTENIMIENTO'): ?>
-                            <button class="btn btn-outline-success" onclick="cambiarEstado(<?= $c['can_cancha_id'] ?>,'DISPONIBLE')" title="Habilitar"><i class="fas fa-check"></i></button>
+                            <button class="btn btn-outline-warning js-cambiar-estado" title="Poner en Mantenimiento"
+                                data-id="<?= $c['can_cancha_id'] ?>" data-estado="MANTENIMIENTO">
+                                <i class="fas fa-tools"></i>
+                            </button>
                             <?php else: ?>
-                            <button class="btn btn-outline-success" onclick="cambiarEstado(<?= $c['can_cancha_id'] ?>,'DISPONIBLE')" title="Habilitar"><i class="fas fa-check"></i></button>
+                            <button class="btn btn-outline-success js-cambiar-estado" title="Habilitar"
+                                data-id="<?= $c['can_cancha_id'] ?>" data-estado="DISPONIBLE">
+                                <i class="fas fa-check"></i>
+                            </button>
                             <?php endif; ?>
-                            <button class="btn btn-outline-danger" onclick="eliminarCancha(<?= $c['can_cancha_id'] ?>,'<?= htmlspecialchars($c['can_nombre'] ?? '') ?>')" title="Eliminar"><i class="fas fa-trash"></i></button>
+                            <button class="btn btn-outline-danger js-eliminar-cancha" title="Eliminar"
+                                data-id="<?= $c['can_cancha_id'] ?>"
+                                data-nombre="<?= htmlspecialchars($c['can_nombre'] ?? '', ENT_QUOTES) ?>">
+                                <i class="fas fa-trash"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -140,7 +151,9 @@ $estados = [
 <div class="modal fade" id="modalCancha" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <form id="formCancha" method="POST">
+            <form id="formCancha"
+                data-url-crear="<?= url('futbol', 'cancha', 'crear') ?>"
+                data-url-editar="<?= url('futbol', 'cancha', 'editar') ?>">
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token ?? '') ?>">
                 <input type="hidden" name="id" id="can_id">
                 <div class="modal-header" style="background:<?= $moduloColor ?>;color:white;">
@@ -227,63 +240,120 @@ $estados = [
 
 <?php ob_start(); ?>
 <script nonce="<?= cspNonce() ?>">
-var urlCrear  = '<?= url('futbol', 'cancha', 'crear') ?>';
-var urlEditar = '<?= url('futbol', 'cancha', 'editar') ?>';
+$(function() {
+    var Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true });
+    var csrfToken      = '<?= addslashes($csrf_token ?? '') ?>';
+    var urlEliminar    = '<?= url('futbol', 'cancha', 'eliminar') ?>';
+    var urlCambiarEst  = '<?= url('futbol', 'cancha', 'cambiarEstado') ?>';
+    var urlSelSede     = '<?= url('futbol', 'sede', 'seleccionar') ?>';
 
-function abrirModal() {
-    document.getElementById('formCancha').reset();
-    document.getElementById('can_id').value = '';
-    document.getElementById('modalTitulo').innerHTML = '<i class="fas fa-futbol mr-2"></i>Nueva Cancha';
-    document.getElementById('formCancha').action = urlCrear;
-    $('#modalCancha').modal('show');
-}
+    function abrirModalNuevo() {
+        $('#formCancha')[0].reset();
+        $('#can_id').val('');
+        $('#modalTitulo').html('<i class="fas fa-futbol mr-2"></i>Nueva Cancha');
+        $('#formCancha').data('mode', 'crear');
+        $('#modalCancha').modal('show');
+    }
 
-function editarCancha(obj) {
-    document.getElementById('can_id').value        = obj.can_cancha_id;
-    document.getElementById('can_nombre').value     = obj.can_nombre || '';
-    document.getElementById('can_tipo').value       = obj.can_tipo || 'FUTBOL_11';
-    document.getElementById('can_superficie').value = obj.can_superficie || '';
-    document.getElementById('can_estado').value     = obj.can_estado || 'DISPONIBLE';
-    document.getElementById('can_capacidad').value  = obj.can_capacidad_maxima || '';
-    document.getElementById('can_dimensiones').value= obj.can_dimensiones || '';
-    document.getElementById('can_iluminacion').checked = !!parseInt(obj.can_iluminacion);
-    document.getElementById('can_techada').checked     = !!parseInt(obj.can_techada);
-    document.getElementById('can_notas').value      = obj.can_notas || '';
-    document.getElementById('modalTitulo').innerHTML = '<i class="fas fa-edit mr-2"></i>Editar Cancha';
-    document.getElementById('formCancha').action = urlEditar;
-    $('#modalCancha').modal('show');
-}
+    function abrirModalEditar(obj) {
+        $('#can_id').val(obj.can_cancha_id);
+        $('#can_nombre').val(obj.can_nombre || '');
+        $('#can_tipo').val(obj.can_tipo || 'FUTBOL_11');
+        $('#can_superficie').val(obj.can_superficie || '');
+        $('#can_estado').val(obj.can_estado || 'DISPONIBLE');
+        $('#can_capacidad').val(obj.can_capacidad_maxima || '');
+        $('#can_dimensiones').val(obj.can_dimensiones || '');
+        $('#can_iluminacion').prop('checked', !!parseInt(obj.can_iluminacion));
+        $('#can_techada').prop('checked', !!parseInt(obj.can_techada));
+        $('#can_notas').val(obj.can_notas || '');
+        $('#modalTitulo').html('<i class="fas fa-edit mr-2"></i>Editar Cancha');
+        $('#formCancha').data('mode', 'editar');
+        $('#modalCancha').modal('show');
+    }
 
-function eliminarCancha(id, nombre) {
-    Swal.fire({
-        title: '¿Eliminar cancha?',
-        html: 'Se eliminará <strong>' + nombre + '</strong>',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        confirmButtonText: 'Sí, eliminar',
-        cancelButtonText: 'Cancelar'
-    }).then(function(r) {
-        if (r.isConfirmed) window.location.href = '<?= url('futbol', 'cancha', 'eliminar') ?>&id=' + id;
+    $('#btnNuevaCancha, #btnNuevaCanchaEmpty').on('click', abrirModalNuevo);
+
+    $('#sedeFilter').on('change', function() {
+        $.post(urlSelSede, { sede_id: $(this).val(), csrf_token: csrfToken }, function() {
+            location.reload();
+        }, 'json');
     });
-}
 
-function cambiarEstado(id, estado) {
-    Swal.fire({
-        title: '¿Cambiar estado?',
-        text: 'La cancha pasará a estado: ' + estado,
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonColor: '<?= $moduloColor ?>',
-        confirmButtonText: 'Sí, cambiar',
-        cancelButtonText: 'Cancelar'
-    }).then(function(r) {
-        if (r.isConfirmed) window.location.href = '<?= url('futbol', 'cancha', 'cambiarEstado') ?>&id=' + id + '&estado=' + estado;
+    $(document).on('click', '.js-editar-cancha', function() {
+        var obj = JSON.parse($(this).attr('data-cancha'));
+        abrirModalEditar(obj);
     });
-}
 
-function filtrarPorSede(sedeId) {
-    $.post('<?= url('futbol', 'sede', 'seleccionar') ?>', { sede_id: sedeId, csrf_token: '<?= $csrf_token ?? '' ?>' }, function() { location.reload(); }, 'json');
-}
+    $(document).on('click', '.js-cambiar-estado', function() {
+        var id     = $(this).data('id');
+        var estado = $(this).data('estado');
+        var label  = estado === 'DISPONIBLE' ? 'habilitar' : 'poner en mantenimiento';
+        Swal.fire({
+            title: '¿Cambiar estado?',
+            text: 'La cancha pasará a: ' + estado,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '<?= $moduloColor ?>',
+            confirmButtonText: 'Sí, ' + label,
+            cancelButtonText: 'Cancelar'
+        }).then(function(r) {
+            if (!r.isConfirmed) return;
+            $.post(urlCambiarEst, { id: id, estado: estado, csrf_token: csrfToken }, function(res) {
+                if (res.success) {
+                    Toast.fire({ icon: 'success', title: res.message });
+                    setTimeout(function() { location.reload(); }, 1200);
+                } else {
+                    Swal.fire('Error', res.message, 'error');
+                }
+            }, 'json').fail(function() {
+                Toast.fire({ icon: 'error', title: 'Error de conexión' });
+            });
+        });
+    });
+
+    $(document).on('click', '.js-eliminar-cancha', function() {
+        var id     = $(this).data('id');
+        var nombre = $(this).data('nombre');
+        Swal.fire({
+            title: '¿Eliminar cancha?',
+            html: 'Se eliminará <strong>' + $('<div>').text(nombre).html() + '</strong>',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then(function(r) {
+            if (!r.isConfirmed) return;
+            $.post(urlEliminar, { id: id, csrf_token: csrfToken }, function(res) {
+                if (res.success) {
+                    Toast.fire({ icon: 'success', title: res.message });
+                    setTimeout(function() { location.reload(); }, 1200);
+                } else {
+                    Swal.fire('Error', res.message, 'error');
+                }
+            }, 'json').fail(function() {
+                Toast.fire({ icon: 'error', title: 'Error de conexión' });
+            });
+        });
+    });
+
+    $('#formCancha').on('submit', function(e) {
+        e.preventDefault();
+        var mode = $(this).data('mode') || 'crear';
+        var url  = mode === 'editar' ? $(this).data('url-editar') : $(this).data('url-crear');
+        var $btn = $(this).find('[type=submit]').prop('disabled', true);
+        $.post(url, $(this).serialize(), function(res) {
+            if (res.success) {
+                $('#modalCancha').modal('hide');
+                Toast.fire({ icon: 'success', title: res.message });
+                setTimeout(function() { location.reload(); }, 1200);
+            } else {
+                Toast.fire({ icon: 'error', title: res.message });
+            }
+        }, 'json').fail(function() {
+            Toast.fire({ icon: 'error', title: 'Error de comunicación' });
+        }).always(function() { $btn.prop('disabled', false); });
+    });
+});
 </script>
 <?php $scripts = ob_get_clean(); ?>

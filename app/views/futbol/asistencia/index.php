@@ -72,7 +72,7 @@ $grupoId = $grupoId ?? 0;
                     </div>
                     <div class="col-md-2 d-flex align-items-end">
                         <div class="form-group w-100">
-                            <button type="button" class="btn btn-success btn-block" onclick="cargarAsistencia()">
+                            <button type="button" class="btn btn-success btn-block" id="btnCargarAsistencia">
                                 <i class="fas fa-search"></i> Cargar
                             </button>
                         </div>
@@ -84,13 +84,13 @@ $grupoId = $grupoId ?? 0;
         <!-- Acciones masivas -->
         <div class="row mb-3" id="accionesMasivas" style="display: none;">
             <div class="col-12">
-                <button type="button" class="btn btn-outline-success btn-sm" onclick="marcarTodos('PRESENTE')">
+                <button type="button" class="btn btn-outline-success btn-sm js-marcar-todos" data-estado="PRESENTE">
                     <i class="fas fa-check-double"></i> Marcar todos presente
                 </button>
-                <button type="button" class="btn btn-outline-danger btn-sm ml-2" onclick="marcarTodos('AUSENTE')">
+                <button type="button" class="btn btn-outline-danger btn-sm ml-2 js-marcar-todos" data-estado="AUSENTE">
                     <i class="fas fa-times"></i> Marcar todos ausente
                 </button>
-                <button type="button" class="btn btn-primary btn-sm float-right" onclick="guardarAsistencia()">
+                <button type="button" class="btn btn-primary btn-sm float-right" id="btnGuardarAsistencia">
                     <i class="fas fa-save"></i> Guardar Asistencia
                 </button>
             </div>
@@ -139,8 +139,11 @@ $grupoId = $grupoId ?? 0;
                                                    placeholder="Observaciones...">
                                         </td>
                                         <td>
-                                            <button type="button" class="btn btn-sm btn-info" title="Editar detalle"
-                                                    onclick="editarAsistenciaDetalle({alumno_id:'<?= $asist['alu_alumno_id'] ?? '' ?>', alumno_nombre:'<?= htmlspecialchars(addslashes($asist['nombre'] ?? '')) ?>', estado:'<?= $asist['estado_asistencia'] ?? 'PRESENTE' ?>', observaciones:'<?= htmlspecialchars(addslashes($asist['fas_observacion'] ?? '')) ?>'})">
+                                            <button type="button" class="btn btn-sm btn-info js-editar-detalle" title="Editar detalle"
+                                                    data-alumno-id="<?= $asist['alu_alumno_id'] ?? '' ?>"
+                                                    data-nombre="<?= htmlspecialchars($asist['nombre'] ?? '', ENT_QUOTES) ?>"
+                                                    data-estado="<?= htmlspecialchars($asist['estado_asistencia'] ?? 'PRESENTE', ENT_QUOTES) ?>"
+                                                    data-obs="<?= htmlspecialchars($asist['fas_observacion'] ?? '', ENT_QUOTES) ?>">
                                                 <i class="fas fa-edit"></i>
                                             </button>
                                         </td>
@@ -220,13 +223,33 @@ $(document).ready(function() {
     $('.estado-asistencia').each(function() { colorearEstado($(this)); });
     $('.estado-asistencia').on('change', function() { colorearEstado($(this)); });
 
+    // Botón Cargar
+    $('#btnCargarAsistencia').on('click', cargarAsistencia);
+
+    // Botones marcar todos
+    $(document).on('click', '.js-marcar-todos', function() {
+        marcarTodos($(this).data('estado'));
+    });
+
+    // Botón Guardar Asistencia
+    $('#btnGuardarAsistencia').on('click', guardarAsistencia);
+
+    // Botón editar detalle (delegación para filas dinámicas)
+    $(document).on('click', '.js-editar-detalle', function() {
+        editarAsistenciaDetalle({
+            alumno_id:    $(this).data('alumno-id'),
+            alumno_nombre: $(this).data('nombre'),
+            estado:       $(this).data('estado'),
+            observaciones: $(this).data('obs')
+        });
+    });
+
     // Submit detalle
     $('#formAsistenciaDetalle').on('submit', function(e) {
         e.preventDefault();
         var alumnoId = $('#det_alumno_id').val();
         var estado = $('#det_estado').val();
         var obs = $('#det_observaciones').val();
-        // Actualizar en la tabla
         $('select.estado-asistencia[data-alumno-id="' + alumnoId + '"]').val(estado).trigger('change');
         $('input.obs-asistencia[data-alumno-id="' + alumnoId + '"]').val(obs);
         $('#modalAsistencia').modal('hide');

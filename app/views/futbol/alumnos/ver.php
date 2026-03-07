@@ -81,15 +81,6 @@ $moduloColor   = $modulo_actual['color'] ?? '#22C55E';
                             <li class="mb-2"><i class="fas fa-venus-mars mr-2 text-info"></i>
                                 <?= ($a['alu_genero'] ?? '') === 'M' ? 'Masculino' : (($a['alu_genero'] ?? '') === 'F' ? 'Femenino' : '—') ?>
                             </li>
-                            <li class="mb-2"><i class="fas fa-envelope mr-2 text-info"></i>
-                                <?= htmlspecialchars($a['alu_email'] ?? '—') ?>
-                            </li>
-                            <li class="mb-2"><i class="fas fa-phone mr-2 text-info"></i>
-                                <?= htmlspecialchars($a['alu_telefono'] ?? '—') ?>
-                            </li>
-                            <li class="mb-2"><i class="fas fa-map-marker-alt mr-2 text-info"></i>
-                                <?= htmlspecialchars($a['alu_direccion'] ?? '—') ?>
-                            </li>
                             <?php if (!empty($a['sede_nombre'])): ?>
                             <li><i class="fas fa-building mr-2 text-info"></i>
                                 <?= htmlspecialchars($a['sede_nombre']) ?>
@@ -341,7 +332,7 @@ $moduloColor   = $modulo_actual['color'] ?? '#22C55E';
                     <div class="card-header">
                         <h3 class="card-title"><i class="fas fa-clipboard-list mr-2"></i>Inscripciones</h3>
                         <div class="card-tools">
-                            <a href="<?= url('futbol', 'inscripcion', 'crear') ?>&alumno_id=<?= $a['alu_alumno_id'] ?? '' ?>" class="btn btn-sm btn-outline-success">
+                            <a href="<?= url('futbol', 'inscripcion', 'index') ?>&alumno_id=<?= $a['alu_alumno_id'] ?? '' ?>" class="btn btn-sm btn-outline-success">
                                 <i class="fas fa-plus mr-1"></i>Nueva Inscripción
                             </a>
                         </div>
