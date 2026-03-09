@@ -81,7 +81,7 @@ if (!empty($pagos)) {
         <!-- Filtro y botón -->
         <div class="row mb-3">
             <div class="col-md-3">
-                <select class="form-control" id="filtroSede" onchange="filtrarPorSede(this.value)">
+                <select class="form-control" id="filtroSede">
                     <option value="">Todas las sedes</option>
                     <?php if (!empty($sedes)): ?>
                         <?php foreach ($sedes as $sede): ?>
@@ -93,7 +93,7 @@ if (!empty($pagos)) {
                 </select>
             </div>
             <div class="col-md-9 text-right">
-                <button type="button" class="btn btn-success" data-toggle="modal" data-target="#modalPago" onclick="limpiarFormulario()">
+                <button type="button" class="btn btn-success" id="btnNuevoPago">
                     <i class="fas fa-plus"></i> Nuevo Pago
                 </button>
             </div>
@@ -171,17 +171,17 @@ if (!empty($pagos)) {
                                         </td>
                                         <td>
                                             <div class="btn-group btn-group-sm">
-                                                <button type="button" class="btn btn-info" title="Editar"
-                                                    onclick='editarPago(<?= json_encode($pago) ?>)'>
+                                                <button type="button" class="btn btn-info js-editar-pago" title="Editar"
+                                                    data-pago="<?= htmlspecialchars(json_encode($pago, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_QUOT | JSON_HEX_APOS), ENT_QUOTES) ?>">
                                                     <i class="fas fa-edit"></i>
                                                 </button>
-                                                <button type="button" class="btn btn-success" title="Comprobante"
-                                                    onclick="generarComprobante(<?= $pago['fpg_pago_id'] ?? 0 ?>)">
+                                                <button type="button" class="btn btn-success js-comprobante" title="Comprobante"
+                                                    data-id="<?= $pago['fpg_pago_id'] ?? 0 ?>">
                                                     <i class="fas fa-file-invoice-dollar"></i>
                                                 </button>
                                                 <?php if (($pago['fpg_estado'] ?? '') !== 'ANULADO'): ?>
-                                                    <button type="button" class="btn btn-warning" title="Anular"
-                                                        onclick="anularPago(<?= $pago['fpg_pago_id'] ?? 0 ?>)">
+                                                    <button type="button" class="btn btn-warning js-anular" title="Anular"
+                                                        data-id="<?= $pago['fpg_pago_id'] ?? 0 ?>">
                                                         <i class="fas fa-ban"></i>
                                                     </button>
                                                 <?php endif; ?>
@@ -196,7 +196,7 @@ if (!empty($pagos)) {
                     <div class="text-center py-5">
                         <i class="fas fa-money-bill-wave fa-3x opacity-50 text-muted mb-3"></i>
                         <p class="text-muted">No hay pagos registrados.</p>
-                        <button class="btn btn-success btn-sm" data-toggle="modal" data-target="#modalPago" onclick="limpiarFormulario()">
+                        <button class="btn btn-success btn-sm" id="btnNuevoPagoEmpty">
                             <i class="fas fa-plus"></i> Registrar primer pago
                         </button>
                     </div>
@@ -215,7 +215,7 @@ if (!empty($pagos)) {
                 <h5 class="modal-title" id="modalPagoTitle">
                     <i class="<?= $moduloIcon ?>"></i> Nuevo Pago
                 </h5>
-                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar" onclick="cerrarModalPago()">
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -316,7 +316,7 @@ if (!empty($pagos)) {
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="cerrarModalPago()">Cancelar</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
                     <button type="submit" class="btn btn-success">
                         <i class="fas fa-save"></i> Guardar
                     </button>
@@ -337,6 +337,23 @@ $(document).ready(function() {
             responsive: true
         });
     }
+
+    // Filtro sede
+    $('#filtroSede').on('change', function() { filtrarPorSede($(this).val()); });
+
+    // Nuevo pago
+    $('#btnNuevoPago, #btnNuevoPagoEmpty').on('click', limpiarFormulario);
+
+    // Acciones de la tabla
+    $(document).on('click', '.js-editar-pago', function() {
+        editarPago($(this).data('pago'));
+    });
+    $(document).on('click', '.js-comprobante', function() {
+        generarComprobante($(this).data('id'));
+    });
+    $(document).on('click', '.js-anular', function() {
+        anularPago($(this).data('id'));
+    });
 
     // Select2
     $('#fpg_alumno_id').select2({

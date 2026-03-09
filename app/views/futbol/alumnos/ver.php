@@ -45,8 +45,10 @@ $moduloColor   = $modulo_actual['color'] ?? '#22C55E';
                 <div class="card card-outline" style="border-top-color:<?= $moduloColor ?>">
                     <div class="card-body text-center">
                         <div class="mb-3">
-                            <?php if (!empty($a['alu_foto'])): ?>
-                            <img src="<?= htmlspecialchars($a['alu_foto']) ?>" alt="Foto" class="img-circle elevation-2" style="width:100px;height:100px;object-fit:cover;">
+                            <?php if (!empty($foto_alumno['arc_id'])): ?>
+                            <img src="<?= \Config::baseUrl('archivo.php?id=' . (int)$foto_alumno['arc_id']) ?>"
+                                 alt="Foto" class="img-circle elevation-2"
+                                 style="width:100px;height:100px;object-fit:cover;">
                             <?php else: ?>
                             <i class="fas fa-user-circle fa-5x" style="color:<?= $moduloColor ?>"></i>
                             <?php endif; ?>

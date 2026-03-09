@@ -4528,6 +4528,42 @@ CREATE TABLE IF NOT EXISTS `store_venta_pagos` (
 -- --------------------------------------------------------
 
 --
+-- Tabla `core_archivos`
+-- Repositorio central de archivos para todo el sistema DigiSports
+--
+
+CREATE TABLE IF NOT EXISTS `core_archivos` (
+  `arc_id`                 int          NOT NULL AUTO_INCREMENT,
+  `arc_tenant_id`          int          NOT NULL                  COMMENT 'Tenant propietario del archivo',
+  `arc_entidad`            varchar(50)  NOT NULL                  COMMENT 'Módulo/entidad: alumnos, entrenadores, academias, pagos, documentos',
+  `arc_entidad_id`         int          NOT NULL                  COMMENT 'PK del registro al que pertenece',
+  `arc_categoria`          varchar(50)  NOT NULL                  COMMENT 'Tipo de archivo: fotos, documentos, logos, comprobantes',
+  `arc_nombre_original`    varchar(255) NOT NULL                  COMMENT 'Nombre original del archivo subido por el usuario',
+  `arc_nombre_almacenado`  varchar(255) NOT NULL                  COMMENT 'Nombre único con UUID en disco',
+  `arc_ruta_relativa`      varchar(500) NOT NULL                  COMMENT 'Ruta relativa desde storage/: tenants/{id}/alumnos/fotos/...',
+  `arc_mime_type`          varchar(100) NOT NULL                  COMMENT 'MIME type validado por finfo (no $_FILES["type"])',
+  `arc_extension`          varchar(10)  NOT NULL                  COMMENT 'Extensión en minúsculas: jpg, png, pdf, etc.',
+  `arc_tamanio_bytes`      int          NOT NULL DEFAULT 0        COMMENT 'Tamaño del archivo en bytes',
+  `arc_ancho_px`           smallint     DEFAULT NULL              COMMENT 'Ancho en píxeles (solo imágenes)',
+  `arc_alto_px`            smallint     DEFAULT NULL              COMMENT 'Alto en píxeles (solo imágenes)',
+  `arc_storage_driver`     varchar(20)  NOT NULL DEFAULT 'local'  COMMENT 'Driver de almacenamiento: local, s3, r2',
+  `arc_storage_key`        varchar(500) DEFAULT NULL              COMMENT 'Clave/path en el storage remoto (para S3/R2)',
+  `arc_es_principal`       tinyint(1)   NOT NULL DEFAULT 0        COMMENT '1 = archivo principal (ej: foto de perfil activa)',
+  `arc_estado`             enum('activo','eliminado') NOT NULL DEFAULT 'activo',
+  `arc_subido_por`         int          NOT NULL                  COMMENT 'usu_usuario_id del usuario que subió el archivo',
+  `arc_fecha_subida`       timestamp    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `arc_fecha_eliminacion`  timestamp    DEFAULT NULL              COMMENT 'Soft delete timestamp',
+  PRIMARY KEY (`arc_id`),
+  KEY `idx_arc_tenant`          (`arc_tenant_id`),
+  KEY `idx_arc_entidad`         (`arc_entidad`, `arc_entidad_id`),
+  KEY `idx_arc_tenant_entidad`  (`arc_tenant_id`, `arc_entidad`, `arc_entidad_id`),
+  KEY `idx_arc_estado`          (`arc_estado`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+  COMMENT='Repositorio central de archivos multimedia del sistema';
+
+-- --------------------------------------------------------
+
+--
 -- Estructura Stand-in para la vista `usuarios`
 -- (Véase abajo para la vista actual)
 --

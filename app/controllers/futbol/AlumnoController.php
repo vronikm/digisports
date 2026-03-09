@@ -9,6 +9,7 @@
 namespace App\Controllers\Futbol;
 
 require_once BASE_PATH . '/app/controllers/ModuleController.php';
+require_once BASE_PATH . '/app/services/FileManager.php';
 
 class AlumnoController extends \App\Controllers\ModuleController {
 
@@ -51,13 +52,20 @@ class AlumnoController extends \App\Controllers\ModuleController {
                        fct.fct_edad_min, fct.fct_edad_max, fct.fct_color AS categoria_color,
                        s.sed_nombre AS sede_nombre,
                        fg.fgr_nombre AS grupo_nombre, fg.fgr_color AS grupo_color,
-                       fin.fin_estado AS estado_inscripcion
+                       fin.fin_estado AS estado_inscripcion,
+                       arc.arc_id AS foto_arc_id
                 FROM alumnos a
                 LEFT JOIN futbol_ficha_alumno ffa ON ffa.ffa_alumno_id = a.alu_alumno_id AND ffa.ffa_tenant_id = a.alu_tenant_id
                 LEFT JOIN futbol_categorias fct ON ffa.ffa_categoria_id = fct.fct_categoria_id
                 LEFT JOIN instalaciones_sedes s ON a.alu_sede_id = s.sed_sede_id
                 LEFT JOIN futbol_inscripciones fin ON fin.fin_alumno_id = a.alu_alumno_id AND fin.fin_tenant_id = a.alu_tenant_id AND fin.fin_estado = 'ACTIVA'
                 LEFT JOIN futbol_grupos fg ON fin.fin_grupo_id = fg.fgr_grupo_id AND fg.fgr_tenant_id = a.alu_tenant_id
+                LEFT JOIN core_archivos arc ON arc.arc_entidad = 'alumnos'
+                       AND arc.arc_entidad_id = a.alu_alumno_id
+                       AND arc.arc_tenant_id  = a.alu_tenant_id
+                       AND arc.arc_categoria  = 'fotos'
+                       AND arc.arc_es_principal = 1
+                       AND arc.arc_estado = 'activo'
                 WHERE {$where}
                 ORDER BY a.alu_apellidos, a.alu_nombres
                 LIMIT 300
@@ -263,6 +271,7 @@ class AlumnoController extends \App\Controllers\ModuleController {
                 $this->viewData['categorias'] = $this->getCategoriasActivas();
                 $this->viewData['sedes'] = $this->getSedesActivas();
                 $this->viewData['campos_ficha'] = $this->getCamposActivos();
+                $this->viewData['foto_alumno'] = $this->getFotoAlumno($id);
                 $this->viewData['csrf_token'] = \Security::generateCsrfToken();
                 $this->viewData['title'] = 'Editar Alumno';
                 $this->viewData['sede_activa'] = $_SESSION['futbol_sede_id'] ?? null;
@@ -556,6 +565,7 @@ class AlumnoController extends \App\Controllers\ModuleController {
             $this->viewData['inscripciones'] = $inscripciones;
             $this->viewData['evaluaciones'] = $evaluaciones;
             $this->viewData['asistencia_resumen'] = $asistencia;
+            $this->viewData['foto_alumno'] = $this->getFotoAlumno($id);
             $this->viewData['csrf_token'] = \Security::generateCsrfToken();
             $this->viewData['title'] = 'Ficha del Alumno';
             $this->renderModule('futbol/alumnos/ver', $this->viewData);
@@ -809,7 +819,113 @@ class AlumnoController extends \App\Controllers\ModuleController {
         }
     }
 
+    // =========== FOTO DEL ALUMNO ===========
+
+    /**
+     * Subir/reemplazar foto del alumno (AJAX, multipart/form-data)
+     * POST: alumno_id, csrf_token, foto (FILE)
+     */
+    public function subirFoto() {
+        try {
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+                return $this->jsonResponse(['success' => false, 'message' => 'POST requerido']);
+            }
+            if (!\Security::validateCsrfToken($this->post('csrf_token'))) {
+                return $this->jsonResponse(['success' => false, 'message' => 'Token inválido']);
+            }
+
+            $alumnoId = (int)($this->post('alumno_id') ?? 0);
+            if (!$alumnoId) {
+                return $this->jsonResponse(['success' => false, 'message' => 'ID de alumno requerido']);
+            }
+
+            // Verificar que el alumno pertenece a este tenant
+            $stmCheck = $this->db->prepare("SELECT alu_alumno_id FROM alumnos WHERE alu_alumno_id = ? AND alu_tenant_id = ? LIMIT 1");
+            $stmCheck->execute([$alumnoId, $this->tenantId]);
+            if (!$stmCheck->fetchColumn()) {
+                return $this->jsonResponse(['success' => false, 'message' => 'Alumno no encontrado']);
+            }
+
+            if (empty($_FILES['foto']) || $_FILES['foto']['error'] === UPLOAD_ERR_NO_FILE) {
+                return $this->jsonResponse(['success' => false, 'message' => 'No se envió ningún archivo']);
+            }
+
+            $userId = (int)($_SESSION['user_id'] ?? 0);
+            $fm = new \FileManager($this->db, $this->tenantId, $userId);
+
+            $result = $fm->uploadImage($_FILES['foto'], 'alumnos', $alumnoId, 'fotos', true);
+
+            if (!$result['success']) {
+                return $this->jsonResponse(['success' => false, 'message' => $result['error']]);
+            }
+
+            // Actualizar alu_foto con la ruta relativa (compatibilidad con código legado)
+            $this->db->prepare("UPDATE alumnos SET alu_foto = ? WHERE alu_alumno_id = ? AND alu_tenant_id = ?")
+                ->execute([$result['ruta'], $alumnoId, $this->tenantId]);
+
+            return $this->jsonResponse([
+                'success'  => true,
+                'message'  => 'Foto actualizada correctamente',
+                'arc_id'   => $result['arc_id'],
+                'foto_url' => \Config::baseUrl('archivo.php?id=' . $result['arc_id']),
+            ]);
+
+        } catch (\Exception $e) {
+            $this->logError("Error subiendo foto alumno: " . $e->getMessage());
+            return $this->jsonResponse(['success' => false, 'message' => 'Error al subir la foto']);
+        }
+    }
+
+    /**
+     * Eliminar foto del alumno (AJAX POST)
+     * POST: alumno_id, arc_id, csrf_token
+     */
+    public function eliminarFoto() {
+        try {
+            if (!\Security::validateCsrfToken($this->post('csrf_token'))) {
+                return $this->jsonResponse(['success' => false, 'message' => 'Token inválido']);
+            }
+
+            $alumnoId = (int)($this->post('alumno_id') ?? 0);
+            $arcId    = (int)($this->post('arc_id') ?? 0);
+            if (!$alumnoId || !$arcId) {
+                return $this->jsonResponse(['success' => false, 'message' => 'Datos incompletos']);
+            }
+
+            $userId = (int)($_SESSION['user_id'] ?? 0);
+            $fm = new \FileManager($this->db, $this->tenantId, $userId);
+
+            if (!$fm->deleteFile($arcId)) {
+                return $this->jsonResponse(['success' => false, 'message' => 'No se pudo eliminar la foto']);
+            }
+
+            // Limpiar alu_foto si era la foto activa
+            $this->db->prepare("UPDATE alumnos SET alu_foto = NULL WHERE alu_alumno_id = ? AND alu_tenant_id = ?")
+                ->execute([$alumnoId, $this->tenantId]);
+
+            return $this->jsonResponse(['success' => true, 'message' => 'Foto eliminada']);
+
+        } catch (\Exception $e) {
+            $this->logError("Error eliminando foto alumno: " . $e->getMessage());
+            return $this->jsonResponse(['success' => false, 'message' => 'Error al eliminar la foto']);
+        }
+    }
+
     // =========== HELPERS PRIVADOS ===========
+
+    /**
+     * Obtener la foto principal de un alumno desde core_archivos
+     * @return array|null  Fila de core_archivos con arc_id, arc_ruta_relativa, etc.
+     */
+    private function getFotoAlumno(int $alumnoId): ?array {
+        try {
+            $userId = (int)($_SESSION['user_id'] ?? 0);
+            $fm = new \FileManager($this->db, $this->tenantId, $userId);
+            return $fm->getPrincipal('alumnos', $alumnoId, 'fotos');
+        } catch (\Exception $e) {
+            return null;
+        }
+    }
 
     /**
      * Obtener cliente por ID (descifra datos sensibles)

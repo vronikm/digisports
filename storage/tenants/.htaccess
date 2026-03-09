@@ -1,0 +1,12 @@
+# DigiSports — Protección directorio storage/tenants/
+# Bloquea acceso directo web a todos los archivos almacenados.
+# Los archivos se sirven únicamente a través de public/archivo.php
+
+# Denegar acceso a todo
+Options -Indexes
+Require all denied
+
+# Bloquear ejecución de scripts PHP
+<FilesMatch "\.(php|php3|php4|php5|phtml|pl|py|jsp|asp|sh|cgi)$">
+    Require all denied
+</FilesMatch>

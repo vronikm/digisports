@@ -143,8 +143,8 @@ $moduloColor = $modulo_actual['color'] ?? '#22C55E';
                             <tr>
                                 <td class="text-muted"><?= $i + 1 ?></td>
                                 <td>
-                                    <?php if (!empty($a['alu_foto'])): ?>
-                                    <img src="<?= htmlspecialchars($a['alu_foto']) ?>" alt="Foto" class="img-circle" width="32" height="32" style="object-fit:cover;">
+                                    <?php if (!empty($a['foto_arc_id'])): ?>
+                                    <img src="<?= \Config::baseUrl('archivo.php?id=' . (int)$a['foto_arc_id']) ?>" alt="Foto" class="img-circle" width="32" height="32" style="object-fit:cover;">
                                     <?php else: ?>
                                     <span class="img-circle bg-secondary d-inline-flex align-items-center justify-content-center" style="width:32px;height:32px;"><i class="fas fa-user text-white" style="font-size:.75rem;"></i></span>
                                     <?php endif; ?>

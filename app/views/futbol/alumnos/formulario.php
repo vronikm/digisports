@@ -12,6 +12,7 @@ $sedes        = $sedes ?? [];
 $sedeActiva   = $sede_activa ?? null;
 $editando     = !empty($alumno);
 $moduloColor  = $modulo_actual['color'] ?? '#22C55E';
+$fotoAlumno   = $foto_alumno ?? null;  // array de core_archivos o null
 ?>
 
 <div class="content-header">
@@ -369,6 +370,68 @@ $moduloColor  = $modulo_actual['color'] ?? '#22C55E';
 
                 <!-- ========== COLUMNA LATERAL ========== -->
                 <div class="col-lg-4">
+
+                    <!-- Foto del Alumno -->
+                    <div class="card card-outline" style="border-top-color:<?= $moduloColor ?>">
+                        <div class="card-header">
+                            <h3 class="card-title"><i class="fas fa-camera mr-2"></i>Foto del Alumno</h3>
+                        </div>
+                        <div class="card-body text-center">
+                            <!-- Preview de la foto -->
+                            <div id="fotoPreviewContainer" style="margin-bottom:12px;">
+                                <?php if ($fotoAlumno): ?>
+                                <img id="fotoPreview"
+                                     src="<?= \Config::baseUrl('archivo.php?id=' . $fotoAlumno['arc_id']) ?>"
+                                     alt="Foto del alumno"
+                                     class="img-circle elevation-2"
+                                     style="width:120px;height:120px;object-fit:cover;">
+                                <?php else: ?>
+                                <div id="fotoPlaceholder" class="bg-secondary"
+                                     style="display:flex;align-items:center;justify-content:center;width:120px;height:120px;border-radius:50%;margin:0 auto;">
+                                    <i class="fas fa-user fa-3x text-white"></i>
+                                </div>
+                                <img id="fotoPreview" src="" alt="" class="img-circle elevation-2"
+                                     style="width:120px;height:120px;object-fit:cover;display:none;">
+                                <?php endif; ?>
+                            </div>
+
+                            <!-- Input oculto -->
+                            <input type="file" id="inputFoto" accept="image/jpeg,image/png,image/webp"
+                                   style="display:none;">
+
+                            <div class="d-flex justify-content-center" style="gap:6px;">
+                                <button type="button" class="btn btn-sm btn-outline-secondary" id="btnSeleccionarFoto">
+                                    <i class="fas fa-image mr-1"></i>
+                                    <?= $fotoAlumno ? 'Cambiar' : 'Seleccionar' ?>
+                                </button>
+                                <?php if ($fotoAlumno): ?>
+                                <button type="button" class="btn btn-sm btn-outline-danger" id="btnEliminarFoto"
+                                        data-arc-id="<?= $fotoAlumno['arc_id'] ?>">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                                <?php endif; ?>
+                            </div>
+
+                            <!-- Acciones tras selección -->
+                            <div id="fotoAcciones" style="display:none; margin-top:10px;">
+                                <?php if ($editando): ?>
+                                <button type="button" class="btn btn-sm btn-success mr-1" id="btnSubirFoto">
+                                    <i class="fas fa-upload mr-1"></i>Subir Foto
+                                </button>
+                                <?php else: ?>
+                                <small class="text-info d-block mb-2">
+                                    <i class="fas fa-info-circle mr-1"></i>Se guardará al registrar al alumno
+                                </small>
+                                <?php endif; ?>
+                                <button type="button" class="btn btn-sm btn-secondary" id="btnCancelarFoto">
+                                    Cancelar
+                                </button>
+                            </div>
+
+                            <div id="fotoFeedback" class="mt-2 small"></div>
+                        </div>
+                    </div>
+
                     <!-- Sede -->
                     <?php if (!empty($sedes)): ?>
                     <div class="card card-outline" style="border-top-color:<?= $moduloColor ?>">
@@ -1254,6 +1317,25 @@ function guardarAlumno(e) {
         dataType: 'json',
         success: function(res) {
             if (res.success) {
+                // Si es nuevo alumno y hay foto pendiente, subirla antes de redirigir
+                if (!esEdicion && typeof window._fotoGetSelectedFile === 'function' && window._fotoGetSelectedFile()) {
+                    btn.html('<i class="fas fa-spinner fa-spin mr-2"></i>Subiendo foto...');
+                    window._fotoUploadParaNuevoAlumno(res.alumno_id, function(fotoError) {
+                        var txt = fotoError
+                            ? 'Alumno registrado. No se pudo subir la foto: ' + fotoError
+                            : 'Alumno registrado con foto correctamente';
+                        Swal.fire({
+                            icon: fotoError ? 'warning' : 'success',
+                            title: 'Alumno Registrado',
+                            text: txt,
+                            timer: 2500,
+                            showConfirmButton: false
+                        }).then(function() {
+                            window.location.href = '<?= url('futbol', 'alumno', 'index') ?>';
+                        });
+                    });
+                    return;
+                }
                 Swal.fire({
                     icon: 'success',
                     title: esEdicion ? 'Alumno Actualizado' : 'Alumno Registrado',
@@ -1275,5 +1357,207 @@ function guardarAlumno(e) {
         }
     });
 }
+
+// ===================== FOTO DEL ALUMNO =====================
+(function() {
+    var alumnoId   = <?= (int)($alumno['alu_alumno_id'] ?? 0) ?>; // 0 en modo crear; se asigna tras guardar
+    var csrfToken  = '<?= htmlspecialchars($csrf_token ?? '', ENT_QUOTES) ?>';
+    var urlSubir   = '<?= url('futbol', 'alumno', 'subirFoto') ?>';
+    var urlEliminar= '<?= url('futbol', 'alumno', 'eliminarFoto') ?>';
+    var selectedFile = null;
+
+    $('#btnSeleccionarFoto').on('click', function() { $('#inputFoto').click(); });
+
+    $('#inputFoto').on('change', function() {
+        var file = this.files[0];
+        if (!file) return;
+
+        // Validación client-side (5 MB)
+        if (file.size > 5 * 1024 * 1024) {
+            mostrarFeedback('El archivo supera el límite de 5 MB', 'text-danger');
+            return;
+        }
+
+        selectedFile = file;
+        // Preview local
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            $('#fotoPlaceholder').hide();
+            $('#fotoPreview').attr('src', e.target.result).show();
+        };
+        reader.readAsDataURL(file);
+        $('#fotoAcciones').show();
+        mostrarFeedback('');
+    });
+
+    $('#btnCancelarFoto').on('click', function() {
+        selectedFile = null;
+        $('#inputFoto').val('');
+        $('#fotoAcciones').hide();
+        mostrarFeedback('');
+    });
+
+    $('#btnSubirFoto').on('click', function() {
+        if (!selectedFile) return;
+        var btn = $(this);
+        btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i>Subiendo...');
+
+        var fd = new FormData();
+        fd.append('csrf_token', csrfToken);
+        fd.append('alumno_id', alumnoId);
+        fd.append('foto', selectedFile);
+
+        $.ajax({
+            url: urlSubir,
+            type: 'POST',
+            data: fd,
+            processData: false,
+            contentType: false,
+            dataType: 'json',
+            success: function(res) {
+                btn.prop('disabled', false).html('<i class="fas fa-upload mr-1"></i>Subir Foto');
+                if (res.success) {
+                    $('#fotoAcciones').hide();
+                    mostrarFeedback('');
+                    selectedFile = null;
+                    // Actualizar preview al URL real del servidor
+                    $('#fotoPlaceholder').hide();
+                    $('#fotoPreview').attr('src', res.foto_url).show();
+                    // Agregar botón eliminar si no existía
+                    if (!$('#btnEliminarFoto').length) {
+                        $('<button type="button" class="btn btn-sm btn-outline-danger ml-1" id="btnEliminarFoto"><i class="fas fa-trash"></i></button>')
+                            .data('arc-id', res.arc_id)
+                            .insertAfter('#btnSeleccionarFoto');
+                        bindEliminarFoto();
+                    } else {
+                        $('#btnEliminarFoto').data('arc-id', res.arc_id);
+                    }
+                    $('#btnSeleccionarFoto').html('<i class="fas fa-image mr-1"></i>Cambiar');
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'success',
+                        title: 'Foto actualizada correctamente',
+                        showConfirmButton: false,
+                        timer: 3000,
+                        timerProgressBar: true
+                    });
+                } else {
+                    mostrarFeedback(res.message || 'Error al subir la foto', 'text-danger');
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'error',
+                        title: res.message || 'Error al subir la foto',
+                        showConfirmButton: false,
+                        timer: 4000,
+                        timerProgressBar: true
+                    });
+                }
+            },
+            error: function() {
+                btn.prop('disabled', false).html('<i class="fas fa-upload mr-1"></i>Subir Foto');
+                mostrarFeedback('Error de comunicación con el servidor', 'text-danger');
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'error',
+                    title: 'Error de comunicación con el servidor',
+                    showConfirmButton: false,
+                    timer: 4000,
+                    timerProgressBar: true
+                });
+            }
+        });
+    });
+
+    function bindEliminarFoto() {
+        $('#btnEliminarFoto').off('click').on('click', function() {
+            var arcId = $(this).data('arc-id');
+
+            Swal.fire({
+                title: '¿Eliminar foto?',
+                text: 'Se eliminará la foto del alumno. Esta acción no se puede deshacer.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#e74c3c',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: '<i class="fas fa-trash mr-1"></i>Sí, eliminar',
+                cancelButtonText: 'Cancelar',
+                reverseButtons: true
+            }).then(function(result) {
+                if (!result.isConfirmed) return;
+
+                $.ajax({
+                    url: urlEliminar,
+                    type: 'POST',
+                    data: { csrf_token: csrfToken, alumno_id: alumnoId, arc_id: arcId },
+                    dataType: 'json',
+                    success: function(res) {
+                        if (res.success) {
+                            $('#fotoPreview').attr('src', '').hide();
+                            $('#fotoPlaceholder').show();
+                            $('#btnEliminarFoto').remove();
+                            $('#btnSeleccionarFoto').html('<i class="fas fa-image mr-1"></i>Seleccionar');
+                            mostrarFeedback('');
+                            Swal.fire({
+                                toast: true,
+                                position: 'top-end',
+                                icon: 'success',
+                                title: 'Foto eliminada correctamente',
+                                showConfirmButton: false,
+                                timer: 3000,
+                                timerProgressBar: true
+                            });
+                        } else {
+                            Swal.fire({
+                                toast: true,
+                                position: 'top-end',
+                                icon: 'error',
+                                title: res.message || 'Error al eliminar la foto',
+                                showConfirmButton: false,
+                                timer: 4000,
+                                timerProgressBar: true
+                            });
+                        }
+                    },
+                    error: function() {
+                        Swal.fire({
+                            toast: true,
+                            position: 'top-end',
+                            icon: 'error',
+                            title: 'Error de comunicación con el servidor',
+                            showConfirmButton: false,
+                            timer: 4000,
+                            timerProgressBar: true
+                        });
+                    }
+                });
+            });
+        });
+    }
+    bindEliminarFoto();
+
+    function mostrarFeedback(msg, cls) {
+        $('#fotoFeedback').text(msg).attr('class', 'mt-2 small ' + (cls || ''));
+    }
+
+    // Exponer función para subir foto al crear un nuevo alumno (llamada desde guardarAlumno)
+    window._fotoGetSelectedFile = function() { return selectedFile; };
+    window._fotoUploadParaNuevoAlumno = function(nuevoAlumnoId, onDone) {
+        if (!selectedFile) { onDone(); return; }
+        alumnoId = nuevoAlumnoId;
+        var fd = new FormData();
+        fd.append('csrf_token', csrfToken);
+        fd.append('alumno_id', alumnoId);
+        fd.append('foto', selectedFile);
+        $.ajax({
+            url: urlSubir, type: 'POST',
+            data: fd, processData: false, contentType: false, dataType: 'json',
+            success: function(res) { onDone(res.success ? null : (res.message || 'Error al subir foto')); },
+            error:   function()    { onDone('Error de comunicación al subir foto'); }
+        });
+    };
+})();
 </script>
 <?php $scripts = ob_get_clean(); ?>
