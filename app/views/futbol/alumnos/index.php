@@ -50,14 +50,14 @@ $moduloColor = $modulo_actual['color'] ?? '#22C55E';
         <!-- Filtros -->
         <div class="card card-outline" style="border-top-color:<?= $moduloColor ?>">
             <div class="card-body py-2">
-                <form method="GET" action="<?= url('futbol', 'alumno', 'index') ?>" class="row align-items-end">
+                <form id="formFiltroAlumnos" class="row align-items-end">
                     <div class="col-md-3">
                         <label class="small">Buscar</label>
-                        <input type="text" name="q" class="form-control form-control-sm" placeholder="Nombres, apellidos, cédula..." value="<?= htmlspecialchars($q ?? '') ?>">
+                        <input type="text" id="filtroQ" class="form-control form-control-sm" placeholder="Nombres, apellidos, cédula..." value="<?= htmlspecialchars($q ?? '') ?>">
                     </div>
                     <div class="col-md-3">
                         <label class="small">Categoría</label>
-                        <select name="categoria_id" class="form-control form-control-sm">
+                        <select id="filtroCategoriaId" class="form-control form-control-sm">
                             <option value="">— Todas —</option>
                             <?php foreach ($categorias as $cat): ?>
                             <option value="<?= $cat['fct_categoria_id'] ?>" <?= ($categoria_id ?? '') == $cat['fct_categoria_id'] ? 'selected' : '' ?>><?= htmlspecialchars($cat['fct_nombre']) ?></option>
@@ -66,7 +66,7 @@ $moduloColor = $modulo_actual['color'] ?? '#22C55E';
                     </div>
                     <div class="col-md-2">
                         <label class="small">Grupo</label>
-                        <select name="grupo_id" class="form-control form-control-sm">
+                        <select id="filtroGrupoId" class="form-control form-control-sm">
                             <option value="">— Todos —</option>
                             <?php foreach ($grupos as $g): ?>
                             <option value="<?= $g['fgr_grupo_id'] ?>" <?= ($grupo_id ?? '') == $g['fgr_grupo_id'] ? 'selected' : '' ?>><?= htmlspecialchars($g['fgr_nombre']) ?></option>
@@ -75,7 +75,7 @@ $moduloColor = $modulo_actual['color'] ?? '#22C55E';
                     </div>
                     <div class="col-md-2">
                         <label class="small">Estado</label>
-                        <select name="estado" class="form-control form-control-sm">
+                        <select id="filtroEstado" class="form-control form-control-sm">
                             <option value="">— Todos —</option>
                             <option value="ACTIVO" <?= ($estado ?? '') === 'ACTIVO' ? 'selected' : '' ?>>Activo</option>
                             <option value="INACTIVO" <?= ($estado ?? '') === 'INACTIVO' ? 'selected' : '' ?>>Inactivo</option>
@@ -83,7 +83,7 @@ $moduloColor = $modulo_actual['color'] ?? '#22C55E';
                         </select>
                     </div>
                     <div class="col-md-2 text-right">
-                        <button class="btn btn-sm btn-primary"><i class="fas fa-search mr-1"></i>Filtrar</button>
+                        <button type="submit" class="btn btn-sm btn-primary"><i class="fas fa-search mr-1"></i>Filtrar</button>
                         <a href="<?= url('futbol', 'alumno', 'index') ?>" class="btn btn-sm btn-outline-secondary ml-1">Limpiar</a>
                     </div>
                 </form>
@@ -203,6 +203,27 @@ $moduloColor = $modulo_actual['color'] ?? '#22C55E';
 <?php ob_start(); ?>
 <script nonce="<?= cspNonce() ?>">
 $(function() {
+    // Filtro: POST para preservar el parámetro ?r= del router encriptado
+    document.getElementById('formFiltroAlumnos').addEventListener('submit', function (e) {
+        e.preventDefault();
+        var fields = [
+            { n: 'q',            v: document.getElementById('filtroQ').value },
+            { n: 'categoria_id', v: document.getElementById('filtroCategoriaId').value },
+            { n: 'grupo_id',     v: document.getElementById('filtroGrupoId').value },
+            { n: 'estado',       v: document.getElementById('filtroEstado').value },
+        ];
+        var form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '<?= url('futbol', 'alumno', 'index') ?>';
+        fields.forEach(function (p) {
+            var inp = document.createElement('input');
+            inp.type = 'hidden'; inp.name = p.n; inp.value = p.v;
+            form.appendChild(inp);
+        });
+        document.body.appendChild(form);
+        form.submit();
+    });
+
     if ($('#tablaAlumnos').length && $('#tablaAlumnos tbody tr').length > 0) {
         $('#tablaAlumnos').DataTable({
             language: { url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json' },

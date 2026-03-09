@@ -31,19 +31,19 @@ class AlumnoController extends \App\Controllers\ModuleController {
             if ($sedeId) { $where .= ' AND a.alu_sede_id = ?'; $params[] = (int)$sedeId; }
 
             // Filtro por búsqueda de texto
-            $q = trim($this->get('q') ?? '');
+            $q = trim($this->post('q') ?? $this->get('q') ?? '');
             if ($q !== '') { $like = "%{$q}%"; $where .= ' AND (a.alu_nombres LIKE ? OR a.alu_apellidos LIKE ? OR a.alu_identificacion_hash = ?)'; $params[] = $like; $params[] = $like; $params[] = \DataProtection::blindIndex($q); }
 
             // Filtro por categoría
-            $categoriaId = $this->get('categoria_id');
+            $categoriaId = $this->post('categoria_id') ?? $this->get('categoria_id');
             if ($categoriaId) { $where .= ' AND ffa.ffa_categoria_id = ?'; $params[] = (int)$categoriaId; }
 
             // Filtro por grupo
-            $grupoId = $this->get('grupo_id');
+            $grupoId = $this->post('grupo_id') ?? $this->get('grupo_id');
             if ($grupoId) { $where .= ' AND fin.fin_grupo_id = ?'; $params[] = (int)$grupoId; }
 
             // Filtro por estado
-            $estado = $this->get('estado');
+            $estado = $this->post('estado') ?? $this->get('estado');
             if ($estado) { $where .= ' AND a.alu_estado = ?'; $params[] = $estado; }
 
             $stm = $this->db->prepare("

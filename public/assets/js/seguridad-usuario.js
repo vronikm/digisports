@@ -362,12 +362,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
             
-            // Obtener información del formulario
-            const esEdicion = document.querySelector('input[name="usu_usuario_id"]') !== null;
+            // Detectar modo desde el atributo data-modo del formulario (PHP lo inyecta)
+            const esEdicion = formEditarUsuario.dataset.modo === 'editar';
             const accion = esEdicion ? 'guardar los cambios' : 'crear el usuario';
-            const titulo = esEdicion ? '¿Editar usuario?' : '¿Crear usuario?';
-            const descripcion = esEdicion 
-                ? '¿Está seguro de guardar los cambios realizados en este usuario?' 
+            const titulo = esEdicion ? '¿Actualizar usuario?' : '¿Crear usuario?';
+            const descripcion = esEdicion
+                ? '¿Está seguro de guardar los cambios realizados en este usuario?'
                 : '¿Está seguro de crear este nuevo usuario?';
             
             // Mostrar confirmación con SweetAlert2

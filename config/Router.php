@@ -274,18 +274,18 @@ class Router {
     }
     
     /**
-     * Verificar estado del tenant
+     * Verificar estado del tenant y que tenga el módulo solicitado contratado.
      */
     private function checkTenantStatus() {
-        $db = Database::getInstance()->getConnection();
-        
+        $db       = Database::getInstance()->getConnection();
+        $tenantId = (int)$_SESSION['tenant_id'];
+
         $stmt = $db->prepare("
             SELECT ten_estado_suscripcion, ten_fecha_vencimiento
             FROM seguridad_tenants
             WHERE ten_tenant_id = ?
         ");
-
-        $stmt->execute([$_SESSION['tenant_id']]);
+        $stmt->execute([$tenantId]);
         $tenant = $stmt->fetch();
 
         if (!$tenant) {
@@ -293,18 +293,48 @@ class Router {
             return;
         }
 
-        // Verificar estado de suscripción
+        // ── Estado de suscripción ─────────────────────────────────────
         if ($tenant['ten_estado_suscripcion'] === 'SUSPENDIDA') {
             $this->redirectToError('Su suscripción ha sido suspendida. Contacte a soporte.');
             return;
         }
 
         if ($tenant['ten_estado_suscripcion'] === 'VENCIDA') {
-            // Permitir solo acceso a renovación
             if ($this->controller !== 'Suscripcion') {
                 header('Location: ' . $this->generateUrl('core', 'suscripcion', 'renovar'));
                 exit;
             }
+        }
+
+        // ── Verificar módulo contratado ───────────────────────────────
+        // El módulo 'core' siempre es accesible (login, hub, perfil, etc.)
+        if ($this->module === 'core') {
+            return;
+        }
+
+        try {
+            $stmt = $db->prepare("
+                SELECT stm.tmo_id
+                FROM seguridad_tenant_modulos stm
+                JOIN seguridad_modulos sm ON sm.mod_id = stm.tmo_modulo_id
+                WHERE stm.tmo_tenant_id = ?
+                  AND sm.mod_ruta_modulo = ?
+                  AND stm.tmo_activo = 'S'
+                  AND stm.tmo_estado = 'ACTIVO'
+                  AND sm.mod_requiere_licencia = 1
+                LIMIT 1
+            ");
+            $stmt->execute([$tenantId, $this->module]);
+
+            if (!$stmt->fetch()) {
+                // El módulo existe en la plataforma pero el tenant no lo tiene contratado
+                $_SESSION['flash_error'] = 'No tiene acceso a este módulo. Contacte a soporte para contratarlo.';
+                header('Location: ' . $this->generateUrl('core', 'hub', 'index'));
+                exit;
+            }
+        } catch (\Throwable $e) {
+            // Si la BD falla en este punto, permitir acceso (fail open)
+            error_log('[Router] checkTenantStatus modulo: BD error — ' . $e->getMessage());
         }
     }
     

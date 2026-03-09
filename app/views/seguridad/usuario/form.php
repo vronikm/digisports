@@ -23,7 +23,9 @@ $headerButtons  = [
 ];
 include __DIR__ . '/../partials/header.php';
 ?>
-        <form method="POST" id="formEditarUsuario" action="<?= $esEdicion ? url('seguridad', 'usuario', 'editar', ['id' => $usuario['usu_usuario_id']]) : url('seguridad', 'usuario', 'crear') ?>">
+        <form method="POST" id="formEditarUsuario"
+              data-modo="<?= $esEdicion ? 'editar' : 'crear' ?>"
+              action="<?= $esEdicion ? url('seguridad', 'usuario', 'editar', ['id' => $usuario['usu_usuario_id']]) : url('seguridad', 'usuario', 'crear') ?>">
             <div class="row">
                 <div class="col-md-8">
                     <!-- Datos personales -->

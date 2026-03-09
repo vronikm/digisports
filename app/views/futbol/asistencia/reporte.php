@@ -41,14 +41,16 @@ $totalGeneral = array_sum($resumen);
                 <h3 class="card-title"><i class="fas fa-filter"></i> Rango de Fechas</h3>
             </div>
             <div class="card-body">
-                <form method="GET" action="<?= url('futbol', 'asistencia', 'reporte') ?>" class="form-inline">
+                <form id="formFiltroReporte" class="form-inline">
                     <div class="form-group mr-3">
                         <label class="mr-2">Desde:</label>
-                        <input type="date" name="desde" class="form-control form-control-sm" value="<?= htmlspecialchars($desde) ?>">
+                        <input type="date" id="filtroDesde" class="form-control form-control-sm"
+                               value="<?= htmlspecialchars($desde) ?>">
                     </div>
                     <div class="form-group mr-3">
                         <label class="mr-2">Hasta:</label>
-                        <input type="date" name="hasta" class="form-control form-control-sm" value="<?= htmlspecialchars($hasta) ?>">
+                        <input type="date" id="filtroHasta" class="form-control form-control-sm"
+                               value="<?= htmlspecialchars($hasta) ?>">
                     </div>
                     <button type="submit" class="btn btn-sm" style="background:<?= $moduloColor ?>;color:white;">
                         <i class="fas fa-search mr-1"></i>Filtrar
@@ -120,6 +122,28 @@ $totalGeneral = array_sum($resumen);
 
 <?php ob_start(); ?>
 <script nonce="<?= cspNonce() ?>">
+// Filtro: POST para preservar el parámetro ?r= del router encriptado
+document.getElementById('formFiltroReporte').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var desde = document.getElementById('filtroDesde').value;
+    var hasta  = document.getElementById('filtroHasta').value;
+    if (!desde || !hasta) return;
+    if (desde > hasta) {
+        if (typeof Swal !== 'undefined') Swal.fire('Atención', 'La fecha "Desde" no puede ser mayor que "Hasta".', 'warning');
+        return;
+    }
+    var form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '<?= url("futbol", "asistencia", "reporte") ?>';
+    [{ n: 'desde', v: desde }, { n: 'hasta', v: hasta }].forEach(function (p) {
+        var inp = document.createElement('input');
+        inp.type = 'hidden'; inp.name = p.n; inp.value = p.v;
+        form.appendChild(inp);
+    });
+    document.body.appendChild(form);
+    form.submit();
+});
+
 <?php if ($totalGeneral > 0): ?>
 var ctx = document.getElementById('chartAsistencia');
 if (ctx) {

@@ -310,11 +310,11 @@ class Config {
      * Modo debug
      */
     const DEBUG = [
-        'enabled' => true, // false en producción
-        'display_errors' => true,
+        'enabled' => false, // Controlado por DEBUG_ENABLED en .env (ver env.php)
+        'display_errors' => false,
         'log_errors' => true,
         'error_reporting' => E_ALL,
-        'show_queries' => true
+        'show_queries' => false
     ];
     
     /**
@@ -426,11 +426,11 @@ date_default_timezone_set(Config::APP['timezone']);
 // Configurar locale
 setlocale(LC_ALL, Config::APP['locale']);
 
-// Configurar errores según modo debug
-if (Config::DEBUG['enabled']) {
-    error_reporting(Config::DEBUG['error_reporting']);
-    ini_set('display_errors', Config::DEBUG['display_errors']);
-    ini_set('log_errors', Config::DEBUG['log_errors']);
+// Configurar errores según modo debug (lee APP_DEBUG desde .env)
+if (Config::isDebug()) {
+    error_reporting(E_ALL);
+    ini_set('display_errors', 1);
+    ini_set('log_errors', 1);
 } else {
     error_reporting(0);
     ini_set('display_errors', 0);

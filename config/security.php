@@ -316,7 +316,7 @@ class Security {
         $data = json_decode($decrypted, true);
         if (!$data) return false;
         
-        // Validar que no sea muy antigua (10 minutos)
+        // Validar que no sea muy antigua (ver TOKEN_TIMEOUT — por defecto 8 horas)
         if (time() - $data['t'] > self::TOKEN_TIMEOUT) {
             return false;
         }
@@ -522,14 +522,13 @@ class Security {
     }
     
     /**
-     * Verificar intentos de fuerza bruta — BD primaria, JSON como fallback
+     * Verificar intentos de fuerza bruta — solo BD (seguridad_log_accesos)
      */
     private static function checkBruteForce() {
         $ip          = $_SERVER['REMOTE_ADDR'] ?? 'Unknown';
         $maxAttempts = Config::SECURITY['max_login_attempts'] ?? 5;
         $window      = Config::SECURITY['brute_force_window']  ?? 900;
 
-        // ── BD ────────────────────────────────────────────────────────
         try {
             $db     = \Database::getInstance()->getConnection();
             $cutoff = date('Y-m-d H:i:s', time() - $window);
@@ -539,47 +538,16 @@ class Security {
                 WHERE acc_ip = ?
                   AND acc_exito = 'N'
                   AND acc_tipo  = 'LOGIN_FAILED'
-                  AND acc_fecha_hora > ?
+                  AND acc_fecha > ?
             ");
             $stmt->execute([$ip, $cutoff]);
             $cnt = (int)($stmt->fetch(\PDO::FETCH_ASSOC)['cnt'] ?? 0);
             if ($cnt >= $maxAttempts) {
                 self::blockIP($ip);
             }
-            return;
-        } catch (\Throwable $e) { /* BD no disponible — usar JSON */ }
-
-        // ── Fallback JSON ─────────────────────────────────────────────
-        $cacheFile   = __DIR__ . '/../storage/cache/failed_attempts.json';
-        $cleanWindow = max($window, Config::SECURITY['ip_block_duration'] ?? 3600);
-
-        $fp = fopen($cacheFile, 'c+');
-        if (!$fp) return;
-        flock($fp, LOCK_EX);
-
-        $attempts = json_decode(stream_get_contents($fp) ?: '{}', true);
-        if (!is_array($attempts)) $attempts = [];
-
-        $now = time();
-        foreach ($attempts as $ipKey => $times) {
-            if (!is_array($times)) { unset($attempts[$ipKey]); continue; }
-            $times = array_filter($times, fn($t) => is_numeric($t) && ($now - (int)$t) < $cleanWindow);
-            if (empty($times)) {
-                unset($attempts[$ipKey]);
-            } else {
-                $attempts[$ipKey] = array_values($times);
-            }
+        } catch (\Throwable $e) {
+            error_log('[Security] checkBruteForce: BD no disponible — ' . $e->getMessage());
         }
-        $attempts[$ip][] = $now;
-
-        $recentCount = count(array_filter($attempts[$ip], fn($t) => ($now - (int)$t) < $window));
-        if ($recentCount >= $maxAttempts) {
-            self::blockIP($ip);
-        }
-
-        ftruncate($fp, 0); rewind($fp);
-        fwrite($fp, json_encode($attempts));
-        flock($fp, LOCK_UN); fclose($fp);
     }
 
     /**
@@ -593,7 +561,7 @@ class Security {
             $stmt   = $db->prepare("
                 SELECT COUNT(*) AS cnt FROM seguridad_log_accesos
                 WHERE acc_ip = ? AND acc_exito = 'N' AND acc_tipo = 'LOGIN_FAILED'
-                  AND acc_fecha_hora > ?
+                  AND acc_fecha > ?
             ");
             $stmt->execute([$ip, $cutoff]);
             return (int)($stmt->fetch(\PDO::FETCH_ASSOC)['cnt'] ?? 0);
@@ -603,7 +571,7 @@ class Security {
     }
 
     /**
-     * Bloquear IP — BD primaria, JSON como fallback
+     * Bloquear IP — solo BD (seguridad_ips_bloqueadas)
      * @param string $ip IP a bloquear
      */
     private static function blockIP(string $ip) {
@@ -611,7 +579,6 @@ class Security {
         $expiry        = date('Y-m-d H:i:s', time() + $blockDuration);
         $intentos      = self::countRecentAttempts($ip);
 
-        // ── BD ────────────────────────────────────────────────────────
         try {
             $db = \Database::getInstance()->getConnection();
             $db->prepare("
@@ -623,33 +590,20 @@ class Security {
                     ib_intentos        = VALUES(ib_intentos),
                     ib_desbloqueado    = 0
             ")->execute([$ip, $expiry, $intentos]);
-            return;
-        } catch (\Throwable $e) { /* BD no disponible — usar JSON */ }
-
-        // ── Fallback JSON ─────────────────────────────────────────────
-        $blockFile = __DIR__ . '/../storage/cache/blocked_ips.json';
-        $fp = fopen($blockFile, 'c+');
-        if (!$fp) return;
-        flock($fp, LOCK_EX);
-
-        $blocked = json_decode(stream_get_contents($fp) ?: '{}', true);
-        if (!is_array($blocked)) $blocked = [];
-        $blocked[$ip] = time() + $blockDuration;
-
-        ftruncate($fp, 0); rewind($fp);
-        fwrite($fp, json_encode($blocked));
-        flock($fp, LOCK_UN); fclose($fp);
+        } catch (\Throwable $e) {
+            error_log('[Security] blockIP: BD no disponible — ' . $e->getMessage());
+        }
     }
 
     /**
-     * Verificar si IP está bloqueada — BD primaria, JSON como fallback
+     * Verificar si IP está bloqueada — solo BD (seguridad_ips_bloqueadas)
+     * Falla abierto (false) si la BD no está disponible para no bloquear usuarios.
      * @param string|null $ip IP a verificar (null = IP del request)
      * @return bool True si está bloqueada
      */
     public static function isIPBlocked($ip = null): bool {
         $ip = $ip ?? ($_SERVER['REMOTE_ADDR'] ?? 'Unknown');
 
-        // ── BD ────────────────────────────────────────────────────────
         try {
             $db   = \Database::getInstance()->getConnection();
             $stmt = $db->prepare("
@@ -661,38 +615,19 @@ class Security {
             ");
             $stmt->execute([$ip]);
             return $stmt->fetch() !== false;
-        } catch (\Throwable $e) { /* BD no disponible — usar JSON */ }
-
-        // ── Fallback JSON ─────────────────────────────────────────────
-        $blockFile = __DIR__ . '/../storage/cache/blocked_ips.json';
-        if (!file_exists($blockFile)) return false;
-
-        $fp = fopen($blockFile, 'r+');
-        if (!$fp) return false;
-        flock($fp, LOCK_SH);
-        $blocked = json_decode(stream_get_contents($fp), true);
-        flock($fp, LOCK_UN); fclose($fp);
-
-        if (!is_array($blocked) || !isset($blocked[$ip])) return false;
-        if ($blocked[$ip] > time()) return true;
-
-        // Bloqueo expirado — limpiar con lock exclusivo
-        $fp = fopen($blockFile, 'r+');
-        if ($fp) {
-            flock($fp, LOCK_EX);
-            $blocked = json_decode(stream_get_contents($fp), true) ?: [];
-            unset($blocked[$ip]);
-            ftruncate($fp, 0); rewind($fp);
-            fwrite($fp, json_encode($blocked));
-            flock($fp, LOCK_UN); fclose($fp);
+        } catch (\Throwable $e) {
+            error_log('[Security] isIPBlocked: BD no disponible — ' . $e->getMessage());
+            return false; // fail open: no bloqueamos si la BD falla
         }
-        return false;
     }
 
     // ─── Rate Limiting ────────────────────────────────────────────────
 
     /**
      * Verificar rate limit para una acción dada.
+     * Usa tabla BD seguridad_rate_limit: inserta un registro por request
+     * y cuenta los recientes en la ventana deslizante de 1 minuto.
+     * Falla abierto (true) si la BD no está disponible.
      *
      * Uso en controladores:
      *   if (!Security::checkRateLimit('api_consulta', 30)) {
@@ -705,65 +640,52 @@ class Security {
      */
     public static function checkRateLimit(string $action, int $maxPerMin = 60): bool
     {
-        $ip        = $_SERVER['REMOTE_ADDR'] ?? 'Unknown';
-        $cacheFile = __DIR__ . '/../storage/cache/rate_limit.json';
-        $now       = time();
-        $window    = 60; // ventana deslizante de 1 minuto
-        $key       = md5($ip . '|' . $action);
+        $ip     = $_SERVER['REMOTE_ADDR'] ?? 'Unknown';
+        $now    = time();
+        $window = 60; // ventana deslizante de 1 minuto
+        $cutoff = date('Y-m-d H:i:s', $now - $window);
 
-        // ── BD: usar seguridad_log_accesos si está disponible ─────────
         try {
-            $db     = \Database::getInstance()->getConnection();
-            $cutoff = date('Y-m-d H:i:s', $now - $window);
-            $stmt   = $db->prepare("
+            $db = \Database::getInstance()->getConnection();
+
+            // 1. Insertar el request actual
+            $db->prepare("
+                INSERT INTO seguridad_rate_limit (srl_ip, srl_action, srl_fecha)
+                VALUES (?, ?, NOW())
+            ")->execute([$ip, $action]);
+
+            // 2. Contar requests en la ventana (incluye el que se acaba de insertar)
+            $stmt = $db->prepare("
                 SELECT COUNT(*) AS cnt
-                FROM seguridad_log_accesos
-                WHERE acc_ip = ? AND acc_tipo = ? AND acc_fecha_hora > ?
+                FROM seguridad_rate_limit
+                WHERE srl_ip = ? AND srl_action = ? AND srl_fecha > ?
             ");
-            $stmt->execute([$ip, strtoupper($action), $cutoff]);
+            $stmt->execute([$ip, $action, $cutoff]);
             $cnt = (int)($stmt->fetch(\PDO::FETCH_ASSOC)['cnt'] ?? 0);
-            return $cnt < $maxPerMin;
-        } catch (\Throwable $e) { /* fallback a JSON cache */ }
 
-        // ── Fallback JSON ─────────────────────────────────────────────
-        $fp = fopen($cacheFile, 'c+');
-        if (!$fp) return true; // fail open: no bloqueamos si el cache falla
+            // 3. Purge probabilístico (1% de los requests) para evitar acumulación
+            if (random_int(1, 100) === 1) {
+                $db->prepare("
+                    DELETE FROM seguridad_rate_limit
+                    WHERE srl_fecha < ?
+                ")->execute([date('Y-m-d H:i:s', $now - $window)]);
+            }
 
-        flock($fp, LOCK_EX);
-        $data = json_decode(stream_get_contents($fp) ?: '{}', true);
-        if (!is_array($data)) $data = [];
+            return $cnt <= $maxPerMin;
 
-        // Purgar entradas expiradas del key actual
-        $timestamps = $data[$key] ?? [];
-        $timestamps = array_values(array_filter($timestamps, fn($t) => ($now - $t) < $window));
-
-        $allowed = count($timestamps) < $maxPerMin;
-        if ($allowed) {
-            $timestamps[] = $now;
+        } catch (\Throwable $e) {
+            error_log('[Security] checkRateLimit: BD no disponible — ' . $e->getMessage());
+            return true; // fail open: no bloqueamos si la BD falla
         }
-        $data[$key] = $timestamps;
-
-        // Purgar keys inactivos (ventana expirada) para no crecer indefinidamente
-        foreach ($data as $k => $times) {
-            $data[$k] = array_values(array_filter($times, fn($t) => ($now - $t) < $window));
-            if (empty($data[$k])) unset($data[$k]);
-        }
-
-        ftruncate($fp, 0); rewind($fp);
-        fwrite($fp, json_encode($data));
-        flock($fp, LOCK_UN); fclose($fp);
-
-        return $allowed;
     }
 
     // ─── Métodos de administración de IPs ───────────────────────────
 
     /**
-     * Obtener lista de IPs bloqueadas — BD primaria, JSON como fallback
+     * Obtener lista de IPs bloqueadas — solo BD (seguridad_ips_bloqueadas)
      * @return array ['ip', 'expira', 'restante_seg', 'restante', 'intentos', 'razon']
      */
     public static function getBlockedIPs(): array {
-        // ── BD ────────────────────────────────────────────────────────
         try {
             $db   = \Database::getInstance()->getConnection();
             $stmt = $db->prepare("
@@ -782,43 +704,18 @@ class Security {
                 'intentos'     => (int)$r['ib_intentos'],
                 'razon'        => $r['ib_razon'],
             ], $stmt->fetchAll(\PDO::FETCH_ASSOC));
-        } catch (\Throwable $e) { /* BD no disponible — usar JSON */ }
-
-        // ── Fallback JSON ─────────────────────────────────────────────
-        $blockFile = __DIR__ . '/../storage/cache/blocked_ips.json';
-        if (!file_exists($blockFile)) return [];
-
-        $blocked = json_decode(file_get_contents($blockFile), true);
-        if (!is_array($blocked)) return [];
-
-        $now = time(); $result = []; $changed = false;
-        foreach ($blocked as $ip => $expiry) {
-            if ($expiry > $now) {
-                $result[] = [
-                    'ip'           => $ip,
-                    'expira'       => date('Y-m-d H:i:s', $expiry),
-                    'restante_seg' => $expiry - $now,
-                    'restante'     => self::formatDuration($expiry - $now),
-                    'intentos'     => 0,
-                    'razon'        => 'Múltiples intentos fallidos de login',
-                ];
-            } else {
-                unset($blocked[$ip]); $changed = true;
-            }
+        } catch (\Throwable $e) {
+            error_log('[Security] getBlockedIPs: BD no disponible — ' . $e->getMessage());
+            return [];
         }
-        if ($changed) file_put_contents($blockFile, json_encode($blocked));
-        return $result;
     }
 
     /**
-     * Desbloquear IP manualmente — BD primaria + limpieza JSON
+     * Desbloquear IP manualmente — solo BD (seguridad_ips_bloqueadas)
      * @param string $ip IP a desbloquear
      * @return bool True si se desbloqueó, false si no estaba bloqueada
      */
     public static function unblockIP(string $ip): bool {
-        $unblocked = false;
-
-        // ── BD ────────────────────────────────────────────────────────
         try {
             $db     = \Database::getInstance()->getConnection();
             $userId = $_SESSION['user_id'] ?? null;
@@ -828,18 +725,10 @@ class Security {
                 WHERE ib_ip = ? AND ib_desbloqueado = 0
             ");
             $stmt->execute([$userId, $ip]);
-            if ($stmt->rowCount() > 0) $unblocked = true;
-        } catch (\Throwable $e) { /* BD no disponible */ }
-
-        // ── Limpiar JSON cache también ────────────────────────────────
-        $blockFile = __DIR__ . '/../storage/cache/blocked_ips.json';
-        if (file_exists($blockFile)) {
-            $blocked = json_decode(file_get_contents($blockFile), true);
-            if (is_array($blocked) && isset($blocked[$ip])) {
-                unset($blocked[$ip]);
-                file_put_contents($blockFile, json_encode($blocked));
-                $unblocked = true;
-            }
+            $unblocked = $stmt->rowCount() > 0;
+        } catch (\Throwable $e) {
+            error_log('[Security] unblockIP: BD no disponible — ' . $e->getMessage());
+            return false;
         }
 
         if ($unblocked) self::clearFailedAttempts($ip);
@@ -847,24 +736,23 @@ class Security {
     }
 
     /**
-     * Obtener intentos fallidos por IP — BD primaria, JSON como fallback
+     * Obtener intentos fallidos por IP — solo BD (seguridad_log_accesos)
      * @return array ['ip', 'intentos_recientes', 'intentos_total', 'ultimo_intento', 'hace']
      */
     public static function getFailedAttempts(): array {
         $window = Config::SECURITY['brute_force_window'] ?? 900;
 
-        // ── BD ────────────────────────────────────────────────────────
         try {
             $db     = \Database::getInstance()->getConnection();
             $cutoff = date('Y-m-d H:i:s', time() - $window);
             $stmt   = $db->prepare("
                 SELECT acc_ip                   AS ip,
                        COUNT(*)                 AS intentos_recientes,
-                       MAX(acc_fecha_hora)       AS ultimo_intento
+                       MAX(acc_fecha)       AS ultimo_intento
                 FROM seguridad_log_accesos
                 WHERE acc_exito = 'N'
                   AND acc_tipo  = 'LOGIN_FAILED'
-                  AND acc_fecha_hora > ?
+                  AND acc_fecha > ?
                 GROUP BY acc_ip
                 ORDER BY intentos_recientes DESC
             ");
@@ -876,45 +764,19 @@ class Security {
                 'ultimo_intento'     => $r['ultimo_intento'],
                 'hace'               => self::formatDuration(time() - strtotime($r['ultimo_intento'])),
             ], $stmt->fetchAll(\PDO::FETCH_ASSOC));
-        } catch (\Throwable $e) { /* BD no disponible — usar JSON */ }
-
-        // ── Fallback JSON ─────────────────────────────────────────────
-        $cacheFile = __DIR__ . '/../storage/cache/failed_attempts.json';
-        if (!file_exists($cacheFile)) return [];
-
-        $attempts = json_decode(file_get_contents($cacheFile), true);
-        if (!is_array($attempts)) return [];
-
-        $now = time(); $result = [];
-        foreach ($attempts as $ip => $times) {
-            if (!is_array($times)) continue;
-            $recent   = array_filter($times, fn($t) => is_numeric($t) && ($now - (int)$t) < $window);
-            $allTimes = array_filter($times, fn($t) => is_numeric($t));
-            if (!empty($allTimes)) {
-                $lastAttempt = max($allTimes);
-                $result[] = [
-                    'ip'                 => $ip,
-                    'intentos_recientes' => count($recent),
-                    'intentos_total'     => count($allTimes),
-                    'ultimo_intento'     => date('Y-m-d H:i:s', $lastAttempt),
-                    'hace'               => self::formatDuration($now - $lastAttempt),
-                ];
-            }
+        } catch (\Throwable $e) {
+            error_log('[Security] getFailedAttempts: BD no disponible — ' . $e->getMessage());
+            return [];
         }
-        usort($result, fn($a, $b) => $b['intentos_recientes'] <=> $a['intentos_recientes']);
-        return $result;
     }
 
     /**
-     * Limpiar intentos fallidos de una IP del cache JSON
-     * (En BD los datos se conservan como auditoría histórica)
+     * Limpiar intentos fallidos de una IP — solo BD (seguridad_log_accesos)
+     * Los registros históricos se conservan como auditoría; solo se marcan como resueltos.
      * @param string $ip IP a limpiar
      * @return bool
      */
     public static function clearFailedAttempts(string $ip): bool {
-        $deleted = false;
-
-        // BD: eliminar registros de login fallido para esta IP
         try {
             $db   = \Database::getInstance()->getConnection();
             $stmt = $db->prepare("
@@ -922,23 +784,11 @@ class Security {
                 WHERE acc_ip = ? AND acc_tipo = 'LOGIN_FAILED' AND acc_exito = 'N'
             ");
             $stmt->execute([$ip]);
-            if ($stmt->rowCount() > 0) $deleted = true;
+            return $stmt->rowCount() > 0;
         } catch (\Throwable $e) {
-            // BD no disponible, continuar con JSON
+            error_log('[Security] clearFailedAttempts: BD no disponible — ' . $e->getMessage());
+            return false;
         }
-
-        // JSON fallback: limpiar cache local
-        $cacheFile = __DIR__ . '/../storage/cache/failed_attempts.json';
-        if (file_exists($cacheFile)) {
-            $attempts = json_decode(file_get_contents($cacheFile), true);
-            if (is_array($attempts) && isset($attempts[$ip])) {
-                unset($attempts[$ip]);
-                file_put_contents($cacheFile, json_encode($attempts));
-                $deleted = true;
-            }
-        }
-
-        return $deleted;
     }
     
     /**

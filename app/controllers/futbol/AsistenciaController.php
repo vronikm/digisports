@@ -121,10 +121,10 @@ class AsistenciaController extends \App\Controllers\ModuleController {
     public function reporte() {
         try {
             $this->setupModule();
-            $alumnoId = (int)($this->get('alumno_id') ?? 0);
-            $grupoId  = (int)($this->get('grupo_id') ?? 0);
-            $desde    = $this->get('desde') ?? date('Y-m-01');
-            $hasta    = $this->get('hasta') ?? date('Y-m-d');
+            $alumnoId = (int)($this->post('alumno_id') ?? $this->get('alumno_id') ?? 0);
+            $grupoId  = (int)($this->post('grupo_id')  ?? $this->get('grupo_id')  ?? 0);
+            $desde    = $this->post('desde') ?? $this->get('desde') ?? date('Y-m-01');
+            $hasta    = $this->post('hasta') ?? $this->get('hasta') ?? date('Y-m-d');
 
             $where = " WHERE fas_tenant_id = ? AND fas_fecha BETWEEN ? AND ?";
             $params = [$this->tenantId, $desde, $hasta];
@@ -147,6 +147,83 @@ class AsistenciaController extends \App\Controllers\ModuleController {
             $this->logError("Error en reporte asistencia: " . $e->getMessage());
             $this->error('Error al generar reporte');
         }
+    }
+
+    /**
+     * Guardar asistencia de un alumno individual — endpoint AJAX one-click
+     * POST: csrf_token, inscripcion_id, alumno_id, grupo_id, fecha, estado
+     */
+    public function marcarUno() {
+        header('Content-Type: application/json');
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'POST requerido']);
+            exit;
+        }
+
+        if (!\Security::validateCsrfToken($this->post('csrf_token'))) {
+            echo json_encode(['success' => false, 'message' => 'Token inválido']);
+            exit;
+        }
+
+        $inscripcionId = (int)($this->post('inscripcion_id') ?? 0);
+        $alumnoId      = (int)($this->post('alumno_id')      ?? 0);
+        $grupoId       = (int)($this->post('grupo_id')       ?? 0);
+        $fecha         = $this->post('fecha')  ?? '';
+        $estado        = $this->post('estado') ?? '';
+
+        if (!$inscripcionId || !$alumnoId || !$grupoId || !$fecha) {
+            echo json_encode(['success' => false, 'message' => 'Datos incompletos']);
+            exit;
+        }
+
+        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $fecha)) {
+            echo json_encode(['success' => false, 'message' => 'Fecha inválida']);
+            exit;
+        }
+
+        if (!in_array($estado, ['PRESENTE', 'AUSENTE', 'TARDANZA', 'JUSTIFICADO'])) {
+            echo json_encode(['success' => false, 'message' => 'Estado inválido']);
+            exit;
+        }
+
+        try {
+            // Verificar que la inscripción pertenece al tenant
+            $chk = $this->db->prepare("
+                SELECT fin_alumno_id FROM futbol_inscripciones
+                WHERE fin_inscripcion_id = ? AND fin_tenant_id = ? AND fin_grupo_id = ?
+                LIMIT 1
+            ");
+            $chk->execute([$inscripcionId, $this->tenantId, $grupoId]);
+            if (!$chk->fetchColumn()) {
+                echo json_encode(['success' => false, 'message' => 'Inscripción no válida']);
+                exit;
+            }
+
+            $this->db->prepare("
+                INSERT INTO futbol_asistencia
+                    (fas_tenant_id, fas_inscripcion_id, fas_alumno_id, fas_grupo_id, fas_fecha, fas_estado, fas_registrado_por)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                ON DUPLICATE KEY UPDATE
+                    fas_estado         = VALUES(fas_estado),
+                    fas_registrado_por = VALUES(fas_registrado_por)
+            ")->execute([
+                $this->tenantId,
+                $inscripcionId,
+                $alumnoId,
+                $grupoId,
+                $fecha,
+                $estado,
+                $_SESSION['user_id'] ?? null,
+            ]);
+
+            echo json_encode(['success' => true, 'estado' => $estado]);
+
+        } catch (\Exception $e) {
+            $this->logError('marcarUno: ' . $e->getMessage());
+            echo json_encode(['success' => false, 'message' => 'Error al guardar']);
+        }
+        exit;
     }
 
     private function jsonResponse($data) { header('Content-Type: application/json'); echo json_encode($data, JSON_UNESCAPED_UNICODE); exit; }

@@ -34,9 +34,11 @@ CREATE TABLE IF NOT EXISTS seguridad_ips_bloqueadas (
 -- Índice compuesto para la consulta de detección de brute force:
 -- WHERE acc_ip = ? AND acc_exito = 'N' AND acc_tipo = 'LOGIN_FAILED'
 --   AND acc_fecha_hora > ...
+-- Nota: ADD INDEX IF NOT EXISTS no está soportado en MySQL 8.0
+-- Ejecutar manualmente si el índice no existe:
 ALTER TABLE seguridad_log_accesos
-    ADD INDEX IF NOT EXISTS idx_brute_force (acc_ip, acc_exito, acc_tipo, acc_fecha_hora);
+    ADD INDEX idx_brute_force (acc_ip, acc_exito, acc_tipo, acc_fecha);
 
 -- Índice para limpiezas periódicas de logs antiguos
 ALTER TABLE seguridad_log_accesos
-    ADD INDEX IF NOT EXISTS idx_fecha_hora (acc_fecha_hora);
+    ADD INDEX idx_fecha (acc_fecha);

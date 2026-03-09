@@ -2476,6 +2476,48 @@ INSERT INTO `seguridad_configuracion_sistema` (`sis_config_id`, `sis_tenant_id`,
 -- --------------------------------------------------------
 
 --
+-- Estructura de tabla para la tabla `seguridad_ips_bloqueadas`
+-- Creada por migration 001_seguridad_ips_bloqueadas.sql
+--
+
+DROP TABLE IF EXISTS `seguridad_ips_bloqueadas`;
+CREATE TABLE IF NOT EXISTS `seguridad_ips_bloqueadas` (
+  `ib_id`              int unsigned    NOT NULL AUTO_INCREMENT,
+  `ib_ip`              varchar(45)     NOT NULL COMMENT 'IPv4 o IPv6',
+  `ib_bloqueado_hasta` datetime        NOT NULL COMMENT 'Timestamp de expiración del bloqueo',
+  `ib_intentos`        smallint        NOT NULL DEFAULT '0' COMMENT 'Intentos fallidos que generaron el bloqueo',
+  `ib_razon`           varchar(255)    DEFAULT 'Múltiples intentos fallidos de login',
+  `ib_desbloqueado`    tinyint(1)      NOT NULL DEFAULT '0' COMMENT '1 = desbloqueado manualmente',
+  `ib_desbloqueado_por` int unsigned   DEFAULT NULL COMMENT 'Usuario que desbloqueó',
+  `ib_creado_en`       datetime        DEFAULT CURRENT_TIMESTAMP,
+  `ib_actualizado_en`  datetime        DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`ib_id`),
+  UNIQUE KEY `uk_ip` (`ib_ip`),
+  KEY `idx_expiry` (`ib_bloqueado_hasta`),
+  KEY `idx_activo` (`ib_desbloqueado`,`ib_bloqueado_hasta`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='IPs bloqueadas por exceso de intentos fallidos de login';
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `seguridad_rate_limit`
+-- Creada por migration 002_seguridad_rate_limit.sql
+--
+
+DROP TABLE IF EXISTS `seguridad_rate_limit`;
+CREATE TABLE IF NOT EXISTS `seguridad_rate_limit` (
+  `srl_id`      bigint unsigned NOT NULL AUTO_INCREMENT,
+  `srl_ip`      varchar(45)     NOT NULL COMMENT 'IPv4 o IPv6',
+  `srl_action`  varchar(100)    NOT NULL COMMENT 'Identificador de la acción limitada',
+  `srl_fecha`   datetime        NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Timestamp del request',
+  PRIMARY KEY (`srl_id`),
+  KEY `idx_lookup` (`srl_ip`,`srl_action`,`srl_fecha`),
+  KEY `idx_purge`  (`srl_fecha`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Registro de requests para rate limiting por IP y acción';
+
+-- --------------------------------------------------------
+
+--
 -- Estructura de tabla para la tabla `seguridad_log_accesos`
 --
 

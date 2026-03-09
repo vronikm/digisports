@@ -1,13 +1,23 @@
 <?php
 /**
  * Vista de Asistencia - Módulo Fútbol
- * @vars $grupos, $asistencias, $fecha_actual, $grupo_seleccionado, $sedes, $sede_activa, $csrf_token, $modulo_actual
+ * UX one-click: cada botón guarda inmediatamente vía AJAX individual
  */
-$moduloColor = '#22C55E';
-$moduloIcon = 'fas fa-futbol';
-$fecha_actual = $fecha ?? date('Y-m-d');
-$alumnos = $alumnos ?? [];
-$grupoId = $grupoId ?? 0;
+$moduloColor  = '#22C55E';
+$moduloIcon   = 'fas fa-futbol';
+$fecha_actual = $fecha    ?? date('Y-m-d');
+$alumnos      = $alumnos  ?? [];
+$grupoId      = $grupoId  ?? 0;
+$csrfToken    = $csrf_token ?? '';
+
+// Nombre del grupo seleccionado para el encabezado
+$nombreGrupoActual = '';
+foreach ($grupos ?? [] as $g) {
+    if ($g['fgr_grupo_id'] == $grupoId) {
+        $nombreGrupoActual = $g['fgr_nombre'];
+        break;
+    }
+}
 ?>
 
 <!-- Content Header -->
@@ -30,329 +40,353 @@ $grupoId = $grupoId ?? 0;
     </div>
 </div>
 
-<!-- Main content -->
 <section class="content">
     <div class="container-fluid">
 
-        <!-- Controles superiores -->
+        <!-- Filtros -->
         <div class="card">
-            <div class="card-header" style="border-top: 3px solid <?= $moduloColor ?>">
-                <h3 class="card-title"><i class="fas fa-filter"></i> Filtros</h3>
+            <div class="card-header py-2" style="border-top: 3px solid <?= $moduloColor ?>">
+                <h3 class="card-title"><i class="fas fa-filter mr-1"></i> Filtros</h3>
             </div>
-            <div class="card-body">
-                <div class="row">
+            <div class="card-body py-2">
+                <div class="row align-items-end">
                     <div class="col-md-3">
-                        <div class="form-group">
-                            <label for="filtroSede"><i class="fas fa-building"></i> Sede</label>
-                            <select class="form-control" id="filtroSede" disabled>
-                                <option value="">Sede actual</option>
-                            </select>
+                        <div class="form-group mb-0">
+                            <label class="mb-1"><i class="fas fa-calendar-alt mr-1"></i> Fecha</label>
+                            <input type="date" class="form-control" id="fechaAsistencia"
+                                   value="<?= htmlspecialchars($fecha_actual) ?>">
                         </div>
                     </div>
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            <label for="fechaAsistencia"><i class="fas fa-calendar-alt"></i> Fecha</label>
-                            <input type="date" class="form-control" id="fechaAsistencia" value="<?= $fecha_actual ?>">
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="form-group">
-                            <label for="grupoAsistencia"><i class="fas fa-users"></i> Grupo</label>
+                    <div class="col-md-5">
+                        <div class="form-group mb-0">
+                            <label class="mb-1"><i class="fas fa-users mr-1"></i> Grupo</label>
                             <select class="form-control" id="grupoAsistencia">
-                                <option value="">Seleccionar grupo</option>
-                                <?php if (!empty($grupos)): ?>
-                                    <?php foreach ($grupos as $grupo): ?>
-                                        <option value="<?= $grupo['fgr_grupo_id'] ?>" <?= (isset($grupoId) && $grupoId == $grupo['fgr_grupo_id']) ? 'selected' : '' ?>>
-                                            <?= htmlspecialchars($grupo['fgr_nombre']) ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                <?php endif; ?>
+                                <option value="">Seleccionar grupo...</option>
+                                <?php foreach ($grupos ?? [] as $g): ?>
+                                    <option value="<?= $g['fgr_grupo_id'] ?>"
+                                            <?= $grupoId == $g['fgr_grupo_id'] ? 'selected' : '' ?>>
+                                        <?= htmlspecialchars($g['fgr_nombre']) ?>
+                                    </option>
+                                <?php endforeach; ?>
                             </select>
                         </div>
                     </div>
-                    <div class="col-md-2 d-flex align-items-end">
-                        <div class="form-group w-100">
-                            <button type="button" class="btn btn-success btn-block" id="btnCargarAsistencia">
-                                <i class="fas fa-search"></i> Cargar
-                            </button>
-                        </div>
+                    <div class="col-md-2">
+                        <button type="button" class="btn btn-success btn-block" id="btnCargar">
+                            <i class="fas fa-search mr-1"></i> Cargar
+                        </button>
+                    </div>
+                    <div class="col-md-2">
+                        <a href="<?= url('futbol', 'asistencia', 'reporte') ?>"
+                           class="btn btn-outline-secondary btn-block">
+                            <i class="fas fa-chart-bar mr-1"></i> Reporte
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Acciones masivas -->
-        <div class="row mb-3" id="accionesMasivas" style="display: none;">
-            <div class="col-12">
-                <button type="button" class="btn btn-outline-success btn-sm js-marcar-todos" data-estado="PRESENTE">
-                    <i class="fas fa-check-double"></i> Marcar todos presente
+        <?php if (!empty($alumnos)): ?>
+
+        <!-- Barra de contadores + acciones rápidas -->
+        <div class="d-flex flex-wrap align-items-center justify-content-between mb-2" style="gap:8px;">
+            <div class="d-flex flex-wrap" style="gap:6px;" id="contadores">
+                <span class="badge badge-pill badge-success px-3 py-2">
+                    <i class="fas fa-check mr-1"></i>Presentes&nbsp;<strong id="cntPresente">0</strong>
+                </span>
+                <span class="badge badge-pill badge-warning px-3 py-2" style="color:#212529;">
+                    <i class="fas fa-clock mr-1"></i>Tardanzas&nbsp;<strong id="cntTardanza">0</strong>
+                </span>
+                <span class="badge badge-pill badge-danger px-3 py-2">
+                    <i class="fas fa-times mr-1"></i>Ausentes&nbsp;<strong id="cntAusente">0</strong>
+                </span>
+                <span class="badge badge-pill badge-info px-3 py-2">
+                    <i class="fas fa-file-alt mr-1"></i>Justificados&nbsp;<strong id="cntJustificado">0</strong>
+                </span>
+                <span class="badge badge-pill badge-secondary px-3 py-2">
+                    <i class="fas fa-question mr-1"></i>Sin marcar&nbsp;<strong id="cntPendiente">0</strong>
+                </span>
+            </div>
+            <div>
+                <button type="button" class="btn btn-success btn-sm js-marcar-todos" data-estado="PRESENTE">
+                    <i class="fas fa-check-double mr-1"></i>Todos Presente
                 </button>
-                <button type="button" class="btn btn-outline-danger btn-sm ml-2 js-marcar-todos" data-estado="AUSENTE">
-                    <i class="fas fa-times"></i> Marcar todos ausente
-                </button>
-                <button type="button" class="btn btn-primary btn-sm float-right" id="btnGuardarAsistencia">
-                    <i class="fas fa-save"></i> Guardar Asistencia
+                <button type="button" class="btn btn-outline-secondary btn-sm ml-1" id="btnLimpiar">
+                    <i class="fas fa-eraser mr-1"></i>Limpiar
                 </button>
             </div>
         </div>
 
-        <!-- Tabla de Asistencia -->
+        <!-- Tabla de alumnos con botones one-click -->
         <div class="card">
-            <div class="card-header" style="border-top: 3px solid <?= $moduloColor ?>">
-                <h3 class="card-title"><i class="fas fa-clipboard-check"></i> Registro de Asistencia</h3>
+            <div class="card-header py-2" style="border-top: 3px solid <?= $moduloColor ?>">
+                <h3 class="card-title">
+                    <i class="fas fa-clipboard-check mr-1"></i>
+                    <?= htmlspecialchars($nombreGrupoActual) ?>
+                    <small class="text-muted ml-2"><?= date('d/m/Y', strtotime($fecha_actual)) ?></small>
+                </h3>
+                <div class="card-tools">
+                    <span class="badge badge-secondary"><?= count($alumnos) ?> alumnos</span>
+                </div>
             </div>
-            <div class="card-body" id="contenedorAsistencia">
-                <?php if (!empty($alumnos)): ?>
-                    <div class="table-responsive">
-                        <table class="table table-bordered table-striped table-hover" id="tablaAsistencia">
-                            <thead>
-                                <tr>
-                                    <th width="40">#</th>
-                                    <th>Alumno</th>
-                                    <th width="180">Estado</th>
-                                    <th>Observaciones</th>
-                                    <th width="100">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($alumnos as $i => $asist): ?>
-                                    <tr data-alumno-id="<?= $asist['alu_alumno_id'] ?? '' ?>" data-inscripcion-id="<?= $asist['fin_inscripcion_id'] ?? '' ?>">
-                                        <td><?= $i + 1 ?></td>
-                                        <td><?= htmlspecialchars($asist['nombre'] ?? '') ?></td>
-                                        <td>
-                                            <select class="form-control form-control-sm estado-asistencia"
-                                                    data-inscripcion-id="<?= $asist['fin_inscripcion_id'] ?? '' ?>">
-                                                <?php
-                                                $estados = ['PRESENTE' => 'Presente', 'AUSENTE' => 'Ausente', 'TARDANZA' => 'Tardanza', 'JUSTIFICADO' => 'Justificado'];
-                                                foreach ($estados as $val => $label):
-                                                ?>
-                                                    <option value="<?= $val ?>" <?= (isset($asist['estado_asistencia']) && $asist['estado_asistencia'] == $val) ? 'selected' : '' ?>>
-                                                        <?= $label ?>
-                                                    </option>
-                                                <?php endforeach; ?>
-                                            </select>
-                                        </td>
-                                        <td>
-                                            <input type="text" class="form-control form-control-sm obs-asistencia"
-                                                   data-inscripcion-id="<?= $asist['fin_inscripcion_id'] ?? '' ?>"
-                                                   value="<?= htmlspecialchars($asist['fas_observacion'] ?? '') ?>"
-                                                   placeholder="Observaciones...">
-                                        </td>
-                                        <td>
-                                            <button type="button" class="btn btn-sm btn-info js-editar-detalle" title="Editar detalle"
-                                                    data-alumno-id="<?= $asist['alu_alumno_id'] ?? '' ?>"
-                                                    data-nombre="<?= htmlspecialchars($asist['nombre'] ?? '', ENT_QUOTES) ?>"
-                                                    data-estado="<?= htmlspecialchars($asist['estado_asistencia'] ?? 'PRESENTE', ENT_QUOTES) ?>"
-                                                    data-obs="<?= htmlspecialchars($asist['fas_observacion'] ?? '', ENT_QUOTES) ?>">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                <?php else: ?>
-                    <div class="text-center py-5">
-                        <i class="fas fa-clipboard-check fa-3x opacity-50 text-muted mb-3"></i>
-                        <p class="text-muted">Seleccione una fecha y grupo para cargar la asistencia.</p>
-                    </div>
-                <?php endif; ?>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover mb-0" id="tablaAsistencia">
+                        <thead class="thead-light">
+                            <tr>
+                                <th width="36" class="text-center text-muted">#</th>
+                                <th>Alumno</th>
+                                <th>Asistencia</th>
+                                <th width="28"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($alumnos as $i => $asis):
+                                $estadoActual = $asis['estado_asistencia'] ?? '';
+                                $claseBtn = [
+                                    'PRESENTE'   => 'success',
+                                    'TARDANZA'   => 'warning',
+                                    'AUSENTE'    => 'danger',
+                                    'JUSTIFICADO'=> 'info',
+                                ];
+                            ?>
+                            <tr class="fila-alumno"
+                                data-inscripcion="<?= (int)$asis['fin_inscripcion_id'] ?>"
+                                data-alumno="<?= (int)$asis['alu_alumno_id'] ?>"
+                                data-estado="<?= htmlspecialchars($estadoActual) ?>">
+
+                                <td class="text-center text-muted align-middle"><?= $i + 1 ?></td>
+
+                                <td class="align-middle fw-500">
+                                    <?= htmlspecialchars($asis['nombre']) ?>
+                                </td>
+
+                                <td class="align-middle py-1">
+                                    <div class="btn-group btn-group-sm w-100" role="group">
+                                        <?php foreach ($claseBtn as $estado => $color):
+                                            $esActivo = $estadoActual === $estado;
+                                            $clase    = $esActivo ? "btn-{$color}" : "btn-outline-{$color}";
+                                            $labels   = ['PRESENTE'=>'Presente','TARDANZA'=>'Tardanza','AUSENTE'=>'Ausente','JUSTIFICADO'=>'Justificado'];
+                                            $icons    = ['PRESENTE'=>'fa-check','TARDANZA'=>'fa-clock','AUSENTE'=>'fa-times','JUSTIFICADO'=>'fa-file-alt'];
+                                        ?>
+                                        <button type="button"
+                                                class="btn btn-asist <?= $clase ?>"
+                                                data-estado="<?= $estado ?>">
+                                            <i class="fas <?= $icons[$estado] ?> mr-1"></i><?= $labels[$estado] ?>
+                                        </button>
+                                        <?php endforeach; ?>
+                                    </div>
+                                </td>
+
+                                <td class="text-center align-middle">
+                                    <span class="ind-ok text-success <?= $estadoActual ? '' : 'd-none' ?>">
+                                        <i class="fas fa-check-circle"></i>
+                                    </span>
+                                    <span class="ind-spin d-none">
+                                        <i class="fas fa-circle-notch fa-spin text-muted"></i>
+                                    </span>
+                                    <span class="ind-err d-none text-danger" title="Error — haga clic de nuevo">
+                                        <i class="fas fa-exclamation-circle"></i>
+                                    </span>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
+
+        <?php else: ?>
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-clipboard-check fa-3x text-muted mb-3 d-block opacity-50"></i>
+                <p class="text-muted mb-0">Seleccione fecha y grupo para cargar la asistencia.</p>
+            </div>
+        </div>
+        <?php endif; ?>
 
     </div>
 </section>
 
-<!-- Modal Asistencia Detalle -->
-<div class="modal fade" id="modalAsistencia" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header" style="background-color: <?= $moduloColor ?>; color: #fff;">
-                <h5 class="modal-title">
-                    <i class="<?= $moduloIcon ?>"></i> Detalle de Asistencia
-                </h5>
-                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <form id="formAsistenciaDetalle">
-                <input type="hidden" name="csrf_token" value="<?= $csrf_token ?? '' ?>">
-                <input type="hidden" name="alumno_id" id="det_alumno_id">
-                <input type="hidden" name="grupo_id" id="det_grupo_id">
-                <input type="hidden" name="fecha" id="det_fecha">
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label>Alumno</label>
-                        <input type="text" class="form-control" id="det_alumno_nombre" readonly>
-                    </div>
-                    <div class="form-group">
-                        <label for="det_estado">Estado <span class="text-danger">*</span></label>
-                        <select class="form-control" id="det_estado" name="estado" required>
-                            <option value="PRESENTE">Presente</option>
-                            <option value="AUSENTE">Ausente</option>
-                            <option value="TARDANZA">Tardanza</option>
-                            <option value="JUSTIFICADO">Justificado</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="det_observaciones">Observaciones</label>
-                        <textarea class="form-control" id="det_observaciones" name="observaciones" rows="3" placeholder="Motivo de ausencia, tardanza, etc."></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-success">
-                        <i class="fas fa-save"></i> Guardar
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
 <?php ob_start(); ?>
+<style nonce="<?= cspNonce() ?>">
+/* Botones de asistencia */
+.btn-asist {
+    flex: 1;
+    font-size: 0.77rem;
+    padding: 4px 5px;
+    white-space: nowrap;
+    transition: opacity 0.12s ease, transform 0.08s ease;
+}
+/* Botones no seleccionados: reducir prominencia */
+.btn-asist.btn-outline-success,
+.btn-asist.btn-outline-warning,
+.btn-asist.btn-outline-danger,
+.btn-asist.btn-outline-info { opacity: 0.38; }
+.btn-asist.btn-outline-success:hover,
+.btn-asist.btn-outline-warning:hover,
+.btn-asist.btn-outline-danger:hover,
+.btn-asist.btn-outline-info:hover   { opacity: 0.82; }
+/* Botón activo: micro-bounce */
+.btn-asist.btn-success,
+.btn-asist.btn-warning,
+.btn-asist.btn-danger,
+.btn-asist.btn-info { opacity: 1; }
+/* Filas */
+.fila-alumno:hover { background: rgba(34,197,94,.04) !important; }
+.fw-500 { font-weight: 500; }
+/* Contadores */
+#contadores .badge { font-size: 0.82rem; cursor: default; }
+</style>
+
 <script nonce="<?= cspNonce() ?>">
-$(document).ready(function() {
-    // Mostrar acciones masivas si hay datos
-    if ($('#tablaAsistencia tbody tr').length > 0) {
-        $('#accionesMasivas').show();
+(function () {
+    'use strict';
+
+    var URL_MARCAR = '<?= url("futbol", "asistencia", "marcarUno") ?>';
+    var URL_CARGAR = '<?= url("futbol", "asistencia", "index") ?>';
+    var CSRF       = '<?= addslashes($csrfToken) ?>';
+    var GRUPO_ID   = <?= (int)$grupoId ?>;
+    var FECHA      = '<?= htmlspecialchars($fecha_actual, ENT_QUOTES) ?>';
+
+    var COLOR_MAP = { PRESENTE: 'success', TARDANZA: 'warning', AUSENTE: 'danger', JUSTIFICADO: 'info' };
+
+    // ── Toast micro-feedback ─────────────────────────────────────
+    function toast(mensaje, tipo) {
+        if (typeof Swal === 'undefined') return;
+        Swal.fire({
+            toast: true, position: 'top-end', icon: tipo || 'info',
+            title: mensaje, showConfirmButton: false,
+            timer: 2000, timerProgressBar: true
+        });
     }
 
-    // Colorear selects de estado
-    $('.estado-asistencia').each(function() { colorearEstado($(this)); });
-    $('.estado-asistencia').on('change', function() { colorearEstado($(this)); });
+    // ── Contadores ───────────────────────────────────────────────
+    function actualizarContadores() {
+        var cnt = { PRESENTE: 0, TARDANZA: 0, AUSENTE: 0, JUSTIFICADO: 0, PENDIENTE: 0 };
+        document.querySelectorAll('.fila-alumno').forEach(function (fila) {
+            var e = fila.dataset.estado || '';
+            cnt.hasOwnProperty(e) ? cnt[e]++ : cnt.PENDIENTE++;
+        });
+        document.getElementById('cntPresente').textContent    = cnt.PRESENTE;
+        document.getElementById('cntTardanza').textContent    = cnt.TARDANZA;
+        document.getElementById('cntAusente').textContent     = cnt.AUSENTE;
+        document.getElementById('cntJustificado').textContent = cnt.JUSTIFICADO;
+        document.getElementById('cntPendiente').textContent   = cnt.PENDIENTE;
+    }
 
-    // Botón Cargar
-    $('#btnCargarAsistencia').on('click', cargarAsistencia);
+    // ── Actualizar botones de una fila ───────────────────────────
+    function aplicarEstadoVisual(fila, estado) {
+        fila.querySelectorAll('.btn-asist').forEach(function (btn) {
+            var e = btn.dataset.estado;
+            var c = COLOR_MAP[e] || 'secondary';
+            btn.className = 'btn btn-sm btn-asist ' + (e === estado ? 'btn-' + c : 'btn-outline-' + c);
+        });
+        fila.dataset.estado = estado || '';
+    }
 
-    // Botones marcar todos
-    $(document).on('click', '.js-marcar-todos', function() {
-        marcarTodos($(this).data('estado'));
+    // ── Guardar un alumno vía AJAX ───────────────────────────────
+    function guardarUno(fila, estado) {
+        var okEl   = fila.querySelector('.ind-ok');
+        var spinEl = fila.querySelector('.ind-spin');
+        var errEl  = fila.querySelector('.ind-err');
+
+        // Optimista: actualizar UI de inmediato
+        aplicarEstadoVisual(fila, estado);
+        actualizarContadores();
+        okEl.classList.add('d-none');
+        errEl.classList.add('d-none');
+        spinEl.classList.remove('d-none');
+
+        var fd = new FormData();
+        fd.append('csrf_token',    CSRF);
+        fd.append('inscripcion_id', fila.dataset.inscripcion);
+        fd.append('alumno_id',      fila.dataset.alumno);
+        fd.append('grupo_id',       GRUPO_ID);
+        fd.append('fecha',          FECHA);
+        fd.append('estado',         estado);
+
+        fetch(URL_MARCAR, { method: 'POST', body: fd })
+            .then(function (r) { return r.json(); })
+            .then(function (res) {
+                spinEl.classList.add('d-none');
+                if (res.success) {
+                    okEl.classList.remove('d-none');
+                } else {
+                    // Revertir estado visual
+                    aplicarEstadoVisual(fila, '');
+                    actualizarContadores();
+                    errEl.classList.remove('d-none');
+                    toast(res.message || 'Error al guardar', 'error');
+                }
+            })
+            .catch(function () {
+                spinEl.classList.add('d-none');
+                aplicarEstadoVisual(fila, '');
+                actualizarContadores();
+                errEl.classList.remove('d-none');
+                toast('Error de conexión', 'error');
+            });
+    }
+
+    // ── Clic en botón de asistencia ──────────────────────────────
+    document.addEventListener('click', function (e) {
+        var btn = e.target.closest('.btn-asist');
+        if (!btn) return;
+        var fila   = btn.closest('.fila-alumno');
+        var estado = btn.dataset.estado;
+        if (!fila || !estado || !GRUPO_ID) return;
+        guardarUno(fila, estado);
     });
 
-    // Botón Guardar Asistencia
-    $('#btnGuardarAsistencia').on('click', guardarAsistencia);
-
-    // Botón editar detalle (delegación para filas dinámicas)
-    $(document).on('click', '.js-editar-detalle', function() {
-        editarAsistenciaDetalle({
-            alumno_id:    $(this).data('alumno-id'),
-            alumno_nombre: $(this).data('nombre'),
-            estado:       $(this).data('estado'),
-            observaciones: $(this).data('obs')
+    // ── Marcar todos ─────────────────────────────────────────────
+    document.addEventListener('click', function (e) {
+        var btn = e.target.closest('.js-marcar-todos');
+        if (!btn) return;
+        var estado = btn.dataset.estado;
+        document.querySelectorAll('.fila-alumno').forEach(function (fila) {
+            // Solo guardar los que no tienen ya ese estado (evitar requests innecesarios)
+            if (fila.dataset.estado !== estado) guardarUno(fila, estado);
         });
     });
 
-    // Submit detalle
-    $('#formAsistenciaDetalle').on('submit', function(e) {
-        e.preventDefault();
-        var alumnoId = $('#det_alumno_id').val();
-        var estado = $('#det_estado').val();
-        var obs = $('#det_observaciones').val();
-        $('select.estado-asistencia[data-alumno-id="' + alumnoId + '"]').val(estado).trigger('change');
-        $('input.obs-asistencia[data-alumno-id="' + alumnoId + '"]').val(obs);
-        $('#modalAsistencia').modal('hide');
-    });
-});
-
-function colorearEstado(select) {
-    var colores = { PRESENTE: '#28a745', AUSENTE: '#dc3545', TARDANZA: '#ffc107', JUSTIFICADO: '#17a2b8' };
-    select.css('border-left', '4px solid ' + (colores[select.val()] || '#ccc'));
-}
-
-function cargarAsistencia() {
-    var fecha = $('#fechaAsistencia').val();
-    var grupoId = $('#grupoAsistencia').val();
-    if (!fecha || !grupoId) {
-        Swal.fire('Atención', 'Seleccione fecha y grupo.', 'warning');
-        return;
-    }
-    // Usar POST en lugar de concatenar a URL
-    var form = document.createElement('form');
-    form.method = 'POST';
-    form.action = '<?= url("futbol", "asistencia", "index") ?>';
-    
-    var inputFecha = document.createElement('input');
-    inputFecha.type = 'hidden';
-    inputFecha.name = 'fecha';
-    inputFecha.value = fecha;
-    form.appendChild(inputFecha);
-    
-    var inputGrupo = document.createElement('input');
-    inputGrupo.type = 'hidden';
-    inputGrupo.name = 'grupo';
-    inputGrupo.value = grupoId;
-    form.appendChild(inputGrupo);
-    
-    document.body.appendChild(form);
-    form.submit();
-}
-
-function guardarAsistencia() {
-    var fecha = $('#fechaAsistencia').val();
-    var grupoId = $('#grupoAsistencia').val();
-    if (!fecha || !grupoId) {
-        Swal.fire('Atención', 'Seleccione fecha y grupo.', 'warning');
-        return;
+    // ── Limpiar selección visual (sin guardar en BD) ─────────────
+    var btnLimpiar = document.getElementById('btnLimpiar');
+    if (btnLimpiar) {
+        btnLimpiar.addEventListener('click', function () {
+            document.querySelectorAll('.fila-alumno').forEach(function (fila) {
+                aplicarEstadoVisual(fila, '');
+                fila.querySelector('.ind-ok').classList.add('d-none');
+                fila.querySelector('.ind-err').classList.add('d-none');
+            });
+            actualizarContadores();
+        });
     }
 
-    var asistencia = {};
-    var obsData = {};
-    $('#tablaAsistencia tbody tr').each(function() {
-        var inscId = $(this).data('inscripcion-id');
-        var estado = $(this).find('.estado-asistencia').val();
-        var obs = $(this).find('.obs-asistencia').val();
-        asistencia[inscId] = estado;
-        if (obs) obsData['obs_' + inscId] = obs;
-    });
-
-    var postData = {
-        csrf_token: '<?= $csrf_token ?? "" ?>',
-        fecha: fecha,
-        grupo_id: grupoId,
-        asistencia: asistencia
-    };
-    $.extend(postData, obsData);
-
-    $.ajax({
-        url: '<?= url("futbol", "asistencia", "guardar") ?>',
-        method: 'POST',
-        data: postData,
-        dataType: 'json',
-        success: function(response) {
-            if (response.success) {
-                Swal.fire('¡Guardado!', response.message || 'Asistencia registrada correctamente.', 'success');
-            } else {
-                Swal.fire('Error', response.message || 'No se pudo guardar.', 'error');
-            }
-        },
-        error: function() {
-            Swal.fire('Error', 'Error de conexión con el servidor.', 'error');
+    // ── Botón Cargar ─────────────────────────────────────────────
+    document.getElementById('btnCargar').addEventListener('click', function () {
+        var fecha   = document.getElementById('fechaAsistencia').value;
+        var grupoId = document.getElementById('grupoAsistencia').value;
+        if (!fecha || !grupoId) {
+            if (typeof Swal !== 'undefined') Swal.fire('Atención', 'Seleccione fecha y grupo.', 'warning');
+            return;
         }
+        var form = document.createElement('form');
+        form.method = 'POST';
+        form.action = URL_CARGAR;
+        [{ n: 'fecha', v: fecha }, { n: 'grupo', v: grupoId }].forEach(function (p) {
+            var inp = document.createElement('input');
+            inp.type = 'hidden'; inp.name = p.n; inp.value = p.v;
+            form.appendChild(inp);
+        });
+        document.body.appendChild(form);
+        form.submit();
     });
-}
 
-function marcarTodos(estado) {
-    $('.estado-asistencia').val(estado).trigger('change');
-    Swal.fire({
-        toast: true,
-        position: 'top-end',
-        icon: 'info',
-        title: 'Todos marcados como ' + estado,
-        showConfirmButton: false,
-        timer: 1500
-    });
-}
+    // ── Inicializar contadores al cargar ─────────────────────────
+    actualizarContadores();
 
-function editarAsistenciaDetalle(obj) {
-    $('#det_alumno_id').val(obj.alumno_id || '');
-    $('#det_grupo_id').val($('#grupoAsistencia').val());
-    $('#det_fecha').val($('#fechaAsistencia').val());
-    $('#det_alumno_nombre').val(obj.alumno_nombre || '');
-    $('#det_estado').val(obj.estado || 'PRESENTE');
-    $('#det_observaciones').val(obj.observaciones || '');
-    $('#modalAsistencia').modal('show');
-}
+}());
 </script>
 <?php $scripts = ob_get_clean(); ?>
