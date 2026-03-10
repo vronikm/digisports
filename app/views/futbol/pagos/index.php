@@ -1,26 +1,24 @@
 <?php
 /**
- * Vista de Pagos - Módulo Fútbol
- * @vars $pagos, $alumnos, $grupos, $periodos, $sedes, $sede_activa, $csrf_token, $modulo_actual
+ * Vista Gestión de Pagos - Lista de Alumnos
+ * @var array $alumnos
+ * @var array $totales
+ * @var array $categorias
+ * @var array $grupos
+ * @var string $q
+ * @var string $categoria_id
+ * @var string $grupo_id
+ * @var string $estado_pago
+ * @var string $csrf_token
+ * @var array  $modulo_actual
  */
-$moduloColor = '#22C55E';
-$moduloIcon = 'fas fa-futbol';
+$moduloColor = $modulo_actual['color'] ?? '#22C55E';
+$totales     = $totales ?? [];
+$alumnos     = $alumnos ?? [];
 
-// Calcular resumen
-$totalCobrado = 0;
-$totalPendiente = 0;
-$totalMora = 0;
-if (!empty($pagos)) {
-    foreach ($pagos as $p) {
-        if (($p['fpg_estado'] ?? '') === 'PAGADO') {
-            $totalCobrado += floatval($p['fpg_total'] ?? 0);
-        }
-        if (in_array($p['fpg_estado'] ?? '', ['PENDIENTE', 'PARCIAL', 'VENCIDO'])) {
-            $totalPendiente += floatval($p['fpg_total'] ?? 0);
-        }
-        $totalMora += floatval($p['fpg_recargo_mora'] ?? 0);
-    }
-}
+$totalCobrado   = $totales['PAGADO']    ?? 0;
+$totalPendiente = ($totales['PENDIENTE'] ?? 0) + ($totales['VENCIDO'] ?? 0);
+$totalMora      = $totales['VENCIDO']   ?? 0;
 ?>
 
 <!-- Content Header -->
@@ -29,8 +27,7 @@ if (!empty($pagos)) {
         <div class="row mb-2">
             <div class="col-sm-6">
                 <h1 class="m-0">
-                    <i class="<?= $moduloIcon ?>" style="color: <?= $moduloColor ?>"></i>
-                    Gestión de Pagos
+                    <i class="fas fa-futbol mr-2" style="color:<?= $moduloColor ?>"></i>Gestión de Pagos
                 </h1>
             </div>
             <div class="col-sm-6">
@@ -43,11 +40,10 @@ if (!empty($pagos)) {
     </div>
 </div>
 
-<!-- Main content -->
 <section class="content">
     <div class="container-fluid">
 
-        <!-- Summary Cards -->
+        <!-- Resumen financiero -->
         <div class="row">
             <div class="col-lg-4 col-6">
                 <div class="small-box bg-success">
@@ -62,7 +58,7 @@ if (!empty($pagos)) {
                 <div class="small-box bg-warning">
                     <div class="inner">
                         <h3>$<?= number_format($totalPendiente, 2) ?></h3>
-                        <p>Pendiente</p>
+                        <p>Pendiente de Cobro</p>
                     </div>
                     <div class="icon"><i class="fas fa-clock"></i></div>
                 </div>
@@ -71,135 +67,152 @@ if (!empty($pagos)) {
                 <div class="small-box bg-danger">
                     <div class="inner">
                         <h3>$<?= number_format($totalMora, 2) ?></h3>
-                        <p>En Mora</p>
+                        <p>En Mora (Vencido)</p>
                     </div>
                     <div class="icon"><i class="fas fa-exclamation-triangle"></i></div>
                 </div>
             </div>
         </div>
 
-        <!-- Filtro y botón -->
-        <div class="row mb-3">
-            <div class="col-md-3">
-                <select class="form-control" id="filtroSede">
-                    <option value="">Todas las sedes</option>
-                    <?php if (!empty($sedes)): ?>
-                        <?php foreach ($sedes as $sede): ?>
-                            <option value="<?= $sede['sed_sede_id'] ?>" <?= (isset($sede_activa) && $sede_activa == $sede['sed_sede_id']) ? 'selected' : '' ?>>
-                                <?= htmlspecialchars($sede['sed_nombre']) ?>
-                            </option>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
-                </select>
+        <!-- Filtros -->
+        <div class="card card-outline" style="border-top-color:<?= $moduloColor ?>">
+            <div class="card-header py-2">
+                <h3 class="card-title"><i class="fas fa-filter mr-1"></i> Buscar Alumno</h3>
             </div>
-            <div class="col-md-9 text-right">
-                <button type="button" class="btn btn-success" id="btnNuevoPago">
-                    <i class="fas fa-plus"></i> Nuevo Pago
-                </button>
+            <div class="card-body py-2">
+                <form id="formFiltroPagos" class="row align-items-end">
+                    <div class="col-md-3">
+                        <label class="small">Buscar</label>
+                        <input type="text" id="filtroQ" class="form-control form-control-sm"
+                               placeholder="Nombres, apellidos, cédula..."
+                               value="<?= htmlspecialchars($q ?? '') ?>">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="small">Categoría</label>
+                        <select id="filtroCategoriaId" class="form-control form-control-sm">
+                            <option value="">— Todas —</option>
+                            <?php foreach ($categorias ?? [] as $cat): ?>
+                            <option value="<?= $cat['fct_categoria_id'] ?>"
+                                <?= ($categoria_id ?? '') == $cat['fct_categoria_id'] ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($cat['fct_nombre']) ?>
+                            </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="small">Grupo</label>
+                        <select id="filtroGrupoId" class="form-control form-control-sm">
+                            <option value="">— Todos —</option>
+                            <?php foreach ($grupos ?? [] as $g): ?>
+                            <option value="<?= $g['fgr_grupo_id'] ?>"
+                                <?= ($grupo_id ?? '') == $g['fgr_grupo_id'] ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($g['fgr_nombre']) ?>
+                            </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="small">Estado de Pago</label>
+                        <select id="filtroEstadoPago" class="form-control form-control-sm">
+                            <option value="">— Todos —</option>
+                            <option value="AL_DIA" <?= ($estado_pago ?? '') === 'AL_DIA' ? 'selected' : '' ?>>Al día</option>
+                            <option value="MORA"   <?= ($estado_pago ?? '') === 'MORA'   ? 'selected' : '' ?>>En mora</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 text-right">
+                        <button type="submit" class="btn btn-sm btn-primary">
+                            <i class="fas fa-search mr-1"></i>Filtrar
+                        </button>
+                        <a href="<?= url('futbol', 'pago', 'index') ?>" class="btn btn-sm btn-outline-secondary ml-1">
+                            <i class="fas fa-times mr-1"></i>Limpiar
+                        </a>
+                    </div>
+                </form>
             </div>
         </div>
 
-        <!-- Tabla de Pagos -->
-        <div class="card">
-            <div class="card-header" style="border-top: 3px solid <?= $moduloColor ?>">
-                <h3 class="card-title"><i class="fas fa-money-bill-wave"></i> Listado de Pagos</h3>
+        <!-- Lista de alumnos -->
+        <div class="card shadow-sm">
+            <div class="card-header py-2" style="border-top: 3px solid <?= $moduloColor ?>">
+                <h3 class="card-title">
+                    <i class="fas fa-users mr-1"></i>
+                    Alumnos
+                    <span class="badge badge-secondary ml-2"><?= count($alumnos) ?></span>
+                </h3>
             </div>
-            <div class="card-body">
-                <?php if (!empty($pagos)): ?>
-                    <div class="table-responsive">
-                        <table class="table table-bordered table-striped table-hover" id="tablaPagos">
-                            <thead>
-                                <tr>
-                                    <th width="40">#</th>
-                                    <th>Alumno</th>
-                                    <th>Grupo</th>
-                                    <th>Tipo</th>
-                                    <th>Monto</th>
-                                    <th>Mes</th>
-                                    <th>Estado</th>
-                                    <th>Método Pago</th>
-                                    <th>Fecha Pago</th>
-                                    <th>Recargo</th>
-                                    <th width="160">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($pagos as $i => $pago): ?>
-                                    <tr>
-                                        <td><?= $i + 1 ?></td>
-                                        <td><?= htmlspecialchars(($pago['alu_nombres'] ?? '') . ' ' . ($pago['alu_apellidos'] ?? '')) ?></td>
-                                        <td><?= htmlspecialchars($pago['grupo_nombre'] ?? '') ?></td>
-                                        <td>
-                                            <?php
-                                            $tipoIcons = [
-                                                'MENSUALIDAD' => 'fas fa-calendar-alt',
-                                                'INSCRIPCION' => 'fas fa-user-plus',
-                                                'UNIFORME' => 'fas fa-tshirt',
-                                                'MATERIAL' => 'fas fa-futbol',
-                                                'TORNEO' => 'fas fa-trophy',
-                                                'OTRO' => 'fas fa-ellipsis-h'
-                                            ];
-                                            $tipo = $pago['fpg_tipo'] ?? 'OTRO';
-                                            $icon = $tipoIcons[$tipo] ?? 'fas fa-tag';
-                                            ?>
-                                            <i class="<?= $icon ?>"></i> <?= $tipo ?>
-                                        </td>
-                                        <td>$<?= number_format($pago['fpg_monto'] ?? 0, 2) ?></td>
-                                        <td><?= $pago['fpg_mes_correspondiente'] ?? '' ?></td>
-                                        <td>
-                                            <?php
-                                            $estadoClass = [
-                                                'PENDIENTE' => 'warning',
-                                                'PAGADO' => 'success',
-                                                'PARCIAL' => 'info',
-                                                'VENCIDO' => 'danger',
-                                                'ANULADO' => 'secondary'
-                                            ];
-                                            $estado = $pago['fpg_estado'] ?? 'PENDIENTE';
-                                            $clase = $estadoClass[$estado] ?? 'secondary';
-                                            ?>
-                                            <span class="badge badge-<?= $clase ?>"><?= $estado ?></span>
-                                        </td>
-                                        <td><?= htmlspecialchars($pago['fpg_metodo_pago'] ?? '') ?></td>
-                                        <td><?= isset($pago['fpg_fecha']) ? date('d/m/Y', strtotime($pago['fpg_fecha'])) : '' ?></td>
-                                        <td>
-                                            <?php if (($pago['fpg_recargo_mora'] ?? 0) > 0): ?>
-                                                <span class="text-danger font-weight-bold">$<?= number_format($pago['fpg_recargo_mora'], 2) ?></span>
-                                            <?php else: ?>
-                                                <span class="text-muted">$0.00</span>
-                                            <?php endif; ?>
-                                        </td>
-                                        <td>
-                                            <div class="btn-group btn-group-sm">
-                                                <button type="button" class="btn btn-info js-editar-pago" title="Editar"
-                                                    data-pago="<?= htmlspecialchars(json_encode($pago, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_QUOT | JSON_HEX_APOS), ENT_QUOTES) ?>">
-                                                    <i class="fas fa-edit"></i>
-                                                </button>
-                                                <button type="button" class="btn btn-success js-comprobante" title="Comprobante"
-                                                    data-id="<?= $pago['fpg_pago_id'] ?? 0 ?>">
-                                                    <i class="fas fa-file-invoice-dollar"></i>
-                                                </button>
-                                                <?php if (($pago['fpg_estado'] ?? '') !== 'ANULADO'): ?>
-                                                    <button type="button" class="btn btn-warning js-anular" title="Anular"
-                                                        data-id="<?= $pago['fpg_pago_id'] ?? 0 ?>">
-                                                        <i class="fas fa-ban"></i>
-                                                    </button>
-                                                <?php endif; ?>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                    </div>
+            <div class="card-body p-0">
+                <?php if (empty($alumnos)): ?>
+                <div class="text-center py-5 text-muted">
+                    <i class="fas fa-search fa-3x mb-3 opacity-50"></i>
+                    <p>No se encontraron alumnos con los filtros aplicados.</p>
+                </div>
                 <?php else: ?>
-                    <div class="text-center py-5">
-                        <i class="fas fa-money-bill-wave fa-3x opacity-50 text-muted mb-3"></i>
-                        <p class="text-muted">No hay pagos registrados.</p>
-                        <button class="btn btn-success btn-sm" id="btnNuevoPagoEmpty">
-                            <i class="fas fa-plus"></i> Registrar primer pago
-                        </button>
-                    </div>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0" id="tablaAlumnosPagos">
+                        <thead class="thead-light">
+                            <tr>
+                                <th width="110">Cédula</th>
+                                <th>Nombres y Apellidos</th>
+                                <th>Categoría / Grupo</th>
+                                <th class="text-center" width="110">Estado Pago</th>
+                                <th class="text-center" width="90">Beca/Desc.</th>
+                                <th class="text-center" width="140">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($alumnos as $a): ?>
+                            <tr>
+                                <td>
+                                    <?php if (!empty($a['alu_identificacion'])): ?>
+                                    <code class="small"><?= htmlspecialchars($a['alu_identificacion']) ?></code>
+                                    <?php else: ?>
+                                    <span class="text-muted small">Sin cédula</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td>
+                                    <strong><?= htmlspecialchars($a['alu_nombres'] . ' ' . $a['alu_apellidos']) ?></strong>
+                                    <?php if (($a['alu_estado'] ?? '') !== 'ACTIVO'): ?>
+                                    <br><span class="badge badge-secondary badge-sm"><?= $a['alu_estado'] ?></span>
+                                    <?php endif; ?>
+                                </td>
+                                <td>
+                                    <?php if (!empty($a['categoria_nombre'])): ?>
+                                    <span class="badge badge-sm" style="background:<?= htmlspecialchars($a['categoria_color'] ?? '#6c757d') ?>;color:white;">
+                                        <?= htmlspecialchars($a['categoria_nombre']) ?>
+                                    </span>
+                                    <?php endif; ?>
+                                    <?php if (!empty($a['grupo_nombre'])): ?>
+                                    <br><small class="text-muted"><?= htmlspecialchars($a['grupo_nombre']) ?></small>
+                                    <?php endif; ?>
+                                </td>
+                                <td class="text-center">
+                                    <?php if ($a['tiene_mora']): ?>
+                                    <span class="badge badge-danger"><i class="fas fa-exclamation-circle mr-1"></i>En Mora</span>
+                                    <?php else: ?>
+                                    <span class="badge badge-success"><i class="fas fa-check-circle mr-1"></i>Al Día</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td class="text-center">
+                                    <?php if ($a['tiene_descuento']): ?>
+                                    <span class="badge badge-info" title="Tiene beca o descuento registrado">
+                                        <i class="fas fa-tag mr-1"></i>Sí
+                                    </span>
+                                    <?php else: ?>
+                                    <span class="text-muted small">—</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td class="text-center">
+                                    <a href="<?= url('futbol', 'pago', 'alumno') ?>&id=<?= $a['alu_alumno_id'] ?>"
+                                       class="btn btn-sm btn-success"
+                                       title="Registrar / Ver pagos">
+                                        <i class="fas fa-dollar-sign mr-1"></i>Registrar Pago
+                                    </a>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
                 <?php endif; ?>
             </div>
         </div>
@@ -207,330 +220,39 @@ if (!empty($pagos)) {
     </div>
 </section>
 
-<!-- Modal Pago -->
-<div class="modal fade" id="modalPago" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
-            <div class="modal-header" style="background-color: <?= $moduloColor ?>; color: #fff;">
-                <h5 class="modal-title" id="modalPagoTitle">
-                    <i class="<?= $moduloIcon ?>"></i> Nuevo Pago
-                </h5>
-                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <form id="formPago" method="POST">
-                <input type="hidden" name="csrf_token" value="<?= $csrf_token ?? '' ?>">
-                <input type="hidden" name="id" id="fpg_id">
-                <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="fpg_alumno_id">Alumno <span class="text-danger">*</span></label>
-                                <select class="form-control select2" id="fpg_alumno_id" name="alumno_id" required style="width: 100%;">
-                                    <option value="">Seleccionar alumno...</option>
-                                    <?php if (!empty($alumnos)): ?>
-                                        <?php foreach ($alumnos as $alumno): ?>
-                                            <option value="<?= $alumno['alu_alumno_id'] ?>"><?= htmlspecialchars(($alumno['alu_nombres'] ?? '') . ' ' . ($alumno['alu_apellidos'] ?? '')) ?></option>
-                                        <?php endforeach; ?>
-                                    <?php endif; ?>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="fpg_grupo_id">Grupo <span class="text-danger">*</span></label>
-                                <select class="form-control" id="fpg_grupo_id" name="grupo_id" required>
-                                    <option value="">Seleccionar grupo</option>
-                                    <?php if (!empty($grupos)): ?>
-                                        <?php foreach ($grupos as $grupo): ?>
-                                            <option value="<?= $grupo['fgr_grupo_id'] ?>"><?= htmlspecialchars($grupo['fgr_nombre']) ?></option>
-                                        <?php endforeach; ?>
-                                    <?php endif; ?>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label for="fpg_tipo">Tipo <span class="text-danger">*</span></label>
-                                <select class="form-control" id="fpg_tipo" name="tipo" required>
-                                    <option value="MENSUALIDAD">Mensualidad</option>
-                                    <option value="INSCRIPCION">Inscripción</option>
-                                    <option value="UNIFORME">Uniforme</option>
-                                    <option value="MATERIAL">Material</option>
-                                    <option value="TORNEO">Torneo</option>
-                                    <option value="OTRO">Otro</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label for="fpg_monto">Monto ($) <span class="text-danger">*</span></label>
-                                <input type="number" class="form-control" id="fpg_monto" name="monto" step="0.01" min="0" required>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label for="fpg_mes_correspondiente">Mes Correspondiente</label>
-                                <input type="month" class="form-control" id="fpg_mes_correspondiente" name="mes_correspondiente">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label for="fpg_descuento">Descuento ($)</label>
-                                <input type="number" class="form-control" id="fpg_descuento" name="descuento" step="0.01" min="0" value="0">
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label for="fpg_recargo_mora">Recargo mora ($)</label>
-                                <input type="number" class="form-control" id="fpg_recargo_mora" name="recargo_mora" step="0.01" min="0" value="0">
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label for="fpg_metodo_pago">Método de Pago <span class="text-danger">*</span></label>
-                                <select class="form-control" id="fpg_metodo_pago" name="metodo_pago" required>
-                                    <option value="EFECTIVO">Efectivo</option>
-                                    <option value="TRANSFERENCIA">Transferencia</option>
-                                    <option value="TARJETA">Tarjeta</option>
-                                    <option value="DEPOSITO">Depósito</option>
-                                    <option value="CHEQUE">Cheque</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label for="fpg_referencia">Referencia / Nro. Transacción</label>
-                                <input type="text" class="form-control" id="fpg_referencia" name="referencia" placeholder="Nro. de comprobante">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="fpg_notas">Notas</label>
-                        <textarea class="form-control" id="fpg_notas" name="notas" rows="2" placeholder="Observaciones adicionales..."></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-success">
-                        <i class="fas fa-save"></i> Guardar
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
 <?php ob_start(); ?>
 <script nonce="<?= cspNonce() ?>">
-$(document).ready(function() {
-    // Inicializar DataTable
-    if ($('#tablaPagos tbody tr').length > 0 && !$('#tablaPagos tbody .text-center').length) {
-        $('#tablaPagos').DataTable({
-            language: { url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json' },
-            order: [[8, 'desc']],
-            responsive: true
-        });
-    }
-
-    // Filtro sede
-    $('#filtroSede').on('change', function() { filtrarPorSede($(this).val()); });
-
-    // Nuevo pago
-    $('#btnNuevoPago, #btnNuevoPagoEmpty').on('click', limpiarFormulario);
-
-    // Acciones de la tabla
-    $(document).on('click', '.js-editar-pago', function() {
-        editarPago($(this).data('pago'));
-    });
-    $(document).on('click', '.js-comprobante', function() {
-        generarComprobante($(this).data('id'));
-    });
-    $(document).on('click', '.js-anular', function() {
-        anularPago($(this).data('id'));
-    });
-
-    // Select2
-    $('#fpg_alumno_id').select2({
-        theme: 'bootstrap4',
-        placeholder: 'Seleccionar alumno...',
-        allowClear: true,
-        dropdownParent: $('#modalPago')
-    });
-
-    // Submit
-    $('#formPago').on('submit', function(e) {
+$(function () {
+    // Filtro: POST para preservar el parámetro ?r= del router encriptado
+    document.getElementById('formFiltroPagos').addEventListener('submit', function (e) {
         e.preventDefault();
-        var formData = $(this).serialize();
-        var id = $('#fpg_id').val();
-        var urlAction = id
-            ? '<?= url("futbol", "pago", "editar") ?>'
-            : '<?= url("futbol", "pago", "crear") ?>';
-
-        $.post(urlAction, formData, function(response) {
-            if (response.success) {
-                Swal.fire('¡Éxito!', response.message || 'Pago registrado correctamente.', 'success')
-                    .then(() => location.reload());
-            } else {
-                Swal.fire('Error', response.message || 'No se pudo guardar el pago.', 'error');
-            }
-        }, 'json').fail(function() {
-            Swal.fire('Error', 'Error de conexión con el servidor.', 'error');
+        var fields = [
+            { n: 'q',            v: document.getElementById('filtroQ').value },
+            { n: 'categoria_id', v: document.getElementById('filtroCategoriaId').value },
+            { n: 'grupo_id',     v: document.getElementById('filtroGrupoId').value },
+            { n: 'estado_pago',  v: document.getElementById('filtroEstadoPago').value },
+        ];
+        var form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '<?= url('futbol', 'pago', 'index') ?>';
+        fields.forEach(function (p) {
+            var inp = document.createElement('input');
+            inp.type = 'hidden'; inp.name = p.n; inp.value = p.v;
+            form.appendChild(inp);
         });
+        document.body.appendChild(form);
+        form.submit();
     });
+
+    if ($('#tablaAlumnosPagos tbody tr').length > 1) {
+        $('#tablaAlumnosPagos').DataTable({
+            language: { url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json' },
+            pageLength: 25,
+            order: [[1, 'asc']],
+            responsive: true,
+            columnDefs: [{ orderable: false, targets: [4, 5] }]
+        });
+    }
 });
-
-function limpiarFormulario() {
-    $('#formPago')[0].reset();
-    $('#fpg_id').val('');
-    $('#fpg_alumno_id').val(null).trigger('change');
-    $('#fpg_tipo').val('MENSUALIDAD');
-    $('#fpg_metodo_pago').val('EFECTIVO');
-    $('#fpg_descuento').val(0);
-    $('#fpg_recargo_mora').val(0);
-    $('#modalPagoTitle').html('<i class="<?= $moduloIcon ?>"></i> Nuevo Pago');
-    abrirModalPago();
-}
-
-function editarPago(obj) {
-    var modal = document.getElementById('modalPago');
-    if (!modal) {
-        Swal.fire('Error', 'Modal no encontrado', 'error');
-        return;
-    }
-    $('#formPago')[0].reset();
-    $('#fpg_id').val(obj.fpg_pago_id);
-    $('#fpg_alumno_id').val(obj.fpg_alumno_id || '').trigger('change');
-    $('#fpg_grupo_id').val(obj.fpg_grupo_id || '');
-    $('#fpg_tipo').val(obj.fpg_tipo || 'MENSUALIDAD');
-    $('#fpg_monto').val(obj.fpg_monto || '');
-    $('#fpg_mes_correspondiente').val(obj.fpg_mes_correspondiente || '');
-    $('#fpg_descuento').val(obj.fpg_descuento || 0);
-    $('#fpg_recargo_mora').val(obj.fpg_recargo_mora || 0);
-    $('#fpg_metodo_pago').val(obj.fpg_metodo_pago || 'EFECTIVO');
-    $('#fpg_referencia').val(obj.fpg_referencia || '');
-    $('#fpg_notas').val(obj.fpg_notas || '');
-    $('#modalPagoTitle').html('<i class="<?= $moduloIcon ?>"></i> Editar Pago');
-    document.body.classList.remove('hold-transition');
-    abrirModalPago();
-}
-
-function abrirModalPago() {
-    var modal = document.getElementById('modalPago');
-    if (!modal) {
-        Swal.fire('Error', 'Modal no encontrado', 'error');
-        return;
-    }
-    document.body.classList.remove('hold-transition');
-    var modalShown = false;
-    try {
-        if (typeof jQuery !== 'undefined' && jQuery.fn && jQuery.fn.modal) {
-            jQuery('#modalPago').modal('show');
-            modalShown = true;
-            setTimeout(function() {
-                if (!modal.classList.contains('show')) {
-                    abrirModalPagoManual(modal);
-                }
-            }, 300);
-            return;
-        }
-    } catch(e) {
-        console.warn('Bootstrap modal falló:', e);
-        modalShown = false;
-    }
-    abrirModalPagoManual(modal);
-}
-
-function abrirModalPagoManual(modal) {
-    if (!modal) return;
-    modal.style.display = 'block';
-    modal.classList.add('show');
-    var backdrop = document.querySelector('.modal-backdrop');
-    if (!backdrop) {
-        backdrop = document.createElement('div');
-        backdrop.className = 'modal-backdrop fade show';
-        document.body.appendChild(backdrop);
-    }
-    if (!document.body.classList.contains('modal-open')) {
-        document.body.style.overflow = 'hidden';
-        document.body.classList.add('modal-open');
-    }
-}
-
-function cerrarModalPago() {
-    var modal = document.getElementById('modalPago');
-    if (!modal) return;
-    try {
-        if (typeof jQuery !== 'undefined' && jQuery.fn && jQuery.fn.modal) {
-            jQuery('#modalPago').modal('hide');
-            return;
-        }
-    } catch(e) {
-        console.warn('Bootstrap modal falló al cerrar:', e);
-    }
-    modal.style.display = 'none';
-    modal.classList.remove('show');
-    document.body.classList.remove('modal-open');
-    document.body.style.overflow = '';
-    var backdrop = document.querySelector('.modal-backdrop');
-    if (backdrop) {
-        backdrop.remove();
-    }
-}
-
-function anularPago(id) {
-    Swal.fire({
-        title: '¿Anular pago?',
-        text: 'El pago será marcado como ANULADO.',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#ffc107',
-        cancelButtonColor: '#6c757d',
-        confirmButtonText: 'Sí, anular',
-        cancelButtonText: 'Cancelar'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            window.location.href = '<?= url("futbol", "pago", "anular") ?>&id=' + id;
-        }
-    });
-}
-
-function generarComprobante(id) {
-    Swal.fire({
-        title: '¿Generar comprobante?',
-        text: 'Se generará un recibo de pago.',
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonText: 'Sí, generar',
-        cancelButtonText: 'Cancelar'
-    }).then(function(r) {
-        if (r.isConfirmed) {
-            $.post('<?= url("futbol", "comprobante", "crear") ?>', {
-                csrf_token: '<?= $csrf_token ?? "" ?>',
-                pago_id: id,
-                tipo: 'RECIBO'
-            }, function(res) {
-                if (res.success) {
-                    Swal.fire('¡Generado!', res.message, 'success');
-                } else {
-                    Swal.fire('Error', res.message, 'error');
-                }
-            }, 'json').fail(function() {
-                Swal.fire('Error', 'Error de conexión.', 'error');
-            });
-        }
-    });
-}
-
-function filtrarPorSede(sedeId) {
-    var url = '<?= url("futbol", "pago", "index") ?>';
-    if (sedeId) url += '&sede=' + sedeId;
-    window.location.href = url;
-}
 </script>
 <?php $scripts = ob_get_clean(); ?>
