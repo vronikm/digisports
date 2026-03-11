@@ -9,7 +9,7 @@
 
 namespace App\Controllers\Facturacion;
 
-require_once BASE_PATH . '/app/controllers/BaseController.php';
+require_once BASE_PATH . '/app/controllers/ModuleController.php';
 require_once BASE_PATH . '/app/services/SRI/FacturaElectronicaService.php';
 require_once BASE_PATH . '/app/services/SRI/FirmaElectronicaService.php';
 require_once BASE_PATH . '/app/services/SRI/WebServiceSRIService.php';
@@ -22,20 +22,19 @@ use App\Services\SRI\WebServiceSRIService;
 use App\Services\SRI\RIDEService;
 use App\Models\FacturaElectronica;
 
-class FacturaElectronicaController extends \BaseController {
-    
-    private $facturaService;
-    private $firmaService;
-    private $webServiceSRI;
-    private $rideService;
-    private $facturaModel;
-    private $configSRI;
-    
+class FacturaElectronicaController extends \App\Controllers\ModuleController {
+    protected $facturaService;
+    protected $firmaService;
+    protected $webServiceSRI;
+    protected $rideService;
+    protected $facturaModel;
+    protected $configSRI;
     /**
      * Constructor
      */
     public function __construct() {
         parent::__construct();
+        $this->moduloCodigo = 'facturacion';
         
         $this->facturaService = new FacturaElectronicaService();
         $this->firmaService = new FirmaElectronicaService();
@@ -49,15 +48,19 @@ class FacturaElectronicaController extends \BaseController {
      * Listado de facturas electrónicas
      */
     public function index() {
-        $tenantId = $_SESSION['tenant_id'] ?? 1;
+        $this->authorize('ver', 'facturacion');
+        $tenantId = $this->tenantId;
+        
         $filtros = [
-            'estado_sri' => $_GET['estado'] ?? null,
-            'fecha_desde' => $_GET['fecha_desde'] ?? null,
-            'fecha_hasta' => $_GET['fecha_hasta'] ?? null,
-            'busqueda' => $_GET['q'] ?? null,
+            'estado_sri' => $this->get('estado'),
+            'fecha_desde' => $this->get('fecha_desde'),
+            'fecha_hasta' => $this->get('fecha_hasta'),
+            'busqueda' => $this->get('q'),
         ];
         
-        $pagina = (int) ($_GET['pagina'] ?? 1);
+        $pagina = (int) ($this->get('pagina') ?? 1);
+        if ($pagina < 1) $pagina = 1;
+        
         $limite = 20;
         $offset = ($pagina - 1) * $limite;
         
@@ -78,13 +81,15 @@ class FacturaElectronicaController extends \BaseController {
         $this->viewData['resumen_estados'] = $resumenEstados;
         $this->viewData['title'] = 'Facturas Electrónicas';
         
-        $this->render('facturacion/facturas_electronicas/index', $this->viewData);
+        $this->renderModule('facturacion/facturas_electronicas/index', $this->viewData);
     }
     
     /**
      * Emitir nueva factura electrónica
      */
     public function emitir() {
+        $this->authorize('crear', 'facturacion');
+        
         if (!$this->isPost()) {
             return $this->error('Método no permitido', 405);
         }
@@ -94,8 +99,8 @@ class FacturaElectronicaController extends \BaseController {
         }
         
         try {
-            $tenantId = $_SESSION['tenant_id'] ?? 1;
-            $facturaId = $_POST['factura_id'] ?? null;
+            $tenantId = $this->tenantId;
+            $facturaId = $this->post('factura_id');
             
             // Obtener datos de la factura desde la base de datos
             $datosFactura = $this->obtenerDatosFactura($facturaId);
@@ -212,6 +217,7 @@ class FacturaElectronicaController extends \BaseController {
      * Ver detalle de factura electrónica
      */
     public function ver() {
+        $this->authorize('ver', 'facturacion');
         $id = $this->getParam('id');
         
         if (!$id) {
@@ -227,13 +233,14 @@ class FacturaElectronicaController extends \BaseController {
         $this->viewData['factura'] = $factura;
         $this->viewData['title'] = 'Detalle Factura Electrónica';
         
-        $this->render('facturacion/facturas_electronicas/ver', $this->viewData);
+        $this->renderModule('facturacion/facturas_electronicas/ver', $this->viewData);
     }
     
     /**
      * Descargar XML de factura
      */
     public function descargarXML() {
+        $this->authorize('ver', 'facturacion');
         $id = $this->getParam('id');
         $tipo = $this->getParam('tipo') ?? 'autorizado';
         
@@ -271,6 +278,7 @@ class FacturaElectronicaController extends \BaseController {
      * Descargar RIDE (PDF/HTML)
      */
     public function descargarRIDE() {
+        $this->authorize('ver', 'facturacion');
         $id = $this->getParam('id');
         
         $factura = $this->facturaModel->obtenerPorId($id);
@@ -304,6 +312,8 @@ class FacturaElectronicaController extends \BaseController {
      * Reenviar factura al SRI
      */
     public function reenviar() {
+        $this->authorize('crear', 'facturacion');
+        
         if (!$this->isPost()) {
             return $this->error('Método no permitido', 405);
         }
@@ -346,6 +356,7 @@ class FacturaElectronicaController extends \BaseController {
      * Consultar estado en SRI
      */
     public function consultarEstado() {
+        $this->authorize('ver', 'facturacion');
         $claveAcceso = $this->getParam('clave_acceso');
         
         if (!$claveAcceso) {
@@ -364,6 +375,7 @@ class FacturaElectronicaController extends \BaseController {
      * Verificar conectividad con SRI
      */
     public function verificarConexion() {
+        $this->authorize('ver', 'facturacion');
         $resultado = $this->webServiceSRI->verificarConectividad();
         return $this->success([
             'conectividad' => $resultado,
@@ -375,6 +387,7 @@ class FacturaElectronicaController extends \BaseController {
      * Obtener información del certificado
      */
     public function infoCertificado() {
+        $this->authorize('ver', 'facturacion');
         try {
             $this->firmaService->cargarCertificado();
             $info = $this->firmaService->obtenerInfoCertificado();
@@ -391,15 +404,14 @@ class FacturaElectronicaController extends \BaseController {
      * @return array|null
      */
     private function obtenerDatosFactura($facturaId) {
-        // Implementar según la estructura de tu tabla de facturas
-        // Esto es un ejemplo
         try {
             $stmt = $this->db->prepare("
-                SELECT f.*, c.identificacion, c.nombres, c.apellidos, c.email, c.direccion,
-                       c.tipo_identificacion
-                FROM facturas f
-                JOIN clientes c ON f.cliente_id = c.id
-                WHERE f.id = ?
+                SELECT f.*, c.cli_identificacion as identificacion, CONCAT(c.cli_nombres, ' ', c.cli_apellidos) as razon_social, 
+                       c.cli_email as email, c.cli_direccion as direccion,
+                       c.cli_tipo_identificacion as tipo_identificacion
+                FROM facturacion_facturas f
+                LEFT JOIN clientes c ON f.fac_cliente_id = c.cli_cliente_id
+                WHERE f.fac_id = ?
             ");
             $stmt->execute([$facturaId]);
             $factura = $stmt->fetch(\PDO::FETCH_ASSOC);
@@ -410,7 +422,7 @@ class FacturaElectronicaController extends \BaseController {
             
             // Obtener detalles
             $stmt = $this->db->prepare("
-                SELECT * FROM factura_detalles WHERE factura_id = ?
+                SELECT * FROM facturacion_lineas WHERE lin_factura_id = ?
             ");
             $stmt->execute([$facturaId]);
             $detalles = $stmt->fetchAll(\PDO::FETCH_ASSOC);
@@ -427,29 +439,29 @@ class FacturaElectronicaController extends \BaseController {
             // Construir estructura de datos
             return [
                 'cliente' => [
-                    'id' => $factura['cliente_id'],
+                    'id' => $factura['fac_cliente_id'],
                     'tipo_identificacion' => $tipoIdentificacion,
                     'identificacion' => $factura['identificacion'],
-                    'razon_social' => trim($factura['nombres'] . ' ' . $factura['apellidos']),
+                    'razon_social' => trim($factura['razon_social'] ?? 'Consumidor Final'),
                     'direccion' => $factura['direccion'] ?? 'N/A',
                     'email' => $factura['email'] ?? '',
                 ],
                 'detalles' => array_map(function($d) {
-                    $subtotal = $d['cantidad'] * $d['precio_unitario'] - ($d['descuento'] ?? 0);
-                    $ivaValor = $subtotal * 0.15; // IVA 15%
+                    $subtotal = $d['lin_cantidad'] * $d['lin_precio_unitario'] - ($d['lin_descuento'] ?? 0);
+                    $ivaValor = $subtotal * ($d['lin_porcentaje_iva'] ?? 15) / 100;
                     
                     return [
-                        'codigo' => $d['codigo'] ?? 'SERV001',
-                        'descripcion' => $d['descripcion'],
-                        'cantidad' => $d['cantidad'],
-                        'precio_unitario' => $d['precio_unitario'],
-                        'descuento' => $d['descuento'] ?? 0,
+                        'codigo' => $d['lin_codigo'] ?? 'SERV001',
+                        'descripcion' => $d['lin_descripcion'],
+                        'cantidad' => $d['lin_cantidad'],
+                        'precio_unitario' => $d['lin_precio_unitario'],
+                        'descuento' => $d['lin_descuento'] ?? 0,
                         'precio_total_sin_impuesto' => $subtotal,
                         'impuestos' => [
                             [
                                 'codigo' => '2', // IVA
-                                'codigo_porcentaje' => '4', // 15%
-                                'tarifa' => 15,
+                                'codigo_porcentaje' => ($d['lin_porcentaje_iva'] == 0) ? '0' : '4', // 15%
+                                'tarifa' => $d['lin_porcentaje_iva'] ?? 15,
                                 'base_imponible' => $subtotal,
                                 'valor' => $ivaValor,
                             ],
@@ -457,33 +469,33 @@ class FacturaElectronicaController extends \BaseController {
                     ];
                 }, $detalles),
                 'totales' => [
-                    'subtotal' => $factura['subtotal'],
-                    'subtotal_iva' => $factura['subtotal'],
+                    'subtotal' => $factura['fac_subtotal'],
+                    'subtotal_iva' => $factura['fac_subtotal'],
                     'subtotal_0' => 0,
-                    'descuento' => $factura['descuento'] ?? 0,
-                    'iva' => $factura['iva'],
+                    'descuento' => $factura['fac_descuento'] ?? 0,
+                    'iva' => $factura['fac_iva'],
                     'porcentaje_iva' => 15,
-                    'total' => $factura['total'],
+                    'total' => $factura['fac_total'],
                     'impuestos' => [
                         [
                             'codigo' => '2',
                             'codigo_porcentaje' => '4',
-                            'base_imponible' => $factura['subtotal'],
-                            'valor' => $factura['iva'],
+                            'base_imponible' => $factura['fac_subtotal'],
+                            'valor' => $factura['fac_iva'],
                         ],
                     ],
                 ],
                 'pagos' => [
                     [
-                        'forma_pago' => $factura['forma_pago'] ?? '01',
-                        'total' => $factura['total'],
-                        'plazo' => $factura['plazo_pago'] ?? null,
+                        'forma_pago' => '01', // Sin utilización del sistema financiero por defecto
+                        'total' => $factura['fac_total'],
+                        'plazo' => null,
                         'unidad_tiempo' => 'dias',
                     ],
                 ],
                 'info_adicional' => [
                     'Email' => $factura['email'] ?? '',
-                    'Teléfono' => $factura['telefono'] ?? '',
+                    'Teléfono' => '',
                 ],
             ];
             

@@ -9,45 +9,53 @@
 
 namespace App\Controllers\Facturacion;
 
-require_once BASE_PATH . '/app/controllers/BaseController.php';
+require_once BASE_PATH . '/app/controllers/ModuleController.php';
 
-class FacturaController extends \BaseController {
+class FacturaController extends \App\Controllers\ModuleController {
+    
+    public function __construct() {
+        parent::__construct();
+        $this->moduloCodigo = 'facturacion';
+    }
     
     /**
      * Listar facturas (listado paginado)
      */
     public function index() {
+        $this->authorize('ver', 'facturacion');
+        
         try {
             $estado = $this->get('estado') ?? '';
             $pagina = (int)($this->get('pagina') ?? 1);
             $perPage = 15;
             $offset = ($pagina - 1) * $perPage;
             
-            // Query base
+            // Query base con la nueva estructura
             $query = "
-                SELECT f.*, r.referencia as reserva_ref, 
-                       r.nombre_cliente, r.email_cliente,
-                       COUNT(fl.linea_id) as cantidad_lineas
-                FROM facturas f
-                LEFT JOIN reservas r ON f.reserva_id = r.reserva_id
-                LEFT JOIN facturas_lineas fl ON f.factura_id = fl.factura_id
-                WHERE f.tenant_id = ?
+                SELECT f.*, 
+                       CONCAT(c.cli_nombres, ' ', c.cli_apellidos) as nombre_cliente, 
+                       c.cli_email as email_cliente,
+                       COUNT(fl.lin_id) as cantidad_lineas
+                FROM facturacion_facturas f
+                LEFT JOIN clientes c ON f.fac_cliente_id = c.cli_cliente_id
+                LEFT JOIN facturacion_lineas fl ON f.fac_id = fl.lin_factura_id
+                WHERE f.fac_tenant_id = ?
             ";
             
             $params = [$this->tenantId];
             
             // Filtro por estado
             if (!empty($estado)) {
-                $query .= " AND f.estado = ?";
+                $query .= " AND f.fac_estado = ?";
                 $params[] = $estado;
             }
             
             // Contar total
-            $countQuery = "SELECT COUNT(DISTINCT f.factura_id) as total FROM facturas WHERE tenant_id = ?";
+            $countQuery = "SELECT COUNT(DISTINCT f.fac_id) as total FROM facturacion_facturas f WHERE f.fac_tenant_id = ?";
             $countParams = [$this->tenantId];
             
             if (!empty($estado)) {
-                $countQuery .= " AND estado = ?";
+                $countQuery .= " AND f.fac_estado = ?";
                 $countParams[] = $estado;
             }
             
@@ -56,7 +64,7 @@ class FacturaController extends \BaseController {
             $totalRegistros = $stmt->fetch()['total'];
             
             // Paginación
-            $query .= " GROUP BY f.factura_id ORDER BY f.fecha_emision DESC LIMIT ? OFFSET ?";
+            $query .= " GROUP BY f.fac_id ORDER BY f.fac_fecha_emision DESC LIMIT ? OFFSET ?";
             $params[] = $perPage;
             $params[] = $offset;
             
@@ -70,9 +78,7 @@ class FacturaController extends \BaseController {
             $this->viewData['totalPaginas'] = ceil($totalRegistros / $perPage);
             $this->viewData['estado'] = $estado;
             $this->viewData['title'] = 'Gestión de Facturas';
-            $this->viewData['layout'] = 'main';
-            
-            $this->render('facturacion/index', $this->viewData);
+            $this->renderModule('facturacion/index', $this->viewData);
             
         } catch (\Exception $e) {
             $this->logError("Error al listar facturas: " . $e->getMessage());
@@ -81,85 +87,70 @@ class FacturaController extends \BaseController {
     }
     
     /**
-     * Crear factura desde reserva confirmada
+     * Crear factura de forma generica (soporta sin origen o desde un modulo)
      */
     public function crear() {
-        $reserva_id = (int)$this->get('reserva_id');
+        $this->authorize('crear', 'facturacion');
         
-        if ($reserva_id < 1) {
-            $this->error('Reserva no válida');
-        }
+        $origen_modulo = $this->get('origen_modulo') ?? null;
+        $origen_id = (int)$this->get('origen_id');
+        
+        $origen_datos = null;
+        $lineas = [];
         
         try {
-            // Obtener datos de reserva
-            $stmt = $this->db->prepare("
-                SELECT r.*, c.can_nombre as cancha_nombre, i.ins_nombre as instalacion_nombre
-                FROM reservas r
-                INNER JOIN instalaciones_canchas c ON r.cancha_id = c.can_cancha_id
-                INNER JOIN instalaciones i ON c.can_instalacion_id = i.ins_instalacion_id
-                WHERE r.reserva_id = ? AND r.tenant_id = ? 
-                AND r.estado IN ('CONFIRMADA', 'COMPLETADA')
-            ");
-            $stmt->execute([$reserva_id, $this->tenantId]);
-            $reserva = $stmt->fetch();
-            
-            if (!$reserva) {
-                $this->error('Reserva no encontrada o no está confirmada');
-            }
-            
-            // Verificar si ya existe factura para esta reserva
-            $stmt = $this->db->prepare("
-                SELECT factura_id FROM facturas 
-                WHERE reserva_id = ? AND tenant_id = ?
-            ");
-            $stmt->execute([$reserva_id, $this->tenantId]);
-            
-            if ($stmt->fetch()) {
-                $this->error('Ya existe una factura para esta reserva');
-            }
-            
-            // Obtener líneas de reserva
-            $lineas = [];
-            try {
+            // Si hay un origen, cargar datos dependiendo del modulo
+            if ($origen_modulo && $origen_id > 0) {
+                // Generico: verificar si ya existe factura para este origen
                 $stmt = $this->db->prepare("
-                    SELECT rl.*, t.hora_inicio, t.hora_fin
-                    FROM reservas_lineas rl
-                    INNER JOIN tarifas t ON rl.tarifa_id = t.tarifa_id
-                    WHERE rl.reserva_id = ?
+                    SELECT fac_id FROM facturacion_facturas 
+                    WHERE fac_origen_modulo = ? AND fac_origen_id = ? AND fac_tenant_id = ?
                 ");
-                $stmt->execute([$reserva_id]);
-                $lineas = $stmt->fetchAll();
-            } catch (\Exception $e) {
-                // Tabla puede no existir aún
-            }
-            
-            // Si no hay líneas, generar una desde la reserva
-            if (empty($lineas)) {
-                $lineas = [[
-                    'hora_inicio' => $reserva['hora_inicio'] ?? '',
-                    'hora_fin'    => $reserva['hora_fin'] ?? '',
-                    'precio_unitario' => $reserva['precio_base'] ?? $reserva['precio_total'] ?? 0,
-                    'cantidad'    => 1,
-                    'precio_total' => $reserva['precio_total'] ?? 0
-                ]];
+                $stmt->execute([$origen_modulo, $origen_id, $this->tenantId]);
+                
+                if ($stmt->fetch()) {
+                    $this->error('Ya existe una factura para este origen');
+                }
+                
+                // Extraer info segun origen si es necesario
             }
             
             // Obtener configuración fiscal
+            $config = null;
+            try {
+                $stmt = $this->db->prepare("
+                    SELECT * FROM facturacion_configuracion
+                    WHERE cfg_tenant_id = ?
+                ");
+                $stmt->execute([$this->tenantId]);
+                $config = $stmt->fetch();
+            } catch (\Exception $configEx) {
+                // La tabla puede no existir aún
+                error_log("facturacion_configuracion no disponible: " . $configEx->getMessage());
+            }
+            
+            // Obtener clientes activos (para facturacion libre)
             $stmt = $this->db->prepare("
-                SELECT * FROM configuracion_fiscal
-                WHERE tenant_id = ?
+                SELECT cli_cliente_id as id, CONCAT(cli_nombres, ' ', cli_apellidos) as nombre, cli_identificacion as identificacion 
+                FROM clientes WHERE cli_estado = 'A' AND cli_tenant_id = ?
             ");
             $stmt->execute([$this->tenantId]);
-            $config = $stmt->fetch();
+            $clientes = $stmt->fetchAll();
             
-            $this->viewData['reserva'] = $reserva;
+            // Descifrar campos sensibles del cliente (LOPDP)
+            foreach ($clientes as &$cl) {
+                $cl['identificacion'] = \DataProtection::decrypt($cl['identificacion'] ?? null);
+            }
+            unset($cl);
+            
+            $this->viewData['origen_modulo'] = $origen_modulo;
+            $this->viewData['origen_id'] = $origen_id;
             $this->viewData['lineas'] = $lineas;
             $this->viewData['config'] = $config;
+            $this->viewData['clientes'] = $clientes;
             $this->viewData['csrf_token'] = \Security::generateCsrfToken();
             $this->viewData['title'] = 'Crear Factura';
-            $this->viewData['layout'] = 'main';
-            
-            $this->render('facturacion/crear', $this->viewData);
+            $this->renderModule('facturacion/crear', $this->viewData);
             
         } catch (\Exception $e) {
             $this->logError("Error al crear factura: " . $e->getMessage());
@@ -171,6 +162,8 @@ class FacturaController extends \BaseController {
      * Guardar nueva factura
      */
     public function guardar() {
+        $this->authorize('crear', 'facturacion');
+        
         if (!$this->isPost()) {
             $this->error('Solicitud inválida');
         }
@@ -180,74 +173,73 @@ class FacturaController extends \BaseController {
         }
         
         try {
-            $reserva_id = (int)$this->post('reserva_id');
+            $origen_modulo = $this->post('origen_modulo') ?: null;
+            $origen_id = (int)$this->post('origen_id');
+            $cliente_id = (int)$this->post('cliente_id');
             $numero_factura = trim($this->post('numero_factura'));
             $fecha_emision = $this->post('fecha_emision');
             $fecha_vencimiento = $this->post('fecha_vencimiento');
             $forma_pago_id = (int)$this->post('forma_pago_id');
             $observaciones = trim($this->post('observaciones') ?? '');
-            $incluir_iva = ($this->post('incluir_iva') === '1') ? 1 : 0;
+            
+            // Lineas vienen por POST
+            $lineas_post = json_decode($this->post('lineas_json') ?? '[]', true);
             
             // Validaciones
             $errors = [];
             
-            if ($reserva_id < 1) {
-                $errors[] = 'Reserva no válida';
+            if ($cliente_id < 1) {
+                $errors[] = 'Debe seleccionar un cliente';
             }
             
             if (empty($numero_factura)) {
                 $errors[] = 'Número de factura requerido';
             }
             
-            if (empty($fecha_emision)) {
-                $errors[] = 'Fecha de emisión requerida';
-            }
-            
-            if (empty($fecha_vencimiento)) {
-                $errors[] = 'Fecha de vencimiento requerida';
+            if (empty($fecha_emision) || empty($fecha_vencimiento)) {
+                $errors[] = 'Fechas requeridas';
             }
             
             if ($forma_pago_id < 1) {
                 $errors[] = 'Forma de pago requerida';
             }
             
+            if (empty($lineas_post)) {
+                $errors[] = 'La factura debe tener al menos una línea';
+            }
+            
             if (!empty($errors)) {
                 $this->error(implode('. ', $errors));
             }
             
-            // Obtener reserva
-            $stmt = $this->db->prepare("
-                SELECT r.*, c.can_nombre as cancha_nombre
-                FROM reservas r
-                INNER JOIN instalaciones_canchas c ON r.cancha_id = c.can_cancha_id
-                WHERE r.reserva_id = ? AND r.tenant_id = ?
-            ");
-            $stmt->execute([$reserva_id, $this->tenantId]);
-            $reserva = $stmt->fetch();
-            
-            if (!$reserva) {
-                $this->error('Reserva no encontrada');
+            // Calcular totales
+            $subtotal = 0;
+            $iva = 0;
+            foreach ($lineas_post as $l) {
+                $lin_sub = $l['cantidad'] * $l['precio_unitario'];
+                $subtotal += $lin_sub;
+                if (!empty($l['aplica_iva'])) {
+                    $iva += ($lin_sub * 0.15); // IVA fijo 15% referencial, podria venir de config
+                }
             }
-            
-            // Calcular IVA
-            $subtotal = $reserva['precio_total'];
-            $iva = $incluir_iva ? ($subtotal * 0.15) : 0; // 15% IVA Ecuador
             $total = $subtotal + $iva;
             
             // Crear factura
             $stmt = $this->db->prepare("
-                INSERT INTO facturas (
-                    tenant_id, reserva_id, usuario_id,
-                    numero_factura, fecha_emision, fecha_vencimiento,
-                    subtotal, iva, total,
-                    forma_pago_id, estado, observaciones,
-                    fecha_creacion
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'BORRADOR', ?, NOW())
+                INSERT INTO facturacion_facturas (
+                    fac_tenant_id, fac_origen_modulo, fac_origen_id, fac_cliente_id, fac_usuario_id,
+                    fac_numero, fac_fecha_emision, fac_fecha_vencimiento,
+                    fac_subtotal, fac_iva, fac_total,
+                    fac_forma_pago_id, fac_estado, fac_observaciones,
+                    fac_fecha_creacion
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'BORRADOR', ?, NOW())
             ");
             
             $stmt->execute([
                 $this->tenantId,
-                $reserva_id,
+                $origen_modulo,
+                $origen_id > 0 ? $origen_id : null,
+                $cliente_id,
                 $this->userId,
                 $numero_factura,
                 $fecha_emision,
@@ -261,50 +253,31 @@ class FacturaController extends \BaseController {
             
             $factura_id = $this->db->lastInsertId();
             
-            // Crear líneas de factura desde líneas de reserva
-            $lineas_reserva = [];
-            try {
+            foreach ($lineas_post as $linea) {
                 $stmt = $this->db->prepare("
-                    SELECT * FROM reservas_lineas WHERE reserva_id = ?
-                ");
-                $stmt->execute([$reserva_id]);
-                $lineas_reserva = $stmt->fetchAll();
-            } catch (\Exception $e) {
-                // Tabla puede no existir
-            }
-            
-            // Si no hay líneas, crear una virtual
-            if (empty($lineas_reserva)) {
-                $lineas_reserva = [[
-                    'cantidad' => 1,
-                    'precio_unitario' => $reserva['precio_base'] ?? $reserva['precio_total'] ?? 0,
-                    'precio_total' => $reserva['precio_total'] ?? 0
-                ]];
-            }
-            
-            foreach ($lineas_reserva as $linea) {
-                $stmt = $this->db->prepare("
-                    INSERT INTO facturas_lineas (
-                        factura_id, descripcion, cantidad,
-                        precio_unitario, total
-                    ) VALUES (?, ?, ?, ?, ?)
+                    INSERT INTO facturacion_lineas (
+                        lin_factura_id, lin_descripcion, lin_cantidad,
+                        lin_precio_unitario, lin_subtotal, lin_aplica_iva, lin_total
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?)
                 ");
                 
-                $descripcion = "Tarifa cancha " . $reserva['cancha_nombre'];
+                $lin_subtotal = $linea['cantidad'] * $linea['precio_unitario'];
+                $lin_iva = !empty($linea['aplica_iva']) ? ($lin_subtotal * 0.15) : 0;
                 
                 $stmt->execute([
                     $factura_id,
-                    $descripcion,
+                    $linea['descripcion'],
                     $linea['cantidad'],
                     $linea['precio_unitario'],
-                    $linea['precio_total']
+                    $lin_subtotal,
+                    !empty($linea['aplica_iva']) ? 1 : 0,
+                    $lin_subtotal + $lin_iva
                 ]);
             }
             
             // Auditoría
-            $this->audit('facturas', $factura_id, 'INSERT', [], [
-                'numero_factura' => $numero_factura,
-                'reserva_id' => $reserva_id,
+            $this->audit('facturacion_facturas', $factura_id, 'INSERT', [], [
+                'numero' => $numero_factura,
                 'total' => $total
             ]);
             
@@ -324,6 +297,8 @@ class FacturaController extends \BaseController {
      * Ver detalles de factura
      */
     public function ver() {
+        $this->authorize('ver', 'facturacion');
+        
         $factura_id = (int)$this->get('id');
         
         if ($factura_id < 1) {
@@ -332,14 +307,15 @@ class FacturaController extends \BaseController {
         
         try {
             $stmt = $this->db->prepare("
-                SELECT f.*, r.nombre_cliente, r.email_cliente,
-                       fp.nombre as forma_pago_nombre,
+                SELECT f.*, 
+                       CONCAT(c.cli_nombres, ' ', c.cli_apellidos) as nombre_cliente, c.cli_email as email_cliente,
+                       fp.fpa_nombre as forma_pago_nombre,
                        CONCAT(u.usu_nombres, ' ', u.usu_apellidos) as usuario_nombre
-                FROM facturas f
-                LEFT JOIN reservas r ON f.reserva_id = r.reserva_id
-                LEFT JOIN formas_pago fp ON f.forma_pago_id = fp.forma_pago_id
-                LEFT JOIN seguridad_usuarios u ON f.usuario_id = u.usu_usuario_id
-                WHERE f.factura_id = ? AND f.tenant_id = ?
+                FROM facturacion_facturas f
+                LEFT JOIN clientes c ON f.fac_cliente_id = c.cli_cliente_id
+                LEFT JOIN facturacion_formas_pago fp ON f.fac_forma_pago_id = fp.fpa_id
+                LEFT JOIN seguridad_usuarios u ON f.fac_usuario_id = u.usu_usuario_id
+                WHERE f.fac_id = ? AND f.fac_tenant_id = ?
             ");
             $stmt->execute([$factura_id, $this->tenantId]);
             $factura = $stmt->fetch();
@@ -350,14 +326,14 @@ class FacturaController extends \BaseController {
             
             // Obtener líneas
             $stmt = $this->db->prepare("
-                SELECT * FROM facturas_lineas WHERE factura_id = ?
+                SELECT * FROM facturacion_lineas WHERE lin_factura_id = ?
             ");
             $stmt->execute([$factura_id]);
             $lineas = $stmt->fetchAll();
             
             // Obtener pagos
             $stmt = $this->db->prepare("
-                SELECT * FROM pagos WHERE factura_id = ? ORDER BY fecha_pago DESC
+                SELECT * FROM facturacion_pagos WHERE pag_factura_id = ? ORDER BY pag_fecha DESC
             ");
             $stmt->execute([$factura_id]);
             $pagos = $stmt->fetchAll();
@@ -365,10 +341,8 @@ class FacturaController extends \BaseController {
             $this->viewData['factura'] = $factura;
             $this->viewData['lineas'] = $lineas;
             $this->viewData['pagos'] = $pagos;
-            $this->viewData['title'] = 'Factura: ' . $factura['numero_factura'];
-            $this->viewData['layout'] = 'main';
-            
-            $this->render('facturacion/ver', $this->viewData);
+            $this->viewData['title'] = 'Factura: ' . $factura['fac_numero'];
+            $this->renderModule('facturacion/ver', $this->viewData);
             
         } catch (\Exception $e) {
             $this->logError("Error al ver factura: " . $e->getMessage());
@@ -380,6 +354,8 @@ class FacturaController extends \BaseController {
      * Emitir factura (cambiar estado a EMITIDA)
      */
     public function emitir() {
+        $this->authorize('crear', 'facturacion');
+        
         $factura_id = (int)$this->get('id');
         
         if ($factura_id < 1) {
@@ -388,7 +364,7 @@ class FacturaController extends \BaseController {
         
         try {
             $stmt = $this->db->prepare("
-                SELECT * FROM facturas WHERE factura_id = ? AND tenant_id = ?
+                SELECT * FROM facturacion_facturas WHERE fac_id = ? AND fac_tenant_id = ?
             ");
             $stmt->execute([$factura_id, $this->tenantId]);
             $factura = $stmt->fetch();
@@ -397,26 +373,21 @@ class FacturaController extends \BaseController {
                 $this->error('Factura no encontrada');
             }
             
-            if ($factura['estado'] !== 'BORRADOR') {
+            if ($factura['fac_estado'] !== 'BORRADOR') {
                 $this->error('Solo se pueden emitir facturas en estado BORRADOR');
             }
             
-            // Generar número SRI si está configurado
-            $numero_sri = $factura['numero_factura'];
-            
             // Cambiar estado
             $stmt = $this->db->prepare("
-                UPDATE facturas 
-                SET estado = 'EMITIDA', 
-                    fecha_emision_sri = NOW(),
-                    numero_sri = ?,
-                    fecha_actualizacion = NOW()
-                WHERE factura_id = ?
+                UPDATE facturacion_facturas 
+                SET fac_estado = 'EMITIDA', 
+                    fac_fecha_emision = NOW()
+                WHERE fac_id = ?
             ");
-            $stmt->execute([$numero_sri, $factura_id]);
+            $stmt->execute([$factura_id]);
             
             // Auditoría
-            $this->audit('facturas', $factura_id, 'EMITTED', 
+            $this->audit('facturacion_facturas', $factura_id, 'EMITTED', 
                         ['estado' => 'BORRADOR'],
                         ['estado' => 'EMITIDA']);
             
@@ -436,6 +407,8 @@ class FacturaController extends \BaseController {
      * Anular factura
      */
     public function anular() {
+        $this->authorize('eliminar', 'facturacion');
+        
         $factura_id = (int)$this->get('id');
         $motivo = trim($this->get('motivo') ?? '');
         
@@ -445,7 +418,7 @@ class FacturaController extends \BaseController {
         
         try {
             $stmt = $this->db->prepare("
-                SELECT * FROM facturas WHERE factura_id = ? AND tenant_id = ?
+                SELECT * FROM facturacion_facturas WHERE fac_id = ? AND fac_tenant_id = ?
             ");
             $stmt->execute([$factura_id, $this->tenantId]);
             $factura = $stmt->fetch();
@@ -454,24 +427,22 @@ class FacturaController extends \BaseController {
                 $this->error('Factura no encontrada');
             }
             
-            if ($factura['estado'] === 'ANULADA') {
+            if ($factura['fac_estado'] === 'ANULADA') {
                 $this->error('Esta factura ya está anulada');
             }
             
             // Anular
             $stmt = $this->db->prepare("
-                UPDATE facturas 
-                SET estado = 'ANULADA',
-                    motivo_anulacion = ?,
-                    fecha_anulacion = NOW(),
-                    fecha_actualizacion = NOW()
-                WHERE factura_id = ?
+                UPDATE facturacion_facturas 
+                SET fac_estado = 'ANULADA',
+                    fac_observaciones = CONCAT(COALESCE(fac_observaciones, ''), '\nAnulada: ', ?)
+                WHERE fac_id = ?
             ");
             $stmt->execute([$motivo, $factura_id]);
             
             // Auditoría
-            $this->audit('facturas', $factura_id, 'VOIDED',
-                        ['estado' => $factura['estado']],
+            $this->audit('facturacion_facturas', $factura_id, 'VOIDED',
+                        ['estado' => $factura['fac_estado']],
                         ['estado' => 'ANULADA', 'motivo' => $motivo]);
             
             \Security::logSecurityEvent('FACTURA_VOIDED', "Factura ID: {$factura_id}");
@@ -490,6 +461,8 @@ class FacturaController extends \BaseController {
      * Generar PDF de factura
      */
     public function pdf() {
+        $this->authorize('ver', 'facturacion');
+        
         $factura_id = (int)$this->get('id');
         
         if ($factura_id < 1) {
@@ -498,12 +471,12 @@ class FacturaController extends \BaseController {
         
         try {
             $stmt = $this->db->prepare("
-                SELECT f.*, r.nombre_cliente, r.email_cliente,
-                       fp.nombre as forma_pago_nombre
-                FROM facturas f
-                LEFT JOIN reservas r ON f.reserva_id = r.reserva_id
-                LEFT JOIN formas_pago fp ON f.forma_pago_id = fp.forma_pago_id
-                WHERE f.factura_id = ? AND f.tenant_id = ?
+                SELECT f.*, CONCAT(c.cli_nombres, ' ', c.cli_apellidos) as nombre_cliente, c.cli_email as email_cliente,
+                       fp.fpa_nombre as forma_pago_nombre
+                FROM facturacion_facturas f
+                LEFT JOIN clientes c ON f.fac_cliente_id = c.cli_cliente_id
+                LEFT JOIN facturacion_formas_pago fp ON f.fac_forma_pago_id = fp.fpa_id
+                WHERE f.fac_id = ? AND f.fac_tenant_id = ?
             ");
             $stmt->execute([$factura_id, $this->tenantId]);
             $factura = $stmt->fetch();
@@ -512,23 +485,9 @@ class FacturaController extends \BaseController {
                 $this->error('Factura no encontrada');
             }
             
-            // Obtener líneas
-            $stmt = $this->db->prepare("
-                SELECT * FROM facturas_lineas WHERE factura_id = ?
-            ");
-            $stmt->execute([$factura_id]);
-            $lineas = $stmt->fetchAll();
-            
-            // Obtener config
-            $stmt = $this->db->prepare("
-                SELECT * FROM configuracion_fiscal WHERE tenant_id = ?
-            ");
-            $stmt->execute([$this->tenantId]);
-            $config = $stmt->fetch();
-            
             // Generar PDF (stub - implementar con TCPDF o similar)
             header('Content-Type: application/pdf');
-            header('Content-Disposition: attachment; filename="Factura_' . $factura['numero_factura'] . '.pdf"');
+            header('Content-Disposition: attachment; filename="Factura_' . $factura['fac_numero'] . '.pdf"');
             
             // TODO: Implementar generación real de PDF
             echo "PDF Generation Stub";
@@ -542,22 +501,23 @@ class FacturaController extends \BaseController {
     }
     
     /**
-     * Obtener facturas por reserva (AJAX)
+     * Obtener facturas por origen (AJAX)
      */
-    public function obtenerPorReserva() {
-        $reserva_id = (int)$this->get('reserva_id');
+    public function obtenerPorOrigen() {
+        $origen_modulo = $this->get('modulo');
+        $origen_id = (int)$this->get('origen_id');
         
-        if ($reserva_id < 1) {
-            $this->error('Reserva no válida');
+        if (!$origen_modulo || $origen_id < 1) {
+            $this->error('Origen no válido');
         }
         
         try {
             $stmt = $this->db->prepare("
-                SELECT * FROM facturas 
-                WHERE reserva_id = ? AND tenant_id = ?
-                ORDER BY fecha_emision DESC
+                SELECT * FROM facturacion_facturas 
+                WHERE fac_origen_modulo = ? AND fac_origen_id = ? AND fac_tenant_id = ?
+                ORDER BY fac_fecha_emision DESC
             ");
-            $stmt->execute([$reserva_id, $this->tenantId]);
+            $stmt->execute([$origen_modulo, $origen_id, $this->tenantId]);
             $facturas = $stmt->fetchAll();
             
             $this->success($facturas);
@@ -568,62 +528,6 @@ class FacturaController extends \BaseController {
         }
     }
     
-    /**
-     * Obtener detalles de reserva para crear factura (AJAX)
-     */
-    public function obtenerDetallesReserva() {
-        $reserva_id = (int)$this->get('id');
-        
-        if ($reserva_id < 1) {
-            $this->error('Reserva no válida');
-        }
-        
-        try {
-            // Obtener reserva
-            $stmt = $this->db->prepare("
-                SELECT r.* FROM reservas r
-                WHERE r.reserva_id = ? AND r.tenant_id = ?
-            ");
-            $stmt->execute([$reserva_id, $this->tenantId]);
-            $reserva = $stmt->fetch();
-            
-            if (!$reserva) {
-                $this->error('Reserva no encontrada');
-            }
-            
-            // Obtener líneas
-            $lineas = [];
-            try {
-                $stmt = $this->db->prepare("
-                    SELECT rl.*, t.nombre as descripcion FROM reservas_lineas rl
-                    LEFT JOIN tarifas t ON rl.tarifa_id = t.tarifa_id
-                    WHERE rl.reserva_id = ?
-                ");
-                $stmt->execute([$reserva_id]);
-                $lineas = $stmt->fetchAll();
-            } catch (\Exception $e) {
-                // Tabla puede no existir
-            }
-            
-            if (empty($lineas)) {
-                $lineas = [[
-                    'descripcion' => 'Reserva de cancha',
-                    'cantidad' => 1,
-                    'precio_unitario' => $reserva['precio_base'] ?? $reserva['precio_total'] ?? 0,
-                    'precio_total' => $reserva['precio_total'] ?? 0,
-                    'hora_inicio' => $reserva['hora_inicio'] ?? '',
-                    'hora_fin' => $reserva['hora_fin'] ?? ''
-                ]];
-            }
-            
-            $this->success([
-                'reserva' => $reserva,
-                'lineas' => $lineas
-            ]);
-            
-        } catch (\Exception $e) {
-            $this->logError("Error al obtener detalles: " . $e->getMessage());
-            $this->error('Error al obtener los detalles');
-        }
-    }
+    // El método obtenerDetallesReserva() se elimina porque esta lógica
+    // será centralizada en el formulario dinámico y vista, no requerida aquí en MVC base
 }

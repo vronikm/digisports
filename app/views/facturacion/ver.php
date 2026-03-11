@@ -10,14 +10,14 @@
         <div class="col-md-6">
             <h1 class="h3">
                 <i class="fas fa-file-invoice-dollar"></i>
-                Factura <?= htmlspecialchars($factura['numero_factura']) ?>
+                Factura <?= htmlspecialchars($factura['fac_numero'] ?? '') ?>
             </h1>
         </div>
         <div class="col-md-6 text-end">
             <a href="<?= url('facturacion', 'factura', 'index') ?>" class="btn btn-outline-secondary">
                 <i class="fas fa-arrow-left"></i> Volver
             </a>
-            <a href="<?= url('facturacion', 'factura', 'pdf', ['id' => $factura['factura_id']]) ?>" 
+            <a href="<?= url('facturacion', 'factura', 'pdf', ['id' => $factura['fac_id']]) ?>" 
                class="btn btn-outline-danger" target="_blank">
                 <i class="fas fa-file-pdf"></i> PDF
             </a>
@@ -34,31 +34,31 @@
                 <div class="col-md-6">
                     <p class="mb-2">
                         <strong>Número Factura:</strong><br>
-                        <?= htmlspecialchars($factura['numero_factura']) ?>
+                        <?= htmlspecialchars($factura['fac_numero'] ?? '') ?>
                     </p>
                     <p class="mb-2">
                         <strong>Estado:</strong><br>
                         <span class="badge bg-<?= 
-                            $factura['estado'] === 'EMITIDA' ? 'warning' :
-                            ($factura['estado'] === 'PAGADA' ? 'success' :
-                            ($factura['estado'] === 'BORRADOR' ? 'secondary' : 'danger'))
+                            ($factura['fac_estado'] ?? '') === 'EMITIDA' ? 'warning' :
+                            (($factura['fac_estado'] ?? '') === 'PAGADA' ? 'success' :
+                            (($factura['fac_estado'] ?? '') === 'BORRADOR' ? 'secondary' : 'danger'))
                         ?>">
-                            <?= htmlspecialchars($factura['estado']) ?>
+                            <?= htmlspecialchars($factura['fac_estado'] ?? '') ?>
                         </span>
                     </p>
                     <p class="mb-0">
                         <strong>Cliente:</strong><br>
-                        <?= htmlspecialchars($factura['nombre_cliente'] ?? 'Cliente') ?>
+                        <?= htmlspecialchars($factura['nombre_cliente'] ?? 'Cliente no especificado') ?>
                     </p>
                 </div>
                 <div class="col-md-6 text-end">
                     <p class="mb-2">
                         <strong>Fecha Emisión:</strong><br>
-                        <?= date('d/m/Y H:i', strtotime($factura['fecha_emision'])) ?>
+                        <?= !empty($factura['fac_fecha_emision']) ? date('d/m/Y H:i', strtotime($factura['fac_fecha_emision'])) : 'N/A' ?>
                     </p>
                     <p class="mb-2">
                         <strong>Fecha Vencimiento:</strong><br>
-                        <?= date('d/m/Y', strtotime($factura['fecha_vencimiento'])) ?>
+                        <?= !empty($factura['fac_fecha_vencimiento']) ? date('d/m/Y', strtotime($factura['fac_fecha_vencimiento'])) : 'N/A' ?>
                     </p>
                     <p class="mb-0">
                         <strong>Forma de Pago:</strong><br>
@@ -88,16 +88,16 @@
                     <?php foreach ($lineas as $linea): ?>
                         <tr>
                             <td>
-                                <?= htmlspecialchars($linea['descripcion']) ?>
+                                <?= htmlspecialchars($linea['lin_descripcion']) ?>
                             </td>
                             <td class="text-end">
-                                <?= htmlspecialchars($linea['cantidad']) ?>
+                                <?= htmlspecialchars($linea['lin_cantidad']) ?>
                             </td>
                             <td class="text-end">
-                                $<?= number_format($linea['precio_unitario'], 2) ?>
+                                $<?= number_format($linea['lin_precio_unitario'], 2) ?>
                             </td>
                             <td class="text-end">
-                                <strong>$<?= number_format($linea['total'], 2) ?></strong>
+                                <strong>$<?= number_format($linea['lin_total'], 2) ?></strong>
                             </td>
                         </tr>
                     <?php endforeach; ?>
@@ -113,17 +113,21 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between mb-2">
                         <span>Subtotal:</span>
-                        <span>$<?= number_format($factura['subtotal'], 2) ?></span>
+                        <span>$<?= number_format($factura['fac_subtotal'] ?? 0, 2) ?></span>
                     </div>
                     <div class="d-flex justify-content-between mb-2">
                         <span>IVA (15%):</span>
-                        <span>$<?= number_format($factura['iva'], 2) ?></span>
+                        <span>$<?= number_format($factura['fac_iva'] ?? 0, 2) ?></span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Descuento:</span>
+                        <span>$<?= number_format($factura['fac_descuento'] ?? 0, 2) ?></span>
                     </div>
                     <hr>
                     <div class="d-flex justify-content-between">
                         <strong>Total:</strong>
                         <strong class="text-primary" style="font-size: 1.25rem;">
-                            $<?= number_format($factura['total'], 2) ?>
+                            $<?= number_format($factura['fac_total'] ?? 0, 2) ?>
                         </strong>
                     </div>
                 </div>
@@ -136,8 +140,8 @@
         <div class="card-header bg-light">
             <div class="d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">Pagos Registrados</h5>
-                <?php if ($factura['estado'] !== 'PAGADA' && $factura['estado'] !== 'ANULADA'): ?>
-                    <a href="<?= url('facturacion', 'pago', 'crear', ['factura_id' => $factura['factura_id']]) ?>"
+                <?php if (($factura['fac_estado'] ?? '') !== 'PAGADA' && ($factura['fac_estado'] ?? '') !== 'ANULADA'): ?>
+                    <a href="<?= url('facturacion', 'pago', 'crear', ['factura_id' => $factura['fac_id']]) ?>"
                        class="btn btn-sm btn-success">
                         <i class="fas fa-plus"></i> Nuevo Pago
                     </a>
@@ -166,22 +170,22 @@
                         <?php foreach ($pagos as $pago): ?>
                             <tr>
                                 <td>
-                                    <?= date('d/m/Y H:i', strtotime($pago['fecha_pago'])) ?>
+                                    <?= date('d/m/Y H:i', strtotime($pago['pag_fecha'])) ?>
                                 </td>
                                 <td>
-                                    $<?= number_format($pago['monto'], 2) ?>
+                                    $<?= number_format($pago['pag_monto'], 2) ?>
                                 </td>
                                 <td>
                                     <?= htmlspecialchars($pago['forma_pago_nombre'] ?? 'N/A') ?>
                                 </td>
                                 <td>
                                     <small class="text-muted">
-                                        <?= htmlspecialchars($pago['referencia_pago']) ?>
+                                        <?= htmlspecialchars($pago['pag_referencia'] ?? '') ?>
                                     </small>
                                 </td>
                                 <td>
-                                    <span class="badge bg-<?= $pago['estado'] === 'CONFIRMADO' ? 'success' : 'danger' ?>">
-                                        <?= htmlspecialchars($pago['estado']) ?>
+                                    <span class="badge bg-<?= ($pago['pag_estado'] ?? '') === 'CONFIRMADO' ? 'success' : 'danger' ?>">
+                                        <?= htmlspecialchars($pago['pag_estado'] ?? '') ?>
                                     </span>
                                 </td>
                             </tr>
@@ -200,16 +204,16 @@
     <div class="row">
         <div class="col-md-12">
             <div class="btn-group">
-                <?php if ($factura['estado'] === 'BORRADOR'): ?>
-                    <a href="<?= url('facturacion', 'factura', 'emitir', ['id' => $factura['factura_id']]) ?>"
+                <?php if (($factura['fac_estado'] ?? '') === 'BORRADOR'): ?>
+                    <a href="<?= url('facturacion', 'factura', 'emitir', ['id' => $factura['fac_id']]) ?>"
                        class="btn btn-success"
                        onclick="return confirm('¿Emitir esta factura?')">
                         <i class="fas fa-check"></i> Emitir
                     </a>
                 <?php endif; ?>
                 
-                <?php if ($factura['estado'] !== 'ANULADA' && $factura['estado'] !== 'PAGADA'): ?>
-                    <a href="<?= url('facturacion', 'factura', 'anular', ['id' => $factura['factura_id']]) ?>"
+                <?php if (($factura['fac_estado'] ?? '') !== 'ANULADA' && ($factura['fac_estado'] ?? '') !== 'PAGADA'): ?>
+                    <a href="<?= url('facturacion', 'factura', 'anular', ['id' => $factura['fac_id']]) ?>"
                        class="btn btn-danger"
                        onclick="return confirm('¿Anular esta factura?')">
                         <i class="fas fa-times"></i> Anular

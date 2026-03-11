@@ -9,9 +9,14 @@
 
 namespace App\Controllers\Facturacion;
 
-require_once BASE_PATH . '/app/controllers/BaseController.php';
+require_once BASE_PATH . '/app/controllers/ModuleController.php';
 
-class ComprobanteController extends \BaseController {
+class ComprobanteController extends \App\Controllers\ModuleController {
+    
+    public function __construct() {
+        parent::__construct();
+        $this->moduloCodigo = 'facturacion';
+    }
     
     /**
      * Listar comprobantes (redirecciona a facturas por ahora)
@@ -35,9 +40,7 @@ class ComprobanteController extends \BaseController {
             $this->viewData['tipo'] = $tipo;
             $this->viewData['csrf_token'] = \Security::generateCsrfToken();
             $this->viewData['title'] = 'Comprobantes Electrónicos';
-            $this->viewData['layout'] = 'main';
-            
-            $this->render('facturacion/comprobantes/index', $this->viewData);
+            $this->renderModule('facturacion/comprobantes/index', $this->viewData);
             
         } catch (\Exception $e) {
             $this->logError("Error al listar comprobantes: " . $e->getMessage());
@@ -56,9 +59,7 @@ class ComprobanteController extends \BaseController {
         }
         
         $this->viewData['title'] = 'Detalle de Comprobante';
-        $this->viewData['layout'] = 'main';
-        
-        $this->render('facturacion/comprobantes/ver', $this->viewData);
+        $this->renderModule('facturacion/comprobantes/ver', $this->viewData);
     }
     
     /**
@@ -66,9 +67,6 @@ class ComprobanteController extends \BaseController {
      */
     public function crear() {
         $this->viewData['title'] = 'Nuevo Comprobante';
-        $this->viewData['layout'] = 'main';
-        $this->viewData['csrf_token'] = \Security::generateCsrfToken();
-        
-        $this->render('facturacion/comprobantes/crear', $this->viewData);
+        $this->renderModule('facturacion/comprobantes/crear', $this->viewData);
     }
 }

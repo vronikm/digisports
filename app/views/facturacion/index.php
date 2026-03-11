@@ -20,24 +20,32 @@
     <!-- Filtros -->
     <div class="card mb-3">
         <div class="card-body">
-            <form method="GET" class="row g-3">
+            <div class="row g-3">
                 <div class="col-md-3">
-                    <select name="estado" class="form-select">
+                    <select id="filtroEstado" class="form-select">
                         <option value="">-- Todos los estados --</option>
-                        <option value="BORRADOR" <?= $estado === 'BORRADOR' ? 'selected' : '' ?>>Borrador</option>
-                        <option value="EMITIDA" <?= $estado === 'EMITIDA' ? 'selected' : '' ?>>Emitida</option>
-                        <option value="PAGADA" <?= $estado === 'PAGADA' ? 'selected' : '' ?>>Pagada</option>
-                        <option value="ANULADA" <?= $estado === 'ANULADA' ? 'selected' : '' ?>>Anulada</option>
+                        <option value="BORRADOR" <?= ($estado ?? '') === 'BORRADOR' ? 'selected' : '' ?>>Borrador</option>
+                        <option value="EMITIDA" <?= ($estado ?? '') === 'EMITIDA' ? 'selected' : '' ?>>Emitida</option>
+                        <option value="PAGADA" <?= ($estado ?? '') === 'PAGADA' ? 'selected' : '' ?>>Pagada</option>
+                        <option value="ANULADA" <?= ($estado ?? '') === 'ANULADA' ? 'selected' : '' ?>>Anulada</option>
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <button type="submit" class="btn btn-outline-primary w-100">
+                    <button type="button" id="btnFiltrar" class="btn btn-outline-primary w-100">
                         <i class="fas fa-search"></i> Filtrar
                     </button>
                 </div>
-            </form>
+            </div>
         </div>
     </div>
+    <script>
+    document.getElementById('btnFiltrar').addEventListener('click', function() {
+        var estado = document.getElementById('filtroEstado').value;
+        var params = {};
+        if (estado) params.estado = estado;
+        window.location.href = '<?= url('facturacion', 'factura', 'index') ?>' + (estado ? '&estado=' + encodeURIComponent(estado) : '');
+    });
+    </script>
     
     <!-- Tabla de Facturas -->
     <div class="card">
@@ -65,50 +73,50 @@
                         <?php foreach ($facturas as $factura): ?>
                             <tr>
                                 <td>
-                                    <strong><?= htmlspecialchars($factura['numero_factura']) ?></strong>
+                                    <strong><?= htmlspecialchars($factura['fac_numero'] ?? '') ?></strong>
                                 </td>
                                 <td>
                                     <?= htmlspecialchars($factura['nombre_cliente']) ?>
                                 </td>
                                 <td>
-                                    <?= date('d/m/Y', strtotime($factura['fecha_emision'])) ?>
+                                    <?= !empty($factura['fac_fecha_emision']) ? date('d/m/Y', strtotime($factura['fac_fecha_emision'])) : 'N/A' ?>
                                 </td>
                                 <td>
-                                    $<?= number_format($factura['total'], 2) ?>
+                                    $<?= number_format($factura['fac_total'] ?? 0, 2) ?>
                                 </td>
                                 <td>
                                     $<?= number_format($factura['total_pagado'] ?? 0, 2) ?>
                                 </td>
                                 <td>
                                     <span class="badge bg-<?= 
-                                        $factura['estado'] === 'EMITIDA' ? 'warning' :
-                                        ($factura['estado'] === 'PAGADA' ? 'success' :
-                                        ($factura['estado'] === 'BORRADOR' ? 'secondary' : 'danger'))
+                                        ($factura['fac_estado'] ?? '') === 'EMITIDA' ? 'warning' :
+                                        (($factura['fac_estado'] ?? '') === 'PAGADA' ? 'success' :
+                                        (($factura['fac_estado'] ?? '') === 'BORRADOR' ? 'secondary' : 'danger'))
                                     ?>">
-                                        <?= htmlspecialchars($factura['estado']) ?>
+                                        <?= htmlspecialchars($factura['fac_estado'] ?? '') ?>
                                     </span>
                                 </td>
                                 <td>
                                     <div class="btn-group btn-group-sm">
-                                        <a href="<?= url('facturacion', 'factura', 'ver', ['id' => $factura['factura_id']]) ?>"
+                                        <a href="<?= url('facturacion', 'factura', 'ver', ['id' => $factura['fac_id']]) ?>"
                                            class="btn btn-outline-info" title="Ver">
                                             <i class="fas fa-eye"></i>
                                         </a>
-                                        <?php if ($factura['estado'] === 'BORRADOR'): ?>
-                                            <a href="<?= url('facturacion', 'factura', 'emitir', ['id' => $factura['factura_id']]) ?>"
+                                        <?php if (($factura['fac_estado'] ?? '') === 'BORRADOR'): ?>
+                                            <a href="<?= url('facturacion', 'factura', 'emitir', ['id' => $factura['fac_id']]) ?>"
                                                class="btn btn-outline-success" title="Emitir">
                                                 <i class="fas fa-check"></i>
                                             </a>
                                         <?php endif; ?>
-                                        <?php if ($factura['estado'] !== 'ANULADA' && $factura['estado'] !== 'PAGADA'): ?>
-                                            <a href="<?= url('facturacion', 'factura', 'anular', ['id' => $factura['factura_id']]) ?>"
+                                        <?php if (($factura['fac_estado'] ?? '') !== 'ANULADA' && ($factura['fac_estado'] ?? '') !== 'PAGADA'): ?>
+                                            <a href="<?= url('facturacion', 'factura', 'anular', ['id' => $factura['fac_id']]) ?>"
                                                class="btn btn-outline-danger"
                                                title="Anular"
                                                onclick="return confirm('¿Está seguro de anular esta factura?')">
                                                 <i class="fas fa-times"></i>
                                             </a>
                                         <?php endif; ?>
-                                        <a href="<?= url('facturacion', 'factura', 'pdf', ['id' => $factura['factura_id']]) ?>"
+                                        <a href="<?= url('facturacion', 'factura', 'pdf', ['id' => $factura['fac_id']]) ?>"
                                            class="btn btn-outline-secondary" title="PDF">
                                             <i class="fas fa-file-pdf"></i>
                                         </a>

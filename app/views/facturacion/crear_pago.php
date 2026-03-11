@@ -14,7 +14,7 @@
             </h1>
         </div>
         <div class="col-md-6 text-end">
-            <a href="<?= url('facturacion', 'factura', 'ver', ['id' => $factura['factura_id']]) ?>"
+            <a href="<?= url('facturacion', 'factura', 'ver', ['id' => $factura['fac_id']]) ?>"
                class="btn btn-outline-secondary">
                 <i class="fas fa-arrow-left"></i> Volver
             </a>
@@ -31,18 +31,18 @@
                 <div class="col-md-6">
                     <p class="mb-2">
                         <strong>Número Factura:</strong><br>
-                        <code><?= htmlspecialchars($factura['numero_factura']) ?></code>
+                        <code><?= htmlspecialchars($factura['fac_numero'] ?? '') ?></code>
                     </p>
                     <p class="mb-0">
                         <strong>Cliente:</strong><br>
-                        <?= htmlspecialchars($factura['nombre_cliente']) ?>
+                        <?= htmlspecialchars($factura['nombre_cliente'] ?? 'Consumidor Final') ?>
                     </p>
                 </div>
                 <div class="col-md-6 text-end">
                     <p class="mb-2">
                         <strong>Total Factura:</strong><br>
                         <span class="text-primary" style="font-size: 1.25rem;">
-                            $<?= number_format($factura['total'], 2) ?>
+                            $<?= number_format($factura['fac_total'] ?? 0, 2) ?>
                         </span>
                     </p>
                     <p class="mb-0">
@@ -69,7 +69,7 @@
         <div class="card-body">
             <form method="POST" action="<?= url('facturacion', 'pago', 'guardar') ?>" id="formPago">
                 
-                <input type="hidden" name="factura_id" value="<?= htmlspecialchars($factura['factura_id']) ?>">
+                <input type="hidden" name="factura_id" value="<?= htmlspecialchars($factura['fac_id']) ?>">
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token) ?>">
                 
                 <!-- Monto -->
@@ -102,8 +102,8 @@
                     <select name="forma_pago_id" id="forma_pago_id" class="form-select" required>
                         <option value="">-- Seleccionar --</option>
                         <?php foreach ($formas_pago as $forma): ?>
-                            <option value="<?= htmlspecialchars($forma['forma_pago_id']) ?>">
-                                <?= htmlspecialchars($forma['nombre']) ?>
+                            <option value="<?= htmlspecialchars($forma['fpa_id']) ?>">
+                                <?= htmlspecialchars($forma['fpa_nombre']) ?>
                             </option>
                         <?php endforeach; ?>
                     </select>
@@ -153,7 +153,7 @@
                 
                 <!-- Botones -->
                 <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                    <a href="<?= url('facturacion', 'factura', 'ver', ['id' => $factura['factura_id']]) ?>"
+                    <a href="<?= url('facturacion', 'factura', 'ver', ['id' => $factura['fac_id']]) ?>"
                        class="btn btn-outline-secondary">
                         Cancelar
                     </a>

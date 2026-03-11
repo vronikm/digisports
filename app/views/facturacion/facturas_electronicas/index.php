@@ -52,8 +52,8 @@ $estadoIconos = [
             </div>
             <div class="col-sm-6">
                 <ol class="breadcrumb float-sm-right">
-                    <li class="breadcrumb-item"><a href="<?= BASE_URL ?>">Dashboard</a></li>
-                    <li class="breadcrumb-item"><a href="<?= BASE_URL ?>?module=facturacion&controller=comprobante&action=index">Facturación</a></li>
+                    <li class="breadcrumb-item"><a href="<?= url('facturacion', 'dashboard', 'index') ?>">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="<?= url('facturacion', 'comprobante', 'index') ?>">Facturación</a></li>
                     <li class="breadcrumb-item active">Electrónicas</li>
                 </ol>
             </div>
@@ -432,7 +432,7 @@ $estadoIconos = [
 <!-- Scripts -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const baseUrl = '<?= BASE_URL ?>';
+    const baseUrl = '<?= Config::baseUrl("index.php") ?>';
     const csrfToken = '<?= $_SESSION['csrf_token'] ?? '' ?>';
     
     // Consultar estado en SRI

@@ -9,14 +9,21 @@
 
 namespace App\Controllers\Facturacion;
 
-require_once BASE_PATH . '/app/controllers/BaseController.php';
+require_once BASE_PATH . '/app/controllers/ModuleController.php';
 
-class PagoController extends \BaseController {
+class PagoController extends \App\Controllers\ModuleController {
+    
+    public function __construct() {
+        parent::__construct();
+        $this->moduloCodigo = 'facturacion';
+    }
     
     /**
      * Listar pagos
      */
     public function index() {
+        $this->authorize('ver', 'facturacion');
+        
         try {
             $estado = $this->get('estado') ?? '';
             $pagina = (int)($this->get('pagina') ?? 1);
@@ -24,32 +31,33 @@ class PagoController extends \BaseController {
             $offset = ($pagina - 1) * $perPage;
             
             $query = "
-                SELECT p.*, f.numero_factura, r.nombre_cliente,
-                       fp.nombre as forma_pago_nombre
-                FROM pagos p
-                INNER JOIN facturas f ON p.factura_id = f.factura_id
-                LEFT JOIN reservas r ON f.reserva_id = r.reserva_id
-                LEFT JOIN formas_pago fp ON p.forma_pago_id = fp.forma_pago_id
-                WHERE f.tenant_id = ?
+                SELECT p.*, f.fac_numero as numero_factura, 
+                       CONCAT(c.cli_nombres, ' ', c.cli_apellidos) as nombre_cliente,
+                       fp.fpa_nombre as forma_pago_nombre
+                FROM facturacion_pagos p
+                INNER JOIN facturacion_facturas f ON p.pag_factura_id = f.fac_id
+                LEFT JOIN clientes c ON f.fac_cliente_id = c.cli_cliente_id
+                LEFT JOIN facturacion_formas_pago fp ON p.pag_forma_pago_id = fp.fpa_id
+                WHERE f.fac_tenant_id = ?
             ";
             
             $params = [$this->tenantId];
             
             if (!empty($estado)) {
-                $query .= " AND p.estado = ?";
+                $query .= " AND p.pag_estado = ?";
                 $params[] = $estado;
             }
             
             // Contar total
             $countQuery = "
-                SELECT COUNT(DISTINCT p.pago_id) as total FROM pagos p
-                INNER JOIN facturas f ON p.factura_id = f.factura_id
-                WHERE f.tenant_id = ?
+                SELECT COUNT(DISTINCT p.pag_id) as total FROM facturacion_pagos p
+                INNER JOIN facturacion_facturas f ON p.pag_factura_id = f.fac_id
+                WHERE f.fac_tenant_id = ?
             ";
             $countParams = [$this->tenantId];
             
             if (!empty($estado)) {
-                $countQuery .= " AND p.estado = ?";
+                $countQuery .= " AND p.pag_estado = ?";
                 $countParams[] = $estado;
             }
             
@@ -57,7 +65,7 @@ class PagoController extends \BaseController {
             $stmt->execute($countParams);
             $totalRegistros = $stmt->fetch()['total'];
             
-            $query .= " ORDER BY p.fecha_pago DESC LIMIT ? OFFSET ?";
+            $query .= " ORDER BY p.pag_fecha DESC LIMIT ? OFFSET ?";
             $params[] = $perPage;
             $params[] = $offset;
             
@@ -71,9 +79,7 @@ class PagoController extends \BaseController {
             $this->viewData['totalPaginas'] = ceil($totalRegistros / $perPage);
             $this->viewData['estado'] = $estado;
             $this->viewData['title'] = 'Gestión de Pagos';
-            $this->viewData['layout'] = 'main';
-            
-            $this->render('facturacion/pagos', $this->viewData);
+            $this->renderModule('facturacion/pagos', $this->viewData);
             
         } catch (\Exception $e) {
             $this->logError("Error al listar pagos: " . $e->getMessage());
@@ -85,19 +91,43 @@ class PagoController extends \BaseController {
      * Crear pago para una factura
      */
     public function crear() {
+        $this->authorize('crear', 'facturacion');
+        
         $factura_id = (int)$this->get('factura_id');
         
+        // Si no se proporcionó factura_id, mostrar lista de facturas pendientes de pago
         if ($factura_id < 1) {
-            $this->error('Factura no válida');
+            try {
+                $stmt = $this->db->prepare("
+                    SELECT f.fac_id, f.fac_numero, f.fac_fecha_emision, f.fac_total, f.fac_estado,
+                           CONCAT(c.cli_nombres, ' ', c.cli_apellidos) as nombre_cliente,
+                           COALESCE((SELECT SUM(p.pag_monto) FROM facturacion_pagos p 
+                                     WHERE p.pag_factura_id = f.fac_id AND p.pag_estado = 'CONFIRMADO'), 0) as total_pagado
+                    FROM facturacion_facturas f
+                    LEFT JOIN clientes c ON f.fac_cliente_id = c.cli_cliente_id
+                    WHERE f.fac_tenant_id = ? AND f.fac_estado IN ('EMITIDA', 'BORRADOR')
+                    ORDER BY f.fac_fecha_emision DESC
+                ");
+                $stmt->execute([$this->tenantId]);
+                $facturas_pendientes = $stmt->fetchAll();
+                
+                $this->viewData['facturas_pendientes'] = $facturas_pendientes;
+                $this->viewData['title'] = 'Registrar Pago - Seleccionar Factura';
+                $this->renderModule('facturacion/seleccionar_factura_pago', $this->viewData);
+                return;
+            } catch (\Exception $e) {
+                $this->logError("Error al listar facturas para pago: " . $e->getMessage());
+                $this->error('Error al cargar facturas pendientes');
+            }
         }
         
         try {
             // Obtener factura
             $stmt = $this->db->prepare("
-                SELECT f.*, r.nombre_cliente
-                FROM facturas f
-                LEFT JOIN reservas r ON f.reserva_id = r.reserva_id
-                WHERE f.factura_id = ? AND f.tenant_id = ?
+                SELECT f.*, CONCAT(c.cli_nombres, ' ', c.cli_apellidos) as nombre_cliente
+                FROM facturacion_facturas f
+                LEFT JOIN clientes c ON f.fac_cliente_id = c.cli_cliente_id
+                WHERE f.fac_id = ? AND f.fac_tenant_id = ?
             ");
             $stmt->execute([$factura_id, $this->tenantId]);
             $factura = $stmt->fetch();
@@ -108,21 +138,21 @@ class PagoController extends \BaseController {
             
             // Obtener total pagado
             $stmt = $this->db->prepare("
-                SELECT COALESCE(SUM(monto), 0) as total_pagado FROM pagos
-                WHERE factura_id = ? AND estado = 'CONFIRMADO'
+                SELECT COALESCE(SUM(pag_monto), 0) as total_pagado FROM facturacion_pagos
+                WHERE pag_factura_id = ? AND pag_estado = 'CONFIRMADO'
             ");
             $stmt->execute([$factura_id]);
             $total_pagado = $stmt->fetch()['total_pagado'];
             
-            $monto_pendiente = $factura['total'] - $total_pagado;
+            $monto_pendiente = $factura['fac_total'] - $total_pagado;
             
             // Obtener formas de pago
             $stmt = $this->db->prepare("
-                SELECT * FROM formas_pago 
-                WHERE estado = 'ACTIVO'
-                ORDER BY nombre
+                SELECT * FROM facturacion_formas_pago 
+                WHERE fpa_estado = 'ACTIVO' AND fpa_tenant_id = ?
+                ORDER BY fpa_nombre
             ");
-            $stmt->execute();
+            $stmt->execute([$this->tenantId]);
             $formas_pago = $stmt->fetchAll();
             
             $this->viewData['factura'] = $factura;
@@ -131,9 +161,7 @@ class PagoController extends \BaseController {
             $this->viewData['formas_pago'] = $formas_pago;
             $this->viewData['csrf_token'] = \Security::generateCsrfToken();
             $this->viewData['title'] = 'Registrar Pago';
-            $this->viewData['layout'] = 'main';
-            
-            $this->render('facturacion/crear_pago', $this->viewData);
+            $this->renderModule('facturacion/crear_pago', $this->viewData);
             
         } catch (\Exception $e) {
             $this->logError("Error al crear pago: " . $e->getMessage());
@@ -145,6 +173,8 @@ class PagoController extends \BaseController {
      * Guardar pago
      */
     public function guardar() {
+        $this->authorize('crear', 'facturacion');
+        
         if (!$this->isPost()) {
             $this->error('Solicitud inválida');
         }
@@ -186,7 +216,7 @@ class PagoController extends \BaseController {
             
             // Obtener factura
             $stmt = $this->db->prepare("
-                SELECT * FROM facturas WHERE factura_id = ? AND tenant_id = ?
+                SELECT * FROM facturacion_facturas WHERE fac_id = ? AND fac_tenant_id = ?
             ");
             $stmt->execute([$factura_id, $this->tenantId]);
             $factura = $stmt->fetch();
@@ -197,13 +227,13 @@ class PagoController extends \BaseController {
             
             // Verificar que el monto no exceda el pendiente
             $stmt = $this->db->prepare("
-                SELECT COALESCE(SUM(monto), 0) as total_pagado FROM pagos
-                WHERE factura_id = ? AND estado = 'CONFIRMADO'
+                SELECT COALESCE(SUM(pag_monto), 0) as total_pagado FROM facturacion_pagos
+                WHERE pag_factura_id = ? AND pag_estado = 'CONFIRMADO'
             ");
             $stmt->execute([$factura_id]);
             $total_pagado = $stmt->fetch()['total_pagado'];
             
-            $monto_pendiente = $factura['total'] - $total_pagado;
+            $monto_pendiente = $factura['fac_total'] - $total_pagado;
             
             if ($monto > $monto_pendiente) {
                 $this->error("Monto excede lo pendiente ($" . number_format($monto_pendiente, 2) . ")");
@@ -211,11 +241,11 @@ class PagoController extends \BaseController {
             
             // Crear pago
             $stmt = $this->db->prepare("
-                INSERT INTO pagos (
-                    factura_id, usuario_id,
-                    monto, forma_pago_id, referencia_pago,
-                    fecha_pago, estado, observaciones,
-                    fecha_creacion
+                INSERT INTO facturacion_pagos (
+                    pag_factura_id, pag_usuario_id,
+                    pag_monto, pag_forma_pago_id, pag_referencia,
+                    pag_fecha, pag_estado, pag_observaciones,
+                    pag_fecha_creacion
                 ) VALUES (?, ?, ?, ?, ?, ?, 'CONFIRMADO', ?, NOW())
             ");
             
@@ -234,18 +264,18 @@ class PagoController extends \BaseController {
             // Actualizar estado de factura si está pagada
             $nuevo_total_pagado = $total_pagado + $monto;
             
-            if ($nuevo_total_pagado >= $factura['total']) {
+            if ($nuevo_total_pagado >= $factura['fac_total']) {
                 $stmt = $this->db->prepare("
-                    UPDATE facturas
-                    SET estado = 'PAGADA',
-                        fecha_pago = NOW()
-                    WHERE factura_id = ?
+                    UPDATE facturacion_facturas
+                    SET fac_estado = 'PAGADA',
+                        fac_fecha_pago = NOW()
+                    WHERE fac_id = ?
                 ");
                 $stmt->execute([$factura_id]);
             }
             
             // Auditoría
-            $this->audit('pagos', $pago_id, 'INSERT', [], [
+            $this->audit('facturacion_pagos', $pago_id, 'INSERT', [], [
                 'factura_id' => $factura_id,
                 'monto' => $monto,
                 'forma_pago_id' => $forma_pago_id
@@ -267,6 +297,8 @@ class PagoController extends \BaseController {
      * Anular pago
      */
     public function anular() {
+        $this->authorize('eliminar', 'facturacion');
+        
         $pago_id = (int)$this->get('id');
         
         if ($pago_id < 1) {
@@ -275,9 +307,9 @@ class PagoController extends \BaseController {
         
         try {
             $stmt = $this->db->prepare("
-                SELECT p.*, f.factura_id FROM pagos p
-                INNER JOIN facturas f ON p.factura_id = f.factura_id
-                WHERE p.pago_id = ? AND f.tenant_id = ?
+                SELECT p.*, f.fac_id as factura_id FROM facturacion_pagos p
+                INNER JOIN facturacion_facturas f ON p.pag_factura_id = f.fac_id
+                WHERE p.pag_id = ? AND f.fac_tenant_id = ?
             ");
             $stmt->execute([$pago_id, $this->tenantId]);
             $pago = $stmt->fetch();
@@ -286,42 +318,42 @@ class PagoController extends \BaseController {
                 $this->error('Pago no encontrado');
             }
             
-            if ($pago['estado'] === 'ANULADO') {
+            if ($pago['pag_estado'] === 'ANULADO') {
                 $this->error('Este pago ya está anulado');
             }
             
             // Anular pago
             $stmt = $this->db->prepare("
-                UPDATE pagos
-                SET estado = 'ANULADO',
-                    fecha_anulacion = NOW()
-                WHERE pago_id = ?
+                UPDATE facturacion_pagos
+                SET pag_estado = 'ANULADO',
+                    pag_fecha_anulacion = NOW()
+                WHERE pag_id = ?
             ");
             $stmt->execute([$pago_id]);
             
             // Actualizar estado de factura (volver a EMITIDA)
             $stmt = $this->db->prepare("
-                SELECT f.*, COALESCE(SUM(p.monto), 0) as total_pagado
-                FROM facturas f
-                LEFT JOIN pagos p ON f.factura_id = p.factura_id 
-                                 AND p.estado = 'CONFIRMADO' AND p.pago_id != ?
-                WHERE f.factura_id = ?
-                GROUP BY f.factura_id
+                SELECT f.*, COALESCE(SUM(p.pag_monto), 0) as total_pagado
+                FROM facturacion_facturas f
+                LEFT JOIN facturacion_pagos p ON f.fac_id = p.pag_factura_id 
+                                 AND p.pag_estado = 'CONFIRMADO' AND p.pag_id != ?
+                WHERE f.fac_id = ?
+                GROUP BY f.fac_id
             ");
             $stmt->execute([$pago_id, $pago['factura_id']]);
             $factura = $stmt->fetch();
             
-            $nuevo_estado = ($factura['total_pagado'] >= $factura['total']) ? 'PAGADA' : 'EMITIDA';
+            $nuevo_estado = ($factura['total_pagado'] >= $factura['fac_total']) ? 'PAGADA' : 'EMITIDA';
             
             $stmt = $this->db->prepare("
-                UPDATE facturas
-                SET estado = ?
-                WHERE factura_id = ?
+                UPDATE facturacion_facturas
+                SET fac_estado = ?
+                WHERE fac_id = ?
             ");
             $stmt->execute([$nuevo_estado, $pago['factura_id']]);
             
             // Auditoría
-            $this->audit('pagos', $pago_id, 'VOIDED',
+            $this->audit('facturacion_pagos', $pago_id, 'VOIDED',
                         ['estado' => 'CONFIRMADO'],
                         ['estado' => 'ANULADO']);
             

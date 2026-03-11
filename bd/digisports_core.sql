@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1:3306
--- Tiempo de generación: 04-03-2026 a las 19:52:54
+-- Tiempo de generación: 11-03-2026 a las 03:47:50
 -- Versión del servidor: 8.4.7
 -- Versión de PHP: 8.3.28
 
@@ -60,7 +60,15 @@ CREATE TABLE IF NOT EXISTS `alumnos` (
   KEY `idx_alu_estado` (`alu_tenant_id`,`alu_estado`),
   KEY `idx_alu_nombres` (`alu_tenant_id`,`alu_apellidos`,`alu_nombres`),
   KEY `idx_alu_sede` (`alu_sede_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Tabla compartida de alumnos ??? todos los subsistemas deportivos';
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Tabla compartida de alumnos ??? todos los subsistemas deportivos';
+
+--
+-- Volcado de datos para la tabla `alumnos`
+--
+
+INSERT INTO `alumnos` (`alu_alumno_id`, `alu_tenant_id`, `alu_sede_id`, `alu_representante_id`, `alu_parentesco`, `alu_tipo_identificacion`, `alu_identificacion`, `alu_identificacion_hash`, `alu_nombres`, `alu_apellidos`, `alu_fecha_nacimiento`, `alu_genero`, `alu_foto`, `alu_tipo_sangre`, `alu_alergias`, `alu_condiciones_medicas`, `alu_medicamentos`, `alu_contacto_emergencia`, `alu_telefono_emergencia`, `alu_estado`, `alu_notas`, `alu_fecha_registro`, `alu_fecha_actualizacion`, `alu_observaciones_medicas`) VALUES
+(1, 1, 1, 2, 'PADRE', 'CED', 'ENC::VgPMcWN54dK8nz+o+sl+z/1PEqSpz1JKzwy8V2KITd8=', '7951383d5135e4bf27e53dc7600a7e40', 'Matias', 'Pinzon', '2014-02-20', 'M', 'storage/tenants/1/alumnos/fotos/1_ea4e40c2-df5e-45d6-83da-4bb1c7e2aef4.jpg', NULL, NULL, NULL, NULL, NULL, NULL, 'ACTIVO', NULL, '2026-03-06 23:00:05', '2026-03-08 00:49:35', NULL),
+(2, 1, 1, 2, 'PADRE', 'CED', 'ENC::nS0ub0LsvGN4wMjGfeH+GERenSgYe5OyTmCDMzszYVQ=', '46e867782d4667050ad7bf37c46a7107', 'Emma Sofia', 'Pinzón Quinde', '2022-05-25', 'F', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ACTIVO', NULL, '2026-03-07 04:00:30', '2026-03-08 02:07:14', NULL);
 
 -- --------------------------------------------------------
 
@@ -95,14 +103,59 @@ CREATE TABLE IF NOT EXISTS `clientes` (
   KEY `idx_email` (`cli_email`),
   KEY `idx_cli_identificacion_hash` (`cli_identificacion_hash`),
   KEY `idx_cli_email_hash` (`cli_email_hash`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Volcado de datos para la tabla `clientes`
 --
 
 INSERT INTO `clientes` (`cli_cliente_id`, `cli_tenant_id`, `cli_tipo_identificacion`, `cli_identificacion`, `cli_identificacion_hash`, `cli_nombres`, `cli_apellidos`, `cli_email`, `cli_email_hash`, `cli_telefono`, `cli_celular`, `cli_direccion`, `cli_fecha_nacimiento`, `cli_tipo_cliente`, `cli_saldo_abono`, `cli_estado`, `cli_fecha_registro`, `cli_consentimiento_datos`, `cli_consentimiento_fecha`, `cli_consentimiento_ip`) VALUES
-(1, 1, 'PAS', 'ENC::Qo0Dd1Lj+4SN464X3IGcqBn2jMJ8ttNnT9HrBgVnwck=', 'ff072a883770e15764c0f56479a16a78', 'Freddy', 'Bolivar Pinzon Olmedo', 'ENC::MFlXozVYpNPtRpW9vIygO8bfSLp70oh6DOeFOzqbPspTYsMMrS7cAif3H6LLOLyR', 'fa2536059c2cfc78fe680f0629a1859d', 'ENC::oUiyk7GlCyDtL6DvBvkKOY2s+tGROo505vHHGzZdP4k=', NULL, NULL, NULL, 'PUBLICO', 37.75, 'A', '2026-01-26 00:36:19', 0, NULL, NULL);
+(1, 1, 'PAS', 'ENC::Qo0Dd1Lj+4SN464X3IGcqBn2jMJ8ttNnT9HrBgVnwck=', 'ff072a883770e15764c0f56479a16a78', 'Freddy', 'Bolivar Pinzon Olmedo', 'ENC::MFlXozVYpNPtRpW9vIygO8bfSLp70oh6DOeFOzqbPspTYsMMrS7cAif3H6LLOLyR', 'fa2536059c2cfc78fe680f0629a1859d', 'ENC::oUiyk7GlCyDtL6DvBvkKOY2s+tGROo505vHHGzZdP4k=', NULL, NULL, NULL, 'PUBLICO', 37.75, 'A', '2026-01-26 00:36:19', 0, NULL, NULL),
+(2, 1, 'CED', 'ENC::TkQoa+DY7JkP5Hs04r0QMTUIwBWqGQ3M6U8Z7D4a85o=', '46e867782d4667050ad7bf37c46a7107', 'Freddy Bolívar', 'Pinzón Olmedo', 'ENC::SJIp5vZVmLPnefVHtBt2rbd5GjyfAONmjzW3MyEeoSzfeRrCgi/2dCF0RbIhB5ut', 'fa2536059c2cfc78fe680f0629a1859d', 'ENC::Wi4TBafq7H4H83WK3AYmhk2iJMoPnx86TbVZij7QFTM=', NULL, 'Loja, Rey david y los Olivos -336', NULL, 'REPRESENTANTE', 0.00, 'A', '2026-03-06 21:20:04', 1, '2026-03-06 16:20:04', '::1');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `core_archivos`
+--
+
+DROP TABLE IF EXISTS `core_archivos`;
+CREATE TABLE IF NOT EXISTS `core_archivos` (
+  `arc_id` int NOT NULL AUTO_INCREMENT,
+  `arc_tenant_id` int NOT NULL COMMENT 'Tenant propietario del archivo',
+  `arc_entidad` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'M├│dulo/entidad: alumnos, entrenadores, academias, pagos, documentos',
+  `arc_entidad_id` int NOT NULL COMMENT 'PK del registro al que pertenece',
+  `arc_categoria` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Tipo de archivo: fotos, documentos, logos, comprobantes',
+  `arc_nombre_original` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Nombre original del archivo subido por el usuario',
+  `arc_nombre_almacenado` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Nombre ├║nico con UUID en disco',
+  `arc_ruta_relativa` varchar(500) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Ruta relativa desde storage/: tenants/{id}/alumnos/fotos/...',
+  `arc_mime_type` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'MIME type validado por finfo (no $_FILES["type"])',
+  `arc_extension` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Extensi├│n en min├║sculas: jpg, png, pdf, etc.',
+  `arc_tamanio_bytes` int NOT NULL DEFAULT '0' COMMENT 'Tama├▒o del archivo en bytes',
+  `arc_ancho_px` smallint DEFAULT NULL COMMENT 'Ancho en p├¡xeles (solo im├ígenes)',
+  `arc_alto_px` smallint DEFAULT NULL COMMENT 'Alto en p├¡xeles (solo im├ígenes)',
+  `arc_storage_driver` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'local' COMMENT 'Driver de almacenamiento: local, s3, r2',
+  `arc_storage_key` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Clave/path en el storage remoto (para S3/R2)',
+  `arc_es_principal` tinyint(1) NOT NULL DEFAULT '0' COMMENT '1 = archivo principal (ej: foto de perfil activa)',
+  `arc_estado` enum('activo','eliminado') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'activo',
+  `arc_subido_por` int NOT NULL COMMENT 'usu_usuario_id del usuario que subi├│ el archivo',
+  `arc_fecha_subida` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `arc_fecha_eliminacion` timestamp NULL DEFAULT NULL COMMENT 'Soft delete timestamp',
+  PRIMARY KEY (`arc_id`),
+  KEY `idx_arc_tenant` (`arc_tenant_id`),
+  KEY `idx_arc_entidad` (`arc_entidad`,`arc_entidad_id`),
+  KEY `idx_arc_tenant_entidad` (`arc_tenant_id`,`arc_entidad`,`arc_entidad_id`),
+  KEY `idx_arc_estado` (`arc_estado`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Repositorio central de archivos multimedia del sistema';
+
+--
+-- Volcado de datos para la tabla `core_archivos`
+--
+
+INSERT INTO `core_archivos` (`arc_id`, `arc_tenant_id`, `arc_entidad`, `arc_entidad_id`, `arc_categoria`, `arc_nombre_original`, `arc_nombre_almacenado`, `arc_ruta_relativa`, `arc_mime_type`, `arc_extension`, `arc_tamanio_bytes`, `arc_ancho_px`, `arc_alto_px`, `arc_storage_driver`, `arc_storage_key`, `arc_es_principal`, `arc_estado`, `arc_subido_por`, `arc_fecha_subida`, `arc_fecha_eliminacion`) VALUES
+(1, 1, 'alumnos', 1, 'fotos', '00.jpg', '1_ea4e40c2-df5e-45d6-83da-4bb1c7e2aef4.jpg', 'storage/tenants/1/alumnos/fotos/1_ea4e40c2-df5e-45d6-83da-4bb1c7e2aef4.jpg', 'image/jpeg', 'jpg', 27684, 240, 300, 'local', NULL, 1, 'activo', 1, '2026-03-08 00:48:30', NULL),
+(2, 1, 'alumnos', 2, 'fotos', '08.jpg', '2_dab6e6f3-c5ca-4ca3-b1b7-a52fabe07ded.jpg', 'storage/tenants/1/alumnos/fotos/2_dab6e6f3-c5ca-4ca3-b1b7-a52fabe07ded.jpg', 'image/jpeg', 'jpg', 29128, 240, 300, 'local', NULL, 0, 'activo', 1, '2026-03-08 02:06:20', NULL),
+(3, 1, 'alumnos', 2, 'fotos', '06.jpg', '2_a63c0e34-c9c4-4e3d-9df1-17f46aee722e.jpg', 'storage/tenants/1/alumnos/fotos/2_a63c0e34-c9c4-4e3d-9df1-17f46aee722e.jpg', 'image/jpeg', 'jpg', 24258, 225, 300, 'local', NULL, 1, 'eliminado', 1, '2026-03-08 02:06:51', '2026-03-08 02:07:14');
 
 -- --------------------------------------------------------
 
@@ -365,7 +418,20 @@ CREATE TABLE IF NOT EXISTS `futbol_asistencia` (
   KEY `idx_fas_grupo_fecha` (`fas_grupo_id`,`fas_fecha`),
   KEY `idx_fas_alumno` (`fas_alumno_id`,`fas_fecha`),
   KEY `fk_fas_tenant` (`fas_tenant_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `futbol_asistencia`
+--
+
+INSERT INTO `futbol_asistencia` (`fas_asistencia_id`, `fas_tenant_id`, `fas_inscripcion_id`, `fas_grupo_id`, `fas_alumno_id`, `fas_fecha`, `fas_estado`, `fas_observacion`, `fas_registrado_por`, `fas_created_at`) VALUES
+(1, 1, 0, 1, 1, '2026-03-06', 'PRESENTE', NULL, NULL, '2026-03-07 02:24:47'),
+(2, 1, 0, 1, 1, '2026-03-05', 'TARDANZA', NULL, NULL, '2026-03-07 02:27:27'),
+(3, 1, 0, 1, 1, '2026-03-04', 'TARDANZA', NULL, NULL, '2026-03-07 04:20:49'),
+(5, 1, 1, 1, 1, '2026-03-09', 'PRESENTE', NULL, 1, '2026-03-09 16:21:31'),
+(6, 1, 2, 1, 2, '2026-03-09', 'TARDANZA', NULL, 1, '2026-03-09 16:21:32'),
+(20, 1, 1, 1, 1, '2026-03-04', 'PRESENTE', NULL, 1, '2026-03-09 16:23:40'),
+(24, 1, 2, 1, 2, '2026-03-04', 'PRESENTE', NULL, 1, '2026-03-09 16:25:39');
 
 -- --------------------------------------------------------
 
@@ -400,12 +466,12 @@ CREATE TABLE IF NOT EXISTS `futbol_becas` (
 --
 
 INSERT INTO `futbol_becas` (`fbe_beca_id`, `fbe_tenant_id`, `fbe_nombre`, `fbe_tipo`, `fbe_valor`, `fbe_descripcion`, `fbe_requisitos`, `fbe_cupo_maximo`, `fbe_cupo_usado`, `fbe_vigencia_inicio`, `fbe_vigencia_fin`, `fbe_aplica_matricula`, `fbe_aplica_mensualidad`, `fbe_activo`, `fbe_created_at`, `fbe_updated_at`) VALUES
-(1, 1, 'Beca Deportiva 100%', 'EXONERACION', 100.00, 'Exoneraci??n total por talento deportivo destacado', NULL, NULL, 0, NULL, NULL, 0, 1, 1, '2026-02-09 20:03:14', '2026-02-09 20:03:14'),
+(1, 1, 'Beca Deportiva 100%', 'EXONERACION', 100.00, 'Exoneraci??n total por talento deportivo destacado', NULL, NULL, 0, NULL, NULL, 0, 1, 1, '2026-02-09 20:03:14', '2026-03-06 04:00:04'),
 (2, 1, 'Beca Deportiva 50%', 'PORCENTAJE', 50.00, 'Media beca por rendimiento deportivo', NULL, NULL, 0, NULL, NULL, 0, 1, 1, '2026-02-09 20:03:14', '2026-02-09 20:03:14'),
-(3, 1, 'Descuento Hermanos', 'PORCENTAJE', 15.00, '15% de descuento por hermano inscrito', NULL, NULL, 0, NULL, NULL, 0, 1, 1, '2026-02-09 20:03:14', '2026-02-09 20:03:14'),
-(4, 1, 'Beca Socioecon??mica', 'PORCENTAJE', 30.00, '30% de descuento por situaci??n socioecon??mica comprobada', NULL, NULL, 0, NULL, NULL, 0, 1, 1, '2026-02-09 20:03:14', '2026-02-09 20:03:14'),
+(3, 1, 'Descuento Hermanos', 'PORCENTAJE', 5.00, '15% de descuento por hermano inscrito', NULL, NULL, 0, NULL, NULL, 0, 1, 1, '2026-02-09 20:03:14', '2026-03-07 04:02:07'),
+(4, 1, 'Beca Socioeconómica', 'PORCENTAJE', 30.00, '30% de descuento por situación socioeconómica comprobada', NULL, NULL, 0, NULL, NULL, 0, 1, 1, '2026-02-09 20:03:14', '2026-03-06 03:55:14'),
 (5, 1, 'Descuento Referido', 'MONTO_FIJO', 10.00, '$10 de descuento mensual por referir nuevo alumno', NULL, NULL, 0, NULL, NULL, 0, 1, 1, '2026-02-09 20:03:14', '2026-02-09 20:03:14'),
-(6, 1, 'Descuento Pronto Pago', 'PORCENTAJE', 5.00, '5% por pago anticipado antes del d??a 5', NULL, NULL, 0, NULL, NULL, 0, 1, 1, '2026-02-09 20:03:14', '2026-02-09 20:03:14');
+(6, 1, 'Descuento Pronto Pago', 'PORCENTAJE', 5.00, '5% por pago anticipado antes del día 5', NULL, NULL, 0, NULL, NULL, 0, 1, 1, '2026-02-09 20:03:14', '2026-03-06 03:56:03');
 
 -- --------------------------------------------------------
 
@@ -430,7 +496,14 @@ CREATE TABLE IF NOT EXISTS `futbol_beca_asignaciones` (
   KEY `idx_fba_alumno` (`fba_alumno_id`,`fba_estado`),
   KEY `idx_fba_beca` (`fba_beca_id`),
   KEY `fk_fba_tenant` (`fba_tenant_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `futbol_beca_asignaciones`
+--
+
+INSERT INTO `futbol_beca_asignaciones` (`fba_asignacion_id`, `fba_tenant_id`, `fba_beca_id`, `fba_alumno_id`, `fba_inscripcion_id`, `fba_fecha_asignacion`, `fba_fecha_vencimiento`, `fba_motivo`, `fba_aprobado_por`, `fba_estado`, `fba_created_at`) VALUES
+(1, 1, 3, 2, NULL, '2026-03-06', NULL, 'DEscuento por Hermano', NULL, 'ACTIVA', '2026-03-07 04:02:35');
 
 -- --------------------------------------------------------
 
@@ -465,13 +538,13 @@ CREATE TABLE IF NOT EXISTS `futbol_campos_ficha` (
 
 INSERT INTO `futbol_campos_ficha` (`fcf_campo_id`, `fcf_tenant_id`, `fcf_clave`, `fcf_etiqueta`, `fcf_tipo`, `fcf_opciones`, `fcf_placeholder`, `fcf_requerido`, `fcf_grupo`, `fcf_orden`, `fcf_activo`, `fcf_validacion`, `fcf_created_at`, `fcf_updated_at`) VALUES
 (1, 1, 'posicion_secundaria', 'Posici??n Secundaria', 'SELECT', '[\"Portero\", \"Defensa Central\", \"Lateral\", \"Mediocampista\", \"Extremo\", \"Delantero\"]', NULL, 0, 'deportivo', 1, 1, NULL, '2026-02-09 20:03:14', '2026-02-09 20:03:14'),
-(2, 1, 'pie_habil', 'Pie m??s H??bil', 'SELECT', '[\"Derecho\", \"Izquierdo\", \"Ambidiestro\"]', NULL, 1, 'deportivo', 2, 1, NULL, '2026-02-09 20:03:14', '2026-02-09 20:03:14'),
+(2, 1, 'pie_habil', 'Pie más Hábil', 'SELECT', '[\"Derecho\", \"Izquierdo\", \"Ambidiestro\"]', NULL, 1, 'deportivo', 2, 1, NULL, '2026-02-09 20:03:14', '2026-03-06 21:10:20'),
 (3, 1, 'club_favorito', 'Club Favorito', 'TEXT', NULL, 'Ej: Barcelona SC, Liga de Quito...', 0, 'personal', 1, 1, NULL, '2026-02-09 20:03:14', '2026-02-09 20:03:14'),
 (4, 1, 'jugador_favorito', 'Jugador Favorito', 'TEXT', NULL, 'Ej: Messi, Cristiano...', 0, 'personal', 2, 1, NULL, '2026-02-09 20:03:14', '2026-02-09 20:03:14'),
-(5, 1, 'como_nos_conocio', '??C??mo nos conoci???', 'SELECT', '[\"Redes sociales\", \"Recomendaci??n\", \"Publicidad\", \"Escuela/Colegio\", \"Otro\"]', NULL, 0, 'general', 1, 1, NULL, '2026-02-09 20:03:14', '2026-02-09 20:03:14'),
-(6, 1, 'autoriza_fotos', 'Autoriza publicaci??n de fotos/videos', 'CHECKBOX', NULL, NULL, 1, 'legal', 1, 1, NULL, '2026-02-09 20:03:14', '2026-02-09 20:03:14'),
+(5, 1, 'como_nos_conocio', 'Cómo nos conoció', 'SELECT', '[\"Redes sociales\", \"Recomendación\", \"Publicidad\", \"Escuela/Colegio\", \"Otro\"]', NULL, 0, 'general', 1, 1, NULL, '2026-02-09 20:03:14', '2026-03-06 17:57:24'),
+(6, 1, 'autoriza_fotos', 'Autoriza publicación de fotos/videos', '', NULL, NULL, 0, 'legal', 1, 1, NULL, '2026-02-09 20:03:14', '2026-03-06 04:36:52'),
 (7, 1, 'acepta_reglamento', 'Acepta reglamento interno', 'CHECKBOX', NULL, NULL, 1, 'legal', 2, 1, NULL, '2026-02-09 20:03:14', '2026-02-09 20:03:14'),
-(8, 1, 'obs_medicas_extra', 'Observaciones M??dicas Adicionales', 'TEXTAREA', NULL, 'Lesiones previas, limitaciones f??sicas...', 0, 'medico', 1, 1, NULL, '2026-02-09 20:03:14', '2026-02-09 20:03:14');
+(8, 1, 'obs_medicas_extra', 'Observaciones Médicas Adicionales', 'TEXTAREA', NULL, 'Lesiones previas, limitaciones f??sicas...', 0, 'medico', 1, 1, NULL, '2026-02-09 20:03:14', '2026-03-06 21:12:36');
 
 -- --------------------------------------------------------
 
@@ -505,7 +578,7 @@ INSERT INTO `futbol_categorias` (`fct_categoria_id`, `fct_tenant_id`, `fct_nombr
 (1, 1, 'Sub-6 (Baby Fútbol)', 'U6', 'Iniciación al fútbol. Juegos lúdicos y motricidad básica.', '#94A3B8', 1, 4, 6, 1, '2026-02-09 20:03:14'),
 (2, 1, 'Sub-8', 'U8', 'Fundamentos básicos: conducción, pase y tiro. Juegos reducidos.', '#22C55E', 2, 7, 8, 1, '2026-02-09 20:03:14'),
 (3, 1, 'Sub-10', 'U10', 'T??cnica individual, conceptos técticos básicos y juego 7v7.', '#3B82F6', 3, 9, 10, 1, '2026-02-09 20:03:14'),
-(4, 1, 'Sub-12', 'U12', 'Desarrollo téctico, transiciones y juego 9v9.', '#8B5CF6', 4, 11, 12, 1, '2026-02-09 20:03:14'),
+(4, 1, 'Sub-12', 'U12', 'Desarrollo téctico, transiciones y juego 9v9.', '#6021f2', 4, 11, 12, 0, '2026-02-09 20:03:14'),
 (5, 1, 'Sub-14', 'U14', 'F??tbol 11, sistemas de juego y preparación competitiva.', '#F59E0B', 5, 13, 14, 1, '2026-02-09 20:03:14'),
 (6, 1, 'Sub-16', 'U16', 'Alto rendimiento juvenil. Especialización por posición.', '#EF4444', 6, 15, 16, 1, '2026-02-09 20:03:14'),
 (7, 1, 'Sub-18', 'U18', 'Competitivo senior juvenil. Preparación para fútbol amateur.', '#EC4899', 7, 17, 18, 1, '2026-02-09 20:03:14'),
@@ -588,7 +661,15 @@ CREATE TABLE IF NOT EXISTS `futbol_comprobantes` (
   KEY `idx_fcm_pago` (`fcm_pago_id`),
   KEY `fk_fcm_cliente` (`fcm_cliente_id`),
   KEY `fk_fcm_alumno` (`fcm_alumno_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `futbol_comprobantes`
+--
+
+INSERT INTO `futbol_comprobantes` (`fcm_comprobante_id`, `fcm_tenant_id`, `fcm_pago_id`, `fcm_numero`, `fcm_tipo`, `fcm_cliente_id`, `fcm_alumno_id`, `fcm_concepto`, `fcm_subtotal`, `fcm_descuento`, `fcm_iva`, `fcm_total`, `fcm_metodo_pago`, `fcm_fecha_emision`, `fcm_estado`, `fcm_pdf_path`, `fcm_enviado_email`, `fcm_enviado_whatsapp`, `fcm_notas`, `fcm_datos_json`, `fcm_created_at`) VALUES
+(1, 1, 1, 'ESC-0001', 'RECIBO', NULL, 0, 'Pago MENSUALIDAD', 0.00, 0.00, 0.00, 25.00, NULL, '2026-03-06', 'EMITIDO', NULL, 0, 0, NULL, '{\"descuento\": \"5.00\", \"pago_tipo\": \"MENSUALIDAD\", \"pago_metodo\": \"EFECTIVO\", \"recargo_mora\": \"0.00\", \"alumno_nombre\": \"Emma Sofia Pinzón Quinde\", \"monto_original\": \"30.00\", \"pago_referencia\": null, \"alumno_identificacion\": \"ENC::nS0ub0LsvGN4wMjGfeH+GERenSgYe5OyTmCDMzszYVQ=\"}', '2026-03-07 04:26:06'),
+(2, 1, 2, 'ESC-0002', 'RECIBO', NULL, 0, 'Pago MENSUALIDAD', 0.00, 0.00, 0.00, 30.00, NULL, '2026-03-07', 'EMITIDO', NULL, 0, 0, NULL, '{\"descuento\": \"0.00\", \"pago_tipo\": \"MENSUALIDAD\", \"pago_metodo\": \"EFECTIVO\", \"recargo_mora\": \"0.00\", \"alumno_nombre\": \"Matias Pinzon\", \"monto_original\": \"30.00\", \"pago_referencia\": \"235\", \"alumno_identificacion\": \"ENC::Sg3hlAFdckl9hUWBT5L0HloxeUOhAajL5WjcyaQGyuk=\"}', '2026-03-07 13:09:19');
 
 -- --------------------------------------------------------
 
@@ -615,12 +696,12 @@ CREATE TABLE IF NOT EXISTS `futbol_configuracion` (
 --
 
 INSERT INTO `futbol_configuracion` (`fcg_config_id`, `fcg_tenant_id`, `fcg_clave`, `fcg_valor`, `fcg_tipo`, `fcg_descripcion`, `fcg_created_at`, `fcg_updated_at`) VALUES
-(1, 1, 'nombre_modulo', 'Escuela de F??tbol', 'TEXT', 'Nombre personalizado del m??dulo', '2026-02-09 20:03:14', '2026-02-09 20:03:14'),
+(1, 1, 'nombre_modulo', 'Escuela de Fútbol', 'TEXT', 'Nombre personalizado del m??dulo', '2026-02-09 20:03:14', '2026-03-07 02:20:42'),
 (2, 1, 'moneda', 'USD', 'TEXT', 'Moneda para precios', '2026-02-09 20:03:14', '2026-02-09 20:03:14'),
 (3, 1, 'max_alumnos_grupo', '25', 'NUMBER', 'M??ximo de alumnos por grupo', '2026-02-09 20:03:14', '2026-02-09 20:03:14'),
-(4, 1, 'requiere_certificado_medico', 'true', 'BOOLEAN', 'Exigir certificado m??dico', '2026-02-09 20:03:14', '2026-02-09 20:03:14'),
+(4, 1, 'requiere_certificado_medico', '1', 'BOOLEAN', 'Exigir certificado m??dico', '2026-02-09 20:03:14', '2026-03-07 02:21:25'),
 (5, 1, 'edad_minima_inscripcion', '4', 'NUMBER', 'Edad m??nima para inscribir', '2026-02-09 20:03:14', '2026-02-09 20:03:14'),
-(6, 1, 'permite_lista_espera', 'true', 'BOOLEAN', 'Activar lista de espera', '2026-02-09 20:03:14', '2026-02-09 20:03:14'),
+(6, 1, 'permite_lista_espera', '1', 'BOOLEAN', 'Activar lista de espera', '2026-02-09 20:03:14', '2026-03-07 02:21:25'),
 (7, 1, 'dias_prueba_gratis', '3', 'NUMBER', 'D??as de clase de prueba gratis', '2026-02-09 20:03:14', '2026-02-09 20:03:14'),
 (8, 1, 'porcentaje_asistencia_min', '70', 'NUMBER', 'Porcentaje m??nimo de asistencia', '2026-02-09 20:03:14', '2026-02-09 20:03:14'),
 (9, 1, 'escala_evaluacion', '5', 'NUMBER', 'Escala de evaluaci??n (1-5 estrellas)', '2026-02-09 20:03:14', '2026-02-09 20:03:14'),
@@ -628,9 +709,9 @@ INSERT INTO `futbol_configuracion` (`fcg_config_id`, `fcg_tenant_id`, `fcg_clave
 (11, 1, 'porcentaje_mora', '5', 'NUMBER', 'Porcentaje de recargo por mora mensual', '2026-02-09 20:03:14', '2026-02-09 20:03:14'),
 (12, 1, 'dias_gracia_mora', '5', 'NUMBER', 'D??as de gracia antes de aplicar mora', '2026-02-09 20:03:14', '2026-02-09 20:03:14'),
 (13, 1, 'comprobante_prefijo', 'ESC', 'TEXT', 'Prefijo para n??meros de comprobante', '2026-02-09 20:03:14', '2026-02-09 20:03:14'),
-(14, 1, 'whatsapp_activo', 'false', 'BOOLEAN', 'Activar notificaciones WhatsApp', '2026-02-09 20:03:14', '2026-02-09 20:03:14'),
-(15, 1, 'email_activo', 'true', 'BOOLEAN', 'Activar notificaciones por email', '2026-02-09 20:03:14', '2026-02-09 20:03:14'),
-(16, 1, 'sms_activo', 'false', 'BOOLEAN', 'Activar notificaciones SMS', '2026-02-09 20:03:14', '2026-02-09 20:03:14');
+(14, 1, 'whatsapp_activo', '0', 'BOOLEAN', 'Activar notificaciones WhatsApp', '2026-02-09 20:03:14', '2026-03-07 02:21:25'),
+(15, 1, 'email_activo', '1', 'BOOLEAN', 'Activar notificaciones por email', '2026-02-09 20:03:14', '2026-03-07 02:21:25'),
+(16, 1, 'sms_activo', '0', 'BOOLEAN', 'Activar notificaciones SMS', '2026-02-09 20:03:14', '2026-03-07 02:21:25');
 
 -- --------------------------------------------------------
 
@@ -689,7 +770,14 @@ CREATE TABLE IF NOT EXISTS `futbol_entrenadores` (
   PRIMARY KEY (`fen_entrenador_id`),
   KEY `idx_fen_tenant` (`fen_tenant_id`,`fen_activo`),
   KEY `idx_fen_sede` (`fen_sede_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `futbol_entrenadores`
+--
+
+INSERT INTO `futbol_entrenadores` (`fen_entrenador_id`, `fen_tenant_id`, `fen_sede_id`, `fen_usuario_id`, `fen_nombres`, `fen_apellidos`, `fen_identificacion`, `fen_email`, `fen_telefono`, `fen_rol`, `fen_especialidad`, `fen_certificaciones`, `fen_foto`, `fen_color`, `fen_activo`, `fen_notas`, `fen_created_at`, `fen_updated_at`) VALUES
+(1, 1, 1, NULL, 'Veronica M.', 'Quinde España', '1104015283', 'vmquine@gmail.com', '0993120984', 'ENTRENADOR', 'Futbol Formativo', NULL, NULL, '#f10eb4', 1, NULL, '2026-03-07 03:36:23', '2026-03-07 03:36:23');
 
 -- --------------------------------------------------------
 
@@ -719,7 +807,14 @@ CREATE TABLE IF NOT EXISTS `futbol_evaluaciones` (
   KEY `fk_fev_tenant` (`fev_tenant_id`),
   KEY `fk_fev_habilidad` (`fev_habilidad_id`),
   KEY `fk_fev_categoria` (`fev_categoria_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `futbol_evaluaciones`
+--
+
+INSERT INTO `futbol_evaluaciones` (`fev_evaluacion_id`, `fev_tenant_id`, `fev_alumno_id`, `fev_grupo_id`, `fev_periodo_id`, `fev_habilidad_id`, `fev_categoria_id`, `fev_calificacion`, `fev_aprobado`, `fev_fecha`, `fev_evaluador_id`, `fev_observacion`, `fev_created_at`, `fev_updated_at`) VALUES
+(1, 1, 1, 1, 1, 0, 0, 85, 0, '2026-03-06', NULL, 'SAque de arcvo', '2026-03-07 01:53:01', NULL);
 
 -- --------------------------------------------------------
 
@@ -756,7 +851,15 @@ CREATE TABLE IF NOT EXISTS `futbol_ficha_alumno` (
   UNIQUE KEY `uk_ffa_tenant_alumno` (`ffa_tenant_id`,`ffa_alumno_id`),
   KEY `idx_ffa_categoria` (`ffa_categoria_id`),
   KEY `fk_ffa_alumno` (`ffa_alumno_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `futbol_ficha_alumno`
+--
+
+INSERT INTO `futbol_ficha_alumno` (`ffa_ficha_id`, `ffa_tenant_id`, `ffa_alumno_id`, `ffa_categoria_id`, `ffa_posicion_preferida`, `ffa_pie_dominante`, `ffa_experiencia_previa`, `ffa_club_anterior`, `ffa_objetivo`, `ffa_talla_camiseta`, `ffa_talla_short`, `ffa_talla_zapato`, `ffa_numero_camiseta`, `ffa_autorizacion_medica`, `ffa_seguro_medico`, `ffa_fecha_ingreso`, `ffa_fecha_ultimo_avance`, `ffa_datos_custom`, `ffa_documentos`, `ffa_activo`, `ffa_notas`, `ffa_created_at`, `ffa_updated_at`) VALUES
+(1, 1, 1, NULL, 'Portero', 'DERECHO', NULL, NULL, 'RECREATIVO', 'S', NULL, NULL, 1, 0, NULL, '2026-03-06', NULL, '{\"pie_habil\": \"Derecho\", \"club_favorito\": \"\", \"autoriza_fotos\": \"\", \"como_nos_conocio\": \"Redes sociales\", \"jugador_favorito\": \"Messi\", \"obs_medicas_extra\": \"Ninguna\", \"posicion_secundaria\": \"\"}', NULL, 1, NULL, '2026-03-06 23:00:05', '2026-03-07 03:56:01'),
+(2, 1, 2, NULL, NULL, NULL, NULL, NULL, 'RECREATIVO', NULL, NULL, NULL, NULL, 0, NULL, '2026-03-06', NULL, '{\"pie_habil\": \"Derecho\", \"club_favorito\": \"\", \"autoriza_fotos\": \"\", \"como_nos_conocio\": \"\", \"jugador_favorito\": \"\", \"obs_medicas_extra\": \"\", \"posicion_secundaria\": \"\"}', NULL, 1, NULL, '2026-03-07 04:00:30', '2026-03-07 04:00:30');
 
 -- --------------------------------------------------------
 
@@ -791,7 +894,14 @@ CREATE TABLE IF NOT EXISTS `futbol_grupos` (
   KEY `idx_fgr_sede` (`fgr_sede_id`),
   KEY `fk_fgr_cancha` (`fgr_cancha_id`),
   KEY `fk_fgr_entrenador` (`fgr_entrenador_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `futbol_grupos`
+--
+
+INSERT INTO `futbol_grupos` (`fgr_grupo_id`, `fgr_tenant_id`, `fgr_sede_id`, `fgr_periodo_id`, `fgr_categoria_id`, `fgr_cancha_id`, `fgr_entrenador_id`, `fgr_nombre`, `fgr_descripcion`, `fgr_cupo_maximo`, `fgr_cupo_actual`, `fgr_edad_min`, `fgr_edad_max`, `fgr_precio`, `fgr_estado`, `fgr_color`, `fgr_created_at`, `fgr_updated_at`) VALUES
+(1, 1, 1, 1, 4, 4, 1, 'Equipo 2014-2013', NULL, 20, 2, NULL, NULL, 35.00, 'ABIERTO', '#ea1ae3', '2026-03-06 04:12:27', '2026-03-07 04:18:21');
 
 -- --------------------------------------------------------
 
@@ -814,7 +924,14 @@ CREATE TABLE IF NOT EXISTS `futbol_grupo_horarios` (
   KEY `idx_fgh_grupo` (`fgh_grupo_id`),
   KEY `idx_fgh_dia` (`fgh_tenant_id`,`fgh_dia_semana`,`fgh_hora_inicio`),
   KEY `fk_fgh_cancha` (`fgh_cancha_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `futbol_grupo_horarios`
+--
+
+INSERT INTO `futbol_grupo_horarios` (`fgh_horario_id`, `fgh_tenant_id`, `fgh_grupo_id`, `fgh_dia_semana`, `fgh_hora_inicio`, `fgh_hora_fin`, `fgh_cancha_id`, `fgh_activo`, `fgh_notas`) VALUES
+(1, 1, 1, 'LUN', '15:00:00', '16:00:00', NULL, 1, NULL);
 
 -- --------------------------------------------------------
 
@@ -844,7 +961,15 @@ CREATE TABLE IF NOT EXISTS `futbol_inscripciones` (
   KEY `idx_fin_tenant_estado` (`fin_tenant_id`,`fin_estado`),
   KEY `idx_fin_grupo` (`fin_grupo_id`),
   KEY `fk_fin_beca` (`fin_beca_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `futbol_inscripciones`
+--
+
+INSERT INTO `futbol_inscripciones` (`fin_inscripcion_id`, `fin_tenant_id`, `fin_alumno_id`, `fin_grupo_id`, `fin_periodo_id`, `fin_fecha_inscripcion`, `fin_fecha_baja`, `fin_monto`, `fin_descuento`, `fin_monto_final`, `fin_beca_id`, `fin_estado`, `fin_notas`, `fin_created_at`, `fin_updated_at`) VALUES
+(1, 1, 1, 1, NULL, '2026-03-06', NULL, 10.00, 0.00, 0.00, NULL, 'ACTIVA', NULL, '2026-03-07 01:24:28', '2026-03-07 03:39:09'),
+(2, 1, 2, 1, NULL, '2026-03-06', NULL, 30.00, 0.00, 0.00, NULL, 'ACTIVA', NULL, '2026-03-07 04:18:21', '2026-03-07 04:18:49');
 
 -- --------------------------------------------------------
 
@@ -941,7 +1066,15 @@ CREATE TABLE IF NOT EXISTS `futbol_pagos` (
   KEY `idx_fpg_vencimiento` (`fpg_tenant_id`,`fpg_fecha_vencimiento`,`fpg_estado`),
   KEY `idx_fpg_mora` (`fpg_tenant_id`,`fpg_dias_mora`),
   KEY `fk_fpg_inscripcion` (`fpg_inscripcion_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `futbol_pagos`
+--
+
+INSERT INTO `futbol_pagos` (`fpg_pago_id`, `fpg_tenant_id`, `fpg_sede_id`, `fpg_inscripcion_id`, `fpg_alumno_id`, `fpg_grupo_id`, `fpg_cliente_id`, `fpg_concepto`, `fpg_tipo`, `fpg_mes_correspondiente`, `fpg_monto`, `fpg_descuento`, `fpg_beca_descuento`, `fpg_total`, `fpg_metodo_pago`, `fpg_referencia`, `fpg_fecha`, `fpg_fecha_vencimiento`, `fpg_dias_mora`, `fpg_recargo_mora`, `fpg_estado`, `fpg_comprobante_num`, `fpg_notas`, `fpg_created_at`, `fpg_updated_at`) VALUES
+(1, 1, NULL, NULL, 2, 1, NULL, '', 'MENSUALIDAD', '2026-03', 30.00, 5.00, 0.00, 25.00, 'EFECTIVO', NULL, '2026-03-06', NULL, 0, 0.00, 'PENDIENTE', NULL, NULL, '2026-03-07 04:23:03', '2026-03-07 04:23:03'),
+(2, 1, NULL, NULL, 1, 1, NULL, '', 'MENSUALIDAD', '2026-01', 30.00, 0.00, 0.00, 30.00, 'EFECTIVO', '235', '2026-03-07', NULL, 0, 0.00, 'PENDIENTE', NULL, NULL, '2026-03-07 13:05:19', '2026-03-07 13:09:08');
 
 -- --------------------------------------------------------
 
@@ -962,7 +1095,14 @@ CREATE TABLE IF NOT EXISTS `futbol_periodos` (
   `fpe_updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`fpe_periodo_id`),
   KEY `idx_fpe_tenant_estado` (`fpe_tenant_id`,`fpe_estado`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `futbol_periodos`
+--
+
+INSERT INTO `futbol_periodos` (`fpe_periodo_id`, `fpe_tenant_id`, `fpe_nombre`, `fpe_fecha_inicio`, `fpe_fecha_fin`, `fpe_estado`, `fpe_notas`, `fpe_created_at`, `fpe_updated_at`) VALUES
+(1, 1, 'Periodo 2026', '2026-01-01', '2026-12-31', 'ACTIVO', NULL, '2026-03-07 01:48:20', '2026-03-07 01:54:03');
 
 -- --------------------------------------------------------
 
@@ -992,7 +1132,14 @@ CREATE TABLE IF NOT EXISTS `futbol_torneos` (
   PRIMARY KEY (`fto_torneo_id`),
   KEY `idx_fto_tenant` (`fto_tenant_id`,`fto_estado`),
   KEY `fk_fto_categoria` (`fto_categoria_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `futbol_torneos`
+--
+
+INSERT INTO `futbol_torneos` (`fto_torneo_id`, `fto_tenant_id`, `fto_sede_id`, `fto_nombre`, `fto_organizador`, `fto_sede_torneo`, `fto_fecha_inicio`, `fto_fecha_fin`, `fto_categoria_id`, `fto_tipo`, `fto_descripcion`, `fto_costo_inscripcion`, `fto_estado`, `fto_resultado`, `fto_notas`, `fto_created_at`, `fto_updated_at`) VALUES
+(1, 1, NULL, 'Los operadores', NULL, 'Loja, Colegio Militar', '2025-11-06', '2026-03-07', NULL, 'AMISTOSO', NULL, 0.00, '', NULL, NULL, '2026-03-06 16:57:08', '2026-03-07 01:27:29');
 
 -- --------------------------------------------------------
 
@@ -1016,7 +1163,14 @@ CREATE TABLE IF NOT EXISTS `futbol_torneo_jugadores` (
   UNIQUE KEY `uk_ftj_torneo_alumno` (`ftj_torneo_id`,`ftj_alumno_id`),
   KEY `fk_ftj_tenant` (`ftj_tenant_id`),
   KEY `fk_ftj_alumno` (`ftj_alumno_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `futbol_torneo_jugadores`
+--
+
+INSERT INTO `futbol_torneo_jugadores` (`ftj_id`, `ftj_tenant_id`, `ftj_torneo_id`, `ftj_alumno_id`, `ftj_posicion`, `ftj_numero`, `ftj_es_capitan`, `ftj_estado`, `ftj_notas`, `ftj_created_at`) VALUES
+(1, 1, 1, 1, 'PORTERO', 1, 0, 'CONVOCADO', NULL, '2026-03-07 01:25:48');
 
 -- --------------------------------------------------------
 
@@ -1189,7 +1343,7 @@ INSERT INTO `instalaciones_canchas` (`can_cancha_id`, `can_tenant_id`, `can_inst
 (4, 1, 3, 'Cancha Fútbol 1 - Complejo Sur', 'FUTBOL', NULL, 'Cancha de fútbol profesional', 22, 25.00, 50.00, NULL, 0, 0, NULL, 'ACTIVO', '2026-01-25 23:07:00', '2026-01-25 23:07:00', 1, NULL),
 (5, 1, 3, 'Cancha Básquet - Complejo Sur', 'basquetbol', NULL, 'Cancha de baloncesto', 10, 25.00, 50.00, NULL, 0, 0, NULL, 'ACTIVO', '2026-01-25 23:07:00', '2026-01-26 00:26:12', 1, NULL),
 (6, 1, 3, 'Cancha Tenis - Complejo Sur', 'TENIS', NULL, 'Cancha de tenis individual', 4, 25.00, 50.00, NULL, 0, 0, NULL, 'ACTIVO', '2026-01-25 23:07:00', '2026-01-25 23:07:00', 1, NULL),
-(7, 1, 4, 'Cancha Fútbol 1 - Cancha Central', 'FUTBOL', NULL, 'Cancha de fútbol profesional', 22, 25.00, 50.00, NULL, 0, 0, NULL, 'ACTIVO', '2026-01-25 23:07:00', '2026-01-25 23:07:00', 1, NULL),
+(7, 1, 4, 'Cancha Fútbol 1 - Cancha Central', 'FUTBOL', NULL, 'Cancha de fútbol profesional', 22, 25.00, 50.00, NULL, 0, 0, NULL, 'DISPONIBLE', '2026-01-25 23:07:00', '2026-03-06 20:53:33', 1, NULL),
 (8, 1, 4, 'Cancha de Básquet - Coliseo Ciudad de Loja', 'basquetbol', NULL, 'Cancha de baloncesto', 10, 25.00, 50.00, NULL, 0, 0, NULL, 'ACTIVO', '2026-01-25 23:07:00', '2026-01-25 23:56:42', 1, NULL),
 (9, 1, 4, 'Cancha Tenis - Cancha Central', 'TENIS', NULL, 'Cancha de tenis individual', 4, 25.00, 50.00, NULL, 0, 0, NULL, 'ACTIVO', '2026-01-25 23:07:00', '2026-01-25 23:07:00', 1, NULL);
 
@@ -1572,7 +1726,7 @@ CREATE TABLE IF NOT EXISTS `instalaciones_sedes` (
 --
 
 INSERT INTO `instalaciones_sedes` (`sed_sede_id`, `sed_tenant_id`, `sed_codigo`, `sed_nombre`, `sed_descripcion`, `sed_direccion`, `sed_ciudad`, `sed_provincia`, `sed_pais`, `sed_latitud`, `sed_longitud`, `sed_telefono`, `sed_email`, `sed_horario_apertura`, `sed_horario_cierre`, `sed_dias_atencion`, `sed_superficie_total`, `sed_capacidad_total`, `sed_estacionamiento`, `sed_cafeteria`, `sed_tienda`, `sed_foto_principal`, `sed_galeria`, `sed_es_principal`, `sed_estado`, `sed_fecha_registro`, `sed_fecha_actualizacion`) VALUES
-(1, 1, 'CENTRAL', 'Sede Central', NULL, 'Av. Principal 123', 'Quito', 'Pichincha', 'Ecuador', NULL, NULL, NULL, NULL, NULL, NULL, 'LUNES-DOMINGO', NULL, NULL, 'S', 'N', 'N', NULL, NULL, 'S', 'A', '2026-01-25 00:35:10', '2026-01-25 00:35:10');
+(1, 1, 'CENTRAL', 'Sede Central', NULL, 'Av. Principal 123', 'Loja', NULL, 'Ecuador', NULL, NULL, NULL, NULL, NULL, NULL, 'LUNES-DOMINGO', NULL, NULL, 'S', 'N', 'N', NULL, NULL, 'S', 'A', '2026-01-25 00:35:10', '2026-03-10 16:42:24');
 
 -- --------------------------------------------------------
 
@@ -2178,7 +2332,7 @@ CREATE TABLE IF NOT EXISTS `seguridad_auditoria` (
   KEY `idx_tabla` (`aud_tabla`),
   KEY `idx_fecha` (`aud_fecha_operacion`),
   KEY `idx_operacion` (`aud_operacion`)
-) ENGINE=InnoDB AUTO_INCREMENT=244 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=308 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Volcado de datos para la tabla `seguridad_auditoria`
@@ -2429,7 +2583,72 @@ INSERT INTO `seguridad_auditoria` (`aud_auditoria_id`, `aud_tenant_id`, `aud_usu
 (240, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=hVDQqfsxr7hAaWUeB7QeX1SWTDhcKGcNNbl0JGcHBkfX0FwDlb6_blgT0LvlfQLTe6anuOGMMrI5DtY3EkhROgsaliOKq-LHO0Dqlbj_YVSesAF1mf2KhRhPmtsONOVr', 'POST', '2026-03-03 19:31:52'),
 (241, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=xdUUPV3gzX5muLkj5feXQxhRIm7JdmHpL5wPWJqxqxbeDQJaRMPAjOAPGkqcOzaCfqeQZIiB_chyvkWL61-ZKEE2n46dsyotTC71dO3OgfmwrAiUX5YWHzckCD7JKPn5', 'POST', '2026-03-03 21:06:40'),
 (242, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=Doir_HshHIcOoUqFZp0liKQBRShZh1oILzqQeHHM5e3y_d0iLpe2L9Y6snnOxPijURiariGa-_7Ghhj6Znhr84WQmP4eTfY5WPE-er5Gjg3LHPAHPRf4F0Zv9QRX9j9O', 'POST', '2026-03-04 14:14:01'),
-(243, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=yo1VGQDZmIymLo1UvW1GQQOHMeGdnKohKOf5Dj4jnvb6y_h1YRRcZ5XlAe4xgFCDbnEQkuKjVXRDnRVEUdFDNTDIw5Cs5qyFvu7l5jU4yHUj4e_KT-2EGQGihwVvGDKj', 'POST', '2026-03-04 15:25:29');
+(243, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=yo1VGQDZmIymLo1UvW1GQQOHMeGdnKohKOf5Dj4jnvb6y_h1YRRcZ5XlAe4xgFCDbnEQkuKjVXRDnRVEUdFDNTDIw5Cs5qyFvu7l5jU4yHUj4e_KT-2EGQGihwVvGDKj', 'POST', '2026-03-04 15:25:29'),
+(244, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=nRF6BV8be1Q1PLA-eeqJLgN6_lz0h1WNpMdOVaTMXiXcSMkTC_RvKRpqHG5df-YKjHc1NMyAheMIh8S5XAgdkFZ11OVfP6BzfObggUsF3WW0MIBeprPvXcTFzWkAGPDz', 'POST', '2026-03-04 20:08:32'),
+(245, 1, 1, 'Core', 'seguridad_usuarios', 1, 'LOGOUT', '[]', '[]', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=0yv41lr-rFKAfpoePyyfIMMgQcsmUbA2rmojCau3sD8X_mLrkjLnjixmBlehf-uS8N0N3zRtGW9K1H3JQlC4we155UPs4Zyngi-NGT_YszmyB_JjidtudpFk', 'GET', '2026-03-04 20:41:24'),
+(246, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=jKnkWdBnGKCGHLAG1lt3z1fh2qbqpsY0VrrKVGBGNdWGO9FFlXcCqwhYHEsYhUQiMdLQEgYxo8q_lY9aA9ZCX3MuDkSix2AAvV8Rdp1RA-E8eZZp-uTsiwRjGoizE6-x', 'POST', '2026-03-04 20:43:06'),
+(247, 1, 1, 'Core', 'seguridad_usuarios', 1, 'LOGOUT', '[]', '[]', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=0K_r9LEmwAerRUWPVfNPK4uyagXOHEw491j1ZbQZXd37liK9cEnUSeOmHnvMa13VoNarnNlEkCgadm1GqAqBJ6y3ZMHvhvccmBhhWdjRHIktS6bFhrsC55NP', 'GET', '2026-03-04 20:46:56'),
+(248, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=3R2NZh5ncq3YJvNC5aJhEu-2bp5_eEjhg70lXY5USK9I5LxqpLRMnnU0PI6YecGQaF11lt4WcpSj_17_Of8ouSLEsFzeXriSRrUqfo2PqP0MWJxdC8_D5X6-XEUgGJJ7', 'POST', '2026-03-04 20:48:24'),
+(249, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=7p1UyZ9r1szKsHAOq6D5DMxAXXy1rf3lidQWvtHhySy6V8WCE9Izjs57D8FE0SGi1WFseUrEAgLMQABgpsIt8sVSXsF3ZQkfF2kRubPr0h7Q3QDQHp3NWY7_8xpVFcFR', 'POST', '2026-03-04 21:24:18'),
+(250, 1, 1, 'Core', 'seguridad_usuarios', 1, 'LOGOUT', '[]', '[]', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=prqudhqiDhSHF1kaEes-AUkFGxzzs-s5gkFwqicYPSFoxtxL91bI_4d6cjkH1WqMMXLsAUaxXzgx5JWNzE4z-l6qziW5wT8fZ06RgCB4rWN3k55jOP_luLW0', 'GET', '2026-03-04 21:42:04'),
+(251, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=xvU96taXmyaOlXG98CIwcaBRROWMf3IvC1GXwLjEqv8M6VDnHlmNMuZ4I8NcCWbyG_gZKWErTAEa4LRzGvtGG8db54cd1XJVdx_LAUxYXJVX1nXxOrw7VmJH4MP3fnbi', 'POST', '2026-03-04 21:43:04'),
+(252, 1, 1, 'Seguridad', 'seguridad', 0, '0', '\"DESBLOQUEO_IP\"', '{\"ip\": \"::1\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=KYN1j0vIfgL4q2tXBaym4JqTCGXJryK3lztFEYQg8V_J9JYVrjS74bzptnafXf79ruJeaYTP1EazNM9LLY6k_t_dQZrWu6Y46etOJlQPCPK3hEYqCUf0OZrgnUJtE2nXO8xLAHB7rOWQ86Q~', 'POST', '2026-03-04 22:34:20'),
+(253, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=d76qTq7zDgDEl5DG9nKhU6973ZtDhlv7nTskF--RSnpQIQKm26z9nrFP4RAOI94ozH-SvC1TFy82xXIDRWqywHTobcK37YjZuvk5zdcih1JWq7Q5rjAVXGuwivN3V9g9', 'POST', '2026-03-05 01:32:00'),
+(254, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=oBdmS7dtDp8sZYep-Oy5vbk7uxxP14Dx3yQ5ZW75_ay1T1AZ1Rfme6WARx1INQkQsL7Kd7EMqw9nokkKoSRHOD9FWk6OpOaRnYkA4rLs_5tsBSjJ09xyt5p-Ku-5aKYA', 'POST', '2026-03-05 03:18:30'),
+(255, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=OhFFYr73WnPOT7NArPAN28fpT_C_ypvLsYztP4QOry3SZ5plmAn3oYSaO_dfqP8C5_SwHEWpMReqQ9OvEke3wETHFIje34BIJRp3ZatSOPYBCMEIAdMsm-Ud1YvlAdf8', 'POST', '2026-03-05 05:02:00'),
+(256, 1, 1, 'Core', 'seguridad_usuarios', 1, 'LOGOUT', '[]', '[]', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=aCPc0CJYL9ETikthrXuDOUVPqQYwJXSA91JtskFpfyQYGR4SiMZx8uhikjAydwWVFfh9sjZ-CbSwvKXvqxWgRq8nzZpsDuAdN-MCcD1qd9v2-X7NpaeQ4EO7', 'GET', '2026-03-05 05:04:57'),
+(257, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=bu_tGaxSG64B2qMUD7Hh_dkFRfxZA3qjJVa7DbhplPP6IJm6xw8ORK3S7avJ73ISUHynrrY4U1xzmnM1XC8n0vgi3fEYgTuWZVDP1r9aFj4VFrgnLa_wPhfEh3chgul5', 'POST', '2026-03-05 05:08:03'),
+(258, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=iNutNpoQzmQ7rVxC01p0ePHa_aO67JDkNF3ukUbDlwDF_W_NY9mUfTGqqEa-WsXV0I5xyYthh4c8FjO_3j7Df-WM1u-0mUO4nrRkaBvDanKYR_R0mKsW-ud_J5wb4zpR', 'POST', '2026-03-05 13:29:40'),
+(259, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=ntk731vIKxsqSqm6vE7rLC4ygEknnGUZOv4GxheqF1c5r-MtL3r5ygteSlgefgNh91r9w47FhaBhlGtqoTUCqoSL4ixjXyO7Bl3m9N9-BWlYzcI-PoeVS0yt5Gmn-XiO', 'POST', '2026-03-05 15:15:18'),
+(260, 1, 1, 'Seguridad', 'seguridad', 0, '0', '\"LIMPIEZA_INTENTOS\"', '{\"ip\": \"::1\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=kEofMDr0OiaQhJzl9sATrwZzKgXQps4EA-IHsGao-9Fr6EDZjNsHR-4ubeFx8SEiavgIR3QJsfXSIl3E_O7XJ3yV9-YUfmmiAAuyhM7i4_L9jMV8LVRK9tu22K4jT6OrQ-ZajP7nwgyzaGRtOQ~~', 'POST', '2026-03-05 15:29:46'),
+(261, NULL, NULL, 'seguridad', 'seguridad_modulos', 31, 'crear_modulo', NULL, '{\"mod_codigo\": \"SOCCEREASY\", \"mod_nombre\": \"SOCCEREASY\"}', '::1', NULL, '/digisports/public/index.php?r=FlXQ9N4pTrjeYI3HTsg337cASk6Sh_hf6tG6na16Dfm2ijoFT3UrnZibWNYry7PmfVC-8_6eF9UEPtEJRl0z3P_6GSquD0YnjXzijV0FznEjuD6YDToo7DGw9tlX0BOB', 'POST', '2026-03-05 16:37:36'),
+(262, NULL, NULL, 'seguridad', 'seguridad_modulos', 1, 'editar_modulo', '{\"mod_id\": 1, \"mod_icono\": \"fas fa-building\", \"mod_orden\": 1, \"mod_activo\": 1, \"mod_codigo\": \"ARENA\", \"mod_nombre\": \"DigiSports Arena\", \"mod_created_at\": \"2026-01-26 00:37:36\", \"mod_es_externo\": 0, \"mod_updated_at\": \"2026-02-07 23:36:56\", \"mod_color_fondo\": \"#FF7E70\", \"mod_descripcion\": \"Gestiona canchas de fútbol, tenis, pádel, piscinas y más con tarifas flexibles.\", \"mod_ruta_action\": \"index\", \"mod_ruta_modulo\": \"instalaciones\", \"mod_url_externa\": null, \"mod_ruta_controller\": \"dashboard\", \"mod_requiere_licencia\": 1, \"mod_base_datos_externa\": null}', '{\"mod_icono\": \"fas fa-building\", \"mod_orden\": 2, \"mod_activo\": 1, \"mod_codigo\": \"ARENA\", \"mod_nombre\": \"DigiSports Arena\", \"mod_es_externo\": 0, \"mod_color_fondo\": \"#FF7E70\", \"mod_descripcion\": \"Gestiona canchas de fútbol, tenis, pádel, piscinas y más con tarifas flexibles.\", \"mod_url_externa\": \"\", \"mod_requiere_licencia\": 1}', '::1', NULL, '/digisports/public/index.php?r=8ED5qm6FUwUJU5Vv_TEHSSR3v44FJ6UvM34LepQ8elBROZw_1loZCBLQxtWm3fOS0-B2Zf7o1ewZB9mBe5wgCLCXVKGZBmiek6ts2FH_ecLqvlpD1jImpNmgrXAS_oV8hg~~', 'POST', '2026-03-05 16:38:00'),
+(263, NULL, NULL, 'seguridad', 'seguridad_modulos', 30, 'editar_modulo', '{\"mod_id\": 30, \"mod_icono\": \"fas fa-apple-alt\", \"mod_orden\": 0, \"mod_activo\": 0, \"mod_codigo\": \"NUTRICION\", \"mod_nombre\": \"Planes Nutricionales\", \"mod_created_at\": \"2026-02-07 17:50:38\", \"mod_es_externo\": 0, \"mod_updated_at\": \"2026-02-26 10:26:25\", \"mod_color_fondo\": \"#fd7e14\", \"mod_descripcion\": \"Seguimiento nutricional de deportistas\", \"mod_ruta_action\": \"index\", \"mod_ruta_modulo\": \"nutricion\", \"mod_url_externa\": \"/nutricion/\", \"mod_ruta_controller\": \"dashboard\", \"mod_requiere_licencia\": 1, \"mod_base_datos_externa\": null}', '{\"mod_icono\": \"fas fa-apple-alt\", \"mod_orden\": 2, \"mod_activo\": 0, \"mod_codigo\": \"NUTRICION\", \"mod_nombre\": \"Planes Nutricionales\", \"mod_es_externo\": 0, \"mod_color_fondo\": \"#fd7e14\", \"mod_descripcion\": \"Seguimiento nutricional de deportistas\", \"mod_url_externa\": \"/nutricion/\", \"mod_requiere_licencia\": 1}', '::1', NULL, '/digisports/public/index.php?r=CFQWse5decimoIypzRVoRpHmHRktQpofnEIeOmOpD7WmcKnOfPzpFQgx9T1SJZUq7OoAk6ElyqEkVqVmv7tU_S6suG9UaQVHE2HkupqttlFDq5zlhBlNuzWjruQ9uuK0dQ~~', 'POST', '2026-03-05 16:38:33'),
+(264, NULL, NULL, 'seguridad', 'seguridad_modulos', 31, 'editar_modulo', '{\"mod_id\": 31, \"mod_icono\": \"fas fa-puzzle-piece\", \"mod_orden\": 1, \"mod_activo\": 1, \"mod_codigo\": \"SOCCEREASY\", \"mod_nombre\": \"SOCCEREASY\", \"mod_created_at\": \"2026-03-05 11:37:36\", \"mod_es_externo\": 1, \"mod_updated_at\": \"2026-03-05 11:37:36\", \"mod_color_fondo\": \"#007bff\", \"mod_descripcion\": \"Sistema de administración de de la Escuela Champios\", \"mod_ruta_action\": \"index\", \"mod_ruta_modulo\": null, \"mod_url_externa\": null, \"mod_ruta_controller\": null, \"mod_requiere_licencia\": 1, \"mod_base_datos_externa\": null}', '{\"mod_icono\": \"fas fa-puzzle-piece\", \"mod_orden\": 1, \"mod_activo\": 1, \"mod_codigo\": \"SOCCEREASY\", \"mod_nombre\": \"SOCCEREASY\", \"mod_es_externo\": 1, \"mod_color_fondo\": \"#007bff\", \"mod_descripcion\": \"Sistema de administración de de la Escuela Champios\", \"mod_url_externa\": \"\", \"mod_requiere_licencia\": 1}', '::1', NULL, '/digisports/public/index.php?r=vAqq0e-f_hWpysTOD6kNlu_vALJY-YX9D-uAVRBjOQPUURMqGfWFwXO08IMIgTHviXGSUSJ4qH2AYRG0GrSwv5T9mQI0cNSYoo6Xl5JTafPUSDSWyKyCSt4TxPCJXBr7gg~~', 'POST', '2026-03-05 16:39:30'),
+(265, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=I7Et8uoN3EeSr_it6LDDQ-l5FKb1QEuJmHTD5PuH0nPyawxB26WxRNgkN2WaOxMgMMaHxeZpdX4xB9Jk9JworCbHsPksHEkfg6S6vseCTVOafr0PEIkspLkd7gWZBbV_', 'POST', '2026-03-05 17:29:17'),
+(266, NULL, NULL, 'seguridad', 'seguridad_modulos', 31, 'editar_modulo', '{\"mod_id\": 31, \"mod_icono\": \"fas fa-puzzle-piece\", \"mod_orden\": 1, \"mod_activo\": 1, \"mod_codigo\": \"SOCCEREASY\", \"mod_nombre\": \"SOCCEREASY\", \"mod_created_at\": \"2026-03-05 11:37:36\", \"mod_es_externo\": 1, \"mod_updated_at\": \"2026-03-05 11:39:30\", \"mod_color_fondo\": \"#007bff\", \"mod_descripcion\": \"Sistema de administración de de la Escuela Champios\", \"mod_ruta_action\": \"index\", \"mod_ruta_modulo\": null, \"mod_url_externa\": null, \"mod_ruta_controller\": null, \"mod_requiere_licencia\": 1, \"mod_base_datos_externa\": null}', '{\"mod_icono\": \"fas fa-puzzle-piece\", \"mod_orden\": 1, \"mod_activo\": 1, \"mod_codigo\": \"SOCCEREASY\", \"mod_nombre\": \"SOCCEREASY\", \"mod_es_externo\": 1, \"mod_color_fondo\": \"#007bff\", \"mod_descripcion\": \"Sistema de administración de de la Escuela Champios\", \"mod_url_externa\": \"\", \"mod_requiere_licencia\": 0}', '::1', NULL, '/digisports/public/index.php?r=5B7UDmuAgEjFtnN2VOaAIVX-yIIQafQxentHnAGixfEdhxOYHU-5hp911uWR7DCMg0NJUtESX8n5LWM8tH0zHkWunQTqaNpDHvzV9VSzzQ7a0wBYBgKOHIDz4dKNn4EDTw~~', 'POST', '2026-03-05 17:30:14'),
+(267, NULL, NULL, 'seguridad', 'seguridad_modulos', 31, 'editar_modulo', '{\"mod_id\": 31, \"mod_icono\": \"fas fa-puzzle-piece\", \"mod_orden\": 1, \"mod_activo\": 1, \"mod_codigo\": \"SOCCEREASY\", \"mod_nombre\": \"SOCCEREASY\", \"mod_created_at\": \"2026-03-05 11:37:36\", \"mod_es_externo\": 1, \"mod_updated_at\": \"2026-03-05 12:30:14\", \"mod_color_fondo\": \"#007bff\", \"mod_descripcion\": \"Sistema de administración de de la Escuela Champios\", \"mod_ruta_action\": \"index\", \"mod_ruta_modulo\": null, \"mod_url_externa\": null, \"mod_ruta_controller\": null, \"mod_requiere_licencia\": 0, \"mod_base_datos_externa\": null}', '{\"mod_icono\": \"fas fa-puzzle-piece\", \"mod_orden\": 1, \"mod_activo\": 1, \"mod_codigo\": \"SOCCEREASY\", \"mod_nombre\": \"SOCCEREASY\", \"mod_es_externo\": 1, \"mod_color_fondo\": \"#007bff\", \"mod_descripcion\": \"Sistema de administración de de la Escuela Champions\", \"mod_url_externa\": \"\", \"mod_requiere_licencia\": 0}', '::1', NULL, '/digisports/public/index.php?r=5B7UDmuAgEjFtnN2VOaAIVX-yIIQafQxentHnAGixfEdhxOYHU-5hp911uWR7DCMg0NJUtESX8n5LWM8tH0zHkWunQTqaNpDHvzV9VSzzQ7a0wBYBgKOHIDz4dKNn4EDTw~~', 'POST', '2026-03-05 17:31:12'),
+(268, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=7O-Hzp_BPCWZTEVR4t_PlfcOhXx3ZQNGQT69WM-Y8MPfj6um5HFe68pLnouPNrxvbTqlISp6iatGgo-zC5vMsAZnbshnToocjVaEbA2ycmzJR8sLvG7vVETgzD9WohjQ', 'POST', '2026-03-05 19:49:27'),
+(269, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=2wWVRK5XAwXL05JAcnZ04j0QUQMVWR2d41iMvx6hAjLUdccD9fExxBtGiP7-xEMzjq7wvhiyZsE0lzg1vPtZ-HRzaAik1Qo_mgcHSE77d9XRxIHcG-DwJutmpk7mSwC8', 'POST', '2026-03-05 20:27:15'),
+(270, NULL, NULL, 'seguridad', 'seguridad_modulos', 31, 'editar_modulo', '{\"mod_id\": 31, \"mod_icono\": \"fas fa-puzzle-piece\", \"mod_orden\": 1, \"mod_activo\": 1, \"mod_codigo\": \"SOCCEREASY\", \"mod_nombre\": \"SOCCEREASY\", \"mod_created_at\": \"2026-03-05 11:37:36\", \"mod_es_externo\": 1, \"mod_updated_at\": \"2026-03-05 15:22:10\", \"mod_color_fondo\": \"#007bff\", \"mod_descripcion\": \"Sistema de administración de de la Escuela Champions\", \"mod_ruta_action\": \"index\", \"mod_ruta_modulo\": null, \"mod_url_externa\": \"http://localhost/soccereasy/sso.php\", \"mod_ruta_controller\": null, \"mod_requiere_licencia\": 0, \"mod_base_datos_externa\": null}', '{\"mod_icono\": \"fa-basketball-ball\", \"mod_orden\": 1, \"mod_activo\": 1, \"mod_codigo\": \"SOCCEREASY\", \"mod_nombre\": \"SOCCEREASY\", \"mod_es_externo\": 1, \"mod_color_fondo\": \"#89F336\", \"mod_descripcion\": \"Sistema de administración de de la Escuela Champions\", \"mod_url_externa\": \"http://localhost/soccereasy/sso.php\", \"mod_requiere_licencia\": 0}', '::1', NULL, '/digisports/public/index.php?r=8TgYdCDPztTdQKdQGF71X3ygZadfbt8ivzzZrIi13amnNMKx_jtUUYZF1nDqk_fjXq5N8yK0y3NMfRVnJeb_lr20sB2ji6eT11l0shmOwmsUU_7dgewi2JeqLaUZW-PqeA~~', 'POST', '2026-03-05 21:08:26'),
+(271, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=mnP1OupqVKoqXWk3kAVnPv8gBZpOkYGZFYBLyTzDCsKgnabEUTqf7Gvt_qjfHW93LKWmyi-VCiaypg-ZAC5on9z5ccvxC56DDDZfXfk-TPcmH1QqJJvdZ2TabckENv4x', 'POST', '2026-03-05 21:56:22'),
+(272, 1, 1, 'Core', 'seguridad_usuarios', 1, 'LOGOUT', '[]', '[]', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=QQl6evf3OkYKW76qq1B4YybMepUEnlkuD-21pw9QxpfNOCVQY0-Q7Vfvg65tpvt1MNGuknmZz63oWQRv1j_d8xSoERP4-PzSl5VkLyYYF8VcFn2BXAqdceL8', 'GET', '2026-03-05 22:48:15'),
+(273, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=bbEFw0P2pKJDextc4Mt-1kEulRWgsovy-nOnmnydKNTsAKevGQ8ThpYLH8r0WLLXmOeBE97k7YR1l_46ANHYe9MPLy9vd-7uWuL0BT90OzC4l7CHikZKyrqQpG3BQ93U', 'POST', '2026-03-05 22:48:33'),
+(274, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=2TDvoxJxgXQWAEEvngDoi_5zgNfyiWV0_QCZeIZW862kxls_HNynRuuV9c3f6KK2dW0BEW2pcmlXaw3Sqx2_t6cJ58B1mYENTR1ktOeVsS0__oaL9d1rz5oho3xHuIix', 'POST', '2026-03-06 01:04:33'),
+(275, 1, 1, 'Core', 'seguridad_usuarios', 1, 'LOGOUT', '[]', '[]', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=kP2_d3fzmeJVG6mh--1x8ank0DmyCj1XrHOSjJz96PlfX72Ol0iNkcjdDltKZmEO2WMCHy2H_u9KC4cUE3Zbm9xxu2oK8CXoFaFUS99Tn2Y4dtzQfgSCPjs_', 'GET', '2026-03-06 01:23:45'),
+(276, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=3BHr3aTdOdVd7_eQ-usHnmIhWoWzo__zqtpe_UhxJsR7Q_REkddQ5aqVWn9weQELKb_tjuDd4tvyg6aJ0NYnhFgg5Kir0YBLvJ6Z1tSMLBLZbREd0dqx2XiFpITQ3say', 'POST', '2026-03-06 03:23:27'),
+(277, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=6tfwqgfVC92_a_HBqzx3GnhgmolKG9TzY1kcJANrHExMCkPmqM9impb-Tkxt-NGfmM_b-WQqlLFKDl9_ELEY_SsvGnSUV3xNbQbXbt7SWU4RRUnfPWY6RsUp6FlbHfWr', 'POST', '2026-03-06 15:46:47'),
+(278, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=u_P-j7JrI9mcA_u4MAam-ENuu9YBhHqWBr5UzNjLdv4T32X2iLT28lCVphC9ItRHfg_TL5O4c3RLDysaafo5PSoRQ3BohWtgmT6xg0wWtMX0VzZij5PWag-_DUe2mRzF', 'POST', '2026-03-06 16:49:40'),
+(279, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=Hgi8O9n-AX9_5xCoZ24z3--WbZrerqSOCP4COM1H5k-832hgwRC5FeJTBv6FEWX4nYBwKqhDYt0jW6fgw0Dk9G3PqOjo9cmio0LBeaHIMK_MQ4k1fXQ3tmYptViMEWcH', 'POST', '2026-03-06 17:52:30'),
+(280, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=kG1XUq6SKglLei8yXxaNkz8SOj0idBbhTbFh7Nu5ZxUrsszl8GMcq_yO_BLG8jTHcQu3vKlI8tthR-NSpeco5NI016NmmDJLN3u0NMYM6mXPEcaEiFyJkXtwwNv5lpNd', 'POST', '2026-03-06 19:28:49'),
+(281, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=TZe7fnljQ94NGznmzfLi-He-kmyQ6y3vJZU5z9jWbKMr64hJCLV0eI2r1hu5PDQwS6eBuL4pakHPrsHS3ay9j6_flSqmwiH1J54hdsVwS4ssGfVs-C4yua-mJh0s7UGq', 'POST', '2026-03-06 20:51:36'),
+(282, 1, 1, 'Seguridad', 'seguridad', 0, '0', '\"LIMPIEZA_INTENTOS\"', '{\"ip\": \"::1\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=T77VoHYDlFX3hVkDQBvQQfic1LTEPwFh-aO8FqlWzvXiOxJtqytIV20I3pIVFpjjH1CEfI0ZIXeKfMZVd8X9Ls1eNxYu8pFT4d_QxnoMq_o1MKUKmTbjP8hWYJlVxdfOr-JwqxcOmyrzhTL9hA~~', 'POST', '2026-03-06 21:15:57'),
+(283, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=Tj6FHbYSbwXxn_fEwN3d57VoXUetVbhuoAKJq2v3bDJgZFMimr9LXtoelstuz_kZMkh0qcTf5bcAlKo__jlZJNnSKQpjWu_3P3W1RToD51GBVIjVVwpxDyLgQMoMfc7B', 'POST', '2026-03-06 23:58:37'),
+(284, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=JuvLtlHtnGboTPQkPpM-YsXbQeo0_ld1PkPpFsryKrBTx8hg_rAHkjKnDacZeYStnhi5lV9Q6a1UuKwjBxykWkb7FC7fJb-Qsj0xdFCprase81NAfpP5OWHYxrW6T0zv', 'POST', '2026-03-07 01:19:27'),
+(285, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=Ig_pf5Y98hLfDBdL_Zs-UiUZEx1Ah2IYmKFeDccSM--NwWKh6uh1c6obax_b2pncXXyEHKAUv2E4MjKSY9zqHt0ATmxdzLFY-uMkA0ubxb039dI_ys3GupuAz2StXCXW', 'POST', '2026-03-07 12:30:50'),
+(286, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=hWJY4XYEDi9k8cjnLbmD6CmCoaddNSlLKCs6uuqxCsy_MGWnskyBLMbgvqVDwKeyXTUIaqxmtVUqwLY48tTF_YjcTVC1j6OJVZs2YYmTN8G0PHT1thWUoLfkjDUx-qJg', 'POST', '2026-03-08 00:46:11'),
+(287, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=9dgdPi89Gvm0g8dJ0h3yFdffRiziS-GYlJfT2P8MFO3O748O1HGDGUemb1wonqA14T5ct73WOZ5LYxbyvy2jXIa0r-osdXf_-rkNWfM_6EbjWZpwi_veZ7zqSwnp-L9m', 'POST', '2026-03-08 02:05:48'),
+(288, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=ckmVPlYAc3Oh7etpN9QNGMaPGY4KFJy1fLzv8JCDAsA_3y_X9uMRW2GsHUS_3yUF4BFHBdje5RiJUsXfkaq7qv0RvmPUStpwGGTaM_y0dVLKmU3E4g9EN1snYZcPnoj5', 'POST', '2026-03-08 03:17:01'),
+(289, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=xp4QtmKTCLcqvdAoPRWpoSGRiWw5q88rLyyyyXQ0WNMCi6095QswXodIiaOV4FbNJ4k9ozyCl8zOVuv4ABrfP7sRaxpf_7YX5CLpXO5gSaiUV4324JJuA3wmiy-3GeEE', 'POST', '2026-03-08 04:53:44'),
+(290, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=1A57C9jK6cNjuuQ2hTNLxLSfWBmKNMQGmltk-EmpNaKV5wKPqWqGjvK21YeM-ZPCMnFtZbDGKZiQnqE_Cypv4UgBMY26P88jOVSB_Ur2o9oj9j9LgVLiKRnR_YGnGPZo', 'POST', '2026-03-09 14:44:23');
+INSERT INTO `seguridad_auditoria` (`aud_auditoria_id`, `aud_tenant_id`, `aud_usuario_id`, `aud_modulo`, `aud_tabla`, `aud_registro_id`, `aud_operacion`, `aud_valores_anteriores`, `aud_valores_nuevos`, `aud_ip`, `aud_user_agent`, `aud_url`, `aud_metodo`, `aud_fecha_operacion`) VALUES
+(291, NULL, NULL, 'seguridad', 'usuario', 3, 'editar_usuario', '{\"usu_tema\": \"light\", \"usu_email\": \"ENC::aG7Jk4au40KYzfi95x20TBEOCTM6/H4YHvEeXnXrT0qOSFaMN92H8Jom6nvoEcsc\", \"usu_avatar\": null, \"usu_estado\": \"A\", \"usu_idioma\": \"es\", \"usu_rol_id\": 1, \"usu_celular\": \"\", \"usu_nombres\": \"Bolívar\", \"usu_password\": \"$argon2id$v=19$m=65536,t=4,p=1$ek8zOE9QbEtsZU5heWNGSw$gCwhDpX6hVMCYRs0VCbryQ9j1+8XL38U5XnkUmMkOyo\", \"usu_telefono\": \"ENC::O1kxV+oUWhj3YETC2fl1HYNagPPFEvuyaQYmn7lJElo=\", \"usu_username\": \"fbpinzon\", \"usu_apellidos\": \"Pinzón\", \"usu_tenant_id\": 2, \"usu_codigo_2fa\": null, \"usu_email_hash\": \"fa2536059c2cfc78fe680f0629a1859d\", \"usu_usuario_id\": 3, \"usu_intentos_2fa\": 0, \"usu_requiere_2fa\": \"N\", \"usu_sedes_acceso\": null, \"usu_token_sesion\": null, \"usu_ultimo_login\": \"2026-02-25 15:21:17\", \"usu_fecha_registro\": \"2026-01-29 17:22:55\", \"usu_identificacion\": \"ENC::4i0U6033Xu31fjUOOi2ZzeXGZr+5UNQcImt6cx6XtGY=\", \"usu_bloqueado_hasta\": null, \"usu_ip_ultimo_login\": \"::1\", \"usu_password_expira\": null, \"usu_codigo_2fa_expira\": null, \"usu_intentos_fallidos\": 0, \"usu_sede_principal_id\": null, \"usu_token_recuperacion\": null, \"usu_fecha_actualizacion\": \"2026-02-25 23:58:40\", \"usu_identificacion_hash\": \"46e867782d4667050ad7bf37c46a7107\", \"usu_notificaciones_push\": \"S\", \"usu_permisos_especiales\": null, \"usu_token_sesion_expira\": null, \"usu_notificaciones_email\": \"S\", \"usu_debe_cambiar_password\": \"S\", \"usu_token_recuperacion_expira\": null}', '{\"usu_tema\": \"light\", \"usu_email\": \"ENC::NA08Ec7QeL8W1ku2W01Rd7S5FRXFeqWE4dhFRXceQ7YlrluwIecCkUzrmeDQjeCR\", \"usu_avatar\": null, \"usu_estado\": \"A\", \"usu_idioma\": \"es\", \"usu_rol_id\": 1, \"usu_celular\": \"\", \"usu_nombres\": \"Bolívar\", \"usu_password\": \"$argon2id$v=19$m=65536,t=4,p=1$S2wzZFc0cGFpaUouNXRCcw$CyDE4Ij59TlCNt5rs9Srt1Z5My2VtSdk7NmlO8yiq30\", \"usu_telefono\": \"ENC::dEzreJmwkraQ5+gftOagZKC+fikdtpv4tUl+UhNp0hs=\", \"usu_username\": \"fbpinzon\", \"usu_apellidos\": \"Pinzón\", \"usu_tenant_id\": 2, \"usu_codigo_2fa\": null, \"usu_email_hash\": \"fa2536059c2cfc78fe680f0629a1859d\", \"usu_usuario_id\": 3, \"usu_intentos_2fa\": 0, \"usu_requiere_2fa\": \"N\", \"usu_sedes_acceso\": null, \"usu_token_sesion\": null, \"usu_ultimo_login\": \"2026-02-25 15:21:17\", \"usu_fecha_registro\": \"2026-01-29 17:22:55\", \"usu_identificacion\": \"ENC::LHfp7PrKGCNHTJTxZv9q54J0HIxp9FMomG9D/Sh5r2o=\", \"usu_bloqueado_hasta\": null, \"usu_ip_ultimo_login\": \"::1\", \"usu_password_expira\": null, \"usu_codigo_2fa_expira\": null, \"usu_intentos_fallidos\": 0, \"usu_sede_principal_id\": null, \"usu_token_recuperacion\": null, \"usu_fecha_actualizacion\": \"2026-03-09 09:47:38\", \"usu_identificacion_hash\": \"46e867782d4667050ad7bf37c46a7107\", \"usu_notificaciones_push\": \"S\", \"usu_permisos_especiales\": null, \"usu_token_sesion_expira\": null, \"usu_notificaciones_email\": \"S\", \"usu_debe_cambiar_password\": \"S\", \"usu_token_recuperacion_expira\": null}', '::1', NULL, '/digisports/public/index.php?r=bJjZLwI4SVbhFGZqQpOKpr5jmbeoizNePPtFwbHbqhdnyZAcC3i1WqMsnAacIqD88HNuhipKXF-c_UzfPqb9jXn6duVeAfYlJ4tFHgu668Rf1nJhdWEIKx5DEjlrLpfnbAaYLb3GXWw~', 'POST', '2026-03-09 14:47:38'),
+(292, 1, 1, 'Core', 'seguridad_usuarios', 1, 'LOGOUT', '[]', '[]', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=91YQX08gn2_IY7YVK5ni6Ub3tFQz2bke_xRgzRGHaXFNeAxIlcxKuoN276pDtxCU585V5g-zD3qlzO56UoZeBDGws137-rFYkc-cbMyhrmLPRvplHp1roOnc', 'GET', '2026-03-09 14:47:54'),
+(293, NULL, NULL, 'Core', 'seguridad_usuarios', 3, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=wdSGx0fwjd5rxHm31K1Q0Tly9Art6XUAItWIiXanmKabz1Fka4iTWxA2h25BwuKJGh2tnZ6KFMmQVp94FkbyV1ltzNHN5rHzUKe6iJ_fwa8P0MKY4N3FQ7XELfxRyMq5', 'POST', '2026-03-09 14:48:08'),
+(294, 2, 3, 'Core', 'seguridad_usuarios', 3, 'LOGOUT', '[]', '[]', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=wmOyGkreF1dH6ea7vud889Y6wkLxm_B15GzPxldVvnguAHH3PlqU9KDcdaZShRbkuMNkGBkVFkFgUhLf1YedEqEceg4IyevEdy_J3LSs2SjxxEjykdpUgGsA', 'GET', '2026-03-09 14:48:34'),
+(295, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=rtThgHE23d0cxaPbZrHafu-jplg6BisGujT9s1yX4qf6WwgXKh977UUf3I2tdMIgZ3hdGQ9e0DS20YSjw2Lf37TUTg6oNXYS1nhkM2Yb8sPctGso5r-eKx-3hSbw8MiN', 'POST', '2026-03-09 14:48:50'),
+(296, NULL, NULL, 'Core', 'seguridad_usuarios', 3, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=yB24tKB7sHja4G29WTV_QcmDql-XrRABNjRjj7xJuhLs19utT2wVr_9y-HRPWQ6jYs2PUWPESRFfvlQPbfMsQKswWs_A50buEGMJZM5mSHUr4KrsUN4U57riS4s3_5wE', 'POST', '2026-03-09 15:13:57'),
+(297, 2, 3, 'Core', 'seguridad_usuarios', 3, 'LOGOUT', '[]', '[]', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=RVn59YVgOfRlqLOVZqaBpt8-XsWLCoLDqMi0zx61HhKENDGolGrsGuPAr7kCo69zTSnc8tuyGzdB3Ss8q9nZDGDR7yy_lF6T5mr64IZQLJ1-G1QrezNIgwQX', 'GET', '2026-03-09 15:14:20'),
+(298, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=CgreG5kVyaqDceqg_yx6K0CLM4DpoekV1HGKi9KWPb0s7MsJiAfr4BdkwAq4SW3vShi7cFo2gTuamcObMmM8OlzOC4JJhqdSSlMW0ZuAr7xoAvY-IU7fm_YsFz4x9dtx', 'POST', '2026-03-09 15:21:02'),
+(299, NULL, NULL, 'seguridad', 'usuario', 3, 'editar_usuario', '{\"usu_tema\": \"light\", \"usu_email\": \"ENC::NA08Ec7QeL8W1ku2W01Rd7S5FRXFeqWE4dhFRXceQ7YlrluwIecCkUzrmeDQjeCR\", \"usu_avatar\": null, \"usu_estado\": \"A\", \"usu_idioma\": \"es\", \"usu_rol_id\": 1, \"usu_celular\": \"\", \"usu_nombres\": \"Bolívar\", \"usu_password\": \"$argon2id$v=19$m=65536,t=4,p=1$S2wzZFc0cGFpaUouNXRCcw$CyDE4Ij59TlCNt5rs9Srt1Z5My2VtSdk7NmlO8yiq30\", \"usu_telefono\": \"ENC::dEzreJmwkraQ5+gftOagZKC+fikdtpv4tUl+UhNp0hs=\", \"usu_username\": \"fbpinzon\", \"usu_apellidos\": \"Pinzón\", \"usu_tenant_id\": 2, \"usu_codigo_2fa\": null, \"usu_email_hash\": \"fa2536059c2cfc78fe680f0629a1859d\", \"usu_usuario_id\": 3, \"usu_intentos_2fa\": 0, \"usu_requiere_2fa\": \"N\", \"usu_sedes_acceso\": null, \"usu_token_sesion\": null, \"usu_ultimo_login\": \"2026-03-09 10:13:57\", \"usu_fecha_registro\": \"2026-01-29 17:22:55\", \"usu_identificacion\": \"ENC::LHfp7PrKGCNHTJTxZv9q54J0HIxp9FMomG9D/Sh5r2o=\", \"usu_bloqueado_hasta\": null, \"usu_ip_ultimo_login\": \"::1\", \"usu_password_expira\": null, \"usu_codigo_2fa_expira\": null, \"usu_intentos_fallidos\": 1, \"usu_sede_principal_id\": null, \"usu_token_recuperacion\": null, \"usu_fecha_actualizacion\": \"2026-03-09 10:14:25\", \"usu_identificacion_hash\": \"46e867782d4667050ad7bf37c46a7107\", \"usu_notificaciones_push\": \"S\", \"usu_permisos_especiales\": null, \"usu_token_sesion_expira\": null, \"usu_notificaciones_email\": \"S\", \"usu_debe_cambiar_password\": \"N\", \"usu_token_recuperacion_expira\": null}', '{\"usu_tema\": \"light\", \"usu_email\": \"ENC::OuTanmFKzVH5LVMTG9MWE8sZvWbnMYRgodpoM31cKSTvNTm2YwKpFoz4H9gtfpGD\", \"usu_avatar\": null, \"usu_estado\": \"A\", \"usu_idioma\": \"es\", \"usu_rol_id\": 1, \"usu_celular\": \"\", \"usu_nombres\": \"Bolívar\", \"usu_password\": \"$argon2id$v=19$m=65536,t=4,p=1$S2wzZFc0cGFpaUouNXRCcw$CyDE4Ij59TlCNt5rs9Srt1Z5My2VtSdk7NmlO8yiq30\", \"usu_telefono\": \"ENC::Q4D4c/9Gy8HEFSZ2owLDEHnb2H7o3ysJEQZbJua1C9c=\", \"usu_username\": \"fbpinzon\", \"usu_apellidos\": \"Pinzón\", \"usu_tenant_id\": 2, \"usu_codigo_2fa\": null, \"usu_email_hash\": \"fa2536059c2cfc78fe680f0629a1859d\", \"usu_usuario_id\": 3, \"usu_intentos_2fa\": 0, \"usu_requiere_2fa\": \"N\", \"usu_sedes_acceso\": null, \"usu_token_sesion\": null, \"usu_ultimo_login\": \"2026-03-09 10:13:57\", \"usu_fecha_registro\": \"2026-01-29 17:22:55\", \"usu_identificacion\": \"ENC::ZmDa3G2PGfypPPh084pETrQou18KVHJ/SDYl2EOmzcQ=\", \"usu_bloqueado_hasta\": null, \"usu_ip_ultimo_login\": \"::1\", \"usu_password_expira\": null, \"usu_codigo_2fa_expira\": null, \"usu_intentos_fallidos\": 1, \"usu_sede_principal_id\": null, \"usu_token_recuperacion\": null, \"usu_fecha_actualizacion\": \"2026-03-09 10:26:20\", \"usu_identificacion_hash\": \"46e867782d4667050ad7bf37c46a7107\", \"usu_notificaciones_push\": \"S\", \"usu_permisos_especiales\": null, \"usu_token_sesion_expira\": null, \"usu_notificaciones_email\": \"S\", \"usu_debe_cambiar_password\": \"N\", \"usu_token_recuperacion_expira\": null}', '::1', NULL, '/digisports/public/index.php?r=Lav0UT4xOPD6TJjhUZxQSUf8t7gowFJDp4uInJuuZG4z52cLrHlXTMe9Qx7zikzoz-HGsoDTHr9CW9Dx8rbUI1RciFPu72ZE_m6VjkqXNbfukfGKB7f-5h87yHYl4YRnynEwBennRQ8~', 'POST', '2026-03-09 15:26:20'),
+(300, NULL, NULL, 'seguridad', 'usuario', 3, 'editar_usuario', '{\"usu_tema\": \"light\", \"usu_email\": \"ENC::OuTanmFKzVH5LVMTG9MWE8sZvWbnMYRgodpoM31cKSTvNTm2YwKpFoz4H9gtfpGD\", \"usu_avatar\": null, \"usu_estado\": \"A\", \"usu_idioma\": \"es\", \"usu_rol_id\": 1, \"usu_celular\": \"\", \"usu_nombres\": \"Bolívar\", \"usu_password\": \"$argon2id$v=19$m=65536,t=4,p=1$S2wzZFc0cGFpaUouNXRCcw$CyDE4Ij59TlCNt5rs9Srt1Z5My2VtSdk7NmlO8yiq30\", \"usu_telefono\": \"ENC::Q4D4c/9Gy8HEFSZ2owLDEHnb2H7o3ysJEQZbJua1C9c=\", \"usu_username\": \"fbpinzon\", \"usu_apellidos\": \"Pinzón\", \"usu_tenant_id\": 2, \"usu_codigo_2fa\": null, \"usu_email_hash\": \"fa2536059c2cfc78fe680f0629a1859d\", \"usu_usuario_id\": 3, \"usu_intentos_2fa\": 0, \"usu_requiere_2fa\": \"N\", \"usu_sedes_acceso\": null, \"usu_token_sesion\": null, \"usu_ultimo_login\": \"2026-03-09 10:13:57\", \"usu_fecha_registro\": \"2026-01-29 17:22:55\", \"usu_identificacion\": \"ENC::ZmDa3G2PGfypPPh084pETrQou18KVHJ/SDYl2EOmzcQ=\", \"usu_bloqueado_hasta\": null, \"usu_ip_ultimo_login\": \"::1\", \"usu_password_expira\": null, \"usu_codigo_2fa_expira\": null, \"usu_intentos_fallidos\": 1, \"usu_sede_principal_id\": null, \"usu_token_recuperacion\": null, \"usu_fecha_actualizacion\": \"2026-03-09 10:26:20\", \"usu_identificacion_hash\": \"46e867782d4667050ad7bf37c46a7107\", \"usu_notificaciones_push\": \"S\", \"usu_permisos_especiales\": null, \"usu_token_sesion_expira\": null, \"usu_notificaciones_email\": \"S\", \"usu_debe_cambiar_password\": \"N\", \"usu_token_recuperacion_expira\": null}', '{\"usu_tema\": \"light\", \"usu_email\": \"ENC::lPjwchXnjfYtM3x/w6LV1c4ZJOi2zQD+2GxptRITiLuHCAA/eUz0mP/qygGoHNDI\", \"usu_avatar\": null, \"usu_estado\": \"A\", \"usu_idioma\": \"es\", \"usu_rol_id\": 1, \"usu_celular\": \"\", \"usu_nombres\": \"Bolívar\", \"usu_password\": \"$argon2id$v=19$m=65536,t=4,p=1$S2wzZFc0cGFpaUouNXRCcw$CyDE4Ij59TlCNt5rs9Srt1Z5My2VtSdk7NmlO8yiq30\", \"usu_telefono\": \"ENC::kQxrCU/qWLYGnTzgNPzpRAIznHq+39WCeEQruprq2Cw=\", \"usu_username\": \"fbpinzon\", \"usu_apellidos\": \"Pinzón\", \"usu_tenant_id\": 2, \"usu_codigo_2fa\": null, \"usu_email_hash\": \"fa2536059c2cfc78fe680f0629a1859d\", \"usu_usuario_id\": 3, \"usu_intentos_2fa\": 0, \"usu_requiere_2fa\": \"N\", \"usu_sedes_acceso\": null, \"usu_token_sesion\": null, \"usu_ultimo_login\": \"2026-03-09 10:13:57\", \"usu_fecha_registro\": \"2026-01-29 17:22:55\", \"usu_identificacion\": \"ENC::0U+LS3T2LOMHX2l/jl/qL4nVQLTEjcKeon2MYNgcpGc=\", \"usu_bloqueado_hasta\": null, \"usu_ip_ultimo_login\": \"::1\", \"usu_password_expira\": null, \"usu_codigo_2fa_expira\": null, \"usu_intentos_fallidos\": 1, \"usu_sede_principal_id\": null, \"usu_token_recuperacion\": null, \"usu_fecha_actualizacion\": \"2026-03-09 10:38:10\", \"usu_identificacion_hash\": \"46e867782d4667050ad7bf37c46a7107\", \"usu_notificaciones_push\": \"S\", \"usu_permisos_especiales\": null, \"usu_token_sesion_expira\": null, \"usu_notificaciones_email\": \"S\", \"usu_debe_cambiar_password\": \"N\", \"usu_token_recuperacion_expira\": null}', '::1', NULL, '/digisports/public/index.php?r=Zhu_45ZlBDNQXbi1_0FjqT3ytoCN_DuzwQn3YH-KNas58LvNM1QLZySabZLAaj6TFnXD-d4P8UuB3O3emMDv9-MrGWUNdxYRMfRC163I9mlpDOQh1kfOh6uA6FULoms6cDP04d1Nyac~', 'POST', '2026-03-09 15:38:10'),
+(301, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=xzDqzXBDgjSlhXKuEuwHM_ZVmZ9z3XbOmiVIznDfoVw7Kg8-zTfonYt7atqbSE07VlmQJ94p_8jnlP5SGuQnzY8QjWNjp7iMSqS_RZQWQ824hPZHC0SsNUT9VTT7VEFG', 'POST', '2026-03-09 17:27:14'),
+(302, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=n0IdMh9UdboEADvJwnx2Px1-MTXw31NZ0_YLejjr_OFqWJazKsIWDcG4Wog74TJqsn9MbhHv96OKLE3fQeXSw9189Exf7n9soxDAH3IZsICdkLQ6kH_YY90wdBtq-QjP', 'POST', '2026-03-09 20:22:07'),
+(303, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=2zhV7sFGeAWHy-XKml8NhGqdZWcDTRH6LDF_XFP9hKOay_DvE_31J9fpBZmq_YOVC90NF2jHbnMhlvrhgyVyVR4wkEKQ9lSDy_QYckOtUp2AqV--23xLhRqRDpiZgPAC', 'POST', '2026-03-09 22:52:27'),
+(304, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=05gt8P_y6i12aCflxPfT2folQyIE4SsLQ83jUmQSKEukva4C2_s4CBqISzH437C7Ihif3dKdpR5-4f8XWZJSQ4lJ1Gj66_pOOvZVTc__D9CaBmroRsMsE7-5PDH29ppd', 'POST', '2026-03-10 00:40:26'),
+(305, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=GsnISbPmorywY_Q8QHF2LcZzwo2zLZ28TXi1qVEs_QOSBiNBB8vC8gpz0y0T0Rdr8YEL-q36fEJ0OJhd7BxYl3XlCTGxs0cox_adBFUQx-2X4CaFdJwH05NO3mCjcs5k', 'POST', '2026-03-10 04:56:30'),
+(306, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=pLhNkJUXP63MmoAt6dJ_cmjICdVcb19xWFlxHlHKKYSEUvUx7rIrCpEzlBNzh7a3IGU3FKLHRNa6qEPcEwpEhR29x5V0GHxccp7n_ie2Sj7Pt_6owMoknBrOIiS1yVcF', 'POST', '2026-03-10 15:14:10'),
+(307, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=tpoWVe25-lKE8YGvFnLzW4MPN2DWZhRM5xfRw-rBnsCDTb4OlWzQ3UqpNALByIkmQhQ3KH1_SxAfunBdQk0GDYQ_tjWRCkfqowy88FAiafVHV-B484xBOKV1OBThVCCP', 'POST', '2026-03-10 16:03:16');
 
 -- --------------------------------------------------------
 
@@ -2477,43 +2696,24 @@ INSERT INTO `seguridad_configuracion_sistema` (`sis_config_id`, `sis_tenant_id`,
 
 --
 -- Estructura de tabla para la tabla `seguridad_ips_bloqueadas`
--- Creada por migration 001_seguridad_ips_bloqueadas.sql
 --
 
 DROP TABLE IF EXISTS `seguridad_ips_bloqueadas`;
 CREATE TABLE IF NOT EXISTS `seguridad_ips_bloqueadas` (
-  `ib_id`              int unsigned    NOT NULL AUTO_INCREMENT,
-  `ib_ip`              varchar(45)     NOT NULL COMMENT 'IPv4 o IPv6',
-  `ib_bloqueado_hasta` datetime        NOT NULL COMMENT 'Timestamp de expiración del bloqueo',
-  `ib_intentos`        smallint        NOT NULL DEFAULT '0' COMMENT 'Intentos fallidos que generaron el bloqueo',
-  `ib_razon`           varchar(255)    DEFAULT 'Múltiples intentos fallidos de login',
-  `ib_desbloqueado`    tinyint(1)      NOT NULL DEFAULT '0' COMMENT '1 = desbloqueado manualmente',
-  `ib_desbloqueado_por` int unsigned   DEFAULT NULL COMMENT 'Usuario que desbloqueó',
-  `ib_creado_en`       datetime        DEFAULT CURRENT_TIMESTAMP,
-  `ib_actualizado_en`  datetime        DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `ib_id` int UNSIGNED NOT NULL AUTO_INCREMENT,
+  `ib_ip` varchar(45) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'IPv4 o IPv6',
+  `ib_bloqueado_hasta` datetime NOT NULL COMMENT 'Timestamp de expiraci├│n del bloqueo',
+  `ib_intentos` smallint NOT NULL DEFAULT '0' COMMENT 'Intentos fallidos que generaron el bloqueo',
+  `ib_razon` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT 'M├║ltiples intentos fallidos de login',
+  `ib_desbloqueado` tinyint(1) NOT NULL DEFAULT '0' COMMENT '1 = desbloqueado manualmente',
+  `ib_desbloqueado_por` int UNSIGNED DEFAULT NULL COMMENT 'Usuario que desbloque├│',
+  `ib_creado_en` datetime DEFAULT CURRENT_TIMESTAMP,
+  `ib_actualizado_en` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`ib_id`),
   UNIQUE KEY `uk_ip` (`ib_ip`),
   KEY `idx_expiry` (`ib_bloqueado_hasta`),
   KEY `idx_activo` (`ib_desbloqueado`,`ib_bloqueado_hasta`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='IPs bloqueadas por exceso de intentos fallidos de login';
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `seguridad_rate_limit`
--- Creada por migration 002_seguridad_rate_limit.sql
---
-
-DROP TABLE IF EXISTS `seguridad_rate_limit`;
-CREATE TABLE IF NOT EXISTS `seguridad_rate_limit` (
-  `srl_id`      bigint unsigned NOT NULL AUTO_INCREMENT,
-  `srl_ip`      varchar(45)     NOT NULL COMMENT 'IPv4 o IPv6',
-  `srl_action`  varchar(100)    NOT NULL COMMENT 'Identificador de la acción limitada',
-  `srl_fecha`   datetime        NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Timestamp del request',
-  PRIMARY KEY (`srl_id`),
-  KEY `idx_lookup` (`srl_ip`,`srl_action`,`srl_fecha`),
-  KEY `idx_purge`  (`srl_fecha`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Registro de requests para rate limiting por IP y acción';
 
 -- --------------------------------------------------------
 
@@ -2536,8 +2736,9 @@ CREATE TABLE IF NOT EXISTS `seguridad_log_accesos` (
   KEY `idx_usuario` (`acc_usuario_id`),
   KEY `idx_tenant` (`acc_tenant_id`),
   KEY `idx_fecha` (`acc_fecha`),
-  KEY `idx_tipo` (`acc_tipo`)
-) ENGINE=InnoDB AUTO_INCREMENT=41 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  KEY `idx_tipo` (`acc_tipo`),
+  KEY `idx_brute_force` (`acc_ip`,`acc_exito`,`acc_tipo`,`acc_fecha`)
+) ENGINE=InnoDB AUTO_INCREMENT=93 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Volcado de datos para la tabla `seguridad_log_accesos`
@@ -2550,12 +2751,10 @@ INSERT INTO `seguridad_log_accesos` (`acc_log_id`, `acc_usuario_id`, `acc_tenant
 (4, 1, 1, '2026-01-29 17:16:37', 'LOGIN_FAILED', '127.0.0.1', 'Mozilla/5.0', 'N', 'Usuario bloqueado'),
 (5, 1, 1, '2026-01-29 17:16:37', 'LOGOUT', '127.0.0.1', 'Mozilla/5.0', 'S', 'Cierre de sesión'),
 (6, 1, 1, '2026-01-29 17:16:37', 'LOGIN_OK', '127.0.0.1', 'Mozilla/5.0', 'S', 'Acceso correcto'),
-(7, NULL, NULL, '2026-02-19 15:09:03', 'LOGIN_FAILED', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 'N', 'Usuario: admin - Usuario o email no encontrado o inactivo'),
 (8, 1, 1, '2026-02-19 15:13:47', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
 (9, 1, 1, '2026-02-24 14:50:10', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
 (10, 1, 1, '2026-02-25 12:18:35', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
 (11, 1, 1, '2026-02-25 14:20:13', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
-(12, 1, NULL, '2026-02-25 15:02:37', 'LOGIN_FAILED', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'N', 'Usuario: superadmin - Contraseña incorrecta'),
 (13, 1, 1, '2026-02-25 15:03:01', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
 (14, 1, 1, '2026-02-25 15:07:43', 'LOGOUT', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Cierre de sesión'),
 (15, 1, 1, '2026-02-25 15:08:24', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
@@ -2567,7 +2766,6 @@ INSERT INTO `seguridad_log_accesos` (`acc_log_id`, `acc_usuario_id`, `acc_tenant
 (21, 1, 1, '2026-02-26 00:01:03', 'LOGOUT', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Cierre de sesión'),
 (22, 1, 1, '2026-02-26 00:30:24', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
 (23, 1, 1, '2026-02-26 00:30:48', 'LOGOUT', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Cierre de sesión'),
-(24, NULL, NULL, '2026-02-26 00:30:52', 'LOGIN_FAILED', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'N', 'Usuario: admin - Usuario o email no encontrado o inactivo'),
 (25, 1, 1, '2026-02-26 10:20:35', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
 (26, 1, 1, '2026-02-26 11:10:50', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
 (27, 1, 1, '2026-02-26 17:28:35', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
@@ -2583,7 +2781,59 @@ INSERT INTO `seguridad_log_accesos` (`acc_log_id`, `acc_usuario_id`, `acc_tenant
 (37, 1, 1, '2026-03-03 14:31:52', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
 (38, 1, 1, '2026-03-03 16:06:40', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
 (39, 1, 1, '2026-03-04 09:14:01', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
-(40, 1, 1, '2026-03-04 10:25:29', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso');
+(40, 1, 1, '2026-03-04 10:25:29', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(41, 1, 1, '2026-03-04 15:08:32', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(42, 1, 1, '2026-03-04 15:41:24', 'LOGOUT', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Cierre de sesión'),
+(43, 1, 1, '2026-03-04 15:43:06', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(44, 1, 1, '2026-03-04 15:46:56', 'LOGOUT', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Cierre de sesión'),
+(45, 1, 1, '2026-03-04 15:48:24', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(46, 1, 1, '2026-03-04 16:24:18', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(47, 1, 1, '2026-03-04 16:42:04', 'LOGOUT', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Cierre de sesión'),
+(48, 1, 1, '2026-03-04 16:43:04', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(49, 1, 1, '2026-03-04 20:32:00', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(50, 1, 1, '2026-03-04 22:18:30', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(51, 1, 1, '2026-03-05 00:02:00', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(52, 1, 1, '2026-03-05 00:04:57', 'LOGOUT', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Cierre de sesión'),
+(53, 1, 1, '2026-03-05 00:08:03', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(54, 1, 1, '2026-03-05 08:29:40', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(55, 1, 1, '2026-03-05 10:15:18', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(56, 1, 1, '2026-03-05 12:29:17', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(57, 1, 1, '2026-03-05 14:49:27', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(58, 1, 1, '2026-03-05 15:27:15', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(59, 1, 1, '2026-03-05 16:56:22', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(60, 1, 1, '2026-03-05 17:48:15', 'LOGOUT', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Cierre de sesión'),
+(61, 1, 1, '2026-03-05 17:48:33', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(62, 1, 1, '2026-03-05 20:04:33', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(63, 1, 1, '2026-03-05 20:23:45', 'LOGOUT', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Cierre de sesión'),
+(64, 1, 1, '2026-03-05 22:23:27', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(65, 1, 1, '2026-03-06 10:46:47', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(66, 1, 1, '2026-03-06 11:49:40', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(67, 1, 1, '2026-03-06 12:52:30', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(68, 1, 1, '2026-03-06 14:28:49', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(69, 1, 1, '2026-03-06 15:51:36', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(70, 1, 1, '2026-03-06 18:58:37', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(71, 1, 1, '2026-03-06 20:19:27', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(72, 1, 1, '2026-03-07 07:30:51', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(73, 1, 1, '2026-03-07 19:46:11', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(74, 1, 1, '2026-03-07 21:05:48', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(75, 1, 1, '2026-03-07 22:17:01', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(76, 1, 1, '2026-03-07 23:53:44', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(77, 1, 1, '2026-03-09 09:44:23', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(78, 1, 1, '2026-03-09 09:47:54', 'LOGOUT', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Cierre de sesión'),
+(79, 3, 2, '2026-03-09 09:48:08', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(80, 3, 2, '2026-03-09 09:48:34', 'LOGOUT', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Cierre de sesión'),
+(81, 1, 1, '2026-03-09 09:48:50', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(82, 3, 2, '2026-03-09 10:13:57', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(83, 3, 2, '2026-03-09 10:14:20', 'LOGOUT', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Cierre de sesión'),
+(84, 3, NULL, '2026-03-09 10:14:25', 'LOGIN_FAILED', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'N', 'Usuario: fbpinzon - Contraseña incorrecta'),
+(85, 1, 1, '2026-03-09 10:21:02', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(86, 1, 1, '2026-03-09 12:27:14', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(87, 1, 1, '2026-03-09 15:22:07', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(88, 1, 1, '2026-03-09 17:52:27', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(89, 1, 1, '2026-03-09 19:40:26', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(90, 1, 1, '2026-03-09 23:56:30', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(91, 1, 1, '2026-03-10 10:14:10', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(92, 1, 1, '2026-03-10 11:03:16', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso');
 
 -- --------------------------------------------------------
 
@@ -2617,7 +2867,7 @@ CREATE TABLE IF NOT EXISTS `seguridad_menu` (
   KEY `idx_men_orden` (`men_modulo_id`,`men_orden`),
   KEY `idx_men_tenant` (`men_tenant_id`),
   KEY `idx_men_activo` (`men_activo`)
-) ENGINE=InnoDB AUTO_INCREMENT=193 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Menús laterales dinámicos por aplicativo/módulo';
+) ENGINE=InnoDB AUTO_INCREMENT=195 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Menús laterales dinámicos por aplicativo/módulo';
 
 --
 -- Volcado de datos para la tabla `seguridad_menu`
@@ -2769,7 +3019,7 @@ INSERT INTO `seguridad_menu` (`men_id`, `men_modulo_id`, `men_padre_id`, `men_ti
 (162, 15, NULL, 'HEADER', 'Principal', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 1, NULL, NULL, '2026-02-09 20:03:14', '2026-02-09 20:03:14'),
 (163, 15, 162, 'ITEM', 'Dashboard', 'fas fa-tachometer-alt', 'futbol', 'dashboard', 'index', NULL, NULL, NULL, 1, 1, NULL, NULL, '2026-02-09 20:03:14', '2026-02-09 20:03:14'),
 (164, 15, 162, 'ITEM', 'Horario Semanal', 'fas fa-calendar-alt', 'futbol', 'horario', 'index', NULL, NULL, NULL, 2, 1, NULL, NULL, '2026-02-09 20:03:14', '2026-02-09 20:03:14'),
-(165, 15, NULL, 'HEADER', 'Gestión Académica', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 2, 1, NULL, NULL, '2026-02-09 20:03:14', '2026-02-09 21:24:55'),
+(165, 15, NULL, 'HEADER', 'Gestión Deportiva', NULL, NULL, NULL, 'index', NULL, NULL, NULL, 2, 1, NULL, NULL, '2026-02-09 20:03:14', '2026-03-07 00:15:57'),
 (166, 15, 165, 'ITEM', 'Jugadores', 'fas fa-user-graduate', 'futbol', 'alumno', 'index', NULL, NULL, NULL, 1, 1, NULL, NULL, '2026-02-09 20:03:14', '2026-02-09 20:03:14'),
 (167, 15, 165, 'ITEM', 'Inscripciones', 'fas fa-clipboard-list', 'futbol', 'inscripcion', 'index', NULL, NULL, NULL, 2, 1, NULL, NULL, '2026-02-09 20:03:14', '2026-02-09 20:03:14'),
 (168, 15, 165, 'ITEM', 'Asistencia', 'fas fa-check-double', 'futbol', 'asistencia', 'index', NULL, NULL, NULL, 3, 1, NULL, NULL, '2026-02-09 20:03:14', '2026-02-09 20:03:14'),
@@ -2796,7 +3046,9 @@ INSERT INTO `seguridad_menu` (`men_id`, `men_modulo_id`, `men_padre_id`, `men_ti
 (189, 15, 188, 'ITEM', 'Sedes', 'fas fa-building', 'futbol', 'sede', 'index', NULL, NULL, NULL, 1, 1, NULL, NULL, '2026-02-09 20:03:14', '2026-02-09 20:03:14'),
 (190, 15, 188, 'ITEM', 'Campos de Ficha', 'fas fa-sliders-h', 'futbol', 'campoficha', 'index', NULL, NULL, NULL, 2, 1, NULL, NULL, '2026-02-09 20:03:14', '2026-02-09 20:03:14'),
 (191, 15, 188, 'ITEM', 'Configuración', 'fas fa-cog', 'futbol', 'configuracion', 'index', NULL, NULL, NULL, 3, 1, NULL, NULL, '2026-02-09 20:03:14', '2026-02-09 21:24:55'),
-(192, 22, 104, 'ITEM', 'IPs Bloqueadas', 'fas fa-ban', 'seguridad', 'auditoria', 'ipsBloqueadas', NULL, NULL, NULL, 4, 1, NULL, NULL, '2026-02-19 20:30:15', '2026-02-19 20:30:15');
+(192, 22, 104, 'ITEM', 'IPs Bloqueadas', 'fas fa-ban', 'seguridad', 'auditoria', 'ipsBloqueadas', NULL, NULL, NULL, 4, 1, NULL, NULL, '2026-02-19 20:30:15', '2026-02-19 20:30:15'),
+(193, 22, NULL, 'HEADER', 'Administración de Catálogos', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 10, 1, NULL, NULL, '2026-03-04 20:33:39', '2026-03-04 20:33:39'),
+(194, 22, 193, 'ITEM', 'Catálogos', 'fas fa-list-check', 'seguridad', 'tabla', 'index', NULL, NULL, NULL, 1, 1, NULL, NULL, '2026-03-04 20:33:39', '2026-03-05 03:35:48');
 
 -- --------------------------------------------------------
 
@@ -2857,14 +3109,14 @@ CREATE TABLE IF NOT EXISTS `seguridad_modulos` (
   KEY `idx_codigo` (`mod_codigo`),
   KEY `idx_orden` (`mod_orden`),
   KEY `idx_activo` (`mod_activo`)
-) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Catálogo de módulos/aplicaciones disponibles';
+) ENGINE=InnoDB AUTO_INCREMENT=32 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Catálogo de módulos/aplicaciones disponibles';
 
 --
 -- Volcado de datos para la tabla `seguridad_modulos`
 --
 
 INSERT INTO `seguridad_modulos` (`mod_id`, `mod_codigo`, `mod_nombre`, `mod_descripcion`, `mod_icono`, `mod_color_fondo`, `mod_orden`, `mod_ruta_modulo`, `mod_ruta_controller`, `mod_ruta_action`, `mod_es_externo`, `mod_url_externa`, `mod_base_datos_externa`, `mod_requiere_licencia`, `mod_activo`, `mod_created_at`, `mod_updated_at`) VALUES
-(1, 'ARENA', 'DigiSports Arena', 'Gestiona canchas de fútbol, tenis, pádel, piscinas y más con tarifas flexibles.', 'fas fa-building', '#FF7E70', 1, 'instalaciones', 'dashboard', 'index', 0, NULL, NULL, 1, 1, '2026-01-26 05:37:36', '2026-02-08 04:36:56'),
+(1, 'ARENA', 'DigiSports Arena', 'Gestiona canchas de fútbol, tenis, pádel, piscinas y más con tarifas flexibles.', 'fas fa-building', '#FF7E70', 2, 'instalaciones', 'dashboard', 'index', 0, NULL, NULL, 1, 1, '2026-01-26 05:37:36', '2026-03-05 16:38:00'),
 (2, 'RESERVAS', 'Reservas', 'Sistema de reservas por bloques horarios con confirmación automática y recurrencias.', 'fas fa-calendar-check', '#10B981', 2, 'reservas', 'reserva', 'index', 0, NULL, NULL, 1, 0, '2026-01-26 05:37:36', '2026-02-08 02:34:00'),
 (3, 'facturacion', 'Facturación', 'Comprobantes electrónicos SRI, múltiples formas de pago y pasarelas online.', 'fas fa-file-invoice-dollar', '#F59E0B', 3, 'facturacion', 'comprobante', 'index', 0, NULL, NULL, 1, 1, '2026-01-26 05:37:36', '2026-01-26 05:37:36'),
 (4, 'reportes', 'Reportes', 'KPIs, ocupación, ingresos por período y análisis detallado de tu negocio.', 'fas fa-chart-bar', '#8B5CF6', 4, 'reportes', 'kpi', 'index', 0, NULL, NULL, 1, 1, '2026-01-26 05:37:36', '2026-01-26 05:37:36'),
@@ -2880,7 +3132,8 @@ INSERT INTO `seguridad_modulos` (`mod_id`, `mod_codigo`, `mod_nombre`, `mod_desc
 (21, 'STORE', 'DigiSports Store', 'Tienda de artículos deportivos', 'fas fa-store', '#F59E0B', 16, 'store', 'dashboard', 'index', 0, NULL, '', 1, 1, '2026-02-07 22:50:38', '2026-02-08 01:42:38'),
 (22, 'SEGURIDAD', 'Seguridad', '2FA, encriptación AES-256, auditoría completa y protección avanzada.', 'fas fa-shield-alt', '#EF4444', 98, 'seguridad', 'dashboard', 'index', 0, NULL, NULL, 1, 1, '2026-02-02 20:52:19', '2026-02-19 13:53:05'),
 (27, 'TENANTS', 'Tenants', 'Gestión de empresas/tenants', 'fas fa-building', '#10B981', 3, 'tenants', 'dashboard', 'index', 0, '/instalaciones/', NULL, 1, 0, '2026-02-07 22:50:38', '2026-02-08 02:34:29'),
-(30, 'NUTRICION', 'Planes Nutricionales', 'Seguimiento nutricional de deportistas', 'fas fa-apple-alt', '#fd7e14', 0, 'nutricion', 'dashboard', 'index', 0, '/nutricion/', NULL, 1, 0, '2026-02-07 22:50:38', '2026-02-26 15:26:25');
+(30, 'NUTRICION', 'Planes Nutricionales', 'Seguimiento nutricional de deportistas', 'fas fa-apple-alt', '#fd7e14', 2, 'nutricion', 'dashboard', 'index', 0, '/nutricion/', NULL, 1, 0, '2026-02-07 22:50:38', '2026-03-05 16:38:33'),
+(31, 'SOCCEREASY', 'SOCCEREASY', 'Sistema de administración de de la Escuela Champions', 'fa-basketball-ball', '#89F336', 1, NULL, NULL, 'index', 1, 'http://localhost/soccereasy/sso.php', NULL, 0, 1, '2026-03-05 16:37:36', '2026-03-05 21:08:26');
 
 -- --------------------------------------------------------
 
@@ -3029,6 +3282,23 @@ INSERT INTO `seguridad_planes_suscripcion` (`sus_plan_id`, `sus_codigo`, `sus_no
 -- --------------------------------------------------------
 
 --
+-- Estructura de tabla para la tabla `seguridad_rate_limit`
+--
+
+DROP TABLE IF EXISTS `seguridad_rate_limit`;
+CREATE TABLE IF NOT EXISTS `seguridad_rate_limit` (
+  `srl_id` bigint UNSIGNED NOT NULL AUTO_INCREMENT,
+  `srl_ip` varchar(45) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'IPv4 o IPv6',
+  `srl_action` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Identificador de la acci├│n limitada',
+  `srl_fecha` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Timestamp del request',
+  PRIMARY KEY (`srl_id`),
+  KEY `idx_lookup` (`srl_ip`,`srl_action`,`srl_fecha`),
+  KEY `idx_purge` (`srl_fecha`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Registro de requests para rate limiting por IP y acci├│n';
+
+-- --------------------------------------------------------
+
+--
 -- Estructura de tabla para la tabla `seguridad_roles`
 --
 
@@ -3088,7 +3358,7 @@ CREATE TABLE IF NOT EXISTS `seguridad_rol_menu` (
   UNIQUE KEY `uk_rol_menu` (`rme_rol_id`,`rme_menu_id`),
   KEY `idx_rme_rol` (`rme_rol_id`),
   KEY `idx_rme_menu` (`rme_menu_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=243 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Permisos de visibilidad de menú por rol';
+) ENGINE=InnoDB AUTO_INCREMENT=244 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Permisos de visibilidad de menú por rol';
 
 --
 -- Volcado de datos para la tabla `seguridad_rol_menu`
@@ -3279,7 +3549,8 @@ INSERT INTO `seguridad_rol_menu` (`rme_id`, `rme_rol_id`, `rme_menu_id`, `rme_pu
 (239, 2, 189, 1, 1, '2026-02-09 21:23:14', '2026-02-09 21:23:14'),
 (240, 2, 190, 1, 1, '2026-02-09 21:23:14', '2026-02-09 21:23:14'),
 (241, 2, 191, 1, 1, '2026-02-09 21:23:14', '2026-02-09 21:23:14'),
-(242, 1, 192, 1, 1, '2026-02-19 20:39:15', '2026-02-19 20:39:15');
+(242, 1, 192, 1, 1, '2026-02-19 20:39:15', '2026-02-19 20:39:15'),
+(243, 1, 194, 1, 1, '2026-03-04 20:33:39', '2026-03-04 20:33:39');
 
 -- --------------------------------------------------------
 
@@ -3343,12 +3614,12 @@ INSERT INTO `seguridad_rol_modulos` (`rmo_rol_id`, `rmo_rol_rol_id`, `rmo_rol_mo
 
 DROP TABLE IF EXISTS `seguridad_tabla`;
 CREATE TABLE IF NOT EXISTS `seguridad_tabla` (
-  `st_id`          int           NOT NULL AUTO_INCREMENT,
-  `st_nombre`      varchar(100)  NOT NULL,
-  `st_descripcion` varchar(500)  NULL,
-  `st_activo`      tinyint(1)    NOT NULL DEFAULT 1,
-  `st_created_at`  datetime      NULL DEFAULT CURRENT_TIMESTAMP,
-  `st_updated_at`  datetime      NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `st_id` int NOT NULL AUTO_INCREMENT,
+  `st_nombre` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `st_descripcion` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `st_activo` tinyint(1) NOT NULL DEFAULT '1',
+  `st_created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  `st_updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`st_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -3356,25 +3627,25 @@ CREATE TABLE IF NOT EXISTS `seguridad_tabla` (
 -- Volcado de datos para la tabla `seguridad_tabla`
 --
 
-INSERT INTO `seguridad_tabla` (`st_id`, `st_nombre`, `st_descripcion`, `st_activo`) VALUES
-(1,  'tipo_documento',        NULL, 1),
-(2,  'nacionalidad',          NULL, 1),
-(3,  'posicion_juego',        NULL, 1),
-(4,  'parentesco',            NULL, 1),
-(5,  'rubros',                NULL, 1),
-(6,  'forma_pago',            NULL, 1),
-(7,  'descuento',             NULL, 1),
-(8,  'especialidad_empleado', NULL, 1),
-(9,  'tipo_participacion',    NULL, 1),
-(10, 'tallas',                NULL, 1),
-(11, 'tipo_ingreso',          NULL, 1),
-(12, 'tipo_personal',         NULL, 1),
-(13, 'tipo_egreso',           NULL, 1),
-(14, 'egreso_dscto',          NULL, 1),
-(15, 'periodicidad',          NULL, 1),
-(16, 'forma_entregaingreso',  NULL, 1),
-(17, 'balance_ingreso',       NULL, 1),
-(18, 'balance_egreso',        NULL, 1);
+INSERT INTO `seguridad_tabla` (`st_id`, `st_nombre`, `st_descripcion`, `st_activo`, `st_created_at`, `st_updated_at`) VALUES
+(1, 'tipo_documento', NULL, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(2, 'nacionalidad', NULL, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(3, 'posicion_juego', NULL, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(4, 'parentesco', NULL, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(5, 'rubros', NULL, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(6, 'forma_pago', NULL, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(7, 'descuento', NULL, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(8, 'especialidad_empleado', NULL, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(9, 'tipo_participacion', NULL, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(10, 'tallas', NULL, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(11, 'tipo_ingreso', NULL, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(12, 'tipo_personal', NULL, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(13, 'tipo_egreso', NULL, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(14, 'egreso_dscto', NULL, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(15, 'periodicidad', NULL, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(16, 'forma_entregaingreso', NULL, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(17, 'balance_ingreso', NULL, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(18, 'balance_egreso', NULL, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56');
 
 -- --------------------------------------------------------
 
@@ -3384,95 +3655,92 @@ INSERT INTO `seguridad_tabla` (`st_id`, `st_nombre`, `st_descripcion`, `st_activ
 
 DROP TABLE IF EXISTS `seguridad_tabla_catalogo`;
 CREATE TABLE IF NOT EXISTS `seguridad_tabla_catalogo` (
-  `stc_id`         int           NOT NULL AUTO_INCREMENT,
-  `stc_tabla_id`   int           NOT NULL,
-  `stc_codigo`     varchar(10)   NOT NULL,
-  `stc_valor`      varchar(255)  NOT NULL,
-  `stc_etiqueta`   varchar(255)  NULL,
-  `stc_orden`      int           NOT NULL DEFAULT 10,
-  `stc_activo`     tinyint(1)    NOT NULL DEFAULT 1,
-  `stc_created_at` datetime      NULL DEFAULT CURRENT_TIMESTAMP,
-  `stc_updated_at` datetime      NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `stc_id` int NOT NULL AUTO_INCREMENT,
+  `stc_codigo` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `stc_tabla_id` int NOT NULL,
+  `stc_valor` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `stc_etiqueta` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `stc_orden` int NOT NULL DEFAULT '10',
+  `stc_activo` tinyint(1) NOT NULL DEFAULT '1',
+  `stc_created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  `stc_updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`stc_id`),
-  UNIQUE KEY `idx_stc_grupo_codigo` (`stc_tabla_id`, `stc_codigo`),
+  UNIQUE KEY `idx_stc_grupo_codigo` (`stc_tabla_id`,`stc_codigo`),
   KEY `idx_stc_orden` (`stc_orden`)
-) ENGINE=InnoDB AUTO_INCREMENT=68 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=69 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Volcado de datos para la tabla `seguridad_tabla_catalogo`
--- stc_valor  = descripción (valor almacenado en los registros)
--- stc_etiqueta = etiqueta para mostrar en UI (igual a stc_valor por defecto)
--- stc_orden  = stc_id * 10 (permite insertar entre valores existentes)
 --
 
-INSERT INTO `seguridad_tabla_catalogo` (`stc_id`, `stc_tabla_id`, `stc_codigo`, `stc_valor`, `stc_etiqueta`, `stc_orden`, `stc_activo`) VALUES
-(1,   1,  'CED', 'CÉDULA',                        'CÉDULA',                        10,  1),
-(2,   1,  'PAS', 'PASAPORTE',                     'PASAPORTE',                     20,  1),
-(3,   1,  'DNI', 'DNI',                           'DNI',                           30,  1),
-(4,   2,  'ECU', 'ECUATORIANA',                   'ECUATORIANA',                   40,  1),
-(5,   2,  'PER', 'PERUANA',                       'PERUANA',                       50,  1),
-(6,   2,  'COL', 'COLOMBIANA',                    'COLOMBIANA',                    60,  1),
-(7,   2,  'VEN', 'VENEZOLANA',                    'VENEZOLANA',                    70,  1),
-(8,   2,  'USA', 'ESTADOUNIDENSE',                'ESTADOUNIDENSE',                80,  1),
-(9,   3,  '3DE', 'Delantero',                     'Delantero',                     90,  1),
-(10,  3,  '3AR', 'Portero',                       'Portero',                       100, 1),
-(11,  3,  '3CE', 'Centrocampista',                'Centrocampista',                110, 1),
-(12,  3,  '3DF', 'Defensa',                       'Defensa',                       120, 1),
-(13,  4,  '4MA', 'Madre',                         'Madre',                         130, 1),
-(14,  4,  '4PA', 'Padre',                         'Padre',                         140, 1),
-(15,  4,  '4HE', 'Hermano/a',                     'Hermano/a',                     150, 1),
-(16,  4,  '4TI', 'Tio/a',                         'Tio/a',                         160, 1),
-(17,  4,  '4AB', 'Abuelo/a',                      'Abuelo/a',                      170, 1),
-(18,  5,  'ROT', 'Otros',                         'Otros',                         180, 1),
-(19,  5,  'RKE', 'Kit entrenamiento',             'Kit entrenamiento',             190, 1),
-(20,  5,  'RIN', 'Inscripción',                   'Inscripción',                   200, 1),
-(21,  5,  'RPE', 'Pensión',                       'Pensión',                       210, 1),
-(22,  5,  'RNU', 'Nuevo Uniforme',                'Nuevo Uniforme',                220, 1),
-(23,  6,  'FEF', 'Efectivo',                      'Efectivo',                      230, 1),
-(24,  6,  'FTR', 'Transferencia',                 'Transferencia',                 240, 1),
-(25,  6,  'FTC', 'Tarjeta',                       'Tarjeta',                       250, 1),
-(26,  6,  'FJU', 'Justificado',                   'Justificado',                   260, 1),
-(27,  7,  'DBC', 'Beca',                          'Beca',                          270, 1),
-(28,  7,  'DDS', 'Descuento',                     'Descuento',                     280, 1),
-(29,  6,  'FNA', 'No aplica',                     'No aplica',                     290, 1),
-(30,  8,  'EAT', 'Asistente técnico de arqueros', 'Asistente técnico de arqueros', 300, 1),
-(31,  8,  'EED', 'Entrenador delanteros',         'Entrenador delanteros',         310, 1),
-(32,  9,  'PJP', 'Jugador Principal',             'Jugador Principal',             320, 1),
-(33,  9,  'PJS', 'Jugador Suplente',              'Jugador Suplente',              330, 1),
-(34,  8,  'EEG', 'Entrenador general',            'Entrenador general',            340, 1),
-(35,  6,  'FTL', 'Transferencia Banco de Loja',   'Transferencia Banco de Loja',   350, 1),
-(36,  6,  'FTP', 'Transferencia Banco Pichincha', 'Transferencia Banco Pichincha', 360, 1),
-(37,  10, 'T28', '28',                            '28',                            370, 1),
-(38,  10, 'T30', '30',                            '30',                            380, 1),
-(39,  10, 'T32', '32',                            '32',                            390, 1),
-(40,  10, 'T34', '34',                            '34',                            400, 1),
-(41,  10, 'T36', '36',                            '36',                            410, 1),
-(42,  10, 'TS',  'S',                             'S',                             420, 1),
-(43,  10, 'TM',  'M',                             'M',                             430, 1),
-(44,  10, 'TL',  'L',                             'L',                             440, 1),
-(45,  11, 'TIH', 'Pago honorarios',               'Pago honorarios',               450, 1),
-(46,  11, 'TIX', 'Horas Extras',                  'Horas Extras',                  460, 1),
-(47,  11, 'TIR', 'Reconocimiento',                'Reconocimiento',                470, 1),
-(48,  12, 'TPE', 'Empleado',                      'Empleado',                      480, 1),
-(49,  12, 'TPS', 'Secretaria',                    'Secretaria',                    490, 1),
-(50,  12, 'TPP', 'Profesor',                      'Profesor',                      500, 1),
-(51,  12, 'TPT', 'Asistente',                     'Asistente',                     510, 1),
-(52,  13, 'TEA', 'Anticipo',                      'Anticipo',                      520, 1),
-(53,  13, 'TEM', 'Multa',                         'Multa',                         530, 1),
-(54,  15, 'PEM', 'Mensual',                       'Mensual',                       540, 1),
-(55,  15, 'PEQ', 'Quincenal',                     'Quincenal',                     550, 1),
-(56,  15, 'PES', 'Semanal',                       'Semanal',                       560, 1),
-(57,  16, 'EIT', 'Transferencia',                 'Transferencia',                 570, 1),
-(58,  16, 'EIE', 'Efectivo',                      'Efectivo',                      580, 1),
-(59,  16, 'EIC', 'Cheque',                        'Cheque',                        590, 1),
-(60,  16, 'EID', 'Descuento',                     'Descuento',                     600, 1),
-(61,  17, 'BIA', 'Auspicio',                      'Auspicio',                      610, 1),
-(62,  17, 'BID', 'Donación',                      'Donación',                      620, 1),
-(63,  17, 'BIO', 'Otros ingresos',                'Otros ingresos',                630, 1),
-(64,  18, 'BEA', 'Arriendos',                     'Arriendos',                     640, 1),
-(65,  18, 'BEP', 'Publicidad',                    'Publicidad',                    650, 1),
-(66,  18, 'BEO', 'Otros Egresos',                 'Otros Egresos',                 660, 1),
-(67,  5,  'RPC', 'Campeonato',                    'Campeonato',                    670, 1);
+INSERT INTO `seguridad_tabla_catalogo` (`stc_id`, `stc_codigo`, `stc_tabla_id`, `stc_valor`, `stc_etiqueta`, `stc_orden`, `stc_activo`, `stc_created_at`, `stc_updated_at`) VALUES
+(1, 'CED', 1, 'CÉDULA', 'CÉDULA', 10, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(2, 'PAS', 1, 'PASAPORTE', 'PASAPORTE', 20, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(3, 'DNI', 1, 'DNI', 'DNI', 30, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(4, 'ECU', 2, 'ECUATORIANA', 'ECUATORIANA', 40, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(5, 'PER', 2, 'PERUANA', 'PERUANA', 50, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(6, 'COL', 2, 'COLOMBIANA', 'COLOMBIANA', 60, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(7, 'VEN', 2, 'VENEZOLANA', 'VENEZOLANA', 70, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(8, 'USA', 2, 'ESTADOUNIDENSE', 'ESTADOUNIDENSE', 80, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(9, '3DE', 3, 'Delantero', 'Delantero', 90, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(10, '3AR', 3, 'Portero', 'Portero', 100, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(11, '3CE', 3, 'Centrocampista', 'Centrocampista', 110, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(12, '3DF', 3, 'Defensa', 'Defensa', 120, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(13, '4MA', 4, 'Madre', 'Madre', 130, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(14, '4PA', 4, 'Padre', 'Padre', 140, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(15, '4HE', 4, 'Hermano/a', 'Hermano/a', 150, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(16, '4TI', 4, 'Tio/a', 'Tio/a', 160, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(17, '4AB', 4, 'Abuelo/a', 'Abuelo/a', 170, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(18, 'ROT', 5, 'Otros', 'Otros', 180, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(19, 'RKE', 5, 'Kit entrenamiento', 'Kit entrenamiento', 190, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(20, 'RIN', 5, 'Inscripción', 'Inscripción', 200, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(21, 'RPE', 5, 'Pensión', 'Pensión', 210, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(22, 'RNU', 5, 'Nuevo Uniforme', 'Nuevo Uniforme', 220, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(23, 'FEF', 6, 'Efectivo', 'Efectivo', 230, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(24, 'FTR', 6, 'Transferencia', 'Transferencia', 240, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(25, 'FTC', 6, 'Tarjeta', 'Tarjeta', 250, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(26, 'FJU', 6, 'Justificado', 'Justificado', 260, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(27, 'DBC', 7, 'Beca', 'Beca', 270, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(28, 'DDS', 7, 'Descuento', 'Descuento', 280, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(29, 'FNA', 6, 'No aplica', 'No aplica', 290, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(30, 'EAT', 8, 'Asistente técnico de arqueros', 'Asistente técnico de arqueros', 300, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(31, 'EED', 8, 'Entrenador delanteros', 'Entrenador delanteros', 310, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(32, 'PJP', 9, 'Jugador Principal', 'Jugador Principal', 320, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(33, 'PJS', 9, 'Jugador Suplente', 'Jugador Suplente', 330, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(34, 'EEG', 8, 'Entrenador general', 'Entrenador general', 340, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(35, 'FTL', 6, 'Transferencia Banco de Loja', 'Transferencia Banco de Loja', 350, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(36, 'FTP', 6, 'Transferencia Banco Pichincha', 'Transferencia Banco Pichincha', 360, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(37, 'T28', 10, '28', '28', 370, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(38, 'T30', 10, '30', '30', 380, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(39, 'T32', 10, '32', '32', 390, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(40, 'T34', 10, '34', '34', 400, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(41, 'T36', 10, '36', '36', 410, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(42, 'TS', 10, 'S', 'S', 420, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(43, 'TM', 10, 'M', 'M', 430, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(44, 'TL', 10, 'L', 'L', 440, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(45, 'TIH', 11, 'Pago honorarios', 'Pago honorarios', 450, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(46, 'TIX', 11, 'Horas Extras', 'Horas Extras', 460, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(47, 'TIR', 11, 'Reconocimiento', 'Reconocimiento', 470, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(48, 'TPE', 12, 'Empleado', 'Empleado', 480, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(49, 'TPS', 12, 'Secretaria', 'Secretaria', 490, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(50, 'TPP', 12, 'Profesor', 'Profesor', 500, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(51, 'TPT', 12, 'Asistente', 'Asistente', 510, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(52, 'TEA', 13, 'Anticipo', 'Anticipo', 520, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(53, 'TEM', 13, 'Multa', 'Multa', 530, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(54, 'PEM', 15, 'Mensual', 'Mensual', 540, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(55, 'PEQ', 15, 'Quincenal', 'Quincenal', 550, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(56, 'PES', 15, 'Semanal', 'Semanal', 560, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(57, 'EIT', 16, 'Transferencia', 'Transferencia', 570, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(58, 'EIE', 16, 'Efectivo', 'Efectivo', 580, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(59, 'EIC', 16, 'Cheque', 'Cheque', 590, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(60, 'EID', 16, 'Descuento', 'Descuento', 600, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(61, 'BIA', 17, 'Auspicio', 'Auspicio', 610, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(62, 'BID', 17, 'Donación', 'Donación', 620, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(63, 'BIO', 17, 'Otros ingresos', 'Otros ingresos', 630, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(64, 'BEA', 18, 'Arriendos', 'Arriendos', 640, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(65, 'BEP', 18, 'Publicidad', 'Publicidad', 650, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56'),
+(66, 'BEO', 18, 'Otros Egresos', 'Otros Egresos', 660, 1, '2026-03-05 09:00:56', '2026-03-05 10:39:05'),
+(67, 'RPC', 5, 'Campeonato', 'Campeonato', 670, 1, '2026-03-05 09:00:56', '2026-03-05 09:00:56');
 
 -- --------------------------------------------------------
 
@@ -3580,8 +3848,8 @@ CREATE TABLE IF NOT EXISTS `seguridad_tenants` (
 --
 
 INSERT INTO `seguridad_tenants` (`ten_tenant_id`, `ten_ruc`, `ten_ruc_hash`, `ten_razon_social`, `ten_nombre_comercial`, `ten_tipo_empresa`, `ten_direccion`, `ten_telefono`, `ten_celular`, `ten_email`, `ten_email_hash`, `ten_sitio_web`, `ten_representante_nombre`, `ten_representante_identificacion`, `ten_representante_identificacion_hash`, `ten_representante_email`, `ten_representante_email_hash`, `ten_representante_telefono`, `ten_plan_id`, `ten_fecha_inicio`, `ten_fecha_vencimiento`, `ten_estado_suscripcion`, `ten_usuarios_permitidos`, `ten_sedes_permitidas`, `ten_almacenamiento_gb`, `ten_logo`, `ten_favicon`, `ten_color_primario`, `ten_color_secundario`, `ten_color_acento`, `ten_tiene_sistema_antiguo`, `ten_bd_antigua`, `ten_tenant_id_antiguo`, `ten_monto_mensual`, `ten_dia_corte`, `ten_metodo_pago_preferido`, `ten_timezone`, `ten_idioma`, `ten_moneda`, `ten_estado`, `ten_motivo_suspension`, `ten_fecha_suspension`, `ten_fecha_registro`, `ten_fecha_actualizacion`, `ten_usuario_registro`, `ten_usuario_actualizacion`) VALUES
-(1, 'ENC::7SuLBbk0pbyKTZEkVoprbVcSvLxBhAG4/GT90gcocPo=', '61fdfa41b29b7fd7e6e97822c91fe2ce', 'DigiSports Administracion', 'DigiSports Admin', '', 'Rey david y los Olivos', 'ENC::5WcG1kzwHpNpzRXO0wV1uJ9E/6PznVdS2dQ1Ep33kHA=', '', 'ENC::gBJ0k7Pn9HF0ZLpfx4ZVa/QTIg6Mhb0YeSR0YDHtSMAF41yVt/S2defgKJp2FW2m', 'fa2536059c2cfc78fe680f0629a1859d', '', '', '', NULL, '', NULL, '', 4, '2026-01-24', '2028-01-24', 'ACTIVA', 5, 0, 10, NULL, NULL, '', '', '#28a745', 'N', NULL, NULL, 0.00, 1, NULL, 'America/Guayaquil', 'es', 'USD', 'A', NULL, NULL, '2026-01-25 00:35:10', '2026-02-08 04:32:07', NULL, NULL),
-(2, 'ENC::IRuyMXryh/re4HRZoFBPRxRWFZO9bEjkAVEjSDsdW6M=', '426abbcb34966d2c6650f86367f4f54d', 'Champions', 'Champios CF 2013', '', '', 'ENC::uRb97yrqjUQEYQV/SCiwdC/S3QtW+LfKfa2u9+sWI7I=', '', 'ENC::KgWA/bE3BuMncDklgyqCsA0wWzR8UiOmxJfPp+dBC53y74VuUaXiC18/nFaEM7PM', 'fa2536059c2cfc78fe680f0629a1859d', '', '', '', NULL, '', NULL, '', 2, '2026-01-27', '2029-03-27', 'ACTIVA', 6, 0, 10, NULL, NULL, '', '', '#28a745', 'N', NULL, NULL, 0.00, 1, NULL, 'America/Guayaquil', 'es', 'USD', 'A', NULL, NULL, '2026-01-27 05:27:48', '2026-03-03 19:41:13', NULL, NULL);
+(1, 'ENC::sHXpcR3ji05LGNiHJvBeMajJqtUkdzHSScKLovkkCJo=', '61fdfa41b29b7fd7e6e97822c91fe2ce', 'DigiSports Administracion', 'DigiSports Admin', '', 'Rey david y los Olivos', 'ENC::vG4IN/bQEGv4KoeLOwnHWVwEfgTaoLY/8ZQAfpCTdTQ=', '', 'ENC::YnsfXkQvqMW2PhTnh+cRkvuAA/A3tcVxr1ge03LnBWm1dmJbe4eKAxU2BUkKM4OF', 'fa2536059c2cfc78fe680f0629a1859d', '', '', '', NULL, '', NULL, '', 4, '2026-01-24', '2028-01-24', 'ACTIVA', 5, 0, 10, NULL, NULL, '', '', '#28a745', 'N', NULL, NULL, 0.00, 1, NULL, 'America/Guayaquil', 'es', 'USD', 'A', NULL, NULL, '2026-01-25 00:35:10', '2026-03-05 16:40:32', NULL, NULL),
+(2, 'ENC::u46M7VmBc1jsXwu5mZ4vf+yWKOV+GiNFqg1mvz4c6yc=', '426abbcb34966d2c6650f86367f4f54d', 'Champions', 'Champios CF 2013', '', '', 'ENC::P1B20zjyHbT7k1Q1ydxZANechqFJG9shrGIxsy2ONTg=', '', 'ENC::02gONYsOrRU6YQ8OmLSrHPnqPAT2xo4vjAgjZtLtjk7IZDVnr2TwyBvUg76AkTS1', 'fa2536059c2cfc78fe680f0629a1859d', '', '', '', NULL, '', NULL, '', 2, '2026-01-27', '2029-04-27', 'ACTIVA', 6, 0, 10, NULL, NULL, '', '', '#28a745', 'N', NULL, NULL, 0.00, 1, NULL, 'America/Guayaquil', 'es', 'USD', 'A', NULL, NULL, '2026-01-27 05:27:48', '2026-03-09 15:25:55', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -3633,44 +3901,42 @@ CREATE TABLE IF NOT EXISTS `seguridad_tenant_modulos` (
   KEY `idx_tenant` (`tmo_tenant_id`),
   KEY `idx_modulo` (`tmo_modulo_id`),
   KEY `idx_estado` (`tmo_estado`)
-) ENGINE=InnoDB AUTO_INCREMENT=526 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Suscripciones de tenants a módulos';
+) ENGINE=InnoDB AUTO_INCREMENT=674 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Suscripciones de tenants a módulos';
 
 --
 -- Volcado de datos para la tabla `seguridad_tenant_modulos`
 --
 
 INSERT INTO `seguridad_tenant_modulos` (`tmo_id`, `tmo_tenant_id`, `tmo_modulo_id`, `tmo_nombre_personalizado`, `tmo_icono_personalizado`, `tmo_color_personalizado`, `tmo_orden_visualizacion`, `tmo_activo`, `tmo_fecha_inicio`, `tmo_fecha_fin`, `tmo_estado`, `tmo_tipo_licencia`, `tmo_max_usuarios`, `tmo_observaciones`, `tmo_created_at`, `tmo_updated_at`) VALUES
-(475, 1, 1, NULL, NULL, NULL, 0, 'S', '2026-02-07', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-02-07 23:59:18', '2026-02-07 23:59:18'),
-(476, 1, 2, NULL, NULL, NULL, 0, 'S', '2026-02-07', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-02-07 23:59:18', '2026-02-08 01:33:36'),
-(477, 1, 3, NULL, NULL, NULL, 0, 'S', '2026-02-07', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-02-07 23:59:18', '2026-02-07 23:59:18'),
-(478, 1, 4, NULL, NULL, NULL, 0, 'S', '2026-02-07', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-02-07 23:59:18', '2026-02-08 01:33:36'),
-(479, 1, 5, NULL, NULL, NULL, 0, 'S', '2026-02-07', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-02-07 23:59:18', '2026-02-07 23:59:18'),
-(480, 1, 6, NULL, NULL, NULL, 0, 'S', '2026-02-07', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-02-07 23:59:18', '2026-02-07 23:59:18'),
-(481, 1, 7, NULL, NULL, NULL, 0, 'N', '2026-02-07', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-02-07 23:59:18', '2026-02-07 23:59:18'),
-(482, 1, 8, NULL, NULL, NULL, 0, 'S', '2026-02-07', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-02-07 23:59:18', '2026-02-07 23:59:18'),
-(483, 1, 15, NULL, NULL, NULL, 0, 'S', '2026-02-07', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-02-07 23:59:18', '2026-02-07 23:59:18'),
-(484, 1, 16, NULL, NULL, NULL, 0, 'S', '2026-02-07', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-02-07 23:59:18', '2026-02-07 23:59:18'),
-(485, 1, 18, NULL, NULL, NULL, 0, 'S', '2026-02-07', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-02-07 23:59:18', '2026-02-07 23:59:18'),
-(486, 1, 19, NULL, NULL, NULL, 0, 'S', '2026-02-07', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-02-07 23:59:18', '2026-02-07 23:59:18'),
-(487, 1, 20, NULL, NULL, NULL, 0, 'S', '2026-02-07', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-02-07 23:59:18', '2026-02-07 23:59:18'),
-(488, 1, 21, NULL, NULL, NULL, 0, 'S', '2026-02-07', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-02-07 23:59:18', '2026-02-07 23:59:18'),
-(489, 1, 22, NULL, NULL, NULL, 0, 'S', '2026-02-07', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-02-07 23:59:19', '2026-02-07 23:59:19'),
-(492, 1, 27, NULL, NULL, NULL, 0, 'S', '2026-02-07', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-02-07 23:59:19', '2026-02-07 23:59:19'),
-(495, 1, 30, NULL, NULL, NULL, 0, 'S', '2026-02-07', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-02-07 23:59:19', '2026-02-07 23:59:19'),
 (511, 0, 0, NULL, NULL, NULL, 0, 'S', '2026-02-25', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-02-25 17:23:43', '2026-02-25 17:23:43'),
-(513, 2, 1, NULL, NULL, NULL, 0, 'N', '2026-03-03', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-03-03 19:41:13', '2026-03-03 19:41:13'),
-(514, 2, 3, NULL, NULL, NULL, 0, 'N', '2026-03-03', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-03-03 19:41:13', '2026-03-03 19:41:13'),
-(515, 2, 4, NULL, NULL, NULL, 0, 'N', '2026-03-03', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-03-03 19:41:13', '2026-03-03 19:41:13'),
-(516, 2, 5, NULL, NULL, NULL, 0, 'N', '2026-03-03', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-03-03 19:41:13', '2026-03-03 19:41:13'),
-(517, 2, 6, NULL, NULL, NULL, 0, 'N', '2026-03-03', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-03-03 19:41:13', '2026-03-03 19:41:13'),
-(518, 2, 8, NULL, NULL, NULL, 0, 'N', '2026-03-03', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-03-03 19:41:13', '2026-03-03 19:41:13'),
-(519, 2, 15, NULL, NULL, NULL, 0, 'N', '2026-03-03', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-03-03 19:41:13', '2026-03-03 19:41:13'),
-(520, 2, 16, NULL, NULL, NULL, 0, 'N', '2026-03-03', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-03-03 19:41:13', '2026-03-03 19:41:13'),
-(521, 2, 18, NULL, NULL, NULL, 0, 'N', '2026-03-03', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-03-03 19:41:13', '2026-03-03 19:41:13'),
-(522, 2, 19, NULL, NULL, NULL, 0, 'N', '2026-03-03', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-03-03 19:41:13', '2026-03-03 19:41:13'),
-(523, 2, 20, NULL, NULL, NULL, 0, 'N', '2026-03-03', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-03-03 19:41:13', '2026-03-03 19:41:13'),
-(524, 2, 21, NULL, NULL, NULL, 0, 'N', '2026-03-03', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-03-03 19:41:13', '2026-03-03 19:41:13'),
-(525, 2, 22, NULL, NULL, NULL, 0, 'N', '2026-03-03', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-03-03 19:41:13', '2026-03-03 19:41:13');
+(618, 1, 1, NULL, NULL, NULL, 0, 'S', '2026-03-05', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-03-05 16:40:32', '2026-03-05 16:40:32'),
+(619, 1, 3, NULL, NULL, NULL, 0, 'S', '2026-03-05', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-03-05 16:40:32', '2026-03-05 16:40:32'),
+(620, 1, 4, NULL, NULL, NULL, 0, 'S', '2026-03-05', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-03-05 16:40:32', '2026-03-05 16:40:32'),
+(621, 1, 5, NULL, NULL, NULL, 0, 'S', '2026-03-05', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-03-05 16:40:32', '2026-03-05 16:40:32'),
+(622, 1, 6, NULL, NULL, NULL, 0, 'S', '2026-03-05', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-03-05 16:40:32', '2026-03-05 16:40:32'),
+(623, 1, 8, NULL, NULL, NULL, 0, 'S', '2026-03-05', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-03-05 16:40:32', '2026-03-05 16:40:32'),
+(624, 1, 15, NULL, NULL, NULL, 0, 'S', '2026-03-05', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-03-05 16:40:32', '2026-03-05 16:40:32'),
+(625, 1, 16, NULL, NULL, NULL, 0, 'S', '2026-03-05', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-03-05 16:40:32', '2026-03-05 16:40:32'),
+(626, 1, 18, NULL, NULL, NULL, 0, 'S', '2026-03-05', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-03-05 16:40:32', '2026-03-05 16:40:32'),
+(627, 1, 19, NULL, NULL, NULL, 0, 'S', '2026-03-05', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-03-05 16:40:32', '2026-03-05 16:40:32'),
+(628, 1, 20, NULL, NULL, NULL, 0, 'S', '2026-03-05', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-03-05 16:40:32', '2026-03-05 16:40:32'),
+(629, 1, 21, NULL, NULL, NULL, 0, 'S', '2026-03-05', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-03-05 16:40:32', '2026-03-05 16:40:32'),
+(630, 1, 22, NULL, NULL, NULL, 0, 'S', '2026-03-05', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-03-05 16:40:32', '2026-03-05 16:40:32'),
+(631, 1, 31, NULL, NULL, NULL, 0, 'S', '2026-03-05', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-03-05 16:40:32', '2026-03-05 16:40:32'),
+(660, 2, 1, NULL, NULL, NULL, 0, 'S', '2026-03-09', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-03-09 15:25:55', '2026-03-09 15:25:55'),
+(661, 2, 3, NULL, NULL, NULL, 0, 'N', '2026-03-09', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-03-09 15:25:55', '2026-03-09 15:25:55'),
+(662, 2, 4, NULL, NULL, NULL, 0, 'N', '2026-03-09', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-03-09 15:25:55', '2026-03-09 15:25:55'),
+(663, 2, 5, NULL, NULL, NULL, 0, 'N', '2026-03-09', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-03-09 15:25:55', '2026-03-09 15:25:55'),
+(664, 2, 6, NULL, NULL, NULL, 0, 'N', '2026-03-09', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-03-09 15:25:55', '2026-03-09 15:25:55'),
+(665, 2, 8, NULL, NULL, NULL, 0, 'N', '2026-03-09', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-03-09 15:25:55', '2026-03-09 15:25:55'),
+(666, 2, 15, NULL, NULL, NULL, 0, 'N', '2026-03-09', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-03-09 15:25:55', '2026-03-09 15:25:55'),
+(667, 2, 16, NULL, NULL, NULL, 0, 'N', '2026-03-09', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-03-09 15:25:55', '2026-03-09 15:25:55'),
+(668, 2, 18, NULL, NULL, NULL, 0, 'N', '2026-03-09', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-03-09 15:25:55', '2026-03-09 15:25:55'),
+(669, 2, 19, NULL, NULL, NULL, 0, 'N', '2026-03-09', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-03-09 15:25:55', '2026-03-09 15:25:55'),
+(670, 2, 20, NULL, NULL, NULL, 0, 'N', '2026-03-09', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-03-09 15:25:55', '2026-03-09 15:25:55'),
+(671, 2, 21, NULL, NULL, NULL, 0, 'N', '2026-03-09', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-03-09 15:25:55', '2026-03-09 15:25:55'),
+(672, 2, 22, NULL, NULL, NULL, 0, 'N', '2026-03-09', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-03-09 15:25:55', '2026-03-09 15:25:55'),
+(673, 2, 31, NULL, NULL, NULL, 0, 'S', '2026-03-09', NULL, 'ACTIVO', 'MENSUAL', NULL, NULL, '2026-03-09 15:25:55', '2026-03-09 15:25:55');
 
 -- --------------------------------------------------------
 
@@ -3735,8 +4001,8 @@ CREATE TABLE IF NOT EXISTS `seguridad_usuarios` (
 --
 
 INSERT INTO `seguridad_usuarios` (`usu_usuario_id`, `usu_tenant_id`, `usu_identificacion`, `usu_identificacion_hash`, `usu_nombres`, `usu_apellidos`, `usu_email`, `usu_email_hash`, `usu_telefono`, `usu_celular`, `usu_username`, `usu_password`, `usu_requiere_2fa`, `usu_codigo_2fa`, `usu_codigo_2fa_expira`, `usu_intentos_2fa`, `usu_token_recuperacion`, `usu_token_recuperacion_expira`, `usu_rol_id`, `usu_permisos_especiales`, `usu_ultimo_login`, `usu_ip_ultimo_login`, `usu_token_sesion`, `usu_token_sesion_expira`, `usu_sedes_acceso`, `usu_sede_principal_id`, `usu_avatar`, `usu_tema`, `usu_idioma`, `usu_notificaciones_email`, `usu_notificaciones_push`, `usu_debe_cambiar_password`, `usu_password_expira`, `usu_intentos_fallidos`, `usu_bloqueado_hasta`, `usu_estado`, `usu_fecha_registro`, `usu_fecha_actualizacion`) VALUES
-(1, 1, 'ENC::1IeSjwyCnY1tTslc8FJ7WUme8b1HuxmAhl0cjF78U/c=', '46e867782d4667050ad7bf37c46a7107', 'Freddy', 'Pinzón', 'ENC::N8M5PUSsUol/X8uKN/PMBHj5PJ5em+R7qqqImEVO3qiGtF07Q21IhWHHlC/S6Qsa', 'c0e957495bb43b36f0ff7dea96030260', 'ENC::yeNJ1lTl5ufG6m0IduQTxMBubjp17a3yFRRgPbnBpdk=', 'ENC::tYpnIfZI5bK0QOhffMikZeAxzkzK4bcvtvdEChSNhxA=', 'superadmin', '$argon2id$v=19$m=65536,t=4,p=3$Qm9TcVczOThmQkh4N0hDTg$gdL3FkFtDnw+MnyyE+VIxagpRB019YMCK0w+fOpeydg', 'N', '798279', '2026-01-24 20:21:48', 0, NULL, NULL, 1, NULL, '2026-03-04 10:25:29', '::1', 'd46c1a54c78b28260bf588612ead286bf1e0d7218452375938c70b356bcff026', '2026-02-24 17:56:18', NULL, NULL, NULL, 'light', 'es', 'S', 'S', 'N', '2027-01-01', 0, NULL, 'A', '2026-01-25 00:35:10', '2026-03-04 15:25:29'),
-(3, 2, 'ENC::4i0U6033Xu31fjUOOi2ZzeXGZr+5UNQcImt6cx6XtGY=', '46e867782d4667050ad7bf37c46a7107', 'Bolívar', 'Pinzón', 'ENC::aG7Jk4au40KYzfi95x20TBEOCTM6/H4YHvEeXnXrT0qOSFaMN92H8Jom6nvoEcsc', 'fa2536059c2cfc78fe680f0629a1859d', 'ENC::O1kxV+oUWhj3YETC2fl1HYNagPPFEvuyaQYmn7lJElo=', '', 'fbpinzon', '$argon2id$v=19$m=65536,t=4,p=1$ek8zOE9QbEtsZU5heWNGSw$gCwhDpX6hVMCYRs0VCbryQ9j1+8XL38U5XnkUmMkOyo', 'N', NULL, NULL, 0, NULL, NULL, 1, NULL, '2026-02-25 15:21:17', '::1', NULL, NULL, NULL, NULL, NULL, 'light', 'es', 'S', 'S', 'S', NULL, 0, NULL, 'A', '2026-01-29 22:22:55', '2026-02-26 04:58:40');
+(1, 1, 'ENC::1IeSjwyCnY1tTslc8FJ7WUme8b1HuxmAhl0cjF78U/c=', '46e867782d4667050ad7bf37c46a7107', 'Freddy', 'Pinzón', 'ENC::N8M5PUSsUol/X8uKN/PMBHj5PJ5em+R7qqqImEVO3qiGtF07Q21IhWHHlC/S6Qsa', 'c0e957495bb43b36f0ff7dea96030260', 'ENC::yeNJ1lTl5ufG6m0IduQTxMBubjp17a3yFRRgPbnBpdk=', 'ENC::tYpnIfZI5bK0QOhffMikZeAxzkzK4bcvtvdEChSNhxA=', 'superadmin', '$argon2id$v=19$m=65536,t=4,p=3$Qm9TcVczOThmQkh4N0hDTg$gdL3FkFtDnw+MnyyE+VIxagpRB019YMCK0w+fOpeydg', 'N', '798279', '2026-01-24 20:21:48', 0, NULL, NULL, 1, NULL, '2026-03-10 11:03:16', '::1', 'd46c1a54c78b28260bf588612ead286bf1e0d7218452375938c70b356bcff026', '2026-02-24 17:56:18', NULL, NULL, NULL, 'light', 'es', 'S', 'S', 'N', '2027-01-01', 0, NULL, 'A', '2026-01-25 00:35:10', '2026-03-10 16:03:16'),
+(3, 2, 'ENC::0U+LS3T2LOMHX2l/jl/qL4nVQLTEjcKeon2MYNgcpGc=', '46e867782d4667050ad7bf37c46a7107', 'Bolívar', 'Pinzón', 'ENC::lPjwchXnjfYtM3x/w6LV1c4ZJOi2zQD+2GxptRITiLuHCAA/eUz0mP/qygGoHNDI', 'fa2536059c2cfc78fe680f0629a1859d', 'ENC::kQxrCU/qWLYGnTzgNPzpRAIznHq+39WCeEQruprq2Cw=', '', 'fbpinzon', '$argon2id$v=19$m=65536,t=4,p=1$S2wzZFc0cGFpaUouNXRCcw$CyDE4Ij59TlCNt5rs9Srt1Z5My2VtSdk7NmlO8yiq30', 'N', NULL, NULL, 0, NULL, NULL, 1, NULL, '2026-03-09 10:13:57', '::1', NULL, NULL, NULL, NULL, NULL, 'light', 'es', 'S', 'S', 'N', NULL, 1, NULL, 'A', '2026-01-29 22:22:55', '2026-03-09 15:38:10');
 
 -- --------------------------------------------------------
 
@@ -4566,42 +4832,6 @@ CREATE TABLE IF NOT EXISTS `store_venta_pagos` (
   KEY `idx_vpg_venta` (`vpg_venta_id`),
   KEY `idx_vpg_forma` (`vpg_tenant_id`,`vpg_forma_pago`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- --------------------------------------------------------
-
---
--- Tabla `core_archivos`
--- Repositorio central de archivos para todo el sistema DigiSports
---
-
-CREATE TABLE IF NOT EXISTS `core_archivos` (
-  `arc_id`                 int          NOT NULL AUTO_INCREMENT,
-  `arc_tenant_id`          int          NOT NULL                  COMMENT 'Tenant propietario del archivo',
-  `arc_entidad`            varchar(50)  NOT NULL                  COMMENT 'Módulo/entidad: alumnos, entrenadores, academias, pagos, documentos',
-  `arc_entidad_id`         int          NOT NULL                  COMMENT 'PK del registro al que pertenece',
-  `arc_categoria`          varchar(50)  NOT NULL                  COMMENT 'Tipo de archivo: fotos, documentos, logos, comprobantes',
-  `arc_nombre_original`    varchar(255) NOT NULL                  COMMENT 'Nombre original del archivo subido por el usuario',
-  `arc_nombre_almacenado`  varchar(255) NOT NULL                  COMMENT 'Nombre único con UUID en disco',
-  `arc_ruta_relativa`      varchar(500) NOT NULL                  COMMENT 'Ruta relativa desde storage/: tenants/{id}/alumnos/fotos/...',
-  `arc_mime_type`          varchar(100) NOT NULL                  COMMENT 'MIME type validado por finfo (no $_FILES["type"])',
-  `arc_extension`          varchar(10)  NOT NULL                  COMMENT 'Extensión en minúsculas: jpg, png, pdf, etc.',
-  `arc_tamanio_bytes`      int          NOT NULL DEFAULT 0        COMMENT 'Tamaño del archivo en bytes',
-  `arc_ancho_px`           smallint     DEFAULT NULL              COMMENT 'Ancho en píxeles (solo imágenes)',
-  `arc_alto_px`            smallint     DEFAULT NULL              COMMENT 'Alto en píxeles (solo imágenes)',
-  `arc_storage_driver`     varchar(20)  NOT NULL DEFAULT 'local'  COMMENT 'Driver de almacenamiento: local, s3, r2',
-  `arc_storage_key`        varchar(500) DEFAULT NULL              COMMENT 'Clave/path en el storage remoto (para S3/R2)',
-  `arc_es_principal`       tinyint(1)   NOT NULL DEFAULT 0        COMMENT '1 = archivo principal (ej: foto de perfil activa)',
-  `arc_estado`             enum('activo','eliminado') NOT NULL DEFAULT 'activo',
-  `arc_subido_por`         int          NOT NULL                  COMMENT 'usu_usuario_id del usuario que subió el archivo',
-  `arc_fecha_subida`       timestamp    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `arc_fecha_eliminacion`  timestamp    DEFAULT NULL              COMMENT 'Soft delete timestamp',
-  PRIMARY KEY (`arc_id`),
-  KEY `idx_arc_tenant`          (`arc_tenant_id`),
-  KEY `idx_arc_entidad`         (`arc_entidad`, `arc_entidad_id`),
-  KEY `idx_arc_tenant_entidad`  (`arc_tenant_id`, `arc_entidad`, `arc_entidad_id`),
-  KEY `idx_arc_estado`          (`arc_estado`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-  COMMENT='Repositorio central de archivos multimedia del sistema';
 
 -- --------------------------------------------------------
 
