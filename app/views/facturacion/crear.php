@@ -221,7 +221,7 @@ $moduloColor ??= 'var(--module-color)';
                                     <th style="width:80px;" class="text-right">Desc.</th>
                                     <th style="width:50px;" class="text-center">IVA</th>
                                     <th style="width:90px;" class="text-right">Subtotal</th>
-                                    <th style="width:34px;"></th>
+                                    <th style="width:60px;"></th>
                                 </tr>
                             </thead>
                             <tbody id="lineasBody">
@@ -232,9 +232,21 @@ $moduloColor ??= 'var(--module-color)';
                                     </td>
                                 </tr>
                             </tbody>
-                            <!-- Fila de ingreso -->
-                            <tfoot class="bg-light">
-                                <tr>
+                            <!-- Fila de ingreso / edición -->
+                            <tfoot id="tfootLinea">
+                                <tr id="trModoLabel" style="display:none;">
+                                    <td colspan="9" class="py-1 px-2" id="modoEditLabel"
+                                        style="background:#fff3cd;font-size:.78rem;">
+                                        <i class="fas fa-pencil-alt mr-1 text-warning"></i>
+                                        <strong>Editando ítem</strong> — modifique los campos y presione
+                                        <kbd>Enter</kbd> o haga clic en <strong>Actualizar</strong>.
+                                        <button type="button" id="btnCancelarEdicion"
+                                                class="btn btn-xs btn-outline-secondary float-right">
+                                            <i class="fas fa-times mr-1"></i>Cancelar
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr id="trInputs" class="bg-light">
                                     <td><input type="text" id="nCod" class="form-control form-control-sm text-uppercase"
                                                placeholder="SERV01" maxlength="20" style="min-width:70px;"></td>
                                     <td><input type="text" id="nDesc" class="form-control form-control-sm"
@@ -254,11 +266,13 @@ $moduloColor ??= 'var(--module-color)';
                                             <option value="12">12%</option>
                                         </select>
                                     </td>
-                                    <td class="text-right align-middle text-muted" id="nPreview">$0.00</td>
+                                    <td class="text-right align-middle" id="nPreview"
+                                        style="font-weight:600;color:#333;">$0.00</td>
                                     <td class="text-center">
                                         <button type="button" class="btn btn-sm btn-success"
                                                 id="btnAgregar" title="Agregar (Enter)">
-                                            <i class="fas fa-plus"></i>
+                                            <i class="fas fa-plus" id="btnAgregarIcon"></i>
+                                            <span id="btnAgregarText" class="d-none d-xl-inline ml-1">Agregar</span>
                                         </button>
                                     </td>
                                 </tr>
@@ -268,7 +282,9 @@ $moduloColor ??= 'var(--module-color)';
                 </div>
                 <div class="card-footer text-muted" style="font-size:.78rem;">
                     <i class="fas fa-keyboard mr-1"></i>
-                    Presione <kbd>Enter</kbd> en la descripción para agregar el ítem rápidamente
+                    Presione <kbd>Enter</kbd> en la descripción para agregar el ítem rápidamente &nbsp;|&nbsp;
+                    <i class="fas fa-pencil-alt mr-1"></i>Haga clic en <i class="fas fa-pencil-alt"></i> para editar un ítem &nbsp;|&nbsp;
+                    <kbd>Esc</kbd> cancela la edición
                 </div>
             </div>
 
@@ -420,7 +436,8 @@ $moduloColor ??= 'var(--module-color)';
     'use strict';
 
     /* ── Estado ─────────────────────────────────────────── */
-    var lineas = [];
+    var lineas   = [];
+    var editIdx  = null;   // null = modo agregar; número = modo editar
 
     /* ── Helpers ─────────────────────────────────────────── */
     function esc(str) {
@@ -430,6 +447,14 @@ $moduloColor ??= 'var(--module-color)';
 
     function fmt(n) {
         return '$' + parseFloat(n || 0).toFixed(2);
+    }
+
+    function actualizarPreview() {
+        var c = parseFloat($('#nCant').val())    || 0;
+        var p = parseFloat($('#nPrecio').val())  || 0;
+        var d = parseFloat($('#nDescLin').val()) || 0;
+        var sub = Math.max(0, c * p - d);
+        $('#nPreview').text(fmt(sub));
     }
 
     /* ── Toast global ───────────────────────────────────── */
@@ -442,6 +467,66 @@ $moduloColor ??= 'var(--module-color)';
         } else {
             alert(msg);
         }
+    }
+
+    /* ── Cambiar visual del tfoot según modo ────────────── */
+    function setModoEdicion(idx) {
+        editIdx = idx;
+        if (idx !== null) {
+            $('#trModoLabel').show();
+            $('#trInputs').css('background', '#fff8e1');
+            $('#btnAgregarIcon').removeClass('fa-plus').addClass('fa-check');
+            $('#btnAgregar').removeClass('btn-success').addClass('btn-warning')
+                .attr('title', 'Actualizar ítem (Enter)');
+            $('#btnAgregarText').text('Actualizar').removeClass('d-none');
+        } else {
+            $('#trModoLabel').hide();
+            $('#trInputs').css('background', '');
+            $('#btnAgregarIcon').removeClass('fa-check').addClass('fa-plus');
+            $('#btnAgregar').removeClass('btn-warning').addClass('btn-success')
+                .attr('title', 'Agregar (Enter)');
+            $('#btnAgregarText').text('Agregar');
+        }
+    }
+
+    /* ── Limpiar inputs del tfoot ───────────────────────── */
+    function limpiarInputs() {
+        $('#nCod').val('');
+        $('#nDesc').val('').removeClass('is-invalid');
+        $('#nPer').val('');
+        $('#nCant').val('1');
+        $('#nPrecio').val('0.00');
+        $('#nDescLin').val('0.00');
+        $('#nIva').val('15');
+        $('#nPreview').text('$0.00');
+        setModoEdicion(null);
+        $('#nDesc').focus();
+    }
+
+    /* ── Cargar ítem en tfoot para editar ───────────────── */
+    function cargarParaEdicion(idx) {
+        var l = lineas[idx];
+        if (!l) return;
+
+        // Resaltar la fila editada en el tbody
+        $('#lineasBody tr').removeClass('table-warning');
+        $('#lineasBody tr[data-idx="' + idx + '"]').addClass('table-warning');
+
+        $('#nCod').val(l.codigo);
+        $('#nDesc').val(l.descripcion);
+        $('#nPer').val(l.periodo);
+        $('#nCant').val(parseFloat(l.cantidad).toFixed(2));
+        $('#nPrecio').val(parseFloat(l.precio).toFixed(2));
+        $('#nDescLin').val(parseFloat(l.descuento_lin).toFixed(2));
+        $('#nIva').val(String(l.pct_iva));
+
+        actualizarPreview();
+        setModoEdicion(idx);
+
+        // Scroll al tfoot y foco en descripción
+        var $tfoot = $('#tfootLinea');
+        $('html, body').animate({ scrollTop: $tfoot.offset().top - 120 }, 200);
+        $('#nDesc').focus();
     }
 
     /* ── Renderizar filas de líneas ─────────────────────── */
@@ -458,23 +543,33 @@ $moduloColor ??= 'var(--module-color)';
             $('#contadorLineas').text('0 ítems');
         } else {
             lineas.forEach(function (l, i) {
-                var base = (l.cantidad * l.precio) - l.descuento_lin;
-                var sub  = Math.max(0, base);
-                var periodo = l.periodo ? ' <small class="text-muted">| ' + esc(l.periodo) + '</small>' : '';
+                var base    = (l.cantidad * l.precio) - l.descuento_lin;
+                var sub     = Math.max(0, base);
+                var esEdit  = (editIdx === i);
 
-                var $tr = $('<tr>').html(
+                var $tr = $('<tr>').attr('data-idx', i);
+                if (esEdit) { $tr.addClass('table-warning'); }
+
+                $tr.html(
                     '<td><span class="badge badge-secondary" style="font-size:.72rem;">' +
-                        (l.codigo || '—') + '</span></td>' +
-                    '<td>' + esc(l.descripcion) + periodo + '</td>' +
+                        esc(l.codigo || '—') + '</span></td>' +
+                    '<td>' + esc(l.descripcion) +
+                        (l.periodo ? ' <small class="text-muted">| ' + esc(l.periodo) + '</small>' : '') +
+                    '</td>' +
                     '<td class="text-center text-muted" style="font-size:.78rem;">' + esc(l.periodo) + '</td>' +
                     '<td class="text-right">' + parseFloat(l.cantidad).toFixed(2) + '</td>' +
                     '<td class="text-right">' + fmt(l.precio) + '</td>' +
-                    '<td class="text-right">' + fmt(l.descuento_lin) + '</td>' +
+                    '<td class="text-right">' + (l.descuento_lin > 0 ? fmt(l.descuento_lin) : '<span class="text-muted">—</span>') + '</td>' +
                     '<td class="text-center"><span class="badge badge-info">' + l.pct_iva + '%</span></td>' +
                     '<td class="text-right font-weight-bold">' + fmt(sub) + '</td>' +
-                    '<td class="text-center">' +
-                        '<button type="button" class="btn btn-xs btn-outline-danger btn-eliminar" data-idx="' + i + '">' +
-                        '<i class="fas fa-trash" style="font-size:.7rem;"></i></button></td>'
+                    '<td class="text-center" style="white-space:nowrap;">' +
+                        '<button type="button" class="btn btn-xs btn-outline-primary btn-editar mr-1" ' +
+                            'data-idx="' + i + '" title="Editar ítem">' +
+                            '<i class="fas fa-pencil-alt" style="font-size:.7rem;"></i></button>' +
+                        '<button type="button" class="btn btn-xs btn-outline-danger btn-eliminar" ' +
+                            'data-idx="' + i + '" title="Eliminar ítem">' +
+                            '<i class="fas fa-trash" style="font-size:.7rem;"></i></button>' +
+                    '</td>'
                 );
                 $tbody.append($tr);
             });
@@ -485,14 +580,14 @@ $moduloColor ??= 'var(--module-color)';
         calcularTotales();
     }
 
-    /* ── Agregar línea ──────────────────────────────────── */
-    function agregarLinea() {
+    /* ── Agregar o actualizar línea ─────────────────────── */
+    function confirmarLinea() {
         var cod   = $('#nCod').val().trim().toUpperCase();
         var desc  = $('#nDesc').val().trim();
         var per   = $('#nPer').val().trim();
         var cant  = Math.max(0.01, parseFloat($('#nCant').val()) || 1);
         var prec  = Math.max(0,    parseFloat($('#nPrecio').val()) || 0);
-        var desc2 = Math.max(0,    parseFloat($('#nDescLin').val()) || 0);
+        var dlin  = Math.max(0,    parseFloat($('#nDescLin').val()) || 0);
         var iva   = parseInt($('#nIva').val()) || 15;
 
         if (!desc) {
@@ -502,22 +597,17 @@ $moduloColor ??= 'var(--module-color)';
         }
         $('#nDesc').removeClass('is-invalid');
 
-        lineas.push({
-            codigo: cod, descripcion: desc, periodo: per,
-            cantidad: cant, precio: prec, descuento_lin: desc2, pct_iva: iva
-        });
+        var item = { codigo: cod, descripcion: desc, periodo: per,
+                     cantidad: cant, precio: prec, descuento_lin: dlin, pct_iva: iva };
 
-        // Limpiar tfoot
-        $('#nCod').val('');
-        $('#nDesc').val('');
-        $('#nPer').val('');
-        $('#nCant').val('1');
-        $('#nPrecio').val('0.00');
-        $('#nDescLin').val('0.00');
-        $('#nIva').val('15');
-        $('#nPreview').text('$0.00');
-        $('#nDesc').focus();
+        if (editIdx !== null) {
+            lineas[editIdx] = item;
+            toast('Ítem actualizado', 'success');
+        } else {
+            lineas.push(item);
+        }
 
+        limpiarInputs();
         renderLineas();
     }
 
@@ -549,22 +639,23 @@ $moduloColor ??= 'var(--module-color)';
         $('#labelIva').text('IVA ' + (pctIvaMax || 15) + '%');
     }
 
+    /* ── Enviar formulario AJAX ─────────────────────────── */
     function enviarFormulario() {
         var $btn = $('#btnGuardar');
         $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-2"></i>Guardando...');
 
         var payload = {
-            csrf_token:       $('#csrf_token').val(),
-            origen_modulo:    $('#origen_modulo').val(),
-            origen_id:        $('#origen_id').val(),
-            cliente_id:       $('#cliente_id').val(),
-            fecha_emision:    $('#fecha_emision').val(),
-            fecha_vencimiento:$('#fecha_vencimiento').val(),
-            forma_pago_id:    $('#forma_pago_id').val(),
-            descuento:        $('#descuento').val(),
-            observaciones:    $('#observaciones').val(),
-            guia_remision:    $('#guia_remision').val(),
-            lineas_json:      JSON.stringify(lineas)
+            csrf_token:        $('#csrf_token').val(),
+            origen_modulo:     $('#origen_modulo').val(),
+            origen_id:         $('#origen_id').val(),
+            cliente_id:        $('#cliente_id').val(),
+            fecha_emision:     $('#fecha_emision').val(),
+            fecha_vencimiento: $('#fecha_vencimiento').val(),
+            forma_pago_id:     $('#forma_pago_id').val(),
+            descuento:         $('#descuento').val(),
+            observaciones:     $('#observaciones').val(),
+            guia_remision:     $('#guia_remision').val(),
+            lineas_json:       JSON.stringify(lineas)
         };
 
         $.ajax({
@@ -576,11 +667,9 @@ $moduloColor ??= 'var(--module-color)';
                 if (res.success) {
                     toast(res.message || 'Factura creada exitosamente', 'success');
                     setTimeout(function () {
-                        if (res.data && res.data.redirect) {
-                            window.location.href = res.data.redirect;
-                        } else {
-                            window.location.href = '<?= url('facturacion', 'factura', 'index') ?>';
-                        }
+                        window.location.href = (res.data && res.data.redirect)
+                            ? res.data.redirect
+                            : '<?= url('facturacion', 'factura', 'index') ?>';
                     }, 1200);
                 } else {
                     toast(res.message || 'Error al guardar la factura', 'error');
@@ -598,42 +687,65 @@ $moduloColor ??= 'var(--module-color)';
         });
     }
 
-    /* ── Init + bindings (DOM ready, después de que jQuery cargue) ── */
+    /* ── Init + bindings ────────────────────────────────── */
     $(function () {
         renderLineas();
         $('#nDesc').focus();
 
-        // Si hay cliente preseleccionado (origen != libre), mostrar info
-        var cliId = $('#cliente_id').val();
-        if (cliId) { $('#cliente_id').trigger('change'); }
+        // Cliente preseleccionado
+        if ($('#cliente_id').val()) { $('#cliente_id').trigger('change'); }
+
+        /* ── Editar línea ──────────────────────────────── */
+        $(document).on('click', '.btn-editar', function () {
+            var idx = parseInt($(this).data('idx'));
+            if (editIdx === idx) {
+                // Segundo clic en el mismo → cancela
+                limpiarInputs();
+                renderLineas();
+            } else {
+                cargarParaEdicion(idx);
+            }
+        });
 
         /* ── Eliminar línea ─────────────────────────────── */
         $(document).on('click', '.btn-eliminar', function () {
             var idx = parseInt($(this).data('idx'));
+            if (editIdx === idx) { limpiarInputs(); }
+            if (editIdx !== null && idx < editIdx) { editIdx--; }
             lineas.splice(idx, 1);
             renderLineas();
         });
 
-        /* ── Preview subtotal en tfoot ──────────────────── */
-        $('#nCant, #nPrecio, #nDescLin').on('input', function () {
-            var c = parseFloat($('#nCant').val())    || 0;
-            var p = parseFloat($('#nPrecio').val())  || 0;
-            var d = parseFloat($('#nDescLin').val()) || 0;
-            $('#nPreview').text(fmt(Math.max(0, c * p - d)));
+        /* ── Cancelar edición ──────────────────────────── */
+        $('#btnCancelarEdicion').on('click', function () {
+            limpiarInputs();
+            renderLineas();
         });
 
-        /* ── Enter en descripción agrega la línea ────────── */
+        /* ── Preview en tiempo real ─────────────────────── */
+        $('#nCant, #nPrecio, #nDescLin').on('input', actualizarPreview);
+        $('#nIva').on('change', actualizarPreview);
+
+        /* ── Enter en descripción ────────────────────────── */
         $('#nDesc').on('keydown', function (e) {
-            if (e.key === 'Enter') { e.preventDefault(); agregarLinea(); }
+            if (e.key === 'Enter') { e.preventDefault(); confirmarLinea(); }
         });
 
-        /* ── Botón agregar ──────────────────────────────── */
-        $('#btnAgregar').on('click', agregarLinea);
+        /* ── Escape cancela edición ─────────────────────── */
+        $(document).on('keydown', function (e) {
+            if (e.key === 'Escape' && editIdx !== null) {
+                limpiarInputs();
+                renderLineas();
+            }
+        });
+
+        /* ── Botón agregar / actualizar ──────────────────── */
+        $('#btnAgregar').on('click', confirmarLinea);
 
         /* ── Descuento global recalcula totales ─────────── */
         $('#descuento').on('input', calcularTotales);
 
-        /* ── Info cliente desde atributos data-* ─────────── */
+        /* ── Info cliente ────────────────────────────────── */
         $('#cliente_id').on('change', function () {
             var $opt = $(this).find(':selected');
             var id   = $(this).val();
@@ -650,9 +762,9 @@ $moduloColor ??= 'var(--module-color)';
         $('#btnGuardar').on('click', function () {
             var clienteId   = $('#cliente_id').val();
             var formaPagoId = $('#forma_pago_id').val();
-            if (!clienteId)   { toast('Debe seleccionar un cliente', 'warning');    $('#cliente_id').focus();    return; }
-            if (!formaPagoId) { toast('Seleccione una forma de pago', 'warning');   $('#forma_pago_id').focus(); return; }
-            if (lineas.length === 0) { toast('Agregue al menos un ítem a la factura', 'warning'); $('#nDesc').focus(); return; }
+            if (!clienteId)        { toast('Debe seleccionar un cliente',           'warning'); $('#cliente_id').focus();    return; }
+            if (!formaPagoId)      { toast('Seleccione una forma de pago',          'warning'); $('#forma_pago_id').focus(); return; }
+            if (lineas.length < 1) { toast('Agregue al menos un ítem a la factura', 'warning'); $('#nDesc').focus();         return; }
 
             if (typeof Swal !== 'undefined') {
                 Swal.fire({
@@ -664,11 +776,9 @@ $moduloColor ??= 'var(--module-color)';
                     cancelButtonText:  '<i class="fas fa-times mr-1"></i>Cancelar',
                     confirmButtonColor: '#3085d6',
                     cancelButtonColor:  '#6c757d'
-                }).then(function (result) {
-                    if (result.isConfirmed) { enviarFormulario(); }
-                });
+                }).then(function (r) { if (r.isConfirmed) enviarFormulario(); });
             } else {
-                if (confirm('¿Guardar factura como borrador?')) { enviarFormulario(); }
+                if (confirm('¿Guardar factura como borrador?')) enviarFormulario();
             }
         });
     });
