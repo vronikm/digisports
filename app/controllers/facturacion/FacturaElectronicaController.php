@@ -72,11 +72,16 @@ class FacturaElectronicaController extends \App\Controllers\ModuleController {
 
         $facturas       = $this->facturaModel->listar($this->tenantId, $filtros, $limite, $offset);
         $total          = $this->facturaModel->contar($this->tenantId, $filtros);
-        $resumenEstados = $this->facturaModel->obtenerResumenEstados(
+        $rawResumen = $this->facturaModel->obtenerResumenEstados(
             $this->tenantId,
             $filtros['fecha_desde'] ?: null,
             $filtros['fecha_hasta'] ?: null
         );
+        // Transform to flat map keyed by estado_sri → cantidad (as expected by the view)
+        $resumenEstados = [];
+        foreach ($rawResumen as $row) {
+            $resumenEstados[$row['estado_sri']] = (int) $row['cantidad'];
+        }
 
         $this->viewData['facturas']         = $facturas;
         $this->viewData['filtros']          = $filtros;
