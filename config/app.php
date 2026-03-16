@@ -233,10 +233,11 @@ class Config {
             'namespace' => 'App\Controllers\Store'
         ],
         // DigiSports Arena — sistema de eventos y espectáculos
+        // Comparte controladores con el módulo 'instalaciones'
         'arena' => [
             'enabled' => true,
-            'path' => '/app/controllers/arena/',
-            'namespace' => 'App\Controllers\Arena'
+            'path' => '/app/controllers/instalaciones/',
+            'namespace' => 'App\Controllers\Instalaciones'
         ],
         // Módulo de Seguridad (Administración del Sistema)
         'seguridad' => [

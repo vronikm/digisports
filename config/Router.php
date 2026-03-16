@@ -312,19 +312,24 @@ class Router {
             return;
         }
 
+        // El Super Admin (rol_id=1) tiene acceso a todos los módulos sin importar el contrato del tenant
+        if (($_SESSION['rol_id'] ?? null) == 1) {
+            return;
+        }
+
         try {
             $stmt = $db->prepare("
                 SELECT stm.tmo_id
                 FROM seguridad_tenant_modulos stm
                 JOIN seguridad_modulos sm ON sm.mod_id = stm.tmo_modulo_id
                 WHERE stm.tmo_tenant_id = ?
-                  AND sm.mod_ruta_modulo = ?
+                  AND (sm.mod_ruta_modulo = ? OR sm.mod_codigo = UPPER(?))
                   AND stm.tmo_activo = 'S'
                   AND stm.tmo_estado = 'ACTIVO'
                   AND sm.mod_requiere_licencia = 1
                 LIMIT 1
             ");
-            $stmt->execute([$tenantId, $this->module]);
+            $stmt->execute([$tenantId, $this->module, $this->module]);
 
             if (!$stmt->fetch()) {
                 // El módulo existe en la plataforma pero el tenant no lo tiene contratado

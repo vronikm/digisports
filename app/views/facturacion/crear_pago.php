@@ -202,19 +202,24 @@
     <?php endif; ?>
 </div>
 
-<script>
-document.getElementById('monto').addEventListener('input', function() {
-    const monto = parseFloat(this.value) || 0;
-    const maximo = <?= $monto_pendiente ?>;
-    
-    if (monto > maximo) {
-        this.classList.add('is-invalid');
-        this.classList.remove('is-valid');
-    } else if (monto > 0) {
-        this.classList.add('is-valid');
-        this.classList.remove('is-invalid');
-    } else {
-        this.classList.remove('is-valid', 'is-invalid');
-    }
-});
+<?php ob_start(); ?>
+<script nonce="<?= cspNonce() ?>">
+(function () {
+    'use strict';
+    var maximo = <?= (float)$monto_pendiente ?>;
+
+    document.getElementById('monto').addEventListener('input', function () {
+        var monto = parseFloat(this.value) || 0;
+        if (monto > maximo) {
+            this.classList.add('is-invalid');
+            this.classList.remove('is-valid');
+        } else if (monto > 0) {
+            this.classList.add('is-valid');
+            this.classList.remove('is-invalid');
+        } else {
+            this.classList.remove('is-valid', 'is-invalid');
+        }
+    });
+}());
 </script>
+<?php $scripts = ob_get_clean(); ?>

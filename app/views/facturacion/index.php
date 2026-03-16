@@ -38,14 +38,6 @@
             </div>
         </div>
     </div>
-    <script>
-    document.getElementById('btnFiltrar').addEventListener('click', function() {
-        var estado = document.getElementById('filtroEstado').value;
-        var params = {};
-        if (estado) params.estado = estado;
-        window.location.href = '<?= url('facturacion', 'factura', 'index') ?>' + (estado ? '&estado=' + encodeURIComponent(estado) : '');
-    });
-    </script>
     
     <!-- Tabla de Facturas -->
     <div class="card">
@@ -109,12 +101,24 @@
                                             </a>
                                         <?php endif; ?>
                                         <?php if (($factura['fac_estado'] ?? '') !== 'ANULADA' && ($factura['fac_estado'] ?? '') !== 'PAGADA'): ?>
-                                            <a href="<?= url('facturacion', 'factura', 'anular', ['id' => $factura['fac_id']]) ?>"
-                                               class="btn btn-outline-danger"
-                                               title="Anular"
-                                               onclick="return confirm('¿Está seguro de anular esta factura?')">
+                                            <button type="button"
+                                                    class="btn btn-outline-danger btn-anular"
+                                                    title="Anular"
+                                                    data-id="<?= (int)$factura['fac_id'] ?>"
+                                                    data-numero="<?= htmlspecialchars($factura['fac_numero'] ?? '') ?>"
+                                                    data-url="<?= htmlspecialchars(url('facturacion', 'factura', 'anular', ['id' => $factura['fac_id']])) ?>">
                                                 <i class="fas fa-times"></i>
-                                            </a>
+                                            </button>
+                                        <?php endif; ?>
+                                        <?php if (($factura['fac_estado'] ?? '') === 'ANULADA'): ?>
+                                            <button type="button"
+                                                    class="btn btn-outline-success btn-reactivar"
+                                                    title="Reactivar factura"
+                                                    data-id="<?= (int)$factura['fac_id'] ?>"
+                                                    data-numero="<?= htmlspecialchars($factura['fac_numero'] ?? '') ?>"
+                                                    data-url="<?= htmlspecialchars(url('facturacion', 'factura', 'reactivar', ['id' => $factura['fac_id']])) ?>">
+                                                <i class="fas fa-redo"></i>
+                                            </button>
                                         <?php endif; ?>
                                         <a href="<?= url('facturacion', 'factura', 'pdf', ['id' => $factura['fac_id']]) ?>"
                                            class="btn btn-outline-secondary" title="PDF">
@@ -176,3 +180,116 @@
         </div>
     </div>
 </div>
+
+<?php ob_start(); ?>
+<script nonce="<?= cspNonce() ?>">
+(function ($) {
+    'use strict';
+
+    var csrfToken = <?= json_encode($csrf_token ?? '') ?>;
+
+    var Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3500,
+        timerProgressBar: true,
+    });
+
+    // Filtro
+    $('#btnFiltrar').on('click', function () {
+        var estado = $('#filtroEstado').val();
+        var base   = <?= json_encode(url('facturacion', 'factura', 'index')) ?>;
+        window.location.href = base + (estado ? '&estado=' + encodeURIComponent(estado) : '');
+    });
+
+    // ── ANULAR ──────────────────────────────────────────────────────────────
+    $(document).on('click', '.btn-anular', function () {
+        var facNum  = $(this).data('numero');
+        var urlPost = $(this).data('url');
+
+        Swal.fire({
+            title: 'Anular factura',
+            html: '<p>¿Está seguro de anular la factura</p>' +
+                  '<p><strong>' + $('<div>').text(facNum).html() + '</strong>?</p>' +
+                  '<p class="text-muted small mb-2">El estado cambiará a ' +
+                  '<span class="badge badge-danger">ANULADA</span></p>' +
+                  '<input type="text" id="swal-motivo" class="swal2-input" ' +
+                  'placeholder="Motivo de anulación (opcional)" maxlength="200">',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: '<i class="fas fa-times mr-1"></i> Sí, anular',
+            cancelButtonText: 'Cancelar',
+            focusCancel: true,
+        }).then(function (result) {
+            if (!result.isConfirmed) return;
+
+            var motivo = $('#swal-motivo').val() || '';
+
+            $.ajax({
+                url: urlPost,
+                method: 'POST',
+                data: { csrf_token: csrfToken, motivo: motivo },
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                dataType: 'json',
+                success: function (res) {
+                    if (res.success) {
+                        Toast.fire({ icon: 'success', title: res.message || 'Factura anulada' });
+                        setTimeout(function () { location.reload(); }, 1600);
+                    } else {
+                        Toast.fire({ icon: 'error', title: res.message || 'Error al anular' });
+                    }
+                },
+                error: function () {
+                    Toast.fire({ icon: 'error', title: 'Error de comunicación con el servidor' });
+                }
+            });
+        });
+    });
+
+    // ── REACTIVAR ────────────────────────────────────────────────────────────
+    $(document).on('click', '.btn-reactivar', function () {
+        var facNum  = $(this).data('numero');
+        var urlPost = $(this).data('url');
+
+        Swal.fire({
+            title: 'Reactivar factura',
+            html: '<p>¿Está seguro de reactivar la factura</p>' +
+                  '<p><strong>' + $('<div>').text(facNum).html() + '</strong>?</p>' +
+                  '<p class="text-muted small">El estado volverá a ' +
+                  '<span class="badge badge-secondary">BORRADOR</span></p>',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#28a745',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: '<i class="fas fa-redo mr-1"></i> Sí, reactivar',
+            cancelButtonText: 'Cancelar',
+        }).then(function (result) {
+            if (!result.isConfirmed) return;
+
+            $.ajax({
+                url: urlPost,
+                method: 'POST',
+                data: { csrf_token: csrfToken },
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                dataType: 'json',
+                success: function (res) {
+                    if (res.success) {
+                        Toast.fire({ icon: 'success', title: res.message || 'Factura reactivada' });
+                        setTimeout(function () { location.reload(); }, 1600);
+                    } else {
+                        Toast.fire({ icon: 'error', title: res.message || 'Error al reactivar' });
+                    }
+                },
+                error: function () {
+                    Toast.fire({ icon: 'error', title: 'Error de comunicación con el servidor' });
+                }
+            });
+        });
+    });
+
+}(jQuery));
+</script>
+<?php $scripts = ob_get_clean(); ?>

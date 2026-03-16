@@ -3805,3 +3805,36 @@ Intentando insertar: tenant_id=2, modulo_id=22, activo=N, fecha_inicio=2026-03-0
 OK: modulo_id=22 insertado.
 Intentando insertar: tenant_id=2, modulo_id=31, activo=S, fecha_inicio=2026-03-09
 OK: modulo_id=31 insertado.
+==== 2026-03-13 17:07:36 ====
+modulosAsignados: Array
+(
+    [0] => 1
+    [1] => 31
+)
+
+==== 2026-03-14 12:03:13 ====
+modulosAsignados: Array
+(
+    [0] => 6
+    [1] => 19
+    [2] => 1
+    [3] => 18
+    [4] => 16
+    [5] => 15
+    [6] => 20
+    [7] => 8
+    [8] => 21
+    [9] => 5
+    [10] => 3
+    [11] => 4
+    [12] => 22
+    [13] => 31
+)
+
+==== 2026-03-16 00:15:45 ====
+modulosAsignados: Array
+(
+    [0] => 1
+    [1] => 31
+)
+

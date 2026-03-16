@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<factura id="comprobante" version="2.1.0">
+  <infoTributaria>
+    <ambiente>1</ambiente>
+    <tipoEmision>1</tipoEmision>
+    <razonSocial>CHAMPIONS</razonSocial>
+    <nombreComercial>Champios CF 2013</nombreComercial>
+    <ruc>1104015282001</ruc>
+    <claveAcceso>1503202601110401528200110010010000000117979286819</claveAcceso>
+    <codDoc>01</codDoc>
+    <estab>001</estab>
+    <ptoEmi>001</ptoEmi>
+    <secuencial>000000011</secuencial>
+    <dirMatriz>Rey David</dirMatriz>
+  </infoTributaria>
+  <infoFactura>
+    <fechaEmision>15/03/2026</fechaEmision>
+    <dirEstablecimiento>Av. Principal 123</dirEstablecimiento>
+    <obligadoContabilidad>SI</obligadoContabilidad>
+    <tipoIdentificacionComprador>05</tipoIdentificacionComprador>
+    <razonSocialComprador>Freddy Bolívar Pinzón Olmedo</razonSocialComprador>
+    <identificacionComprador>1103345292</identificacionComprador>
+    <direccionComprador>Loja, Rey david y los Olivos -336</direccionComprador>
+    <totalSinImpuestos>70.90</totalSinImpuestos>
+    <totalDescuento>0.00</totalDescuento>
+    <totalConImpuestos>
+      <totalImpuesto>
+        <codigo>2</codigo>
+        <codigoPorcentaje>4</codigoPorcentaje>
+        <baseImponible>70.90</baseImponible>
+        <tarifa>15.00</tarifa>
+        <valor>10.64</valor>
+      </totalImpuesto>
+    </totalConImpuestos>
+    <propina>0.00</propina>
+    <importeTotal>81.54</importeTotal>
+    <moneda>DOLAR</moneda>
+    <pagos>
+      <pago>
+        <formaPago>20</formaPago>
+        <total>81.54</total>
+      </pago>
+    </pagos>
+  </infoFactura>
+  <detalles>
+    <detalle>
+      <codigoPrincipal>SER01</codigoPrincipal>
+      <descripcion>PENSION MES DE MARZO | MAR-26</descripcion>
+      <cantidad>1.00</cantidad>
+      <precioUnitario>30.00</precioUnitario>
+      <descuento>5.00</descuento>
+      <precioTotalSinImpuesto>25.00</precioTotalSinImpuesto>
+      <impuestos>
+        <impuesto>
+          <codigo>2</codigo>
+          <codigoPorcentaje>4</codigoPorcentaje>
+          <tarifa>15.00</tarifa>
+          <baseImponible>25.00</baseImponible>
+          <valor>3.75</valor>
+        </impuesto>
+      </impuestos>
+    </detalle>
+    <detalle>
+      <codigoPrincipal>SER02</codigoPrincipal>
+      <descripcion>uNIFORMES 2026 | MAR-26</descripcion>
+      <cantidad>1.00</cantidad>
+      <precioUnitario>45.90</precioUnitario>
+      <descuento>0.00</descuento>
+      <precioTotalSinImpuesto>45.90</precioTotalSinImpuesto>
+      <impuestos>
+        <impuesto>
+          <codigo>2</codigo>
+          <codigoPorcentaje>4</codigoPorcentaje>
+          <tarifa>15.00</tarifa>
+          <baseImponible>45.90</baseImponible>
+          <valor>6.89</valor>
+        </impuesto>
+      </impuestos>
+    </detalle>
+  </detalles>
+  <infoAdicional>
+    <campoAdicional nombre="Email">fbpinzon@gmail.com</campoAdicional>
+    <campoAdicional nombre="Teléfono">0993120984</campoAdicional>
+  </infoAdicional>
+</factura>

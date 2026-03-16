@@ -101,17 +101,36 @@ class WebServiceSRIService {
      */
     private function ejecutarSoapRequest($url, $soapRequest) {
         $ch = curl_init();
-        
+
+        // Intentar encontrar un CA bundle válido en el sistema
+        $caBundle   = null;
+        $candidates = [
+            // PHP php.ini curl.cainfo si está configurado
+            ini_get('curl.cainfo'),
+            // CA bundle del composer (phpMyAdmin u otras apps)
+            'C:/wamp64/apps/phpmyadmin5.2.3/vendor/composer/ca-bundle/res/cacert.pem',
+            // Rutas estándar Linux/Mac por si se despliega fuera de WAMP
+            '/etc/ssl/certs/ca-certificates.crt',
+            '/etc/pki/tls/certs/ca-bundle.crt',
+        ];
+        foreach ($candidates as $candidate) {
+            if (!empty($candidate) && file_exists($candidate)) {
+                $caBundle = $candidate;
+                break;
+            }
+        }
+
         curl_setopt_array($ch, [
-            CURLOPT_URL => $url,
-            CURLOPT_POST => true,
-            CURLOPT_POSTFIELDS => $soapRequest,
+            CURLOPT_URL            => $url,
+            CURLOPT_POST           => true,
+            CURLOPT_POSTFIELDS     => $soapRequest,
             CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_TIMEOUT => 60,
+            CURLOPT_TIMEOUT        => 60,
             CURLOPT_CONNECTTIMEOUT => 30,
-            CURLOPT_SSL_VERIFYPEER => true,
-            CURLOPT_SSL_VERIFYHOST => 2,
-            CURLOPT_HTTPHEADER => [
+            CURLOPT_SSL_VERIFYPEER => $caBundle !== null,
+            CURLOPT_SSL_VERIFYHOST => $caBundle !== null ? 2 : 0,
+            CURLOPT_CAINFO         => $caBundle ?? '',
+            CURLOPT_HTTPHEADER     => [
                 'Content-Type: text/xml; charset=utf-8',
                 'SOAPAction: ""',
                 'Content-Length: ' . strlen($soapRequest),
@@ -249,53 +268,88 @@ class WebServiceSRIService {
      * @param int $espera Segundos entre intentos
      * @return array Resultado del proceso
      */
-    public function procesarComprobante($xmlFirmado, $claveAcceso, $intentos = 3, $espera = 5) {
+    public function procesarComprobante($xmlFirmado, $claveAcceso, $intentos = 5, $espera = 5) {
         // 1. Enviar comprobante
         $recepcion = $this->enviarComprobante($xmlFirmado);
-        
+
         $this->registrarLog('recepcion', $claveAcceso, $recepcion);
-        
+
         if (!$recepcion['exito']) {
-            return [
-                'exito' => false,
-                'etapa' => 'recepcion',
-                'resultado' => $recepcion,
-            ];
+            // Si el SRI rechaza porque la clave ya está en procesamiento,
+            // no abortar: saltar directamente al polling de autorización
+            $enProcesamiento = false;
+            foreach ($recepcion['comprobantes'] ?? [] as $comp) {
+                foreach ($comp['mensajes'] ?? [] as $msg) {
+                    if (stripos($msg['mensaje'] ?? '', 'PROCESAMIENTO') !== false) {
+                        $enProcesamiento = true;
+                        break 2;
+                    }
+                }
+            }
+
+            if (!$enProcesamiento) {
+                return [
+                    'exito'     => false,
+                    'etapa'     => 'recepcion',
+                    'resultado' => $recepcion,
+                ];
+            }
+            // Continuar al polling de autorización
         }
-        
+
         // 2. Consultar autorización con reintentos
+        $ultimaAutorizacion = null;
+        $ultimoEstado       = null;
+
         for ($i = 0; $i < $intentos; $i++) {
             sleep($espera);
-            
+
             $autorizacion = $this->consultarAutorizacion($claveAcceso);
-            
             $this->registrarLog('autorizacion', $claveAcceso, $autorizacion);
-            
+
             if ($autorizacion['exito']) {
                 return [
-                    'exito' => true,
-                    'etapa' => 'autorizado',
+                    'exito'     => true,
+                    'etapa'     => 'autorizado',
                     'resultado' => $autorizacion,
                 ];
             }
-            
-            // Si hay error definitivo, no reintentar
+
+            $ultimaAutorizacion = $autorizacion;
             if (!empty($autorizacion['autorizaciones'])) {
-                $estado = $autorizacion['autorizaciones'][0]['estado'] ?? '';
-                if ($estado === 'NO AUTORIZADO') {
+                $ultimoEstado = $autorizacion['autorizaciones'][0]['estado'] ?? '';
+                // Error definitivo — no reintentar
+                if ($ultimoEstado === 'NO AUTORIZADO') {
                     return [
-                        'exito' => false,
-                        'etapa' => 'no_autorizado',
+                        'exito'     => false,
+                        'etapa'     => 'no_autorizado',
                         'resultado' => $autorizacion,
                     ];
                 }
             }
+
+            // Si $ultimoEstado ya indica procesamiento, marcar para detectarlo tras el loop
+            if ($ultimoEstado === null && !empty($autorizacion['mensaje'])
+                && stripos($autorizacion['mensaje'], 'PROCESAMIENTO') !== false) {
+                $ultimoEstado = 'EN PROCESAMIENTO';
+            }
         }
-        
+
+        // Timeout: si el último estado es "EN PROCESAMIENTO", el SRI recibió el doc
+        // pero aún no terminó de procesar → guardar como ENVIADA, no como ERROR
+        if ($ultimoEstado !== null && stripos($ultimoEstado, 'PROCESAMIENTO') !== false) {
+            return [
+                'exito'     => false,
+                'etapa'     => 'en_procesamiento',
+                'mensaje'   => 'La factura fue recibida por el SRI y está en procesamiento. Consulte el estado en unos minutos.',
+                'resultado' => $ultimaAutorizacion,
+            ];
+        }
+
         return [
-            'exito' => false,
-            'etapa' => 'timeout',
-            'mensaje' => 'No se pudo obtener autorización después de ' . $intentos . ' intentos',
+            'exito'   => false,
+            'etapa'   => 'timeout',
+            'mensaje' => 'No se pudo obtener autorización del SRI después de ' . $intentos . ' intentos.',
         ];
     }
     
@@ -325,39 +379,37 @@ class WebServiceSRIService {
             'recepcion' => false,
             'autorizacion' => false,
         ];
-        
-        // Verificar servicio de recepción
-        try {
-            $ch = curl_init($this->urlRecepcion);
-            curl_setopt_array($ch, [
-                CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_TIMEOUT => 10,
-                CURLOPT_NOBODY => true,
-            ]);
-            curl_exec($ch);
-            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            curl_close($ch);
-            $resultado['recepcion'] = $httpCode > 0;
-        } catch (\Exception $e) {
-            $resultado['recepcion'] = false;
+
+        foreach (['recepcion' => $this->urlRecepcion, 'autorizacion' => $this->urlAutorizacion] as $key => $url) {
+            try {
+                $ch = curl_init($url);
+                curl_setopt_array($ch, [
+                    CURLOPT_RETURNTRANSFER => true,
+                    CURLOPT_TIMEOUT        => 15,
+                    CURLOPT_CONNECTTIMEOUT => 10,
+                    // GET en lugar de HEAD: los WSDL del SRI no responden a HEAD
+                    CURLOPT_HTTPGET        => true,
+                    // Solo verificar que el host responde; no validar SSL en test de conectividad
+                    CURLOPT_SSL_VERIFYPEER => false,
+                    CURLOPT_SSL_VERIFYHOST => 0,
+                ]);
+                $body    = curl_exec($ch);
+                $code    = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                $curlErr = curl_error($ch);
+                curl_close($ch);
+
+                if ($curlErr) {
+                    error_log("[WebServiceSRI] conectividad $key error: $curlErr");
+                }
+                // SRI devuelve 200 con el WSDL o 500 si falta el header SOAPAction
+                // Cualquier respuesta HTTP (incluso 4xx/5xx) indica que el host está alcanzable
+                $resultado[$key] = $code > 0;
+            } catch (\Exception $e) {
+                error_log("[WebServiceSRI] conectividad $key excepción: " . $e->getMessage());
+                $resultado[$key] = false;
+            }
         }
-        
-        // Verificar servicio de autorización
-        try {
-            $ch = curl_init($this->urlAutorizacion);
-            curl_setopt_array($ch, [
-                CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_TIMEOUT => 10,
-                CURLOPT_NOBODY => true,
-            ]);
-            curl_exec($ch);
-            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            curl_close($ch);
-            $resultado['autorizacion'] = $httpCode > 0;
-        } catch (\Exception $e) {
-            $resultado['autorizacion'] = false;
-        }
-        
+
         return $resultado;
     }
 }

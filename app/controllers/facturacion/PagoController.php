@@ -63,15 +63,15 @@ class PagoController extends \App\Controllers\ModuleController {
             
             $stmt = $this->db->prepare($countQuery);
             $stmt->execute($countParams);
-            $totalRegistros = $stmt->fetch()['total'];
-            
+            $totalRegistros = (int)($stmt->fetchColumn() ?: 0);
+
             $query .= " ORDER BY p.pag_fecha DESC LIMIT ? OFFSET ?";
             $params[] = $perPage;
             $params[] = $offset;
-            
+
             $stmt = $this->db->prepare($query);
             $stmt->execute($params);
-            $pagos = $stmt->fetchAll();
+            $pagos = $stmt->fetchAll(\PDO::FETCH_ASSOC);
             
             $this->viewData['pagos'] = $pagos;
             $this->viewData['totalRegistros'] = $totalRegistros;
@@ -282,14 +282,14 @@ class PagoController extends \App\Controllers\ModuleController {
             ]);
             
             \Security::logSecurityEvent('PAGO_CREATED', "Pago ID: {$pago_id}, Factura: {$factura_id}");
-            
-            $this->success([
-                'redirect' => url('facturacion', 'factura', 'ver', ['id' => $factura_id])
-            ], 'Pago registrado exitosamente');
-            
+
+            setFlashMessage('success', 'Pago registrado exitosamente');
+            redirect('facturacion', 'factura', 'ver', ['id' => $factura_id]);
+
         } catch (\Exception $e) {
             $this->logError("Error al guardar pago: " . $e->getMessage());
-            $this->error('Error al guardar el pago');
+            setFlashMessage('error', 'Error al guardar el pago: ' . $e->getMessage());
+            redirect('facturacion', 'pago', 'crear', ['factura_id' => $factura_id ?? 0]);
         }
     }
     

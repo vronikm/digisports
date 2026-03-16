@@ -67,8 +67,14 @@ $sedeActiva  = $sede_activa ?? null;
             <div class="col-lg-4 col-md-6 mb-3">
                 <div class="card h-100 <?= $sedeActiva == $s['sed_sede_id'] ? 'border-primary' : '' ?>" style="<?= $sedeActiva == $s['sed_sede_id'] ? 'border-width:2px;' : '' ?>">
                     <div class="card-header py-2 d-flex align-items-center" style="background:<?= $moduloColor ?>15;">
+                        <?php if (!empty($s['logo_arc_id'])): ?>
+                        <img src="<?= \Config::baseUrl('archivo.php?id=' . (int)$s['logo_arc_id']) ?>"
+                             alt="Logo" class="rounded mr-2"
+                             style="width:36px;height:36px;object-fit:contain;background:#fff;border:1px solid #dee2e6;padding:2px;">
+                        <?php else: ?>
+                        <i class="fas fa-building mr-2" style="color:<?= $moduloColor ?>"></i>
+                        <?php endif; ?>
                         <h5 class="mb-0 flex-grow-1">
-                            <i class="fas fa-building mr-1" style="color:<?= $moduloColor ?>"></i>
                             <?= htmlspecialchars($s['sed_nombre']) ?>
                             <?php if (($s['sed_es_principal'] ?? '') === 'S'): ?>
                             <span class="badge badge-warning ml-1" title="Sede Principal"><i class="fas fa-star"></i></span>
@@ -104,6 +110,23 @@ $sedeActiva  = $sede_activa ?? null;
                             <div class="col-3">
                                 <div class="font-weight-bold text-warning"><?= (int)($s['total_grupos'] ?? 0) ?></div>
                                 <small class="text-muted">Grupos</small>
+                            </div>
+                        </div>
+
+                        <hr class="my-2">
+                        <!-- Tarifas configuradas -->
+                        <div class="row text-center mb-2">
+                            <div class="col-4">
+                                <div class="font-weight-bold text-primary">$<?= number_format((float)($s['sed_monto_mensualidad'] ?? 0), 2) ?></div>
+                                <small class="text-muted">Mensualidad</small>
+                            </div>
+                            <div class="col-4">
+                                <div class="font-weight-bold text-secondary">$<?= number_format((float)($s['sed_monto_matricula'] ?? 0), 2) ?></div>
+                                <small class="text-muted">Matrícula</small>
+                            </div>
+                            <div class="col-4">
+                                <div class="font-weight-bold text-dark">#<?= (int)($s['sed_comprobante_inicio'] ?? 1) ?></div>
+                                <small class="text-muted">Nro. Inicio</small>
                             </div>
                         </div>
 
@@ -148,9 +171,9 @@ $sedeActiva  = $sede_activa ?? null;
 
 <!-- Modal Sede -->
 <div class="modal fade" id="modalSede" tabindex="-1">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <form id="formSede" method="POST"
+            <form id="formSede" enctype="multipart/form-data"
                 data-url-crear="<?= url('futbol', 'sede', 'crear') ?>"
                 data-url-editar="<?= url('futbol', 'sede', 'editar') ?>">
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token ?? '') ?>">
@@ -160,6 +183,8 @@ $sedeActiva  = $sede_activa ?? null;
                     <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
                 </div>
                 <div class="modal-body">
+                    <!-- Datos generales -->
+                    <h6 class="text-muted mb-2"><i class="fas fa-info-circle mr-1"></i>Datos Generales</h6>
                     <div class="row">
                         <div class="col-md-8">
                             <div class="form-group"><label>Nombre <span class="text-danger">*</span></label><input type="text" name="nombre" id="sed_nombre" class="form-control" required></div>
@@ -173,15 +198,72 @@ $sedeActiva  = $sede_activa ?? null;
                         <div class="col-md-6"><div class="form-group"><label>Ciudad</label><input type="text" name="ciudad" id="sed_ciudad" class="form-control"></div></div>
                         <div class="col-md-6"><div class="form-group"><label>Teléfono</label><input type="text" name="telefono" id="sed_telefono" class="form-control"></div></div>
                     </div>
-                    <div class="form-group"><label>Email</label><input type="email" name="email" id="sed_email" class="form-control"></div>
-                    <div class="custom-control custom-checkbox">
-                        <input type="checkbox" class="custom-control-input" id="sed_principal" name="es_principal" value="1">
-                        <label class="custom-control-label" for="sed_principal">Sede Principal</label>
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="form-group"><label>Email</label><input type="email" name="email" id="sed_email" class="form-control"></div>
+                        </div>
+                        <div class="col-md-4 d-flex align-items-center pt-2">
+                            <div class="custom-control custom-checkbox mt-3">
+                                <input type="checkbox" class="custom-control-input" id="sed_principal" name="es_principal" value="1">
+                                <label class="custom-control-label" for="sed_principal">Sede Principal</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+                    <!-- Configuración financiera -->
+                    <h6 class="text-muted mb-2"><i class="fas fa-dollar-sign mr-1"></i>Configuración Financiera</h6>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Valor Mensualidad</label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend"><span class="input-group-text">$</span></div>
+                                    <input type="number" name="monto_mensualidad" id="sed_monto_mensualidad" class="form-control" min="0" step="0.01" value="0.00">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Valor Matrícula</label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend"><span class="input-group-text">$</span></div>
+                                    <input type="number" name="monto_matricula" id="sed_monto_matricula" class="form-control" min="0" step="0.01" value="0.00">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Nro. Comprobante Inicial <i class="fas fa-info-circle text-muted" title="Número desde el que inicia la secuencia de recibos en esta sede"></i></label>
+                                <input type="number" name="comprobante_inicio" id="sed_comprobante_inicio" class="form-control" min="1" step="1" value="1">
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+                    <!-- Logo -->
+                    <h6 class="text-muted mb-2"><i class="fas fa-image mr-1"></i>Logo de la Sede</h6>
+                    <div class="row align-items-center">
+                        <div class="col-md-3 text-center">
+                            <img id="logoPreview" src="" alt="Preview"
+                                 class="rounded border"
+                                 style="width:80px;height:80px;object-fit:contain;display:none;background:#f8f9fa;padding:4px;">
+                            <div id="logoPlaceholder" class="rounded border d-flex align-items-center justify-content-center"
+                                 style="width:80px;height:80px;background:#f8f9fa;margin:0 auto;">
+                                <i class="fas fa-image fa-2x text-muted"></i>
+                            </div>
+                        </div>
+                        <div class="col-md-9">
+                            <div class="form-group mb-0">
+                                <label>Subir logo <small class="text-muted">(JPG, PNG, SVG — máx. 2 MB)</small></label>
+                                <input type="file" name="logo_sede" id="sed_logo" class="form-control-file" accept="image/jpeg,image/png,image/svg+xml">
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn" style="background:<?= $moduloColor ?>;color:white;"><i class="fas fa-save mr-1"></i>Guardar</button>
+                    <button type="submit" class="btn" id="btnGuardarSede" style="background:<?= $moduloColor ?>;color:white;"><i class="fas fa-save mr-1"></i>Guardar</button>
                 </div>
             </form>
         </div>
@@ -197,10 +279,27 @@ $(function() {
     var urlEliminar    = '<?= url('futbol', 'sede', 'eliminar') ?>';
     var urlResumen     = '<?= url('futbol', 'sede', 'resumenFinanciero') ?>';
 
+    // ── Preview logo ──
+    $('#sed_logo').on('change', function() {
+        var file = this.files[0];
+        if (!file) return;
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            $('#logoPreview').attr('src', e.target.result).show();
+            $('#logoPlaceholder').hide();
+        };
+        reader.readAsDataURL(file);
+    });
+
     // ── Abrir modal nuevo ──
     function abrirModalNueva() {
         $('#formSede')[0].reset();
         $('#sed_id').val('');
+        $('#sed_monto_mensualidad').val('0.00');
+        $('#sed_monto_matricula').val('0.00');
+        $('#sed_comprobante_inicio').val('1');
+        $('#logoPreview').hide().attr('src', '');
+        $('#logoPlaceholder').show();
         $('#modalTitulo').html('<i class="fas fa-building mr-2"></i>Nueva Sede');
         $('#formSede').data('mode', 'crear');
         $('#modalSede').modal('show');
@@ -220,28 +319,43 @@ $(function() {
         $('#sed_telefono').val(s.sed_telefono || '');
         $('#sed_email').val(s.sed_email || '');
         $('#sed_principal').prop('checked', s.sed_es_principal === 'S');
+        $('#sed_monto_mensualidad').val(parseFloat(s.sed_monto_mensualidad || 0).toFixed(2));
+        $('#sed_monto_matricula').val(parseFloat(s.sed_monto_matricula || 0).toFixed(2));
+        $('#sed_comprobante_inicio').val(parseInt(s.sed_comprobante_inicio || 1));
+        // Logo preview
+        if (s.logo_arc_id) {
+            var baseUrl = '<?= \Config::baseUrl('archivo.php?id=') ?>';
+            $('#logoPreview').attr('src', baseUrl + s.logo_arc_id).show();
+            $('#logoPlaceholder').hide();
+        } else {
+            $('#logoPreview').hide().attr('src', '');
+            $('#logoPlaceholder').show();
+        }
         $('#modalTitulo').html('<i class="fas fa-edit mr-2"></i>Editar Sede');
         $('#formSede').data('mode', 'editar');
         $('#modalSede').modal('show');
     });
 
-    // ── Submit crear/editar (AJAX) ──
+    // ── Submit crear/editar (fetch + FormData para soporte de archivos) ──
     $('#formSede').on('submit', function(e) {
         e.preventDefault();
         var mode   = $(this).data('mode') || 'crear';
         var action = $(this).attr(mode === 'editar' ? 'data-url-editar' : 'data-url-crear');
-        var $btn   = $(this).find('[type=submit]').prop('disabled', true);
-        $.post(action, $(this).serialize(), function(res) {
-            if (res.success) {
-                $('#modalSede').modal('hide');
-                Toast.fire({ icon: 'success', title: res.message });
-                setTimeout(function() { location.reload(); }, 1200);
-            } else {
-                Toast.fire({ icon: 'error', title: res.message });
-            }
-        }, 'json').fail(function() {
-            Toast.fire({ icon: 'error', title: 'Error de comunicación' });
-        }).always(function() { $btn.prop('disabled', false); });
+        var $btn   = $('#btnGuardarSede').prop('disabled', true);
+        var fd = new FormData(this);
+        fetch(action, { method: 'POST', body: fd })
+            .then(function(r) { return r.json(); })
+            .then(function(res) {
+                if (res.success) {
+                    $('#modalSede').modal('hide');
+                    Toast.fire({ icon: 'success', title: res.message });
+                    setTimeout(function() { location.reload(); }, 1200);
+                } else {
+                    Toast.fire({ icon: 'error', title: res.message });
+                }
+            })
+            .catch(function() { Toast.fire({ icon: 'error', title: 'Error de comunicación' }); })
+            .finally(function() { $btn.prop('disabled', false); });
     });
 
     // ── Seleccionar sede activa ──

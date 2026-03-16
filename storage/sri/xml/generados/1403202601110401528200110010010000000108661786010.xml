@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<factura id="comprobante" version="2.1.0">
+  <infoTributaria>
+    <ambiente>1</ambiente>
+    <tipoEmision>1</tipoEmision>
+    <razonSocial>CHAMPIONS</razonSocial>
+    <nombreComercial>Champios CF 2013</nombreComercial>
+    <ruc>1104015282001</ruc>
+    <claveAcceso>1403202601110401528200110010010000000108661786010</claveAcceso>
+    <codDoc>01</codDoc>
+    <estab>001</estab>
+    <ptoEmi>001</ptoEmi>
+    <secuencial>000000010</secuencial>
+    <dirMatriz>Rey David</dirMatriz>
+  </infoTributaria>
+  <infoFactura>
+    <fechaEmision>14/03/2026</fechaEmision>
+    <dirEstablecimiento>Av. Principal 123</dirEstablecimiento>
+    <obligadoContabilidad>SI</obligadoContabilidad>
+    <tipoIdentificacionComprador>05</tipoIdentificacionComprador>
+    <razonSocialComprador>Freddy Bolívar Pinzón Olmedo</razonSocialComprador>
+    <identificacionComprador>1103345292</identificacionComprador>
+    <direccionComprador>Loja, Rey david y los Olivos -336</direccionComprador>
+    <totalSinImpuestos>145.00</totalSinImpuestos>
+    <totalDescuento>0.00</totalDescuento>
+    <totalConImpuestos>
+      <totalImpuesto>
+        <codigo>2</codigo>
+        <codigoPorcentaje>4</codigoPorcentaje>
+        <baseImponible>145.00</baseImponible>
+        <tarifa>15.00</tarifa>
+        <valor>21.75</valor>
+      </totalImpuesto>
+    </totalConImpuestos>
+    <propina>0.00</propina>
+    <importeTotal>166.75</importeTotal>
+    <moneda>DOLAR</moneda>
+    <pagos>
+      <pago>
+        <formaPago>01</formaPago>
+        <total>166.75</total>
+      </pago>
+    </pagos>
+  </infoFactura>
+  <detalles>
+    <detalle>
+      <codigoPrincipal>SERV02</codigoPrincipal>
+      <descripcion>Torneo | MAR-26</descripcion>
+      <cantidad>1.00</cantidad>
+      <precioUnitario>145.00</precioUnitario>
+      <descuento>0.00</descuento>
+      <precioTotalSinImpuesto>145.00</precioTotalSinImpuesto>
+      <impuestos>
+        <impuesto>
+          <codigo>2</codigo>
+          <codigoPorcentaje>4</codigoPorcentaje>
+          <tarifa>15.00</tarifa>
+          <baseImponible>145.00</baseImponible>
+          <valor>21.75</valor>
+        </impuesto>
+      </impuestos>
+    </detalle>
+  </detalles>
+  <infoAdicional>
+    <campoAdicional nombre="Email">fbpinzon@gmail.com</campoAdicional>
+    <campoAdicional nombre="Teléfono">ENC::Wi4TBafq7H4H83WK3AYmhk2iJMoPnx86TbVZij7QFTM=</campoAdicional>
+  </infoAdicional>
+</factura>

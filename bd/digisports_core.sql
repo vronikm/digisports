@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1:3306
--- Tiempo de generación: 11-03-2026 a las 03:47:50
+-- Tiempo de generación: 16-03-2026 a las 13:39:01
 -- Versión del servidor: 8.4.7
 -- Versión de PHP: 8.3.28
 
@@ -146,7 +146,7 @@ CREATE TABLE IF NOT EXISTS `core_archivos` (
   KEY `idx_arc_entidad` (`arc_entidad`,`arc_entidad_id`),
   KEY `idx_arc_tenant_entidad` (`arc_tenant_id`,`arc_entidad`,`arc_entidad_id`),
   KEY `idx_arc_estado` (`arc_estado`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Repositorio central de archivos multimedia del sistema';
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Repositorio central de archivos multimedia del sistema';
 
 --
 -- Volcado de datos para la tabla `core_archivos`
@@ -155,7 +155,240 @@ CREATE TABLE IF NOT EXISTS `core_archivos` (
 INSERT INTO `core_archivos` (`arc_id`, `arc_tenant_id`, `arc_entidad`, `arc_entidad_id`, `arc_categoria`, `arc_nombre_original`, `arc_nombre_almacenado`, `arc_ruta_relativa`, `arc_mime_type`, `arc_extension`, `arc_tamanio_bytes`, `arc_ancho_px`, `arc_alto_px`, `arc_storage_driver`, `arc_storage_key`, `arc_es_principal`, `arc_estado`, `arc_subido_por`, `arc_fecha_subida`, `arc_fecha_eliminacion`) VALUES
 (1, 1, 'alumnos', 1, 'fotos', '00.jpg', '1_ea4e40c2-df5e-45d6-83da-4bb1c7e2aef4.jpg', 'storage/tenants/1/alumnos/fotos/1_ea4e40c2-df5e-45d6-83da-4bb1c7e2aef4.jpg', 'image/jpeg', 'jpg', 27684, 240, 300, 'local', NULL, 1, 'activo', 1, '2026-03-08 00:48:30', NULL),
 (2, 1, 'alumnos', 2, 'fotos', '08.jpg', '2_dab6e6f3-c5ca-4ca3-b1b7-a52fabe07ded.jpg', 'storage/tenants/1/alumnos/fotos/2_dab6e6f3-c5ca-4ca3-b1b7-a52fabe07ded.jpg', 'image/jpeg', 'jpg', 29128, 240, 300, 'local', NULL, 0, 'activo', 1, '2026-03-08 02:06:20', NULL),
-(3, 1, 'alumnos', 2, 'fotos', '06.jpg', '2_a63c0e34-c9c4-4e3d-9df1-17f46aee722e.jpg', 'storage/tenants/1/alumnos/fotos/2_a63c0e34-c9c4-4e3d-9df1-17f46aee722e.jpg', 'image/jpeg', 'jpg', 24258, 225, 300, 'local', NULL, 1, 'eliminado', 1, '2026-03-08 02:06:51', '2026-03-08 02:07:14');
+(3, 1, 'alumnos', 2, 'fotos', '06.jpg', '2_a63c0e34-c9c4-4e3d-9df1-17f46aee722e.jpg', 'storage/tenants/1/alumnos/fotos/2_a63c0e34-c9c4-4e3d-9df1-17f46aee722e.jpg', 'image/jpeg', 'jpg', 24258, 225, 300, 'local', NULL, 1, 'eliminado', 1, '2026-03-08 02:06:51', '2026-03-08 02:07:14'),
+(4, 1, 'facturacion_configuracion', 1, 'logos', 'logo.png', '1_28670c32-bb80-4806-ad80-d2f9cde3680b.png', 'storage/tenants/1/facturacion_configuracion/logos/1_28670c32-bb80-4806-ad80-d2f9cde3680b.png', 'image/png', 'png', 50720, 300, 164, 'local', NULL, 0, 'activo', 1, '2026-03-13 22:02:40', NULL),
+(5, 1, 'facturacion_configuracion', 1, 'logos', 'logo.png', '1_bdef1d23-3ec0-41f5-b173-a5d92358add5.png', 'storage/tenants/1/facturacion_configuracion/logos/1_bdef1d23-3ec0-41f5-b173-a5d92358add5.png', 'image/png', 'png', 50720, 300, 164, 'local', NULL, 0, 'activo', 1, '2026-03-13 22:03:04', NULL),
+(6, 1, 'facturacion_configuracion', 1, 'logos', 'logo.png', '1_1cdd1091-4b96-46b2-98fe-82ba304ea48f.png', 'storage/tenants/1/facturacion_configuracion/logos/1_1cdd1091-4b96-46b2-98fe-82ba304ea48f.png', 'image/png', 'png', 50720, 300, 164, 'local', NULL, 0, 'activo', 1, '2026-03-13 22:03:14', NULL),
+(7, 1, 'facturacion_configuracion', 1, 'logos', 'logo.png', '1_7eb744f8-5856-4257-8a98-93a928e4c420.png', 'storage/tenants/1/facturacion_configuracion/logos/1_7eb744f8-5856-4257-8a98-93a928e4c420.png', 'image/png', 'png', 50720, 300, 164, 'local', NULL, 0, 'activo', 1, '2026-03-14 16:37:18', NULL),
+(8, 1, 'facturacion_configuracion', 1, 'logos', 'logo.png', '1_6697d6ff-e63f-4657-9c6b-8e5aacb31f86.png', 'storage/tenants/1/facturacion_configuracion/logos/1_6697d6ff-e63f-4657-9c6b-8e5aacb31f86.png', 'image/png', 'png', 50720, 300, 164, 'local', NULL, 0, 'activo', 1, '2026-03-16 03:29:56', NULL),
+(9, 1, 'facturacion_configuracion', 1, 'logos', 'logo.png', '1_937e0fdc-0409-4491-ac67-e4cce00a9ec4.png', 'storage/tenants/1/facturacion_configuracion/logos/1_937e0fdc-0409-4491-ac67-e4cce00a9ec4.png', 'image/png', 'png', 50720, 300, 164, 'local', NULL, 0, 'activo', 1, '2026-03-16 04:25:43', NULL),
+(10, 1, 'facturacion_configuracion', 1, 'logos', 'logo.png', '1_cb0b9449-abef-4524-b846-bf9ea274e2e9.png', 'storage/tenants/1/facturacion_configuracion/logos/1_cb0b9449-abef-4524-b846-bf9ea274e2e9.png', 'image/png', 'png', 50720, 300, 164, 'local', NULL, 1, 'activo', 1, '2026-03-16 04:30:17', NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `facturacion_configuracion`
+--
+
+DROP TABLE IF EXISTS `facturacion_configuracion`;
+CREATE TABLE IF NOT EXISTS `facturacion_configuracion` (
+  `cfg_id` int NOT NULL AUTO_INCREMENT,
+  `cfg_tenant_id` int NOT NULL,
+  `cfg_ruc` varchar(13) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'RUC de 13 d├¡gitos del emisor',
+  `cfg_razon_social` varchar(300) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Raz├│n social seg├║n SRI (may├║sculas)',
+  `cfg_nombre_comercial` varchar(300) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT 'Nombre comercial impreso en el RIDE',
+  `cfg_direccion_matriz` varchar(300) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT 'Direcci├│n de la matriz',
+  `cfg_direccion_establecimiento` varchar(300) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT 'Direcci├│n del establecimiento emisor',
+  `cfg_codigo_establecimiento` char(3) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '001',
+  `cfg_punto_emision` char(3) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '001',
+  `cfg_obligado_contabilidad` enum('SI','NO') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'SI',
+  `cfg_contribuyente_especial` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT 'N├║mero de resoluci├│n, vac├¡o si no aplica',
+  `cfg_agente_retencion` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT 'N├║mero de resoluci├│n agente retenci├│n',
+  `cfg_regimen_microempresas` enum('SI','NO') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'NO',
+  `cfg_regimen_rimpe` enum('SI','NO') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'NO',
+  `cfg_ambiente` tinyint(1) NOT NULL DEFAULT '1' COMMENT '1=Pruebas, 2=Producci├│n',
+  `cfg_secuencial_inicio` int UNSIGNED NOT NULL DEFAULT '1' COMMENT 'N├║mero desde el que inicia la secuencia',
+  `cfg_logo_arc_id` int DEFAULT NULL COMMENT 'FK a core_archivos',
+  `cfg_certificado_ruta` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Ruta al archivo .p12 en el filesystem',
+  `cfg_certificado_clave` text COLLATE utf8mb4_unicode_ci COMMENT 'Contrase├▒a del .p12 cifrada con AES-256-GCM',
+  `cfg_certificado_vigencia` date DEFAULT NULL COMMENT 'Fecha de vencimiento del certificado',
+  `cfg_email_notificaciones` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Email para notificaciones de FE',
+  `cfg_estado` char(1) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'A' COMMENT 'A=Activo, I=Inactivo',
+  `cfg_created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `cfg_updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `cfg_created_by` int DEFAULT NULL,
+  `cfg_updated_by` int DEFAULT NULL,
+  PRIMARY KEY (`cfg_id`),
+  UNIQUE KEY `uk_tenant` (`cfg_tenant_id`),
+  KEY `idx_tenant_estado` (`cfg_tenant_id`,`cfg_estado`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Configuraci├│n de Facturaci├│n Electr├│nica por Tenant';
+
+--
+-- Volcado de datos para la tabla `facturacion_configuracion`
+--
+
+INSERT INTO `facturacion_configuracion` (`cfg_id`, `cfg_tenant_id`, `cfg_ruc`, `cfg_razon_social`, `cfg_nombre_comercial`, `cfg_direccion_matriz`, `cfg_direccion_establecimiento`, `cfg_codigo_establecimiento`, `cfg_punto_emision`, `cfg_obligado_contabilidad`, `cfg_contribuyente_especial`, `cfg_agente_retencion`, `cfg_regimen_microempresas`, `cfg_regimen_rimpe`, `cfg_ambiente`, `cfg_secuencial_inicio`, `cfg_logo_arc_id`, `cfg_certificado_ruta`, `cfg_certificado_clave`, `cfg_certificado_vigencia`, `cfg_email_notificaciones`, `cfg_estado`, `cfg_created_at`, `cfg_updated_at`, `cfg_created_by`, `cfg_updated_by`) VALUES
+(1, 1, '1104015282001', 'CHAMPIONS', 'Champios CF 2013', 'Rey David', 'Av. Principal 123', '001', '001', 'SI', '', '', 'NO', 'NO', 1, 1, 10, 'C:\\wamp64\\www\\digisports/storage/certificados/1/firma.p12', 'W6KOVmirX55JQb9LQb1gQDkyV01SeDVwaFIvNkp6NVZVY01yYnc9PQ==', '2026-08-13', 'fbpinzon@gmail.com', 'A', '2026-03-12 21:08:15', '2026-03-16 04:30:17', 1, 1);
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `facturacion_facturas`
+--
+
+DROP TABLE IF EXISTS `facturacion_facturas`;
+CREATE TABLE IF NOT EXISTS `facturacion_facturas` (
+  `fac_id` int NOT NULL AUTO_INCREMENT,
+  `fac_tenant_id` int NOT NULL,
+  `fac_numero` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `fac_cliente_id` int DEFAULT NULL,
+  `fac_origen_modulo` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'libre',
+  `fac_origen_id` int DEFAULT NULL,
+  `fac_subtotal` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `fac_descuento` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `fac_iva` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `fac_total` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `fac_estado` enum('BORRADOR','EMITIDA','PAGADA','ANULADA') COLLATE utf8mb4_unicode_ci DEFAULT 'BORRADOR',
+  `fac_fecha_emision` datetime DEFAULT NULL,
+  `fac_fecha_vencimiento` date DEFAULT NULL,
+  `fac_fecha_pago` datetime DEFAULT NULL,
+  `fac_forma_pago_id` int DEFAULT NULL,
+  `fac_usuario_id` int NOT NULL,
+  `fac_observaciones` text COLLATE utf8mb4_unicode_ci,
+  `fac_fecha_creacion` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `fac_fecha_actualizacion` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`fac_id`),
+  KEY `idx_fac_tenant` (`fac_tenant_id`),
+  KEY `idx_fac_cliente` (`fac_cliente_id`),
+  KEY `idx_fac_origen` (`fac_origen_modulo`,`fac_origen_id`),
+  KEY `fk_fac_forma_pago` (`fac_forma_pago_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `facturacion_facturas`
+--
+
+INSERT INTO `facturacion_facturas` (`fac_id`, `fac_tenant_id`, `fac_numero`, `fac_cliente_id`, `fac_origen_modulo`, `fac_origen_id`, `fac_subtotal`, `fac_descuento`, `fac_iva`, `fac_total`, `fac_estado`, `fac_fecha_emision`, `fac_fecha_vencimiento`, `fac_fecha_pago`, `fac_forma_pago_id`, `fac_usuario_id`, `fac_observaciones`, `fac_fecha_creacion`, `fac_fecha_actualizacion`) VALUES
+(1, 1, '001-001-000000002', 2, 'libre', NULL, 70.90, 0.00, 10.63, 81.53, 'PAGADA', '2026-03-15 20:57:17', '2026-04-11', '2026-03-15 21:01:09', 7, 1, 'Puebas\nAnulada: ', '2026-03-12 22:37:12', '2026-03-16 02:01:09'),
+(2, 1, '001-001-000000003', 2, 'libre', NULL, 30.00, 0.00, 4.50, 34.50, 'PAGADA', '2026-03-15 20:57:07', '2026-04-13', '2026-03-15 21:02:09', 1, 1, 'Pago de mensualidad mes de marzo\nAnulada: ', '2026-03-14 16:53:26', '2026-03-16 02:02:09'),
+(3, 1, '001-001-000000004', 2, 'libre', NULL, 45.78, 0.00, 6.87, 52.65, 'PAGADA', '2026-03-14 13:27:45', '2026-04-13', '2026-03-15 21:13:57', 4, 1, '', '2026-03-14 18:27:37', '2026-03-16 02:13:57'),
+(4, 1, '001-001-000000005', 2, 'libre', NULL, 145.00, 0.00, 21.75, 166.75, 'PAGADA', '2026-03-15 20:56:53', '2026-04-13', '2026-03-15 21:13:18', 1, 1, '\nAnulada: ', '2026-03-15 01:07:24', '2026-03-16 02:13:18'),
+(5, 1, '001-001-000000006', 2, 'libre', NULL, 7.00, 0.00, 1.05, 8.05, 'PAGADA', '2026-03-15 23:31:30', '2026-04-14', '2026-03-15 23:36:04', 1, 1, '', '2026-03-16 04:31:19', '2026-03-16 04:36:04');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `facturacion_formas_pago`
+--
+
+DROP TABLE IF EXISTS `facturacion_formas_pago`;
+CREATE TABLE IF NOT EXISTS `facturacion_formas_pago` (
+  `fpa_id` int NOT NULL AUTO_INCREMENT,
+  `fpa_tenant_id` int NOT NULL,
+  `fpa_nombre` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `fpa_codigo_sri` varchar(2) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `fpa_estado` enum('ACTIVO','INACTIVO') COLLATE utf8mb4_unicode_ci DEFAULT 'ACTIVO',
+  `fpa_fecha_creacion` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`fpa_id`),
+  KEY `idx_fpa_tenant` (`fpa_tenant_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `facturacion_formas_pago`
+--
+
+INSERT INTO `facturacion_formas_pago` (`fpa_id`, `fpa_tenant_id`, `fpa_nombre`, `fpa_codigo_sri`, `fpa_estado`, `fpa_fecha_creacion`) VALUES
+(1, 1, 'SIN UTILIZACION DEL SISTEMA FINANCIERO', '01', 'ACTIVO', '2026-03-11 04:42:25'),
+(2, 1, 'COMPENSACIÓN DE DEUDAS', '15', 'INACTIVO', '2026-03-11 04:42:25'),
+(3, 1, 'TARJETA DE DÉBITO', '16', 'ACTIVO', '2026-03-11 04:42:25'),
+(4, 1, 'DINERO ELECTRÓNICO', '17', 'ACTIVO', '2026-03-11 04:42:25'),
+(5, 1, 'TARJETA PREPAGO', '18', 'ACTIVO', '2026-03-11 04:42:25'),
+(6, 1, 'TARJETA DE CRÉDITO', '19', 'ACTIVO', '2026-03-11 04:42:25'),
+(7, 1, 'OTROS CON UTILIZACION DEL SISTEMA FINANCIERO', '20', 'ACTIVO', '2026-03-11 04:42:25'),
+(8, 1, 'ENDOSO DE TÍTULOS', '21', 'INACTIVO', '2026-03-11 04:42:25'),
+(9, 2, 'SIN UTILIZACION DEL SISTEMA FINANCIERO', '01', 'ACTIVO', '2026-03-16 03:24:15'),
+(10, 2, 'COMPENSACIÓN DE DEUDAS', '15', 'ACTIVO', '2026-03-16 03:24:15'),
+(11, 2, 'TARJETA DE DÉBITO', '16', 'ACTIVO', '2026-03-16 03:24:15'),
+(12, 2, 'DINERO ELECTRÓNICO', '17', 'ACTIVO', '2026-03-16 03:24:15'),
+(13, 2, 'TARJETA PREPAGO', '18', 'ACTIVO', '2026-03-16 03:24:15'),
+(14, 2, 'TARJETA DE CRÉDITO', '19', 'ACTIVO', '2026-03-16 03:24:15'),
+(15, 2, 'OTROS CON UTILIZACION DEL SISTEMA FINANCIERO', '20', 'ACTIVO', '2026-03-16 03:24:15'),
+(16, 2, 'ENDOSO DE TÍTULOS', '21', 'ACTIVO', '2026-03-16 03:24:15');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `facturacion_lineas`
+--
+
+DROP TABLE IF EXISTS `facturacion_lineas`;
+CREATE TABLE IF NOT EXISTS `facturacion_lineas` (
+  `lin_id` int NOT NULL AUTO_INCREMENT,
+  `lin_factura_id` int NOT NULL,
+  `lin_codigo` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `lin_descripcion` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `lin_cantidad` decimal(10,2) NOT NULL DEFAULT '1.00',
+  `lin_precio_unitario` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `lin_descuento` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `lin_porcentaje_iva` decimal(5,2) NOT NULL DEFAULT '15.00',
+  `lin_total` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `lin_fecha_creacion` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`lin_id`),
+  KEY `idx_lin_factura` (`lin_factura_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `facturacion_lineas`
+--
+
+INSERT INTO `facturacion_lineas` (`lin_id`, `lin_factura_id`, `lin_codigo`, `lin_descripcion`, `lin_cantidad`, `lin_precio_unitario`, `lin_descuento`, `lin_porcentaje_iva`, `lin_total`, `lin_fecha_creacion`) VALUES
+(1, 1, 'SER01', 'PENSION MES DE MARZO | MAR-26', 1.00, 30.00, 5.00, 15.00, 28.75, '2026-03-12 22:37:12'),
+(2, 1, 'SER02', 'uNIFORMES 2026 | MAR-26', 1.00, 45.90, 0.00, 15.00, 52.78, '2026-03-12 22:37:12'),
+(3, 2, 'SERV001', 'Pago de mensualidad | MAR26', 1.00, 30.00, 0.00, 15.00, 34.50, '2026-03-14 16:53:26'),
+(4, 3, 'SERV02', 'Pago de uniformes | MAR-26', 1.00, 50.78, 5.00, 15.00, 52.65, '2026-03-14 18:27:37'),
+(5, 4, 'SERV02', 'Torneo | MAR-26', 1.00, 145.00, 0.00, 15.00, 166.75, '2026-03-15 01:07:24'),
+(6, 5, 'SER01', 'Pago torneo Ecuador cup-kid | MAR-26', 1.00, 7.00, 0.00, 15.00, 8.05, '2026-03-16 04:31:19');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `facturacion_pagos`
+--
+
+DROP TABLE IF EXISTS `facturacion_pagos`;
+CREATE TABLE IF NOT EXISTS `facturacion_pagos` (
+  `pag_id` int NOT NULL AUTO_INCREMENT,
+  `pag_factura_id` int NOT NULL,
+  `pag_usuario_id` int NOT NULL,
+  `pag_monto` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `pag_forma_pago_id` int NOT NULL,
+  `pag_referencia` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `pag_fecha` date NOT NULL,
+  `pag_estado` enum('CONFIRMADO','ANULADO') COLLATE utf8mb4_unicode_ci DEFAULT 'CONFIRMADO',
+  `pag_observaciones` text COLLATE utf8mb4_unicode_ci,
+  `pag_fecha_anulacion` datetime DEFAULT NULL,
+  `pag_fecha_creacion` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`pag_id`),
+  KEY `idx_pag_factura` (`pag_factura_id`),
+  KEY `fk_pag_forma_pago` (`pag_forma_pago_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `facturacion_pagos`
+--
+
+INSERT INTO `facturacion_pagos` (`pag_id`, `pag_factura_id`, `pag_usuario_id`, `pag_monto`, `pag_forma_pago_id`, `pag_referencia`, `pag_fecha`, `pag_estado`, `pag_observaciones`, `pag_fecha_anulacion`, `pag_fecha_creacion`) VALUES
+(1, 1, 1, 81.53, 1, '', '2026-03-15', 'CONFIRMADO', '', NULL, '2026-03-16 02:01:09'),
+(2, 2, 1, 34.50, 1, '', '2026-03-15', 'CONFIRMADO', '', NULL, '2026-03-16 02:02:09'),
+(3, 4, 1, 166.75, 1, '', '2026-03-15', 'CONFIRMADO', '', NULL, '2026-03-16 02:13:18'),
+(4, 3, 1, 52.65, 1, '', '2026-03-15', 'CONFIRMADO', '', NULL, '2026-03-16 02:13:57'),
+(5, 5, 1, 8.05, 1, '', '2026-03-15', 'CONFIRMADO', '', NULL, '2026-03-16 04:36:04');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `facturacion_secuenciales`
+--
+
+DROP TABLE IF EXISTS `facturacion_secuenciales`;
+CREATE TABLE IF NOT EXISTS `facturacion_secuenciales` (
+  `sec_id` int NOT NULL AUTO_INCREMENT,
+  `sec_tenant_id` int NOT NULL,
+  `sec_tipo_comprobante` varchar(2) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `sec_establecimiento` varchar(3) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `sec_punto_emision` varchar(3) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `sec_siguiente` int NOT NULL DEFAULT '1',
+  `sec_fecha_creacion` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`sec_id`),
+  UNIQUE KEY `idx_secuencial` (`sec_tenant_id`,`sec_tipo_comprobante`,`sec_establecimiento`,`sec_punto_emision`)
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `facturacion_secuenciales`
+--
+
+INSERT INTO `facturacion_secuenciales` (`sec_id`, `sec_tenant_id`, `sec_tipo_comprobante`, `sec_establecimiento`, `sec_punto_emision`, `sec_siguiente`, `sec_fecha_creacion`) VALUES
+(1, 1, '01', '001', '001', 6, '2026-03-12 22:37:12');
 
 -- --------------------------------------------------------
 
@@ -220,7 +453,25 @@ CREATE TABLE IF NOT EXISTS `facturas_electronicas` (
   KEY `idx_created_by` (`created_by`),
   KEY `idx_fe_tenant_fecha` (`fac_tenant_id`,`fac_fecha_emision`),
   KEY `idx_fe_tenant_estado_fecha` (`fac_tenant_id`,`fac_estado_sri`,`fac_fecha_emision`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Facturas electrónicas emitidas al SRI';
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Facturas electrónicas emitidas al SRI';
+
+--
+-- Volcado de datos para la tabla `facturas_electronicas`
+--
+
+INSERT INTO `facturas_electronicas` (`fac_id`, `fac_tenant_id`, `fac_factura_id`, `fac_clave_acceso`, `fac_tipo_comprobante`, `fac_establecimiento`, `fac_punto_emision`, `fac_secuencial`, `fac_fecha_emision`, `fac_cliente_id`, `fac_cliente_tipo_identificacion`, `fac_cliente_identificacion`, `fac_cliente_razon_social`, `fac_cliente_direccion`, `fac_cliente_email`, `fac_cliente_telefono`, `fac_subtotal_iva`, `fac_subtotal_0`, `fac_subtotal_no_objeto`, `fac_subtotal_exento`, `fac_subtotal`, `fac_descuento`, `fac_iva`, `fac_ice`, `fac_irbpnr`, `fac_propina`, `fac_total`, `fac_estado_sri`, `fac_ambiente`, `fac_tipo_emision`, `fac_xml_generado`, `fac_xml_firmado`, `fac_xml_autorizado`, `fac_numero_autorizacion`, `fac_fecha_autorizacion`, `fac_mensaje_error`, `fac_intentos_envio`, `fac_ultimo_intento`, `fac_observaciones`, `fac_created_at`, `fac_updated_at`, `created_by`) VALUES
+(1, 1, 2, '1403202601110401528200110010010000000014537153714', '01', '001', '001', '000000001', '2026-03-14', 2, '05', '1103345292', 'Freddy Bolívar Pinzón Olmedo', 'Loja, Rey david y los Olivos -336', 'ENC::SJIp5vZVmLPnefVHtBt2rbd5GjyfAONmjzW3MyEeoSzfeRrCgi/2dCF0RbIhB5ut', NULL, 0.00, 30.00, 0.00, 0.00, 30.00, 0.00, 0.00, 0.00, 0.00, 0.00, 30.00, 'ERROR', '1', '1', 'C:\\wamp64\\www\\digisports/storage/sri/xml/generados/1403202601110401528200110010010000000014537153714.xml', 'C:\\wamp64\\www\\digisports/storage/sri/xml/firmados/1403202601110401528200110010010000000014537153714.xml', NULL, NULL, NULL, 'Error desconocido del SRI', 0, NULL, NULL, '2026-03-14 16:54:10', '2026-03-14 16:54:10', 1),
+(2, 1, 2, '1403202601110401528200110010010000000028916258818', '01', '001', '001', '000000002', '2026-03-14', 2, '05', '1103345292', 'Freddy Bolívar Pinzón Olmedo', 'Loja, Rey david y los Olivos -336', 'ENC::SJIp5vZVmLPnefVHtBt2rbd5GjyfAONmjzW3MyEeoSzfeRrCgi/2dCF0RbIhB5ut', NULL, 0.00, 30.00, 0.00, 0.00, 30.00, 0.00, 0.00, 0.00, 0.00, 0.00, 30.00, 'ERROR', '1', '1', 'C:\\wamp64\\www\\digisports/storage/sri/xml/generados/1403202601110401528200110010010000000028916258818.xml', 'C:\\wamp64\\www\\digisports/storage/sri/xml/firmados/1403202601110401528200110010010000000028916258818.xml', NULL, NULL, NULL, 'Error desconocido del SRI', 0, NULL, NULL, '2026-03-14 16:54:21', '2026-03-14 16:54:21', 1),
+(3, 1, 2, '1403202601110401528200110010010000000030946771212', '01', '001', '001', '000000003', '2026-03-14', 2, '05', '1103345292', 'Freddy Bolívar Pinzón Olmedo', 'Loja, Rey david y los Olivos -336', 'ENC::SJIp5vZVmLPnefVHtBt2rbd5GjyfAONmjzW3MyEeoSzfeRrCgi/2dCF0RbIhB5ut', NULL, 30.00, 0.00, 0.00, 0.00, 30.00, 0.00, 4.50, 0.00, 0.00, 0.00, 34.50, 'ERROR', '1', '1', 'C:\\wamp64\\www\\digisports/storage/sri/xml/generados/1403202601110401528200110010010000000030946771212.xml', 'C:\\wamp64\\www\\digisports/storage/sri/xml/firmados/1403202601110401528200110010010000000030946771212.xml', NULL, NULL, NULL, 'Error desconocido del SRI', 0, NULL, NULL, '2026-03-14 16:57:59', '2026-03-14 16:58:00', 1),
+(4, 1, 2, '1403202601110401528200110010010000000043758937213', '01', '001', '001', '000000004', '2026-03-14', 2, '05', '1103345292', 'Freddy Bolívar Pinzón Olmedo', 'Loja, Rey david y los Olivos -336', 'ENC::SJIp5vZVmLPnefVHtBt2rbd5GjyfAONmjzW3MyEeoSzfeRrCgi/2dCF0RbIhB5ut', NULL, 30.00, 0.00, 0.00, 0.00, 30.00, 0.00, 4.50, 0.00, 0.00, 0.00, 34.50, 'ERROR', '1', '1', 'C:\\wamp64\\www\\digisports/storage/sri/xml/generados/1403202601110401528200110010010000000043758937213.xml', 'C:\\wamp64\\www\\digisports/storage/sri/xml/firmados/1403202601110401528200110010010000000043758937213.xml', NULL, NULL, NULL, 'Error desconocido del SRI', 0, NULL, NULL, '2026-03-14 16:58:45', '2026-03-14 16:58:45', 1),
+(5, 1, 2, '1403202601110401528200110010010000000058125280311', '01', '001', '001', '000000005', '2026-03-14', 2, '05', '1103345292', 'Freddy Bolívar Pinzón Olmedo', 'Loja, Rey david y los Olivos -336', 'ENC::SJIp5vZVmLPnefVHtBt2rbd5GjyfAONmjzW3MyEeoSzfeRrCgi/2dCF0RbIhB5ut', NULL, 30.00, 0.00, 0.00, 0.00, 30.00, 0.00, 4.50, 0.00, 0.00, 0.00, 34.50, 'ERROR', '1', '1', 'C:\\wamp64\\www\\digisports/storage/sri/xml/generados/1403202601110401528200110010010000000058125280311.xml', 'C:\\wamp64\\www\\digisports/storage/sri/xml/firmados/1403202601110401528200110010010000000058125280311.xml', NULL, NULL, NULL, 'ARCHIVO NO CUMPLE ESTRUCTURA XML: No existe un contribuyente registrado con el RUC 0990000000001. : ', 0, NULL, NULL, '2026-03-14 17:01:56', '2026-03-14 17:01:56', 1),
+(6, 1, 2, '1403202601110401528200110010010000000066287730915', '01', '001', '001', '000000006', '2026-03-14', 2, '05', '1103345292', 'Freddy Bolívar Pinzón Olmedo', 'Loja, Rey david y los Olivos -336', 'ENC::SJIp5vZVmLPnefVHtBt2rbd5GjyfAONmjzW3MyEeoSzfeRrCgi/2dCF0RbIhB5ut', NULL, 30.00, 0.00, 0.00, 0.00, 30.00, 0.00, 4.50, 0.00, 0.00, 0.00, 34.50, 'ERROR', '1', '1', 'C:\\wamp64\\www\\digisports/storage/sri/xml/generados/1403202601110401528200110010010000000066287730915.xml', 'C:\\wamp64\\www\\digisports/storage/sri/xml/firmados/1403202601110401528200110010010000000066287730915.xml', NULL, NULL, NULL, 'CLAVE DE ACCESO EN PROCESAMIENTO : La clave de acceso 1403202601110401528200110010010000000066287730915  esta en procesamiento VALOR DEVUELTO POR EL PROCEDIMIENTO: SI. : ', 0, NULL, NULL, '2026-03-14 17:05:46', '2026-03-14 17:05:47', 1),
+(7, 1, 2, '1403202601110401528200110010010000000075449402517', '01', '001', '001', '000000007', '2026-03-14', 2, '05', '1103345292', 'Freddy Bolívar Pinzón Olmedo', 'Loja, Rey david y los Olivos -336', 'ENC::SJIp5vZVmLPnefVHtBt2rbd5GjyfAONmjzW3MyEeoSzfeRrCgi/2dCF0RbIhB5ut', NULL, 30.00, 0.00, 0.00, 0.00, 30.00, 0.00, 4.50, 0.00, 0.00, 0.00, 34.50, 'ENVIADA', '1', '1', 'C:\\wamp64\\www\\digisports/storage/sri/xml/generados/1403202601110401528200110010010000000075449402517.xml', 'C:\\wamp64\\www\\digisports/storage/sri/xml/firmados/1403202601110401528200110010010000000075449402517.xml', NULL, NULL, NULL, 'CLAVE DE ACCESO EN PROCESAMIENTO : La clave de acceso 1403202601110401528200110010010000000075449402517  esta en procesamiento VALOR DEVUELTO POR EL PROCEDIMIENTO: SI. : ', 0, NULL, NULL, '2026-03-14 17:19:42', '2026-03-14 17:45:35', 1),
+(8, 1, 2, '1403202601110401528200110010010000000083330340915', '01', '001', '001', '000000008', '2026-03-14', 2, '05', '1103345292', 'Freddy Bolívar Pinzón Olmedo', 'Loja, Rey david y los Olivos -336', 'ENC::SJIp5vZVmLPnefVHtBt2rbd5GjyfAONmjzW3MyEeoSzfeRrCgi/2dCF0RbIhB5ut', NULL, 30.00, 0.00, 0.00, 0.00, 30.00, 0.00, 4.50, 0.00, 0.00, 0.00, 34.50, 'ENVIADA', '1', '1', 'C:\\wamp64\\www\\digisports/storage/sri/xml/generados/1403202601110401528200110010010000000083330340915.xml', 'C:\\wamp64\\www\\digisports/storage/sri/xml/firmados/1403202601110401528200110010010000000083330340915.xml', NULL, NULL, NULL, NULL, 0, NULL, NULL, '2026-03-14 17:22:59', '2026-03-14 17:23:25', 1),
+(9, 1, 3, '1403202601110401528200110010010000000095964965711', '01', '001', '001', '000000009', '2026-03-14', 2, '05', '1103345292', 'Freddy Bolívar Pinzón Olmedo', 'Loja, Rey david y los Olivos -336', 'fbpinzon@gmail.com', NULL, 45.78, 0.00, 0.00, 0.00, 45.78, 0.00, 6.87, 0.00, 0.00, 0.00, 52.65, 'ENVIADA', '1', '1', 'C:\\wamp64\\www\\digisports/storage/sri/xml/generados/1403202601110401528200110010010000000095964965711.xml', 'C:\\wamp64\\www\\digisports/storage/sri/xml/firmados/1403202601110401528200110010010000000095964965711.xml', NULL, NULL, NULL, NULL, 0, NULL, NULL, '2026-03-14 18:27:57', '2026-03-14 18:28:23', 1),
+(10, 1, 4, '1403202601110401528200110010010000000108661786010', '01', '001', '001', '000000010', '2026-03-14', 2, '05', '1103345292', 'Freddy Bolívar Pinzón Olmedo', 'Loja, Rey david y los Olivos -336', 'fbpinzon@gmail.com', NULL, 145.00, 0.00, 0.00, 0.00, 145.00, 0.00, 21.75, 0.00, 0.00, 0.00, 166.75, 'ENVIADA', '1', '1', 'C:\\wamp64\\www\\digisports/storage/sri/xml/generados/1403202601110401528200110010010000000108661786010.xml', 'C:\\wamp64\\www\\digisports/storage/sri/xml/firmados/1403202601110401528200110010010000000108661786010.xml', NULL, NULL, NULL, NULL, 0, NULL, NULL, '2026-03-15 01:07:49', '2026-03-15 01:08:16', 1),
+(11, 1, 1, '1503202601110401528200110010010000000117979286819', '01', '001', '001', '000000011', '2026-03-15', 2, '05', '1103345292', 'Freddy Bolívar Pinzón Olmedo', 'Loja, Rey david y los Olivos -336', 'fbpinzon@gmail.com', NULL, 70.90, 0.00, 0.00, 0.00, 70.90, 0.00, 10.64, 0.00, 0.00, 0.00, 81.54, 'ENVIADA', '1', '1', 'C:\\wamp64\\www\\digisports/storage/sri/xml/generados/1503202601110401528200110010010000000117979286819.xml', 'C:\\wamp64\\www\\digisports/storage/sri/xml/firmados/1503202601110401528200110010010000000117979286819.xml', NULL, NULL, NULL, NULL, 0, NULL, NULL, '2026-03-16 01:57:29', '2026-03-16 01:57:55', 1),
+(12, 1, 5, '1503202601110401528200110010010000000122052429012', '01', '001', '001', '000000012', '2026-03-15', 2, '05', '1103345292', 'Freddy Bolívar Pinzón Olmedo', 'Loja, Rey david y los Olivos -336', 'fbpinzon@gmail.com', NULL, 7.00, 0.00, 0.00, 0.00, 7.00, 0.00, 1.05, 0.00, 0.00, 0.00, 8.05, 'ENVIADA', '1', '1', 'C:\\wamp64\\www\\digisports/storage/sri/xml/generados/1503202601110401528200110010010000000122052429012.xml', 'C:\\wamp64\\www\\digisports/storage/sri/xml/firmados/1503202601110401528200110010010000000122052429012.xml', NULL, NULL, NULL, NULL, 0, NULL, NULL, '2026-03-16 04:32:02', '2026-03-16 04:32:29', 1);
 
 -- --------------------------------------------------------
 
@@ -246,7 +497,26 @@ CREATE TABLE IF NOT EXISTS `facturas_electronicas_detalle` (
   `det_created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`det_id`),
   KEY `idx_factura` (`det_factura_electronica_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Detalles de facturas electrónicas';
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Detalles de facturas electrónicas';
+
+--
+-- Volcado de datos para la tabla `facturas_electronicas_detalle`
+--
+
+INSERT INTO `facturas_electronicas_detalle` (`det_id`, `det_factura_electronica_id`, `det_codigo_principal`, `det_codigo_auxiliar`, `det_descripcion`, `det_cantidad`, `det_precio_unitario`, `det_descuento`, `det_precio_total_sin_impuesto`, `det_producto_id`, `det_servicio_id`, `det_instalacion_id`, `det_reserva_id`, `det_created_at`) VALUES
+(1, 1, 'SERV001', NULL, 'Pago de mensualidad | MAR26', 1.000000, 30.000000, 0.00, 30.00, NULL, NULL, NULL, NULL, '2026-03-14 16:54:10'),
+(2, 2, 'SERV001', NULL, 'Pago de mensualidad | MAR26', 1.000000, 30.000000, 0.00, 30.00, NULL, NULL, NULL, NULL, '2026-03-14 16:54:21'),
+(3, 3, 'SERV001', NULL, 'Pago de mensualidad | MAR26', 1.000000, 30.000000, 0.00, 30.00, NULL, NULL, NULL, NULL, '2026-03-14 16:57:59'),
+(4, 4, 'SERV001', NULL, 'Pago de mensualidad | MAR26', 1.000000, 30.000000, 0.00, 30.00, NULL, NULL, NULL, NULL, '2026-03-14 16:58:45'),
+(5, 5, 'SERV001', NULL, 'Pago de mensualidad | MAR26', 1.000000, 30.000000, 0.00, 30.00, NULL, NULL, NULL, NULL, '2026-03-14 17:01:56'),
+(6, 6, 'SERV001', NULL, 'Pago de mensualidad | MAR26', 1.000000, 30.000000, 0.00, 30.00, NULL, NULL, NULL, NULL, '2026-03-14 17:05:46'),
+(7, 7, 'SERV001', NULL, 'Pago de mensualidad | MAR26', 1.000000, 30.000000, 0.00, 30.00, NULL, NULL, NULL, NULL, '2026-03-14 17:19:42'),
+(8, 8, 'SERV001', NULL, 'Pago de mensualidad | MAR26', 1.000000, 30.000000, 0.00, 30.00, NULL, NULL, NULL, NULL, '2026-03-14 17:22:59'),
+(9, 9, 'SERV02', NULL, 'Pago de uniformes | MAR-26', 1.000000, 50.780000, 5.00, 45.78, NULL, NULL, NULL, NULL, '2026-03-14 18:27:57'),
+(10, 10, 'SERV02', NULL, 'Torneo | MAR-26', 1.000000, 145.000000, 0.00, 145.00, NULL, NULL, NULL, NULL, '2026-03-15 01:07:49'),
+(11, 11, 'SER01', NULL, 'PENSION MES DE MARZO | MAR-26', 1.000000, 30.000000, 5.00, 25.00, NULL, NULL, NULL, NULL, '2026-03-16 01:57:29'),
+(12, 11, 'SER02', NULL, 'uNIFORMES 2026 | MAR-26', 1.000000, 45.900000, 0.00, 45.90, NULL, NULL, NULL, NULL, '2026-03-16 01:57:29'),
+(13, 12, 'SER01', NULL, 'Pago torneo Ecuador cup-kid | MAR-26', 1.000000, 7.000000, 0.00, 7.00, NULL, NULL, NULL, NULL, '2026-03-16 04:32:02');
 
 -- --------------------------------------------------------
 
@@ -265,7 +535,26 @@ CREATE TABLE IF NOT EXISTS `facturas_electronicas_detalle_impuestos` (
   `imp_valor` decimal(14,2) NOT NULL,
   PRIMARY KEY (`imp_id`),
   KEY `idx_detalle` (`imp_detalle_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Impuestos por detalle de factura electrónica';
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Impuestos por detalle de factura electrónica';
+
+--
+-- Volcado de datos para la tabla `facturas_electronicas_detalle_impuestos`
+--
+
+INSERT INTO `facturas_electronicas_detalle_impuestos` (`imp_id`, `imp_detalle_id`, `imp_codigo`, `imp_codigo_porcentaje`, `imp_tarifa`, `imp_base_imponible`, `imp_valor`) VALUES
+(1, 1, '2', '0', 0.00, 30.00, 0.00),
+(2, 2, '2', '0', 0.00, 30.00, 0.00),
+(3, 3, '2', '4', 15.00, 30.00, 4.50),
+(4, 4, '2', '4', 15.00, 30.00, 4.50),
+(5, 5, '2', '4', 15.00, 30.00, 4.50),
+(6, 6, '2', '4', 15.00, 30.00, 4.50),
+(7, 7, '2', '4', 15.00, 30.00, 4.50),
+(8, 8, '2', '4', 15.00, 30.00, 4.50),
+(9, 9, '2', '4', 15.00, 45.78, 6.87),
+(10, 10, '2', '4', 15.00, 145.00, 21.75),
+(11, 11, '2', '4', 15.00, 25.00, 3.75),
+(12, 12, '2', '4', 15.00, 45.90, 6.89),
+(13, 13, '2', '4', 15.00, 7.00, 1.05);
 
 -- --------------------------------------------------------
 
@@ -281,7 +570,37 @@ CREATE TABLE IF NOT EXISTS `facturas_electronicas_info_adicional` (
   `adi_valor` varchar(300) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   PRIMARY KEY (`adi_id`),
   KEY `idx_factura` (`adi_factura_electronica_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Información adicional de facturas electrónicas';
+) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Información adicional de facturas electrónicas';
+
+--
+-- Volcado de datos para la tabla `facturas_electronicas_info_adicional`
+--
+
+INSERT INTO `facturas_electronicas_info_adicional` (`adi_id`, `adi_factura_electronica_id`, `adi_nombre`, `adi_valor`) VALUES
+(1, 1, 'Email', 'ENC::SJIp5vZVmLPnefVHtBt2rbd5GjyfAONmjzW3MyEeoSzfeRrCgi/2dCF0RbIhB5ut'),
+(2, 1, 'Teléfono', 'ENC::Wi4TBafq7H4H83WK3AYmhk2iJMoPnx86TbVZij7QFTM='),
+(3, 2, 'Email', 'ENC::SJIp5vZVmLPnefVHtBt2rbd5GjyfAONmjzW3MyEeoSzfeRrCgi/2dCF0RbIhB5ut'),
+(4, 2, 'Teléfono', 'ENC::Wi4TBafq7H4H83WK3AYmhk2iJMoPnx86TbVZij7QFTM='),
+(5, 3, 'Email', 'ENC::SJIp5vZVmLPnefVHtBt2rbd5GjyfAONmjzW3MyEeoSzfeRrCgi/2dCF0RbIhB5ut'),
+(6, 3, 'Teléfono', 'ENC::Wi4TBafq7H4H83WK3AYmhk2iJMoPnx86TbVZij7QFTM='),
+(7, 4, 'Email', 'ENC::SJIp5vZVmLPnefVHtBt2rbd5GjyfAONmjzW3MyEeoSzfeRrCgi/2dCF0RbIhB5ut'),
+(8, 4, 'Teléfono', 'ENC::Wi4TBafq7H4H83WK3AYmhk2iJMoPnx86TbVZij7QFTM='),
+(9, 5, 'Email', 'ENC::SJIp5vZVmLPnefVHtBt2rbd5GjyfAONmjzW3MyEeoSzfeRrCgi/2dCF0RbIhB5ut'),
+(10, 5, 'Teléfono', 'ENC::Wi4TBafq7H4H83WK3AYmhk2iJMoPnx86TbVZij7QFTM='),
+(11, 6, 'Email', 'ENC::SJIp5vZVmLPnefVHtBt2rbd5GjyfAONmjzW3MyEeoSzfeRrCgi/2dCF0RbIhB5ut'),
+(12, 6, 'Teléfono', 'ENC::Wi4TBafq7H4H83WK3AYmhk2iJMoPnx86TbVZij7QFTM='),
+(13, 7, 'Email', 'ENC::SJIp5vZVmLPnefVHtBt2rbd5GjyfAONmjzW3MyEeoSzfeRrCgi/2dCF0RbIhB5ut'),
+(14, 7, 'Teléfono', 'ENC::Wi4TBafq7H4H83WK3AYmhk2iJMoPnx86TbVZij7QFTM='),
+(15, 8, 'Email', 'ENC::SJIp5vZVmLPnefVHtBt2rbd5GjyfAONmjzW3MyEeoSzfeRrCgi/2dCF0RbIhB5ut'),
+(16, 8, 'Teléfono', 'ENC::Wi4TBafq7H4H83WK3AYmhk2iJMoPnx86TbVZij7QFTM='),
+(17, 9, 'Email', 'ENC::SJIp5vZVmLPnefVHtBt2rbd5GjyfAONmjzW3MyEeoSzfeRrCgi/2dCF0RbIhB5ut'),
+(18, 9, 'Teléfono', 'ENC::Wi4TBafq7H4H83WK3AYmhk2iJMoPnx86TbVZij7QFTM='),
+(19, 10, 'Email', 'fbpinzon@gmail.com'),
+(20, 10, 'Teléfono', 'ENC::Wi4TBafq7H4H83WK3AYmhk2iJMoPnx86TbVZij7QFTM='),
+(21, 11, 'Email', 'fbpinzon@gmail.com'),
+(22, 11, 'Teléfono', '0993120984'),
+(23, 12, 'Email', 'fbpinzon@gmail.com'),
+(24, 12, 'Teléfono', '0993120984');
 
 -- --------------------------------------------------------
 
@@ -328,7 +647,25 @@ CREATE TABLE IF NOT EXISTS `facturas_electronicas_pagos` (
   `pag_unidad_tiempo` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'dias',
   PRIMARY KEY (`pag_id`),
   KEY `idx_factura` (`pag_factura_electronica_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Formas de pago de facturas electrónicas';
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Formas de pago de facturas electrónicas';
+
+--
+-- Volcado de datos para la tabla `facturas_electronicas_pagos`
+--
+
+INSERT INTO `facturas_electronicas_pagos` (`pag_id`, `pag_factura_electronica_id`, `pag_forma_pago`, `pag_total`, `pag_plazo`, `pag_unidad_tiempo`) VALUES
+(1, 1, '01', 30.00, NULL, 'dias'),
+(2, 2, '01', 30.00, NULL, 'dias'),
+(3, 3, '01', 34.50, NULL, 'dias'),
+(4, 4, '01', 34.50, NULL, 'dias'),
+(5, 5, '01', 34.50, NULL, 'dias'),
+(6, 6, '01', 34.50, NULL, 'dias'),
+(7, 7, '01', 34.50, NULL, 'dias'),
+(8, 8, '01', 34.50, NULL, 'dias'),
+(9, 9, '17', 52.65, NULL, 'dias'),
+(10, 10, '01', 166.75, NULL, 'dias'),
+(11, 11, '20', 81.54, NULL, 'dias'),
+(12, 12, '01', 8.05, NULL, 'dias');
 
 -- --------------------------------------------------------
 
@@ -349,14 +686,14 @@ CREATE TABLE IF NOT EXISTS `facturas_electronicas_secuenciales` (
   PRIMARY KEY (`sec_id`),
   UNIQUE KEY `uk_secuencial` (`sec_tenant_id`,`sec_tipo_comprobante`,`sec_establecimiento`,`sec_punto_emision`),
   KEY `idx_tenant` (`sec_tenant_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Control de secuenciales por establecimiento';
+) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Control de secuenciales por establecimiento';
 
 --
 -- Volcado de datos para la tabla `facturas_electronicas_secuenciales`
 --
 
 INSERT INTO `facturas_electronicas_secuenciales` (`sec_id`, `sec_tenant_id`, `sec_tipo_comprobante`, `sec_establecimiento`, `sec_punto_emision`, `sec_secuencial_actual`, `sec_created_at`, `sec_updated_at`) VALUES
-(1, 1, '01', '001', '001', 0, '2026-01-26 03:47:23', '2026-01-26 03:47:23');
+(1, 1, '01', '001', '001', 12, '2026-01-26 03:47:23', '2026-03-16 04:32:02');
 
 -- --------------------------------------------------------
 
@@ -1709,6 +2046,9 @@ CREATE TABLE IF NOT EXISTS `instalaciones_sedes` (
   `sed_estacionamiento` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'S',
   `sed_cafeteria` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'N',
   `sed_tienda` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'N',
+  `sed_monto_mensualidad` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT 'Valor de mensualidad configurado para esta sede',
+  `sed_monto_matricula` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT 'Valor de matr├¡cula configurado para esta sede',
+  `sed_comprobante_inicio` int UNSIGNED NOT NULL DEFAULT '1' COMMENT 'N├║mero de comprobante/recibo inicial para la secuencia de esta sede',
   `sed_foto_principal` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `sed_galeria` json DEFAULT NULL,
   `sed_es_principal` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'N',
@@ -1725,8 +2065,8 @@ CREATE TABLE IF NOT EXISTS `instalaciones_sedes` (
 -- Volcado de datos para la tabla `instalaciones_sedes`
 --
 
-INSERT INTO `instalaciones_sedes` (`sed_sede_id`, `sed_tenant_id`, `sed_codigo`, `sed_nombre`, `sed_descripcion`, `sed_direccion`, `sed_ciudad`, `sed_provincia`, `sed_pais`, `sed_latitud`, `sed_longitud`, `sed_telefono`, `sed_email`, `sed_horario_apertura`, `sed_horario_cierre`, `sed_dias_atencion`, `sed_superficie_total`, `sed_capacidad_total`, `sed_estacionamiento`, `sed_cafeteria`, `sed_tienda`, `sed_foto_principal`, `sed_galeria`, `sed_es_principal`, `sed_estado`, `sed_fecha_registro`, `sed_fecha_actualizacion`) VALUES
-(1, 1, 'CENTRAL', 'Sede Central', NULL, 'Av. Principal 123', 'Loja', NULL, 'Ecuador', NULL, NULL, NULL, NULL, NULL, NULL, 'LUNES-DOMINGO', NULL, NULL, 'S', 'N', 'N', NULL, NULL, 'S', 'A', '2026-01-25 00:35:10', '2026-03-10 16:42:24');
+INSERT INTO `instalaciones_sedes` (`sed_sede_id`, `sed_tenant_id`, `sed_codigo`, `sed_nombre`, `sed_descripcion`, `sed_direccion`, `sed_ciudad`, `sed_provincia`, `sed_pais`, `sed_latitud`, `sed_longitud`, `sed_telefono`, `sed_email`, `sed_horario_apertura`, `sed_horario_cierre`, `sed_dias_atencion`, `sed_superficie_total`, `sed_capacidad_total`, `sed_estacionamiento`, `sed_cafeteria`, `sed_tienda`, `sed_monto_mensualidad`, `sed_monto_matricula`, `sed_comprobante_inicio`, `sed_foto_principal`, `sed_galeria`, `sed_es_principal`, `sed_estado`, `sed_fecha_registro`, `sed_fecha_actualizacion`) VALUES
+(1, 1, 'CENTRAL', 'Sede Central', NULL, 'Av. Principal 123', 'Loja', NULL, 'Ecuador', NULL, NULL, NULL, NULL, NULL, NULL, 'LUNES-DOMINGO', NULL, NULL, 'S', 'N', 'N', 0.00, 0.00, 1, NULL, NULL, 'S', 'A', '2026-01-25 00:35:10', '2026-03-10 16:42:24');
 
 -- --------------------------------------------------------
 
@@ -1769,22 +2109,22 @@ INSERT INTO `instalaciones_tipos_instalacion` (`tip_tipo_id`, `tip_tenant_id`, `
 --
 DROP VIEW IF EXISTS `mantenimientos`;
 CREATE TABLE IF NOT EXISTS `mantenimientos` (
-`cadencia_recurrencia` int
-,`cancha_id` int
-,`descripcion` text
-,`estado` varchar(20)
-,`fecha_actualizacion` timestamp
-,`fecha_creacion` timestamp
-,`fecha_fin` datetime
-,`fecha_inicio` datetime
-,`mantenimiento_id` int
-,`notas` text
-,`recurrir` varchar(2)
-,`responsable_id` int
+`mantenimiento_id` int
 ,`tenant_id` int
+,`cancha_id` int
 ,`tipo` varchar(50)
-,`usuario_actualizacion` int
+,`descripcion` text
+,`notas` text
+,`fecha_inicio` datetime
+,`fecha_fin` datetime
+,`responsable_id` int
+,`recurrir` varchar(2)
+,`cadencia_recurrencia` int
+,`estado` varchar(20)
+,`fecha_creacion` timestamp
+,`fecha_actualizacion` timestamp
 ,`usuario_creacion` int
+,`usuario_actualizacion` int
 );
 
 -- --------------------------------------------------------
@@ -2294,14 +2634,14 @@ CREATE TABLE IF NOT EXISTS `natacion_piscinas` (
 --
 DROP VIEW IF EXISTS `roles`;
 CREATE TABLE IF NOT EXISTS `roles` (
-`codigo` varchar(50)
+`rol_id` int
+,`tenant_id` int
+,`codigo` varchar(50)
+,`nombre` varchar(100)
 ,`descripcion` text
+,`permisos` json
 ,`estado` char(1)
 ,`fecha_registro` timestamp
-,`nombre` varchar(100)
-,`permisos` json
-,`rol_id` int
-,`tenant_id` int
 );
 
 -- --------------------------------------------------------
@@ -2332,7 +2672,7 @@ CREATE TABLE IF NOT EXISTS `seguridad_auditoria` (
   KEY `idx_tabla` (`aud_tabla`),
   KEY `idx_fecha` (`aud_fecha_operacion`),
   KEY `idx_operacion` (`aud_operacion`)
-) ENGINE=InnoDB AUTO_INCREMENT=308 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=367 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Volcado de datos para la tabla `seguridad_auditoria`
@@ -2648,7 +2988,67 @@ INSERT INTO `seguridad_auditoria` (`aud_auditoria_id`, `aud_tenant_id`, `aud_usu
 (304, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=05gt8P_y6i12aCflxPfT2folQyIE4SsLQ83jUmQSKEukva4C2_s4CBqISzH437C7Ihif3dKdpR5-4f8XWZJSQ4lJ1Gj66_pOOvZVTc__D9CaBmroRsMsE7-5PDH29ppd', 'POST', '2026-03-10 00:40:26'),
 (305, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=GsnISbPmorywY_Q8QHF2LcZzwo2zLZ28TXi1qVEs_QOSBiNBB8vC8gpz0y0T0Rdr8YEL-q36fEJ0OJhd7BxYl3XlCTGxs0cox_adBFUQx-2X4CaFdJwH05NO3mCjcs5k', 'POST', '2026-03-10 04:56:30'),
 (306, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=pLhNkJUXP63MmoAt6dJ_cmjICdVcb19xWFlxHlHKKYSEUvUx7rIrCpEzlBNzh7a3IGU3FKLHRNa6qEPcEwpEhR29x5V0GHxccp7n_ie2Sj7Pt_6owMoknBrOIiS1yVcF', 'POST', '2026-03-10 15:14:10'),
-(307, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=tpoWVe25-lKE8YGvFnLzW4MPN2DWZhRM5xfRw-rBnsCDTb4OlWzQ3UqpNALByIkmQhQ3KH1_SxAfunBdQk0GDYQ_tjWRCkfqowy88FAiafVHV-B484xBOKV1OBThVCCP', 'POST', '2026-03-10 16:03:16');
+(307, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=tpoWVe25-lKE8YGvFnLzW4MPN2DWZhRM5xfRw-rBnsCDTb4OlWzQ3UqpNALByIkmQhQ3KH1_SxAfunBdQk0GDYQ_tjWRCkfqowy88FAiafVHV-B484xBOKV1OBThVCCP', 'POST', '2026-03-10 16:03:16'),
+(308, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=RQcZ-2ZS-cMLbQsiRSBFw3cq3ts_sNLFboAuLALmhOPHq5IdoyANbOxUGV7S25rOdm-AbqYhwltmYRXIyAhmR-QLEdJ_xumgSNCEwazo115rvKTdkbfIDvV8Yl5OA7CI', 'POST', '2026-03-11 04:06:27'),
+(309, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=uwyIKSu1Eoht7GG6Obra5hhVB0hU123UZKq8Cv-Qgo1ZZ3OQCYm8oKIDd3oJNPxRmeMmfArPWoZVfyUwnYxAgExgV-PpkCdFWfS2Rl4lIyvisMQ6C75HSukIt1s_AH7H', 'POST', '2026-03-11 05:26:31'),
+(310, 1, 1, 'Core', 'seguridad_usuarios', 1, 'LOGOUT', '[]', '[]', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=f4_r31YH52SaWAsW7jU81eQkV_QWCtKrr2HyXqkQEnhYoUJLgRjLirL_MVwYqcoMPyDXtpLuhpTBk7E-IqFyicKdWWPP4W7vQVpGsM7zxM3vj17kyz6Dz4Ys', 'GET', '2026-03-11 05:31:14'),
+(311, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=n1WZksIBhuAt9EqAy9lNtkTgOfB3w1aZpjB94iIQTORdOHL91C-HfyGn4MNJ0k_QLb_AoCvPu0IHXyIUaQDDAfLYJtqhfZ7RQ0C6KwzhSYWS09cQU3_R9SFJ8jgSWrsf', 'POST', '2026-03-11 05:31:25'),
+(312, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=mM1h23NfouVX2YaqCMxAAQ1QJ1DEYUME1xPB8sRxLMzC8KhUPCBN-r0Opam9MfmIRRh8jD7160ZfqqK1oBFb_9uVjm2UCvSGBksQja00y1Yk-LrD0mFWxxAYaVIWOfPU', 'POST', '2026-03-11 13:46:01'),
+(313, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=EZ-s_GP3xN2DBPgNFubV7wOplodYvTQnvZsNFfjXJkBGN5JvwI9diLHnD86WX0E2r82lrhX5rX-QgH64KP7b3Wvg15fhf1av9iOG7yXEyfwff7YwigK0i1W9RPHqhuvF', 'POST', '2026-03-12 04:13:01'),
+(314, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=Ot-VV_QfWhKA5XbqfnkCWwAjyzyIrdV18Di3gBGhSjQqdH64BGMNXIK-3SYD3KJ6wZmwDurkEkp7XI-ctt7-xraNgyKgF0cvK-beaWoie1lr4h7w3scA5nwM_-whhrpg', 'POST', '2026-03-12 13:45:13'),
+(315, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=A3SLW-tqwHkLXr7vODM0PZnWSEmRBuJT-3vaNtOCLNY0QmjbBMDCGZMULcpqxnObRVNlq8UNbHqmo9gEi9IjmrOQX1mYLnvoT6XtzUP-3wD1LdtLTaYD-CmSzc7eS5sE', 'POST', '2026-03-12 19:25:43'),
+(316, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=kWiDlGBRLrX9h_i_ibFSHxiMWFwpGPrw-HKSY2ZTVAmLgwCxeKGjgNdZg0Q2H7bwEKFLze6rzrm8wnvSEP_MObKwsZTUO7G-GXjlWMuK0FYi0zeqoEz6QnQL6vxBv8LA', 'POST', '2026-03-12 20:21:54'),
+(317, 1, 1, 'Facturacion', 'facturacion_configuracion', 1, 'UPSERT', '[]', '{\"cfg_ruc\": \"1103345292001\", \"cfg_ambiente\": 1, \"cfg_razon_social\": \"CHAMPIONS\", \"cfg_punto_emision\": \"001\", \"cfg_regimen_rimpe\": \"NO\", \"cfg_agente_retencion\": \"\", \"cfg_direccion_matriz\": \"Av. Principal 123\", \"cfg_nombre_comercial\": \"Champios CF 2013\", \"cfg_secuencial_inicio\": 1, \"cfg_email_notificaciones\": \"fbpinzon@gmail.com\", \"cfg_obligado_contabilidad\": \"SI\", \"cfg_regimen_microempresas\": \"NO\", \"cfg_codigo_establecimiento\": \"001\", \"cfg_contribuyente_especial\": \"\", \"cfg_direccion_establecimiento\": \"Av. Principal 123\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=IV8DuvL-9_sEgBc_7P576tlPSm9WUo7ITTvFyEN1_eQN_SYaC0o1u6fgGdYFe6HUpsKqjm2S3dABiINF4c_6IoxkRCmJRM3h7VFV44yUrbECMTH1p-4Rf_EGv6vRb1JeOE-taoMZfVZdKyQ~', 'POST', '2026-03-12 21:08:15'),
+(318, 1, 1, 'Facturacion', 'facturacion_facturas', 1, 'INSERT', '[]', '{\"total\": 81.53385, \"numero\": \"001-001-000000002\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=osynXrHBa31uUJS9ATB0IXfZYAKBwFfQqqT4svCJT56N8F5qrMNm3QUT11l_w-GqyG6oyMcVP2Qom5Ex778TjQ1sB1NsyqT5J_DeleUCYRAvAzst_dYb2r3uGXp6XyP7BHomj0Q~', 'POST', '2026-03-12 22:37:12'),
+(319, 1, 1, 'Facturacion', 'facturacion_facturas', 1, 'EMITTED', '{\"estado\": \"BORRADOR\"}', '{\"estado\": \"EMITIDA\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '/digisports/public/index.php?r=0BH1_zVa-zIB1ccaLL5ipu5T_vY_tnZyqAnzDCT9LiewJbhpIPReO7adrUhKU6AOjGzY1sYxN2VcfwZs4Bp3RzrakSi3B3FEZmXPO0R0sSt1I-_2z1qoBo2EHoGoGGaecJ_7GHC87IWgNg~~', 'GET', '2026-03-12 22:55:33'),
+(320, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', '/digisports/public/index.php?r=UDYBNS8lNL2OykkkPgWXrNPgenzLCo6Xv3PI8A4n1OeNYpYbCXx8QicbAt3khy6pzxvwyS7vIs0sZsnhMD45W2iKrVR-XiREmmctcLbE3qkneGCGtA3ua9cMX1_Rxj1s', 'POST', '2026-03-13 16:09:12'),
+(321, 1, 1, 'Facturacion', 'facturacion_facturas', 1, 'VOIDED', '{\"estado\": \"EMITIDA\"}', '{\"estado\": \"ANULADA\", \"motivo\": \"\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', '/digisports/public/index.php?r=A-uY2kBxdGqy16ISkLV66H8IUEPbTbqyavxGp-XPclC_psYxNuOBv4ZGDRyjTkLj_zvExn1yqBadEMWv2urXiIWZLgBHRt1-rsH43-5Utv9lHIUWDOtYYvPekTBGNFr28CyXgMo-SGlAwQ~~', 'GET', '2026-03-13 16:11:31'),
+(322, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', '/digisports/public/index.php?r=_6k5hUil_PYgza9kb-vwOC3SN2FvT11zL-NsNbBK0ES_R4ApqWP5A_7ctRpUQKZ8V77vKGkvEal8owxkkrBYreBDfhLT34eZ3Va3PHgQCIJfRcN7JGu4aDDS0R4Q_Vhd', 'POST', '2026-03-13 22:00:17'),
+(323, 1, 1, 'Facturacion', 'facturacion_configuracion', 1, 'UPSERT', '[]', '{\"cfg_ruc\": \"1104015282001\", \"cfg_ambiente\": 1, \"cfg_razon_social\": \"CHAMPIONS\", \"cfg_punto_emision\": \"001\", \"cfg_regimen_rimpe\": \"NO\", \"cfg_agente_retencion\": \"\", \"cfg_direccion_matriz\": \"Av. Principal 123\", \"cfg_nombre_comercial\": \"Champios CF 2013\", \"cfg_secuencial_inicio\": 1, \"cfg_email_notificaciones\": \"fbpinzon@gmail.com\", \"cfg_obligado_contabilidad\": \"SI\", \"cfg_regimen_microempresas\": \"NO\", \"cfg_codigo_establecimiento\": \"001\", \"cfg_contribuyente_especial\": \"\", \"cfg_direccion_establecimiento\": \"Av. Principal 123\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', '/digisports/public/index.php?r=R1ZOW1Zns5EHspiDF0ZJHFM5JuOR-VlmkwtbfepR7yFlxpxETY1K-IEW1MCXpX1VZDtPaSVVcRcxkvEKwd0yDW6WRZ7d9BL25V8o0DFfVg875X7Wpd3ofti4AQmYKd6NlhsJKUJhsWAlLhA~', 'POST', '2026-03-13 22:02:40'),
+(324, 1, 1, 'Facturacion', 'facturacion_configuracion', 1, 'UPSERT', '[]', '{\"cfg_ruc\": \"1104015282001\", \"cfg_ambiente\": 1, \"cfg_razon_social\": \"CHAMPIONS\", \"cfg_punto_emision\": \"001\", \"cfg_regimen_rimpe\": \"NO\", \"cfg_agente_retencion\": \"\", \"cfg_direccion_matriz\": \"Av. Principal 123\", \"cfg_nombre_comercial\": \"Champios CF 2013\", \"cfg_secuencial_inicio\": 1, \"cfg_email_notificaciones\": \"fbpinzon@gmail.com\", \"cfg_obligado_contabilidad\": \"SI\", \"cfg_regimen_microempresas\": \"NO\", \"cfg_codigo_establecimiento\": \"001\", \"cfg_contribuyente_especial\": \"\", \"cfg_direccion_establecimiento\": \"Av. Principal 123\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', '/digisports/public/index.php?r=R1ZOW1Zns5EHspiDF0ZJHFM5JuOR-VlmkwtbfepR7yFlxpxETY1K-IEW1MCXpX1VZDtPaSVVcRcxkvEKwd0yDW6WRZ7d9BL25V8o0DFfVg875X7Wpd3ofti4AQmYKd6NlhsJKUJhsWAlLhA~', 'POST', '2026-03-13 22:03:04'),
+(325, 1, 1, 'Facturacion', 'facturacion_configuracion', 1, 'UPSERT', '[]', '{\"cfg_ruc\": \"1104015282001\", \"cfg_ambiente\": 1, \"cfg_razon_social\": \"CHAMPIONS\", \"cfg_punto_emision\": \"001\", \"cfg_regimen_rimpe\": \"NO\", \"cfg_agente_retencion\": \"\", \"cfg_direccion_matriz\": \"Av. Principal 123\", \"cfg_nombre_comercial\": \"Champios CF 2013\", \"cfg_secuencial_inicio\": 1, \"cfg_email_notificaciones\": \"fbpinzon@gmail.com\", \"cfg_obligado_contabilidad\": \"SI\", \"cfg_regimen_microempresas\": \"NO\", \"cfg_codigo_establecimiento\": \"001\", \"cfg_contribuyente_especial\": \"\", \"cfg_direccion_establecimiento\": \"Av. Principal 123\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', '/digisports/public/index.php?r=R1ZOW1Zns5EHspiDF0ZJHFM5JuOR-VlmkwtbfepR7yFlxpxETY1K-IEW1MCXpX1VZDtPaSVVcRcxkvEKwd0yDW6WRZ7d9BL25V8o0DFfVg875X7Wpd3ofti4AQmYKd6NlhsJKUJhsWAlLhA~', 'POST', '2026-03-13 22:03:14'),
+(326, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', '/digisports/public/index.php?r=dNuCFB9WJaEAs-CcmlVta5sxwckG48CrhHVqO3sHved1v8n9v8zPSKmLH5negYa9xhUGbo0MG1fImbCG_FA3pGU03EUld67ffza7QYqk-axyEN8nHSFCIf7enUN4cGjv', 'POST', '2026-03-14 01:13:39'),
+(327, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', '/digisports/public/index.php?r=HCpxD5HNM5qj8XAlMlZONKpUuuxW0rTl1WwBQ2zrByQBNusiX3qMc0BgVWR89HSKZc1P-XusULxzcxRWMsvdfiFzJsvq1OewFLhGE5wwEl808smquB1PoWABj3HxQCCK', 'POST', '2026-03-14 16:08:45'),
+(328, 1, 1, 'Facturacion', 'facturacion_configuracion', 1, 'UPSERT', '[]', '{\"cfg_ruc\": \"1104015282001\", \"cfg_ambiente\": 1, \"cfg_razon_social\": \"CHAMPIONS\", \"cfg_punto_emision\": \"001\", \"cfg_regimen_rimpe\": \"NO\", \"cfg_agente_retencion\": \"\", \"cfg_direccion_matriz\": \"Av. Principal 123\", \"cfg_nombre_comercial\": \"Champios CF 2013\", \"cfg_secuencial_inicio\": 1, \"cfg_email_notificaciones\": \"fbpinzon@gmail.com\", \"cfg_obligado_contabilidad\": \"SI\", \"cfg_regimen_microempresas\": \"NO\", \"cfg_codigo_establecimiento\": \"001\", \"cfg_contribuyente_especial\": \"\", \"cfg_direccion_establecimiento\": \"Av. Principal 123\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', '/digisports/public/index.php?r=L2NRjXAjGS8vvjNChEnw4oiD1DcOFBKhwDLYw0SxDzqNzGF5ajmEer-6DGEUJL1wZV2jSc60lTkCsPUnjl8l2qtQ3CdZ4PJmG3VF5y0XlL4NSAYo5PgdVVML__ExdkteG95eAycF9DZts34~', 'POST', '2026-03-14 16:37:18'),
+(329, 1, 1, 'Facturacion', 'facturacion_facturas', 2, 'INSERT', '[]', '{\"total\": 34.5, \"numero\": \"001-001-000000003\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', '/digisports/public/index.php?r=n-FZfm0lmtPUyq5YCd5XN0-vevleCQLl0IjR8pAylYoHb69TrWhZpKkYALF9a0f2osjVgb3YdPjpsZnjyPvUeNQb4vZk5jG_nWvSK0ErDBxiYf7wVr3x6mlGFy2O5KvP9303UrY~', 'POST', '2026-03-14 16:53:26'),
+(330, 1, 1, 'Facturacion', 'facturacion_facturas', 2, 'EMITTED', '{\"estado\": \"BORRADOR\"}', '{\"estado\": \"EMITIDA\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', '/digisports/public/index.php?r=oXFRJMx6pllccmgOPaV-hcvgriQibXBC4iQ3xUSRVSy4vKOWC04l1eZ4koxZb-QqQf8QAWrXqoBW4-RIS6J8u8QDYKR5uPW5gT5oc4f5wQzx7qsUf1aSaMajJZg-L3JRwpGbBmoFFSbvcQ~~', 'GET', '2026-03-14 16:53:49'),
+(331, 1, 1, 'Facturacion', 'facturacion_facturas', 3, 'INSERT', '[]', '{\"total\": 52.647, \"numero\": \"001-001-000000004\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', '/digisports/public/index.php?r=3KE-ecxlL39MlHAUfZfWJkrQSF_7vBis-MEZKMlkb6kTcvzpltwv37r5-s_7gWiosk7nph2ygnSjEfdT_BahVmq7oCdq7eR3wwTo6PnJq8jUOPNlpqiDm2hGXzwjxa2hthAUVtY~', 'POST', '2026-03-14 18:27:37'),
+(332, 1, 1, 'Facturacion', 'facturacion_facturas', 3, 'EMITTED', '{\"estado\": \"BORRADOR\"}', '{\"estado\": \"EMITIDA\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', '/digisports/public/index.php?r=4LTHvWPBvmqMUF9Iau0DsGgqtUgwZ9RR5HfIyAZ97V1aHnDjd62n5N4HHe8qVUbbKK9BQezOadrIF-ANxrSJ5V74kT01mlq73Ktl7tbufra4Pgzms0nJqRlk4PqXKu1kNNaBAogtGqo0BQ~~', 'GET', '2026-03-14 18:27:45'),
+(333, 1, 1, 'Facturacion', 'facturacion_configuracion', 1, 'UPSERT', '[]', '{\"cfg_ruc\": \"1104015282001\", \"cfg_ambiente\": 1, \"cfg_razon_social\": \"CHAMPIONS\", \"cfg_punto_emision\": \"001\", \"cfg_regimen_rimpe\": \"NO\", \"cfg_agente_retencion\": \"\", \"cfg_direccion_matriz\": \"Av. Principal 123\", \"cfg_nombre_comercial\": \"Champios CF 2013\", \"cfg_secuencial_inicio\": 1, \"cfg_email_notificaciones\": \"fbpinzon@gmail.com\", \"cfg_obligado_contabilidad\": \"SI\", \"cfg_regimen_microempresas\": \"NO\", \"cfg_codigo_establecimiento\": \"001\", \"cfg_contribuyente_especial\": \"\", \"cfg_direccion_establecimiento\": \"Av. Principal 123\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', '/digisports/public/index.php?r=KIuUcZuIOjhRPergjMbuomS4THW6ArS39sI1XWfYLD1bjTeBx1hPj9a0GbHImY6FvayNMBl0bXjhKOjM5IOaoSxCybNCXRsSbnijPjGVwvLNsZrbIkoClxnKevJAqGiTX0gB8nLA97qOI9Q~', 'POST', '2026-03-14 18:47:26'),
+(334, 1, 1, 'Facturacion', 'facturacion_configuracion', 1, 'UPSERT', '[]', '{\"cfg_ruc\": \"1104015282001\", \"cfg_ambiente\": 1, \"cfg_razon_social\": \"CHAMPIONS\", \"cfg_punto_emision\": \"001\", \"cfg_regimen_rimpe\": \"NO\", \"cfg_agente_retencion\": \"\", \"cfg_direccion_matriz\": \"Rey David\", \"cfg_nombre_comercial\": \"Champios CF 2013\", \"cfg_secuencial_inicio\": 1, \"cfg_email_notificaciones\": \"fbpinzon@gmail.com\", \"cfg_obligado_contabilidad\": \"SI\", \"cfg_regimen_microempresas\": \"NO\", \"cfg_codigo_establecimiento\": \"001\", \"cfg_contribuyente_especial\": \"\", \"cfg_direccion_establecimiento\": \"Av. Principal 123\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', '/digisports/public/index.php?r=O2Ut4NVjk8Vno0vYtYKZIYaG88lBqyZ2_SRjFSlMeYG1NCuMCerCcTWpCXLITTQ9r1Y3-K1b3etGBtS1dGtcJhLoxzbEeRxjva75KwWGfKIG_RDDJOxa3ceNTn5xRERqED0IlIjZxMBzxeU~', 'POST', '2026-03-14 18:48:40'),
+(335, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', '/digisports/public/index.php?r=huIdt0wlydo6SScBEacwuu1NyM8ZxkeSjBpcmwphoOLScgVLf-G2Dmywp9eWVcYV5DdWtNflANRdTdn1iHYVVXAOBwIOHn1zIn5NgO7MW5XQWL2Hu56HtBnQMjuWQiSS', 'POST', '2026-03-14 23:55:25'),
+(336, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', '/digisports/public/index.php?r=qJgvfGFGF7UtCiX0LG-2-MuIb81SnZuKQehulvZgNHGlxBjqYDwL3pVGUW_mvbrK8UqOGUQSz8TOI6lTyQQqxzTZSdt1L1iooC-_ivP1iHxe3oM2df8NJ_bkssfaD32B', 'POST', '2026-03-15 01:06:15'),
+(337, 1, 1, 'Facturacion', 'facturacion_facturas', 4, 'INSERT', '[]', '{\"total\": 166.75, \"numero\": \"001-001-000000005\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', '/digisports/public/index.php?r=7N-Jt5bDezdaBK1Lm67phIFgKp9zgRmd1tVYUn-eNyQvDNMrAOMbPspHynB3SQ7aatIZORNiE_vEPpZzkPVRW24BBqyTApQgphrjadcr6U4aC8K7DQvHNoDLWzmAP_MgxvbJm50~', 'POST', '2026-03-15 01:07:24'),
+(338, 1, 1, 'Facturacion', 'facturacion_facturas', 4, 'EMITTED', '{\"estado\": \"BORRADOR\"}', '{\"estado\": \"EMITIDA\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', '/digisports/public/index.php?r=CL4szEvfA8oOfLrVU8No7vdTtC9FNKEX3eNguBzC66oAmbB-jUSpHGsn92OE7MZTJhw_J5gytPNNLT99UHmxzB_aOzV37K5lXW2HKi4MP_U2hr2DQI1jBRe6WTkJ-ble5cptEChfxWn5wg~~', 'GET', '2026-03-15 01:07:38'),
+(339, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', '/digisports/public/index.php?r=cbHZ9Vnxdrzv-hUHPQGATwPRCibhY2Ijr4ULwNFKsbJPG5lPu48wRog9Lt9s_PF3wVLSyorZJfhkp7oOar5xoiFLz2tBXCW1XS_KA_VLUDAFeu9LTCTfHn0HBwhPw93H', 'POST', '2026-03-15 01:50:02'),
+(340, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', '/digisports/public/index.php?r=r3Mn95Kf_yxRX3OZxQqsCWM1CDYeNTj-EEGT93X10qJL-w21u25H5JD3ZxLCRp1V9Flfb9dsGE5gken7DoFA7kfLOwRAErv193DcNkjQPhC0y6tzRDqiJaWIUsr6p7Yf', 'POST', '2026-03-15 04:37:46'),
+(341, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', '/digisports/public/index.php?r=5D1jlidlRf2YV5jLIlzHZzLc75HPa305bDIofnmJvuTH1CAZqi8kjh6mvacBBzwgyEmwZUtvcsFgHiLiER29DheQUyfCXUdCL4lB_QjJzHu8LeKvRvxrfvvGCaeeWCxw', 'POST', '2026-03-16 00:40:31'),
+(342, 1, 1, 'Facturacion', 'facturacion_facturas', 4, 'VOIDED', '{\"estado\": \"EMITIDA\"}', '{\"estado\": \"ANULADA\", \"motivo\": \"\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', '/digisports/public/index.php?r=rLnzmH_KYnKwgG1BRA8kT2HZn2dQWcec5BpXzwkJ7ykQiY_PcAbOlj4X5zANS9IBIk3r-Q2LTitKfQGnaeS-N1e26UVysiyDVRGaYyLLqpJ7C3l6FKttYs3cE1R9C3XDCtHZ5pGcz4qbWQ~~', 'GET', '2026-03-16 00:42:16'),
+(343, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', '/digisports/public/index.php?r=6qmgYkMh9nlOiuzcC7SMBDbszgAYh0tcF1pWCgRcgR34vFx916rYcLNwvqa1NSb13nrWwnFDiColqtAyF3R5Qhv_9MYQiKmUVer4eb02932zsQdGYNr2esXoyyKodqP3', 'POST', '2026-03-16 01:36:46'),
+(344, 1, 1, 'Facturacion', 'facturacion_facturas', 2, 'VOIDED', '{\"estado\": \"EMITIDA\"}', '{\"estado\": \"ANULADA\", \"motivo\": \"\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', '/digisports/public/index.php?r=TFuE4jh62fxh7h3vAubYmejG4HCt6SXyJ4M72ssuK47RBkCR3AcpTwzV0lSf67EjZF4tJlj80o60YdZu0MVjiNskGvaIV9MuZELH_TXMtNIuMAe3IrHHURl6SuK_NeouRTp1kErFx_U2Ug~~', 'GET', '2026-03-16 01:38:53'),
+(345, 1, 1, 'Facturacion', 'facturacion_facturas', 4, 'REACTIVATED', '{\"estado\": \"ANULADA\"}', '{\"estado\": \"BORRADOR\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', '/digisports/public/index.php?r=eTHqAccj6be-82PnkqUm19ykMdYgKUCjDpRpiU6YpZXLVG3wr_XKmkATWUsmqcxnN8vqhsjY55Ntc-SisbsY00BO-OknoF3OawWrM7iHLm5lJoy3g8OYCTy_BntndI85zIbqCqqPfErG6PJeQg~~', 'POST', '2026-03-16 01:56:30'),
+(346, 1, 1, 'Facturacion', 'facturacion_facturas', 2, 'REACTIVATED', '{\"estado\": \"ANULADA\"}', '{\"estado\": \"BORRADOR\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', '/digisports/public/index.php?r=tqpxppxQZgh21h1l2d1RHY9SIQXLLXFTjdE-CdD01VYSg8z3QsWVs-NT6tQ7fCVT7_qvvnjUS4JPei26RQ8LJeFDSmNAG0udGQL3Ibxxm-GVtT7A1XxTaG3TmndRb4e7w6CRS-1KxKw3qodCOA~~', 'POST', '2026-03-16 01:56:36'),
+(347, 1, 1, 'Facturacion', 'facturacion_facturas', 1, 'REACTIVATED', '{\"estado\": \"ANULADA\"}', '{\"estado\": \"BORRADOR\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', '/digisports/public/index.php?r=Jzr_fuC-praSfDZ2lzg5NvYm6q2JxYk-rFD76h0ztB-G53BN3sTbtYQ_QAfT-EsNW6J2_JUEPziaWmN-H1k0EXCdDVYQHi3R1-_EMIurjskTF1q2c2U_UFZuRkc19R6FQnaWr32LlfWKAq-FFA~~', 'POST', '2026-03-16 01:56:41'),
+(348, 1, 1, 'Facturacion', 'facturacion_facturas', 4, 'EMITTED', '{\"estado\": \"BORRADOR\"}', '{\"estado\": \"EMITIDA\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', '/digisports/public/index.php?r=xMatEbH8VWzgFZWgxkhe7Du51UPHTBOYZiAn-42I025dfU7opG5_QV-K440hAOUBaFk25QzHqdrtE5Mhvc0Ul8bXleSUrpYlOKFr4V8jlOXKCfXwCjkgPB2oI_P6CGE-AqSuC9-PbVfjvw~~', 'GET', '2026-03-16 01:56:53'),
+(349, 1, 1, 'Facturacion', 'facturacion_facturas', 2, 'EMITTED', '{\"estado\": \"BORRADOR\"}', '{\"estado\": \"EMITIDA\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', '/digisports/public/index.php?r=BBYR1IfaeHnh9UshpKFXQLNHWii0TfdgtAmf0ZXdc4etc_E3PAFeatDR7SSnpRzVfH0ECira67lzF1w4Rmrd4z14djIaHSJjGCo_R56xOO4zjJWgDqQ2Pg2z0eFrrU6HEiRlno8g4MTxRA~~', 'GET', '2026-03-16 01:57:07'),
+(350, 1, 1, 'Facturacion', 'facturacion_facturas', 1, 'EMITTED', '{\"estado\": \"BORRADOR\"}', '{\"estado\": \"EMITIDA\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', '/digisports/public/index.php?r=BZdjA8kaWYABgaY0RB5Km1o8HGbxbdVUFkjD--ZTqmxwkfmqnM9xv8rg1x0HLcN5srCpQlI2fUbWSz3rTYb-276uioCSVNJj7q0PpGU2ESYiPYDSXgBm96xiR7cIHdqBBE3sDTUfiP4T9Q~~', 'GET', '2026-03-16 01:57:17'),
+(351, 1, 1, 'Facturacion', 'facturacion_pagos', 1, 'INSERT', '[]', '{\"monto\": 81.53, \"factura_id\": 1, \"forma_pago_id\": 1}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', '/digisports/public/index.php?r=_RsrpuEIhq9rmeRP1HHKAFKV4xorRZ79SAzdCDUEtaWptM_JUz2y_BJVFrEjI-MEgpnzTZYR1AdmHB_7yXaWqgFfumQjtTxvESWXnoKcERA1mF0nA7FfLs-Cma-xiRpyy1U~', 'POST', '2026-03-16 02:01:09'),
+(352, 1, 1, 'Facturacion', 'facturacion_pagos', 2, 'INSERT', '[]', '{\"monto\": 34.5, \"factura_id\": 2, \"forma_pago_id\": 1}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', '/digisports/public/index.php?r=j-nAyEEoatc1prJQd2G_ayY08e7reWI8pi9bXvrTIhoS7QAF_oVl0PsASqIycmA5cbD2bjz5ilOhyegFVq9p5Pn8mKXJIMu_1ytpKPFtxvHlzu-Jv-rRbj-cDDxUZuWziwU~', 'POST', '2026-03-16 02:02:09'),
+(353, 1, 1, 'Facturacion', 'facturacion_pagos', 3, 'INSERT', '[]', '{\"monto\": 166.75, \"factura_id\": 4, \"forma_pago_id\": 1}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', '/digisports/public/index.php?r=AjAhabXNWSNyKhZej63YeSt9TrgA_XH_a1fBFQk4l73sHrO8ShKg376hhhj_eNgHY-BbnfTH2-kl527a6fazENl5B5Cv6DM5Nz3VxmPiTWGe56gw5RshhNe0yGq6U63os74~', 'POST', '2026-03-16 02:13:18'),
+(354, 1, 1, 'Facturacion', 'facturacion_pagos', 4, 'INSERT', '[]', '{\"monto\": 52.65, \"factura_id\": 3, \"forma_pago_id\": 1}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', '/digisports/public/index.php?r=-RrIok2EQswYwNur1WqusdkyX4ciwdVdwwPktH_XP8Ymy7vIqNLYaDA4JRde-gqn12ZZ4NclLyVd-wJVT8mqKDluXodEZK_rtlipam5Q0878A_X6HGNHH3WoPordgnE9Er0~', 'POST', '2026-03-16 02:13:57'),
+(355, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', '/digisports/public/index.php?r=cWA2zwLg76Cs5mwmcMk9En2LspNpc3pESsYfl4EQHsdNXvfn_oAW6nSmsLF63NgHfXrSpAnFEGl2mCGllcmjl6jxRHZIPKOAt_U3s9DX2Vinb5itJb-I5LBj83Jqp4ne', 'POST', '2026-03-16 02:47:47'),
+(356, 1, 1, 'Core', 'seguridad_usuarios', 1, 'LOGOUT', '[]', '[]', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', '/digisports/public/index.php?r=D86aaQA6QE5PaAxjgV7sv5J1oy5J8kKDRiM1Yh1bVcTed4Ybid95Gbc5Xq5T1ocLIjM2LVXUP7Hj0ijvL8vLIVpom46igXWmPEbDDacRcCD9hWn6onzPhoL9', 'GET', '2026-03-16 03:28:03'),
+(357, NULL, NULL, 'Core', 'seguridad_usuarios', 1, 'LOGIN', '[]', '{\"ip\": \"::1\", \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', '/digisports/public/index.php?r=lIfb2IMxsWob3KaFysJ1G4eDYhc5qLgtj_OU2l8bB5eW5jxC--mFPUgqCfd0qJM2Y7J4GRhg9jCAaDG4V4W7uwprxIMU_fhoLQXhm36keSnfI0bj9wY_ZiwI9ap_wfZ-', 'POST', '2026-03-16 03:28:14'),
+(358, 1, 1, 'Facturacion', 'facturacion_configuracion', 1, 'UPSERT', '[]', '{\"cfg_ruc\": \"1104015282001\", \"cfg_ambiente\": 1, \"cfg_razon_social\": \"CHAMPIONS\", \"cfg_punto_emision\": \"001\", \"cfg_regimen_rimpe\": \"NO\", \"cfg_agente_retencion\": \"\", \"cfg_direccion_matriz\": \"Rey David\", \"cfg_nombre_comercial\": \"Champios CF 2013\", \"cfg_secuencial_inicio\": 1, \"cfg_email_notificaciones\": \"fbpinzon@gmail.com\", \"cfg_obligado_contabilidad\": \"SI\", \"cfg_regimen_microempresas\": \"NO\", \"cfg_codigo_establecimiento\": \"001\", \"cfg_contribuyente_especial\": \"\", \"cfg_direccion_establecimiento\": \"Av. Principal 123\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', '/digisports/public/index.php?r=Ahcw6sLe5L0DwGax-64MLzAabZzElDdYD4ZDYdCfrZMYPNU10CeUymvm-4gbFRzW0n2ODd6DzlLqZC-TOZ5fKarZSiOMuDtBslnQxKDLm1jpbV2H5rca3RxLIEgdOytymlClcJDGo3Ky1Vo~', 'POST', '2026-03-16 03:29:34'),
+(359, 1, 1, 'Facturacion', 'facturacion_configuracion', 1, 'UPSERT', '[]', '{\"cfg_ruc\": \"1104015282001\", \"cfg_ambiente\": 1, \"cfg_razon_social\": \"CHAMPIONS\", \"cfg_punto_emision\": \"001\", \"cfg_regimen_rimpe\": \"NO\", \"cfg_agente_retencion\": \"\", \"cfg_direccion_matriz\": \"Rey David\", \"cfg_nombre_comercial\": \"Champios CF 2013\", \"cfg_secuencial_inicio\": 1, \"cfg_email_notificaciones\": \"fbpinzon@gmail.com\", \"cfg_obligado_contabilidad\": \"SI\", \"cfg_regimen_microempresas\": \"NO\", \"cfg_codigo_establecimiento\": \"001\", \"cfg_contribuyente_especial\": \"\", \"cfg_direccion_establecimiento\": \"Av. Principal 123\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', '/digisports/public/index.php?r=RL7dp8C59uLenNgMaPCmaoWivxrIpFv8jRmqr1XqsDjzQDD3vc5fUEC9hnxih6Eg-l16hnjzJT1WCH04deijdmwMmQHw3GbL8lKawUyNYKwyRu87ocpGE5NuOb6KJ7uf1OD7ohTw_23XHLU~', 'POST', '2026-03-16 03:29:56'),
+(360, 1, 1, 'Facturacion', 'facturacion_formas_pago', 8, 'UPDATE', '{\"estado\": \"ACTIVO\"}', '{\"estado\": \"INACTIVO\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', '/digisports/public/index.php?r=ScsByKaNGe9NdET4z6cDDJzLW11D_dJukJmj2myonGF8wtBdpdXKWBwcXOoy1ZQMnYHNqiGkMNHfkDNwRfcAMm2QOIn0llYFszT_93SgSiv1i2avOBSDiuUMKUl_zm3sHLIWNxk2VPJhK9L7', 'POST', '2026-03-16 03:57:50'),
+(361, 1, 1, 'Facturacion', 'facturacion_formas_pago', 2, 'UPDATE', '{\"estado\": \"ACTIVO\"}', '{\"estado\": \"INACTIVO\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', '/digisports/public/index.php?r=wFiUJt3P26gOubDZsJBUTn4V3tx-_8wPBIzNbSYDxahItF0Ue_VSLdanze7QfAhngiikOno4c7pLia5gMdPzKzlltkn5Rn2ikSBBjJJXCvqiPKYheOVMDnRx_V0vhKvsTgqEOVz1iboCbVdA', 'POST', '2026-03-16 03:58:00'),
+(362, 1, 1, 'Facturacion', 'facturacion_configuracion', 1, 'UPSERT', '[]', '{\"cfg_ruc\": \"1104015282001\", \"cfg_ambiente\": 1, \"cfg_razon_social\": \"CHAMPIONS\", \"cfg_punto_emision\": \"001\", \"cfg_regimen_rimpe\": \"NO\", \"cfg_agente_retencion\": \"\", \"cfg_direccion_matriz\": \"Rey David\", \"cfg_nombre_comercial\": \"Champios CF 2013\", \"cfg_secuencial_inicio\": 1, \"cfg_email_notificaciones\": \"fbpinzon@gmail.com\", \"cfg_obligado_contabilidad\": \"SI\", \"cfg_regimen_microempresas\": \"NO\", \"cfg_codigo_establecimiento\": \"001\", \"cfg_contribuyente_especial\": \"\", \"cfg_direccion_establecimiento\": \"Av. Principal 123\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', '/digisports/public/index.php?r=_y6KAmUn7xOzZLWALf9mBzipsDccSrYsq9HLyaNl-J23GP5h9tqhieXbadhZRPZ2aTSUTekDcEIoyjUkDfZwmMNEpZ6TmD1w80h5DNtJfg6JnrlJdCkcIiEHvVm-YDqdTJerxLConfsnato~', 'POST', '2026-03-16 04:25:43'),
+(363, 1, 1, 'Facturacion', 'facturacion_configuracion', 1, 'UPSERT', '[]', '{\"cfg_ruc\": \"1104015282001\", \"cfg_ambiente\": 1, \"cfg_razon_social\": \"CHAMPIONS\", \"cfg_punto_emision\": \"001\", \"cfg_regimen_rimpe\": \"NO\", \"cfg_agente_retencion\": \"\", \"cfg_direccion_matriz\": \"Rey David\", \"cfg_nombre_comercial\": \"Champios CF 2013\", \"cfg_secuencial_inicio\": 1, \"cfg_email_notificaciones\": \"fbpinzon@gmail.com\", \"cfg_obligado_contabilidad\": \"SI\", \"cfg_regimen_microempresas\": \"NO\", \"cfg_codigo_establecimiento\": \"001\", \"cfg_contribuyente_especial\": \"\", \"cfg_direccion_establecimiento\": \"Av. Principal 123\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', '/digisports/public/index.php?r=WtaCxdyt53H2wrmQ8NRvPy033fBryf3Nikq0uTcnNnAdxcydoyA8hiQlycxgaBTS7SMsRpZD7uvkXjBkC8sRwppx08hDVI67lq3OGMsUZcjYl6ucRuWZn6LQOcAPqyEva15nH7klbgCPpmQ~', 'POST', '2026-03-16 04:30:17');
+INSERT INTO `seguridad_auditoria` (`aud_auditoria_id`, `aud_tenant_id`, `aud_usuario_id`, `aud_modulo`, `aud_tabla`, `aud_registro_id`, `aud_operacion`, `aud_valores_anteriores`, `aud_valores_nuevos`, `aud_ip`, `aud_user_agent`, `aud_url`, `aud_metodo`, `aud_fecha_operacion`) VALUES
+(364, 1, 1, 'Facturacion', 'facturacion_facturas', 5, 'INSERT', '[]', '{\"total\": 8.05, \"numero\": \"001-001-000000006\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', '/digisports/public/index.php?r=M9gAipjWhGi07nxpnXOUGygZVMuMzQRwhOqNnoLczwAp4j-cd5aLyNSvZxup8n0SHgoMbbt1Ta--crGqunaay8FpS8jXdTp-TI-vdq16GxuJ6QW7tdIy5Sio3HT6Ew0-kHVZ3jQ~', 'POST', '2026-03-16 04:31:19'),
+(365, 1, 1, 'Facturacion', 'facturacion_facturas', 5, 'EMITTED', '{\"estado\": \"BORRADOR\"}', '{\"estado\": \"EMITIDA\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', '/digisports/public/index.php?r=B15ZXXbraBhBu6DVGEYPG9hbktjmU0p_VazKVOHG1E7ftIyO_lDxDXx-Q9lMDtoq00ySXaaSb7OHARqt6m22Y_gB64DEh8PhBtaPfkMfFaU2y_oSQNF45ymYENdTuUM0fyz7yu1ejAqq_A~~', 'GET', '2026-03-16 04:31:30'),
+(366, 1, 1, 'Facturacion', 'facturacion_pagos', 5, 'INSERT', '[]', '{\"monto\": 8.05, \"factura_id\": 5, \"forma_pago_id\": 1}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', '/digisports/public/index.php?r=_drq0r2VuGkp3R5UplZRAvFu1cc1f6QXgAW01zc-jY34XnoCD_KIB_jSsq7zYx-u9N1kqQRSgU9zjfFm0w7cMrVLt9leyR7Z8shjfhx0T3nIe6ZzLON8HyKn_M64cYC9Eco~', 'POST', '2026-03-16 04:36:04');
 
 -- --------------------------------------------------------
 
@@ -2738,7 +3138,7 @@ CREATE TABLE IF NOT EXISTS `seguridad_log_accesos` (
   KEY `idx_fecha` (`acc_fecha`),
   KEY `idx_tipo` (`acc_tipo`),
   KEY `idx_brute_force` (`acc_ip`,`acc_exito`,`acc_tipo`,`acc_fecha`)
-) ENGINE=InnoDB AUTO_INCREMENT=93 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=118 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Volcado de datos para la tabla `seguridad_log_accesos`
@@ -2833,7 +3233,32 @@ INSERT INTO `seguridad_log_accesos` (`acc_log_id`, `acc_usuario_id`, `acc_tenant
 (89, 1, 1, '2026-03-09 19:40:26', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
 (90, 1, 1, '2026-03-09 23:56:30', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
 (91, 1, 1, '2026-03-10 10:14:10', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
-(92, 1, 1, '2026-03-10 11:03:16', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso');
+(92, 1, 1, '2026-03-10 11:03:16', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(93, NULL, NULL, '2026-03-10 23:06:10', 'LOGIN_FAILED', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'N', 'Usuario: supoeradmin - Usuario o email no encontrado o inactivo'),
+(94, 1, 1, '2026-03-10 23:06:27', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(95, 1, 1, '2026-03-11 00:26:31', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(96, 1, 1, '2026-03-11 00:31:14', 'LOGOUT', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Cierre de sesión'),
+(97, 1, 1, '2026-03-11 00:31:25', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(98, NULL, NULL, '2026-03-11 08:45:45', 'LOGIN_FAILED', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'N', 'Usuario: superadmim - Usuario o email no encontrado o inactivo'),
+(99, 1, 1, '2026-03-11 08:46:01', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(100, 1, 1, '2026-03-11 23:13:01', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(101, 1, 1, '2026-03-12 08:45:13', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(102, 1, 1, '2026-03-12 14:25:43', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(103, 1, 1, '2026-03-12 15:21:54', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(104, 1, 1, '2026-03-13 11:09:12', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(105, 1, 1, '2026-03-13 17:00:17', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(106, 1, 1, '2026-03-13 20:13:39', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(107, 1, NULL, '2026-03-14 11:08:31', 'LOGIN_FAILED', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', 'N', 'Usuario: superadmin - Contraseña incorrecta'),
+(108, 1, 1, '2026-03-14 11:08:45', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(109, 1, 1, '2026-03-14 18:55:25', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(110, 1, 1, '2026-03-14 20:06:15', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(111, 1, 1, '2026-03-14 20:50:02', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(112, 1, 1, '2026-03-14 23:37:46', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(113, 1, 1, '2026-03-15 19:40:31', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(114, 1, 1, '2026-03-15 20:36:46', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(115, 1, 1, '2026-03-15 21:47:47', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', 'S', 'Login exitoso'),
+(116, 1, 1, '2026-03-15 22:28:03', 'LOGOUT', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', 'S', 'Cierre de sesión'),
+(117, 1, 1, '2026-03-15 22:28:14', 'LOGIN', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', 'S', 'Login exitoso');
 
 -- --------------------------------------------------------
 
@@ -2867,7 +3292,7 @@ CREATE TABLE IF NOT EXISTS `seguridad_menu` (
   KEY `idx_men_orden` (`men_modulo_id`,`men_orden`),
   KEY `idx_men_tenant` (`men_tenant_id`),
   KEY `idx_men_activo` (`men_activo`)
-) ENGINE=InnoDB AUTO_INCREMENT=195 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Menús laterales dinámicos por aplicativo/módulo';
+) ENGINE=InnoDB AUTO_INCREMENT=257 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Menús laterales dinámicos por aplicativo/módulo';
 
 --
 -- Volcado de datos para la tabla `seguridad_menu`
@@ -3048,7 +3473,19 @@ INSERT INTO `seguridad_menu` (`men_id`, `men_modulo_id`, `men_padre_id`, `men_ti
 (191, 15, 188, 'ITEM', 'Configuración', 'fas fa-cog', 'futbol', 'configuracion', 'index', NULL, NULL, NULL, 3, 1, NULL, NULL, '2026-02-09 20:03:14', '2026-02-09 21:24:55'),
 (192, 22, 104, 'ITEM', 'IPs Bloqueadas', 'fas fa-ban', 'seguridad', 'auditoria', 'ipsBloqueadas', NULL, NULL, NULL, 4, 1, NULL, NULL, '2026-02-19 20:30:15', '2026-02-19 20:30:15'),
 (193, 22, NULL, 'HEADER', 'Administración de Catálogos', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 10, 1, NULL, NULL, '2026-03-04 20:33:39', '2026-03-04 20:33:39'),
-(194, 22, 193, 'ITEM', 'Catálogos', 'fas fa-list-check', 'seguridad', 'tabla', 'index', NULL, NULL, NULL, 1, 1, NULL, NULL, '2026-03-04 20:33:39', '2026-03-05 03:35:48');
+(194, 22, 193, 'ITEM', 'Catálogos', 'fas fa-list-check', 'seguridad', 'tabla', 'index', NULL, NULL, NULL, 1, 1, NULL, NULL, '2026-03-04 20:33:39', '2026-03-05 03:35:48'),
+(245, 3, NULL, 'HEADER', 'Principal', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 1, NULL, NULL, '2026-03-11 06:09:13', '2026-03-11 06:09:13'),
+(246, 3, 245, 'ITEM', 'Dashboard', 'fas fa-tachometer-alt', 'facturacion', 'dashboard', 'index', NULL, NULL, NULL, 2, 1, NULL, NULL, '2026-03-11 06:09:13', '2026-03-11 06:09:13'),
+(247, 3, NULL, 'HEADER', 'Facturación', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 3, 1, NULL, NULL, '2026-03-11 06:09:13', '2026-03-11 06:09:13'),
+(248, 3, 247, 'ITEM', 'Crear Factura', 'fas fa-plus-circle', 'facturacion', 'factura', 'crear', NULL, NULL, NULL, 4, 1, NULL, NULL, '2026-03-11 06:09:13', '2026-03-11 06:09:13'),
+(249, 3, 247, 'ITEM', 'Comprobantes', 'fas fa-file-invoice-dollar', 'facturacion', 'comprobante', 'index', NULL, NULL, NULL, 5, 1, NULL, NULL, '2026-03-11 06:09:13', '2026-03-11 06:09:13'),
+(250, 3, 247, 'ITEM', 'Facturas Emitidas', 'fas fa-receipt', 'facturacion', 'factura', 'index', NULL, NULL, NULL, 6, 1, NULL, NULL, '2026-03-11 06:09:13', '2026-03-11 06:09:13'),
+(251, 3, 247, 'ITEM', 'Facturación SRI', 'fas fa-globe-americas', 'facturacion', 'factura_electronica', 'index', NULL, NULL, NULL, 7, 1, NULL, NULL, '2026-03-11 06:09:13', '2026-03-11 06:09:13'),
+(252, 3, NULL, 'HEADER', 'Cobros y Pagos', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 8, 1, NULL, NULL, '2026-03-11 06:09:13', '2026-03-11 06:09:13'),
+(253, 3, 252, 'ITEM', 'Registrar Pago', 'fas fa-cash-register', 'facturacion', 'pago', 'crear', NULL, NULL, NULL, 9, 1, NULL, NULL, '2026-03-11 06:09:13', '2026-03-11 06:09:13'),
+(254, 3, 252, 'ITEM', 'Listado de Pagos', 'fas fa-money-check-alt', 'facturacion', 'pago', 'index', NULL, NULL, NULL, 10, 1, NULL, NULL, '2026-03-11 06:09:13', '2026-03-11 06:09:13'),
+(255, 3, 247, 'ITEM', 'Configuración FE', 'fas fa-sliders-h', 'facturacion', 'configuracion', 'index', NULL, NULL, NULL, 8, 1, NULL, NULL, '2026-03-12 05:01:04', '2026-03-12 13:45:59'),
+(256, 3, 247, 'ITEM', 'Formas de Pago', 'fas fa-credit-card', 'facturacion', 'formaPago', 'index', NULL, NULL, NULL, 9, 1, NULL, NULL, '2026-03-16 03:53:41', '2026-03-16 03:53:41');
 
 -- --------------------------------------------------------
 
@@ -3066,7 +3503,7 @@ CREATE TABLE IF NOT EXISTS `seguridad_menu_config` (
   `con_permiso_requerido` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `con_orden` int DEFAULT '0',
   PRIMARY KEY (`con_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Volcado de datos para la tabla `seguridad_menu_config`
@@ -3077,7 +3514,21 @@ INSERT INTO `seguridad_menu_config` (`con_id`, `con_modulo_codigo`, `con_opcion`
 (2, 'reservas', 'Reservas', 'fas fa-calendar-alt', '#22c55e', 'reservas.ver', 2),
 (3, 'facturacion', 'Facturación', 'fas fa-file-invoice', '#f59e0b', 'facturacion.ver', 3),
 (4, 'reportes', 'Reportes', 'fas fa-chart-bar', '#a21caf', 'reportes.ver', 4),
-(5, 'seguridad', 'Seguridad', 'fas fa-shield-alt', '#ef4444', 'seguridad.ver', 5);
+(5, 'seguridad', 'Seguridad', 'fas fa-shield-alt', '#ef4444', 'seguridad.ver', 5),
+(6, 'facturacion', 'Dashboard', 'fas fa-tachometer-alt', '#F59E0B', 'facturacion.ver', 1),
+(7, 'facturacion', 'Crear Factura', 'fas fa-plus-circle', '#F59E0B', 'facturacion.crear', 2),
+(8, 'facturacion', 'Comprobantes', 'fas fa-file-invoice-dollar', '#F59E0B', 'facturacion.ver', 3),
+(9, 'facturacion', 'Facturas Emitidas', 'fas fa-receipt', '#F59E0B', 'facturacion.ver', 4),
+(10, 'facturaci├│n SRI', 'Facturaci├│n SRI', 'fas fa-globe-americas', '#F59E0B', 'facturacion.ver', 5),
+(11, 'facturacion', 'Registrar Pago', 'fas fa-cash-register', '#F59E0B', 'facturacion.crear', 6),
+(12, 'facturacion', 'Listado de Pagos', 'fas fa-money-check-alt', '#F59E0B', 'facturacion.ver', 7),
+(13, 'facturacion', 'Configuraci├│n FE', 'fas fa-sliders-h', '#F59E0B', 'facturacion.configurar', 8),
+(14, 'facturacion', 'Formas de Pago', 'fas fa-credit-card', '#F59E0B', 'facturacion.ver', 9),
+(15, 'facturacion', 'Formas de Pago', 'fas fa-credit-card', '#F59E0B', 'facturacion.ver', 9),
+(16, 'instalaciones', 'Dashboard Arena', 'fas fa-tachometer-alt', '#2563eb', 'instalaciones.ver', 1),
+(17, 'instalaciones', 'Canchas', 'fas fa-futbol', '#2563eb', 'instalaciones.ver', 2),
+(18, 'instalaciones', 'Mantenimientos', 'fas fa-tools', '#2563eb', 'instalaciones.editar', 3),
+(19, 'instalaciones', 'Reservas Arena', 'fas fa-calendar-check', '#2563eb', 'reservas.ver', 4);
 
 -- --------------------------------------------------------
 
@@ -3329,10 +3780,10 @@ INSERT INTO `seguridad_roles` (`rol_rol_id`, `rol_tenant_id`, `rol_codigo`, `rol
 (1, NULL, 'SUPERADMIN', 'Super Administrador', 'Acceso total al sistema', '[\"*\"]', 'S', 'N', 'N', 10, 'A', '2026-01-25 00:35:09'),
 (3, NULL, 'RECEPCION', 'Recepcionista', 'Gestion de reservas y clientes', '[\"reservas.*\", \"clientes.ver\", \"clientes.crear\", \"pagos.crear\"]', 'N', 'N', 'N', 3, 'A', '2026-01-25 00:35:09'),
 (4, NULL, 'CLIENTE', 'Cliente', 'Usuario final con acceso limitado', '[\"reservas.ver\", \"reservas.crear\", \"perfil.*\"]', 'N', 'N', 'N', 1, 'A', '2026-01-25 00:35:09'),
-(5, 1, 'ADMIN', 'Administrador Tenant', 'Administrador del tenant', '[\"usuarios.*\", \"sedes.*\", \"configuracion.*\"]', 'N', 'S', 'N', 5, 'A', '2026-01-25 00:35:10'),
+(5, 1, 'ADMIN', 'Administrador Tenant', 'Administrador del tenant', '[\"usuarios.*\", \"sedes.*\", \"configuracion.*\", \"facturacion.*\"]', 'N', 'S', 'N', 5, 'A', '2026-01-25 00:35:10'),
 (6, 1, 'RECEPCION', 'Recepcionista', 'Gestion de reservas y clientes', '[\"reservas.*\", \"clientes.ver\", \"clientes.crear\", \"pagos.crear\"]', 'N', 'N', 'N', 3, 'A', '2026-01-25 00:35:10'),
 (7, 1, 'CLIENTE', 'Cliente', 'Usuario final con acceso limitado', '[\"reservas.ver\", \"reservas.crear\", \"perfil.*\"]', 'N', 'N', 'N', 1, 'A', '2026-01-25 00:35:10'),
-(9, NULL, 'ADMIN', 'Administrador', 'Administrador de tenant', '[\"usuarios.*\", \"sedes.*\", \"configuracion.*\"]', 'N', 'N', 'N', 5, 'A', '2026-01-25 00:35:19'),
+(9, NULL, 'ADMIN', 'Administrador', 'Administrador de tenant', '[\"usuarios.*\", \"sedes.*\", \"configuracion.*\", \"facturacion.*\"]', 'N', 'N', 'N', 5, 'A', '2026-01-25 00:35:19'),
 (10, NULL, 'RECEPCION', 'Recepcionista', 'Gestion de reservas y clientes', '[\"reservas.*\", \"clientes.ver\", \"clientes.crear\", \"pagos.crear\"]', 'N', 'N', 'N', 3, 'A', '2026-01-25 00:35:19'),
 (11, NULL, 'CLIENTE', 'Cliente', 'Usuario final con acceso limitado', '[\"reservas.ver\", \"reservas.crear\", \"perfil.*\"]', 'N', 'N', 'N', 1, 'A', '2026-01-25 00:35:19'),
 (16, NULL, 'admin', 'Administrador', 'Gestión completa del tenant', '[\"dashboard.*\", \"clientes.*\", \"instalaciones.*\", \"reservas.*\", \"facturacion.*\", \"reportes.*\", \"usuarios.ver\", \"usuarios.crear\", \"usuarios.editar\"]', 'N', 'S', 'N', 4, 'A', '2026-01-26 15:38:20'),
@@ -3358,7 +3809,7 @@ CREATE TABLE IF NOT EXISTS `seguridad_rol_menu` (
   UNIQUE KEY `uk_rol_menu` (`rme_rol_id`,`rme_menu_id`),
   KEY `idx_rme_rol` (`rme_rol_id`),
   KEY `idx_rme_menu` (`rme_menu_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=244 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Permisos de visibilidad de menú por rol';
+) ENGINE=InnoDB AUTO_INCREMENT=894 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Permisos de visibilidad de menú por rol';
 
 --
 -- Volcado de datos para la tabla `seguridad_rol_menu`
@@ -3550,7 +4001,584 @@ INSERT INTO `seguridad_rol_menu` (`rme_id`, `rme_rol_id`, `rme_menu_id`, `rme_pu
 (240, 2, 190, 1, 1, '2026-02-09 21:23:14', '2026-02-09 21:23:14'),
 (241, 2, 191, 1, 1, '2026-02-09 21:23:14', '2026-02-09 21:23:14'),
 (242, 1, 192, 1, 1, '2026-02-19 20:39:15', '2026-02-19 20:39:15'),
-(243, 1, 194, 1, 1, '2026-03-04 20:33:39', '2026-03-04 20:33:39');
+(243, 1, 194, 1, 1, '2026-03-04 20:33:39', '2026-03-04 20:33:39'),
+(244, 1, 215, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(245, 1, 216, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(246, 1, 217, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(247, 1, 218, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(248, 1, 219, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(249, 1, 220, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(250, 1, 221, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(251, 1, 222, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(252, 1, 223, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(253, 1, 224, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(254, 3, 215, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(255, 3, 216, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(256, 3, 217, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(257, 3, 218, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(258, 3, 219, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(259, 3, 220, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(260, 3, 221, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(261, 3, 222, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(262, 3, 223, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(263, 3, 224, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(264, 4, 215, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(265, 4, 216, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(266, 4, 217, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(267, 4, 218, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(268, 4, 219, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(269, 4, 220, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(270, 4, 221, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(271, 4, 222, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(272, 4, 223, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(273, 4, 224, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(274, 5, 215, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(275, 5, 216, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(276, 5, 217, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(277, 5, 218, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(278, 5, 219, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(279, 5, 220, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(280, 5, 221, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(281, 5, 222, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(282, 5, 223, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(283, 5, 224, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(284, 6, 215, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(285, 6, 216, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(286, 6, 217, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(287, 6, 218, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(288, 6, 219, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(289, 6, 220, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(290, 6, 221, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(291, 6, 222, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(292, 6, 223, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(293, 6, 224, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(294, 7, 215, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(295, 7, 216, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(296, 7, 217, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(297, 7, 218, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(298, 7, 219, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(299, 7, 220, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(300, 7, 221, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(301, 7, 222, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(302, 7, 223, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(303, 7, 224, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(304, 9, 215, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(305, 9, 216, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(306, 9, 217, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(307, 9, 218, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(308, 9, 219, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(309, 9, 220, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(310, 9, 221, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(311, 9, 222, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(312, 9, 223, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(313, 9, 224, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(314, 10, 215, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(315, 10, 216, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(316, 10, 217, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(317, 10, 218, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(318, 10, 219, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(319, 10, 220, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(320, 10, 221, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(321, 10, 222, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(322, 10, 223, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(323, 10, 224, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(324, 11, 215, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(325, 11, 216, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(326, 11, 217, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(327, 11, 218, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(328, 11, 219, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(329, 11, 220, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(330, 11, 221, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(331, 11, 222, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(332, 11, 223, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(333, 11, 224, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(334, 16, 215, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(335, 16, 216, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(336, 16, 217, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(337, 16, 218, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(338, 16, 219, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(339, 16, 220, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(340, 16, 221, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(341, 16, 222, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(342, 16, 223, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(343, 16, 224, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(344, 17, 215, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(345, 17, 216, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(346, 17, 217, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(347, 17, 218, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(348, 17, 219, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(349, 17, 220, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(350, 17, 221, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(351, 17, 222, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(352, 17, 223, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(353, 17, 224, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(354, 18, 215, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(355, 18, 216, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(356, 18, 217, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(357, 18, 218, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(358, 18, 219, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(359, 18, 220, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(360, 18, 221, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(361, 18, 222, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(362, 18, 223, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(363, 18, 224, 1, 1, '2026-03-11 05:29:41', '2026-03-11 05:29:41'),
+(371, 1, 225, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(372, 1, 226, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(373, 1, 227, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(374, 1, 228, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(375, 1, 229, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(376, 1, 230, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(377, 1, 231, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(378, 1, 232, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(379, 1, 233, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(380, 1, 234, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(381, 3, 225, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(382, 3, 226, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(383, 3, 227, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(384, 3, 228, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(385, 3, 229, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(386, 3, 230, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(387, 3, 231, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(388, 3, 232, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(389, 3, 233, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(390, 3, 234, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(391, 4, 225, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(392, 4, 226, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(393, 4, 227, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(394, 4, 228, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(395, 4, 229, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(396, 4, 230, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(397, 4, 231, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(398, 4, 232, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(399, 4, 233, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(400, 4, 234, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(401, 5, 225, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(402, 5, 226, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(403, 5, 227, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(404, 5, 228, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(405, 5, 229, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(406, 5, 230, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(407, 5, 231, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(408, 5, 232, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(409, 5, 233, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(410, 5, 234, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(411, 6, 225, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(412, 6, 226, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(413, 6, 227, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(414, 6, 228, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(415, 6, 229, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(416, 6, 230, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(417, 6, 231, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(418, 6, 232, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(419, 6, 233, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(420, 6, 234, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(421, 7, 225, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(422, 7, 226, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(423, 7, 227, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(424, 7, 228, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(425, 7, 229, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(426, 7, 230, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(427, 7, 231, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(428, 7, 232, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(429, 7, 233, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(430, 7, 234, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(431, 9, 225, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(432, 9, 226, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(433, 9, 227, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(434, 9, 228, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(435, 9, 229, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(436, 9, 230, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(437, 9, 231, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(438, 9, 232, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(439, 9, 233, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(440, 9, 234, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(441, 10, 225, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(442, 10, 226, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(443, 10, 227, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(444, 10, 228, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(445, 10, 229, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(446, 10, 230, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(447, 10, 231, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(448, 10, 232, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(449, 10, 233, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(450, 10, 234, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(451, 11, 225, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(452, 11, 226, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(453, 11, 227, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(454, 11, 228, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(455, 11, 229, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(456, 11, 230, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(457, 11, 231, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(458, 11, 232, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(459, 11, 233, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(460, 11, 234, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(461, 16, 225, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(462, 16, 226, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(463, 16, 227, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(464, 16, 228, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(465, 16, 229, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(466, 16, 230, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(467, 16, 231, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(468, 16, 232, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(469, 16, 233, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(470, 16, 234, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(471, 17, 225, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(472, 17, 226, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(473, 17, 227, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(474, 17, 228, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(475, 17, 229, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(476, 17, 230, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(477, 17, 231, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(478, 17, 232, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(479, 17, 233, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(480, 17, 234, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(481, 18, 225, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(482, 18, 226, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(483, 18, 227, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(484, 18, 228, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(485, 18, 229, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(486, 18, 230, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(487, 18, 231, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(488, 18, 232, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(489, 18, 233, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(490, 18, 234, 1, 1, '2026-03-11 05:32:52', '2026-03-11 05:32:52'),
+(498, 1, 235, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(499, 1, 236, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(500, 1, 237, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(501, 1, 238, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(502, 1, 239, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(503, 1, 240, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(504, 1, 241, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(505, 1, 242, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(506, 1, 243, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(507, 1, 244, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(508, 3, 235, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(509, 3, 236, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(510, 3, 237, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(511, 3, 238, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(512, 3, 239, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(513, 3, 240, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(514, 3, 241, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(515, 3, 242, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(516, 3, 243, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(517, 3, 244, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(518, 4, 235, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(519, 4, 236, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(520, 4, 237, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(521, 4, 238, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(522, 4, 239, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(523, 4, 240, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(524, 4, 241, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(525, 4, 242, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(526, 4, 243, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(527, 4, 244, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(528, 5, 235, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(529, 5, 236, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(530, 5, 237, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(531, 5, 238, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(532, 5, 239, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(533, 5, 240, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(534, 5, 241, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(535, 5, 242, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(536, 5, 243, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(537, 5, 244, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(538, 6, 235, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(539, 6, 236, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(540, 6, 237, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(541, 6, 238, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(542, 6, 239, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(543, 6, 240, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(544, 6, 241, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(545, 6, 242, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(546, 6, 243, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(547, 6, 244, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(548, 7, 235, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(549, 7, 236, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(550, 7, 237, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(551, 7, 238, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(552, 7, 239, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(553, 7, 240, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(554, 7, 241, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(555, 7, 242, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(556, 7, 243, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(557, 7, 244, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(558, 9, 235, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(559, 9, 236, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(560, 9, 237, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(561, 9, 238, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(562, 9, 239, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(563, 9, 240, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(564, 9, 241, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(565, 9, 242, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(566, 9, 243, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(567, 9, 244, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(568, 10, 235, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(569, 10, 236, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(570, 10, 237, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(571, 10, 238, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(572, 10, 239, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(573, 10, 240, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(574, 10, 241, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(575, 10, 242, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(576, 10, 243, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(577, 10, 244, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(578, 11, 235, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(579, 11, 236, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(580, 11, 237, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(581, 11, 238, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(582, 11, 239, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(583, 11, 240, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(584, 11, 241, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(585, 11, 242, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(586, 11, 243, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(587, 11, 244, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(588, 16, 235, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(589, 16, 236, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(590, 16, 237, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(591, 16, 238, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(592, 16, 239, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(593, 16, 240, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(594, 16, 241, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(595, 16, 242, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(596, 16, 243, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(597, 16, 244, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(598, 17, 235, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(599, 17, 236, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(600, 17, 237, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(601, 17, 238, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(602, 17, 239, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(603, 17, 240, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(604, 17, 241, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(605, 17, 242, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(606, 17, 243, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(607, 17, 244, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(608, 18, 235, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(609, 18, 236, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(610, 18, 237, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(611, 18, 238, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(612, 18, 239, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(613, 18, 240, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(614, 18, 241, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(615, 18, 242, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(616, 18, 243, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(617, 18, 244, 1, 1, '2026-03-11 05:33:35', '2026-03-11 05:33:35'),
+(625, 1, 245, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(626, 1, 246, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(627, 1, 247, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(628, 1, 248, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(629, 1, 249, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(630, 1, 250, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(631, 1, 251, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(632, 1, 252, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(633, 1, 253, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(634, 1, 254, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(635, 3, 245, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(636, 3, 246, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(637, 3, 247, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(638, 3, 248, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(639, 3, 249, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(640, 3, 250, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(641, 3, 251, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(642, 3, 252, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(643, 3, 253, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(644, 3, 254, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(645, 4, 245, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(646, 4, 246, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(647, 4, 247, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(648, 4, 248, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(649, 4, 249, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(650, 4, 250, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(651, 4, 251, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(652, 4, 252, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(653, 4, 253, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(654, 4, 254, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(655, 5, 245, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(656, 5, 246, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(657, 5, 247, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(658, 5, 248, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(659, 5, 249, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(660, 5, 250, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(661, 5, 251, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(662, 5, 252, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(663, 5, 253, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(664, 5, 254, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(665, 6, 245, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(666, 6, 246, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(667, 6, 247, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(668, 6, 248, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(669, 6, 249, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(670, 6, 250, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(671, 6, 251, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(672, 6, 252, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(673, 6, 253, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(674, 6, 254, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(675, 7, 245, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(676, 7, 246, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(677, 7, 247, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(678, 7, 248, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(679, 7, 249, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(680, 7, 250, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(681, 7, 251, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(682, 7, 252, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(683, 7, 253, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(684, 7, 254, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(685, 9, 245, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(686, 9, 246, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(687, 9, 247, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(688, 9, 248, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(689, 9, 249, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(690, 9, 250, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(691, 9, 251, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(692, 9, 252, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(693, 9, 253, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(694, 9, 254, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(695, 10, 245, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(696, 10, 246, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(697, 10, 247, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(698, 10, 248, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(699, 10, 249, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(700, 10, 250, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(701, 10, 251, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(702, 10, 252, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(703, 10, 253, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(704, 10, 254, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(705, 11, 245, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(706, 11, 246, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(707, 11, 247, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(708, 11, 248, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(709, 11, 249, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(710, 11, 250, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(711, 11, 251, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(712, 11, 252, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(713, 11, 253, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(714, 11, 254, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(715, 16, 245, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(716, 16, 246, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(717, 16, 247, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(718, 16, 248, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(719, 16, 249, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(720, 16, 250, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(721, 16, 251, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(722, 16, 252, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(723, 16, 253, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(724, 16, 254, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(725, 17, 245, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(726, 17, 246, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(727, 17, 247, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(728, 17, 248, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(729, 17, 249, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(730, 17, 250, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(731, 17, 251, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(732, 17, 252, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(733, 17, 253, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(734, 17, 254, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(735, 18, 245, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(736, 18, 246, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(737, 18, 247, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(738, 18, 248, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(739, 18, 249, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(740, 18, 250, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(741, 18, 251, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(742, 18, 252, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(743, 18, 253, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(744, 18, 254, 1, 1, '2026-03-11 06:09:14', '2026-03-11 06:09:14'),
+(752, 1, 255, 1, 1, '2026-03-12 05:01:04', '2026-03-12 05:01:04'),
+(753, 5, 255, 1, 1, '2026-03-12 05:01:04', '2026-03-12 05:01:04'),
+(754, 9, 255, 1, 1, '2026-03-12 05:01:04', '2026-03-12 05:01:04'),
+(755, 16, 255, 1, 1, '2026-03-12 05:01:04', '2026-03-12 05:01:04'),
+(760, 16, 256, 1, 1, '2026-03-16 03:53:41', '2026-03-16 03:53:41'),
+(761, 10, 256, 1, 1, '2026-03-16 03:53:41', '2026-03-16 03:53:41'),
+(762, 9, 256, 1, 1, '2026-03-16 03:53:41', '2026-03-16 03:53:41'),
+(763, 6, 256, 1, 1, '2026-03-16 03:53:41', '2026-03-16 03:53:41'),
+(764, 5, 256, 1, 1, '2026-03-16 03:53:41', '2026-03-16 03:53:41'),
+(765, 3, 256, 1, 1, '2026-03-16 03:53:41', '2026-03-16 03:53:41'),
+(766, 1, 256, 1, 1, '2026-03-16 03:53:41', '2026-03-16 03:53:41'),
+(767, 16, 1, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(768, 10, 1, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(769, 9, 1, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(770, 6, 1, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(771, 5, 1, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(772, 3, 1, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(773, 1, 1, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(774, 16, 2, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(775, 10, 2, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(776, 9, 2, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(777, 6, 2, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(778, 5, 2, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(779, 3, 2, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(780, 16, 3, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(781, 10, 3, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(782, 9, 3, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(783, 6, 3, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(784, 5, 3, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(785, 3, 3, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(786, 16, 4, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(787, 10, 4, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(788, 9, 4, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(789, 6, 4, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(790, 5, 4, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(791, 3, 4, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(792, 16, 5, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(793, 10, 5, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(794, 9, 5, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(795, 6, 5, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(796, 5, 5, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(797, 3, 5, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(798, 16, 110, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(799, 10, 110, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(800, 9, 110, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(801, 6, 110, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(802, 5, 110, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(803, 3, 110, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(804, 16, 111, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(805, 10, 111, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(806, 9, 111, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(807, 6, 111, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(808, 5, 111, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(809, 3, 111, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(810, 16, 112, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(811, 10, 112, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(812, 9, 112, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(813, 6, 112, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(814, 5, 112, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(815, 3, 112, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(816, 16, 113, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(817, 10, 113, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(818, 9, 113, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(819, 6, 113, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(820, 5, 113, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(821, 3, 113, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(822, 16, 114, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(823, 10, 114, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(824, 9, 114, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(825, 6, 114, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(826, 5, 114, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(827, 3, 114, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(828, 16, 115, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(829, 10, 115, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(830, 9, 115, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(831, 6, 115, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(832, 5, 115, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(833, 3, 115, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(834, 16, 116, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(835, 10, 116, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(836, 9, 116, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(837, 6, 116, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(838, 5, 116, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(839, 3, 116, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(840, 16, 117, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(841, 10, 117, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(842, 9, 117, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(843, 6, 117, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(844, 5, 117, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(845, 3, 117, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(846, 16, 119, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(847, 10, 119, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(848, 9, 119, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(849, 6, 119, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(850, 5, 119, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(851, 3, 119, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48'),
+(852, 1, 119, 1, 1, '2026-03-16 05:22:48', '2026-03-16 05:22:48');
 
 -- --------------------------------------------------------
 
@@ -3573,7 +4601,7 @@ CREATE TABLE IF NOT EXISTS `seguridad_rol_modulos` (
   UNIQUE KEY `uk_rol_modulo` (`rmo_rol_rol_id`,`rmo_rol_modulo_id`),
   KEY `idx_rol` (`rmo_rol_rol_id`),
   KEY `idx_modulo` (`rmo_rol_modulo_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=146 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Permisos de roles sobre módulos';
+) ENGINE=InnoDB AUTO_INCREMENT=156 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Permisos de roles sobre módulos';
 
 --
 -- Volcado de datos para la tabla `seguridad_rol_modulos`
@@ -3604,7 +4632,16 @@ INSERT INTO `seguridad_rol_modulos` (`rmo_rol_id`, `rmo_rol_rol_id`, `rmo_rol_mo
 (142, 1, 18, 1, 1, 1, 1, NULL, '2026-02-08 01:33:42'),
 (143, 1, 20, 1, 1, 1, 1, NULL, '2026-02-08 01:33:42'),
 (144, 1, 8, 1, 1, 1, 1, NULL, '2026-02-08 01:33:42'),
-(145, 1, 21, 1, 1, 1, 1, NULL, '2026-02-08 01:33:42');
+(145, 1, 21, 1, 1, 1, 1, NULL, '2026-02-08 01:33:42'),
+(146, 5, 3, 1, 1, 1, 0, '{\"configurar\": 1}', '2026-03-12 19:20:59'),
+(147, 9, 3, 1, 1, 1, 0, '{\"configurar\": 1}', '2026-03-12 19:20:59'),
+(148, 16, 3, 1, 1, 1, 0, '{\"configurar\": 1}', '2026-03-12 19:20:59'),
+(149, 3, 1, 1, 1, 1, 0, '{}', '2026-03-16 05:22:48'),
+(150, 5, 1, 1, 1, 1, 0, '{}', '2026-03-16 05:22:48'),
+(151, 6, 1, 1, 1, 1, 0, '{}', '2026-03-16 05:22:48'),
+(152, 9, 1, 1, 1, 1, 0, '{}', '2026-03-16 05:22:48'),
+(153, 10, 1, 1, 1, 1, 0, '{}', '2026-03-16 05:22:48'),
+(154, 16, 1, 1, 1, 1, 0, '{}', '2026-03-16 05:22:48');
 
 -- --------------------------------------------------------
 
@@ -4001,7 +5038,7 @@ CREATE TABLE IF NOT EXISTS `seguridad_usuarios` (
 --
 
 INSERT INTO `seguridad_usuarios` (`usu_usuario_id`, `usu_tenant_id`, `usu_identificacion`, `usu_identificacion_hash`, `usu_nombres`, `usu_apellidos`, `usu_email`, `usu_email_hash`, `usu_telefono`, `usu_celular`, `usu_username`, `usu_password`, `usu_requiere_2fa`, `usu_codigo_2fa`, `usu_codigo_2fa_expira`, `usu_intentos_2fa`, `usu_token_recuperacion`, `usu_token_recuperacion_expira`, `usu_rol_id`, `usu_permisos_especiales`, `usu_ultimo_login`, `usu_ip_ultimo_login`, `usu_token_sesion`, `usu_token_sesion_expira`, `usu_sedes_acceso`, `usu_sede_principal_id`, `usu_avatar`, `usu_tema`, `usu_idioma`, `usu_notificaciones_email`, `usu_notificaciones_push`, `usu_debe_cambiar_password`, `usu_password_expira`, `usu_intentos_fallidos`, `usu_bloqueado_hasta`, `usu_estado`, `usu_fecha_registro`, `usu_fecha_actualizacion`) VALUES
-(1, 1, 'ENC::1IeSjwyCnY1tTslc8FJ7WUme8b1HuxmAhl0cjF78U/c=', '46e867782d4667050ad7bf37c46a7107', 'Freddy', 'Pinzón', 'ENC::N8M5PUSsUol/X8uKN/PMBHj5PJ5em+R7qqqImEVO3qiGtF07Q21IhWHHlC/S6Qsa', 'c0e957495bb43b36f0ff7dea96030260', 'ENC::yeNJ1lTl5ufG6m0IduQTxMBubjp17a3yFRRgPbnBpdk=', 'ENC::tYpnIfZI5bK0QOhffMikZeAxzkzK4bcvtvdEChSNhxA=', 'superadmin', '$argon2id$v=19$m=65536,t=4,p=3$Qm9TcVczOThmQkh4N0hDTg$gdL3FkFtDnw+MnyyE+VIxagpRB019YMCK0w+fOpeydg', 'N', '798279', '2026-01-24 20:21:48', 0, NULL, NULL, 1, NULL, '2026-03-10 11:03:16', '::1', 'd46c1a54c78b28260bf588612ead286bf1e0d7218452375938c70b356bcff026', '2026-02-24 17:56:18', NULL, NULL, NULL, 'light', 'es', 'S', 'S', 'N', '2027-01-01', 0, NULL, 'A', '2026-01-25 00:35:10', '2026-03-10 16:03:16'),
+(1, 1, 'ENC::1IeSjwyCnY1tTslc8FJ7WUme8b1HuxmAhl0cjF78U/c=', '46e867782d4667050ad7bf37c46a7107', 'Freddy', 'Pinzón', 'ENC::N8M5PUSsUol/X8uKN/PMBHj5PJ5em+R7qqqImEVO3qiGtF07Q21IhWHHlC/S6Qsa', 'c0e957495bb43b36f0ff7dea96030260', 'ENC::yeNJ1lTl5ufG6m0IduQTxMBubjp17a3yFRRgPbnBpdk=', 'ENC::tYpnIfZI5bK0QOhffMikZeAxzkzK4bcvtvdEChSNhxA=', 'superadmin', '$argon2id$v=19$m=65536,t=4,p=3$Qm9TcVczOThmQkh4N0hDTg$gdL3FkFtDnw+MnyyE+VIxagpRB019YMCK0w+fOpeydg', 'N', '798279', '2026-01-24 20:21:48', 0, NULL, NULL, 1, NULL, '2026-03-15 22:28:14', '::1', 'd46c1a54c78b28260bf588612ead286bf1e0d7218452375938c70b356bcff026', '2026-02-24 17:56:18', NULL, NULL, NULL, 'light', 'es', 'S', 'S', 'N', '2027-01-01', 0, NULL, 'A', '2026-01-25 00:35:10', '2026-03-16 03:28:14'),
 (3, 2, 'ENC::0U+LS3T2LOMHX2l/jl/qL4nVQLTEjcKeon2MYNgcpGc=', '46e867782d4667050ad7bf37c46a7107', 'Bolívar', 'Pinzón', 'ENC::lPjwchXnjfYtM3x/w6LV1c4ZJOi2zQD+2GxptRITiLuHCAA/eUz0mP/qygGoHNDI', 'fa2536059c2cfc78fe680f0629a1859d', 'ENC::kQxrCU/qWLYGnTzgNPzpRAIznHq+39WCeEQruprq2Cw=', '', 'fbpinzon', '$argon2id$v=19$m=65536,t=4,p=1$S2wzZFc0cGFpaUouNXRCcw$CyDE4Ij59TlCNt5rs9Srt1Z5My2VtSdk7NmlO8yiq30', 'N', NULL, NULL, 0, NULL, NULL, 1, NULL, '2026-03-09 10:13:57', '::1', NULL, NULL, NULL, NULL, NULL, 'light', 'es', 'S', 'S', 'N', NULL, 1, NULL, 'A', '2026-01-29 22:22:55', '2026-03-09 15:38:10');
 
 -- --------------------------------------------------------
@@ -4841,21 +5878,21 @@ CREATE TABLE IF NOT EXISTS `store_venta_pagos` (
 --
 DROP VIEW IF EXISTS `usuarios`;
 CREATE TABLE IF NOT EXISTS `usuarios` (
-`apellidos` varchar(150)
-,`celular` varchar(255)
-,`email` varchar(500)
-,`estado` char(1)
-,`fecha_actualizacion` timestamp
-,`fecha_registro` timestamp
+`usuario_id` int
+,`tenant_id` int
 ,`identificacion` varchar(255)
 ,`nombres` varchar(150)
+,`apellidos` varchar(150)
+,`email` varchar(500)
+,`telefono` varchar(255)
+,`celular` varchar(255)
+,`username` varchar(50)
 ,`password` varchar(255)
 ,`requiere_2fa` char(1)
 ,`rol_id` int
-,`telefono` varchar(255)
-,`tenant_id` int
-,`username` varchar(50)
-,`usuario_id` int
+,`estado` char(1)
+,`fecha_registro` timestamp
+,`fecha_actualizacion` timestamp
 );
 
 -- --------------------------------------------------------
@@ -4926,6 +5963,29 @@ DROP TABLE IF EXISTS `usuarios`;
 
 DROP VIEW IF EXISTS `usuarios`;
 CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `usuarios`  AS SELECT `seguridad_usuarios`.`usu_usuario_id` AS `usuario_id`, `seguridad_usuarios`.`usu_tenant_id` AS `tenant_id`, `seguridad_usuarios`.`usu_identificacion` AS `identificacion`, `seguridad_usuarios`.`usu_nombres` AS `nombres`, `seguridad_usuarios`.`usu_apellidos` AS `apellidos`, `seguridad_usuarios`.`usu_email` AS `email`, `seguridad_usuarios`.`usu_telefono` AS `telefono`, `seguridad_usuarios`.`usu_celular` AS `celular`, `seguridad_usuarios`.`usu_username` AS `username`, `seguridad_usuarios`.`usu_password` AS `password`, `seguridad_usuarios`.`usu_requiere_2fa` AS `requiere_2fa`, `seguridad_usuarios`.`usu_rol_id` AS `rol_id`, `seguridad_usuarios`.`usu_estado` AS `estado`, `seguridad_usuarios`.`usu_fecha_registro` AS `fecha_registro`, `seguridad_usuarios`.`usu_fecha_actualizacion` AS `fecha_actualizacion` FROM `seguridad_usuarios` ;
+
+--
+-- Restricciones para tablas volcadas
+--
+
+--
+-- Filtros para la tabla `facturacion_facturas`
+--
+ALTER TABLE `facturacion_facturas`
+  ADD CONSTRAINT `fk_fac_forma_pago` FOREIGN KEY (`fac_forma_pago_id`) REFERENCES `facturacion_formas_pago` (`fpa_id`) ON DELETE SET NULL;
+
+--
+-- Filtros para la tabla `facturacion_lineas`
+--
+ALTER TABLE `facturacion_lineas`
+  ADD CONSTRAINT `fk_lin_factura` FOREIGN KEY (`lin_factura_id`) REFERENCES `facturacion_facturas` (`fac_id`) ON DELETE CASCADE;
+
+--
+-- Filtros para la tabla `facturacion_pagos`
+--
+ALTER TABLE `facturacion_pagos`
+  ADD CONSTRAINT `fk_pag_factura` FOREIGN KEY (`pag_factura_id`) REFERENCES `facturacion_facturas` (`fac_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_pag_forma_pago` FOREIGN KEY (`pag_forma_pago_id`) REFERENCES `facturacion_formas_pago` (`fpa_id`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

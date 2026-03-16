@@ -206,8 +206,34 @@ class HubController extends \BaseController {
      */
     private function verificarAccesoModulo($codigo, $tenantId, $rolId) {
         try {
+            $esSuperAdmin = ($rolId == 1);
+            // Super admin: accede a cualquier módulo activo sin requerir contrato de tenant
+            if ($esSuperAdmin) {
+                $sql = "
+                    SELECT
+                        m.mod_id,
+                        m.mod_codigo,
+                        m.mod_nombre,
+                        m.mod_descripcion,
+                        m.mod_icono,
+                        m.mod_color_fondo,
+                        m.mod_orden,
+                        m.mod_ruta_modulo,
+                        m.mod_ruta_controller,
+                        m.mod_ruta_action,
+                        m.mod_es_externo,
+                        m.mod_url_externa,
+                        m.mod_activo,
+                        1 AS puede_ver, 1 AS puede_crear, 1 AS puede_editar, 1 AS puede_eliminar
+                    FROM seguridad_modulos m
+                    WHERE m.mod_codigo = ? AND m.mod_activo = 1
+                    LIMIT 1
+                ";
+                $stmt = $this->db->prepare($sql);
+                $stmt->execute([$codigo]);
+            } else {
             $sql = "
-                SELECT 
+                SELECT
                     m.mod_id,
                     m.mod_codigo,
                     m.mod_nombre,
@@ -226,19 +252,20 @@ class HubController extends \BaseController {
                     COALESCE(rm.rmo_rol_puede_editar, 0) AS puede_editar,
                     COALESCE(rm.rmo_rol_puede_eliminar, 0) AS puede_eliminar
                 FROM seguridad_modulos m
-                INNER JOIN seguridad_tenant_modulos tm ON m.mod_id = tm.tmo_modulo_id 
-                    AND tm.tmo_tenant_id = ? 
+                INNER JOIN seguridad_tenant_modulos tm ON m.mod_id = tm.tmo_modulo_id
+                    AND tm.tmo_tenant_id = ?
                     AND tm.tmo_estado = 'ACTIVO'
                     AND tm.tmo_activo = 'S'
                     AND (tm.tmo_fecha_fin IS NULL OR tm.tmo_fecha_fin >= CURDATE())
                 LEFT JOIN seguridad_rol_modulos rm ON m.mod_id = rm.rmo_rol_modulo_id AND rm.rmo_rol_rol_id = ?
-                WHERE m.mod_codigo = ? 
+                WHERE m.mod_codigo = ?
                     AND m.mod_activo = 1
-                    AND (rm.rmo_rol_puede_ver = 1 OR rm.rmo_rol_puede_ver IS NULL OR ? = 1)
+                    AND (rm.rmo_rol_puede_ver = 1 OR rm.rmo_rol_puede_ver IS NULL)
                 LIMIT 1
             ";
             $stmt = $this->db->prepare($sql);
-            $stmt->execute([$tenantId, $rolId, $codigo, $rolId]);
+            $stmt->execute([$tenantId, $rolId, $codigo]);
+            }
             $modulo = $stmt->fetch(\PDO::FETCH_ASSOC);
             if (!$modulo) return null;
             // Mapear a los nombres esperados por la vista y sesión

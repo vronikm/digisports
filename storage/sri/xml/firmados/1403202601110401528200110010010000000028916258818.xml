@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<factura id="comprobante" version="2.1.0">
+  <infoTributaria>
+    <ambiente>1</ambiente>
+    <tipoEmision>1</tipoEmision>
+    <razonSocial>EMPRESA S.A.</razonSocial>
+    <nombreComercial>Nombre Comercial</nombreComercial>
+    <ruc>0990000000001</ruc>
+    <claveAcceso>1403202601110401528200110010010000000028916258818</claveAcceso>
+    <codDoc>01</codDoc>
+    <estab>001</estab>
+    <ptoEmi>001</ptoEmi>
+    <secuencial>000000002</secuencial>
+    <dirMatriz>Dirección Matriz</dirMatriz>
+  </infoTributaria>
+  <infoFactura>
+    <fechaEmision>14/03/2026</fechaEmision>
+    <dirEstablecimiento>Dirección Establecimiento</dirEstablecimiento>
+    <obligadoContabilidad>SI</obligadoContabilidad>
+    <tipoIdentificacionComprador>05</tipoIdentificacionComprador>
+    <razonSocialComprador>Freddy Bolívar Pinzón Olmedo</razonSocialComprador>
+    <identificacionComprador>1103345292</identificacionComprador>
+    <direccionComprador>Loja, Rey david y los Olivos -336</direccionComprador>
+    <totalSinImpuestos>30.00</totalSinImpuestos>
+    <totalDescuento>0.00</totalDescuento>
+    <totalConImpuestos>
+      <totalImpuesto>
+        <codigo>2</codigo>
+        <codigoPorcentaje>0</codigoPorcentaje>
+        <baseImponible>30.00</baseImponible>
+        <valor>0.00</valor>
+      </totalImpuesto>
+    </totalConImpuestos>
+    <propina>0.00</propina>
+    <importeTotal>30.00</importeTotal>
+    <moneda>DOLAR</moneda>
+    <pagos>
+      <pago>
+        <formaPago>01</formaPago>
+        <total>30.00</total>
+      </pago>
+    </pagos>
+  </infoFactura>
+  <detalles>
+    <detalle>
+      <codigoPrincipal>SERV001</codigoPrincipal>
+      <descripcion>Pago de mensualidad | MAR26</descripcion>
+      <cantidad>1.00</cantidad>
+      <precioUnitario>30.00</precioUnitario>
+      <descuento>0.00</descuento>
+      <precioTotalSinImpuesto>30.00</precioTotalSinImpuesto>
+      <impuestos>
+        <impuesto>
+          <codigo>2</codigo>
+          <codigoPorcentaje>0</codigoPorcentaje>
+          <tarifa>0.00</tarifa>
+          <baseImponible>30.00</baseImponible>
+          <valor>0.00</valor>
+        </impuesto>
+      </impuestos>
+    </detalle>
+  </detalles>
+  <infoAdicional>
+    <campoAdicional nombre="Email">ENC::SJIp5vZVmLPnefVHtBt2rbd5GjyfAONmjzW3MyEeoSzfeRrCgi/2dCF0RbIhB5ut</campoAdicional>
+    <campoAdicional nombre="Teléfono">ENC::Wi4TBafq7H4H83WK3AYmhk2iJMoPnx86TbVZij7QFTM=</campoAdicional>
+  </infoAdicional>
+<ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xmlns:etsi="http://uri.etsi.org/01903/v1.3.2#" Id="Signature-1ab1f8fe"><ds:SignedInfo xmlns:ds="http://www.w3.org/2000/09/xmldsig#"><ds:CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/><ds:SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1"/><ds:Reference Id="Reference-db940e84" URI="#comprobante"><ds:Transforms><ds:Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/></ds:Transforms><ds:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/><ds:DigestValue>SApYuqc7bqpIWzwxui0QIL80i7M=</ds:DigestValue></ds:Reference><ds:Reference URI="#SignedProperties-Signature-1ab1f8fe" Type="http://uri.etsi.org/01903#SignedProperties"><ds:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/><ds:DigestValue>+dSSqgzaPZSYWK7ByMFmqT1RRlA=</ds:DigestValue></ds:Reference></ds:SignedInfo><ds:SignatureValue Id="SignatureValue-Signature-1ab1f8fe">VvyogxrmrJa7bgnc8LwuyT1yTFgOvXJRU9uNnmPoB+tTpYZGKK25prNfUpHMmh+OcgFynolbW+QrgOIHzik+DFKWQM1aSiZHbIdb2YvNfl+vfDK6LK3+soPLw+drt2hii2GNfK5umI7DWEiJ6mje58jFXc1q9RUc+s7wLwXqVCD8tAXqMQTHP2SwrIvGF1VkOMHSqWydg0rNlK2nGthZ8es5h5IWxzNSBk5s+fChewFz3OqmJBkUENTEH69pIBuu+0bPSIYT5VlnktcMNRVdSR18LoMF2IVaV+wuiYb2ACGKH+IMjBjm9pjv3EM5OzdQmLiDRewfiTfMJ9xFCa9BjQ==</ds:SignatureValue><ds:KeyInfo Id="KeyInfo-Signature-1ab1f8fe"><ds:X509Data><ds:X509Certificate>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</ds:X509Certificate></ds:X509Data><ds:KeyValue><ds:RSAKeyValue><ds:Modulus>sYcBrWVwg3PTBLwla+VbiczibuOPzOju0rN8mKBVktO5LtOG0Ft83dwDVwFz2L7Y/MIDDzQ7r9h2ps/56sWhRArLLKqOR1qudRj/3DkH3AWXaVweTq7Kkoe9tECXeF7shY3jepAHEE6b8QLpN7GvA+8GhWxMtOEVdxKjRjXnsDO/0RNn1yvJ+avDxWAg++AP2x0N8LZHDmeedoyu3kHTNeIa373Y9MJJInBZtfRgnhS1cZzTA/dJa0rNNTo1Hz51gbiIqO66XhnhnGh7EmO96Vbbl0Q58tXzY2JF+e9qzx/E0kPwEYoeF3qy+sdrAPgOfyGBFOZYiHulJY7Hxz0v7w==</ds:Modulus><ds:Exponent>AQAB</ds:Exponent></ds:RSAKeyValue></ds:KeyValue></ds:KeyInfo><ds:Object Id="XadesObjectId-Signature-1ab1f8fe"><etsi:QualifyingProperties Target="#Signature-1ab1f8fe"><etsi:SignedProperties xmlns:etsi="http://uri.etsi.org/01903/v1.3.2#" xmlns:ds="http://www.w3.org/2000/09/xmldsig#" Id="SignedProperties-Signature-1ab1f8fe"><etsi:SignedSignatureProperties><etsi:SigningTime>2026-03-14T11:54:21-05:00</etsi:SigningTime><etsi:SigningCertificate><etsi:Cert><etsi:CertDigest><ds:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/><ds:DigestValue>ylQrwIBV5/T+7VE0z/U9ZuSPUnY=</ds:DigestValue></etsi:CertDigest><etsi:IssuerSerial><ds:X509IssuerName>CN=Lazzate Emisor CA2,O=Lazzate Cia. Ltda.,C=EC</ds:X509IssuerName><ds:X509SerialNumber>3254903487</ds:X509SerialNumber></etsi:IssuerSerial></etsi:Cert></etsi:SigningCertificate></etsi:SignedSignatureProperties><etsi:SignedDataObjectProperties><etsi:DataObjectFormat ObjectReference="#Reference-db940e84"><etsi:Description>contenido comprobante</etsi:Description><etsi:MimeType>text/xml</etsi:MimeType></etsi:DataObjectFormat></etsi:SignedDataObjectProperties></etsi:SignedProperties></etsi:QualifyingProperties></ds:Object></ds:Signature></factura>

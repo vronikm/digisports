@@ -21,6 +21,14 @@ class FacturaElectronicaService {
         $this->config = require BASE_PATH . '/config/sri.php';
         $this->db = \Database::getInstance()->getConnection();
     }
+
+    /**
+     * Reemplaza la configuración con los valores del tenant activo.
+     * Debe llamarse después de cargar la config del tenant en el controlador.
+     */
+    public function setConfig(array $config): void {
+        $this->config = $config;
+    }
     
     /**
      * Generar clave de acceso de 49 dígitos
@@ -84,30 +92,53 @@ class FacturaElectronicaService {
     }
     
     /**
-     * Obtener siguiente secuencial para factura
-     * 
-     * @param int $tenantId ID del tenant
-     * @param string $establecimiento Código establecimiento
-     * @param string $puntoEmision Código punto de emisión
-     * @return string Secuencial formateado
+     * Obtener y reservar el siguiente secuencial de forma atómica.
+     *
+     * Usa la tabla facturas_electronicas_secuenciales con un UPDATE atómico
+     * que aprovecha LAST_INSERT_ID() a nivel de conexión para evitar
+     * condiciones de carrera en entornos concurrentes.
+     *
+     * @param int    $tenantId        ID del tenant
+     * @param string $establecimiento Código de establecimiento (3 dígitos)
+     * @param string $puntoEmision    Código de punto de emisión (3 dígitos)
+     * @param string $tipoComprobante Código del tipo (01=Factura, 04=Nota Crédito, etc.)
+     * @return string Secuencial de 9 dígitos con ceros a la izquierda
+     * @throws \Exception
      */
-    public function obtenerSecuencial($tenantId, $establecimiento = '001', $puntoEmision = '001') {
+    public function obtenerSecuencial($tenantId, $establecimiento = '001', $puntoEmision = '001', $tipoComprobante = '01') {
         try {
-            // Buscar último secuencial
-            $stmt = $this->db->prepare("
-                SELECT MAX(secuencial) as ultimo
-                FROM facturas_electronicas
-                WHERE tenant_id = ?
-                AND establecimiento = ?
-                AND punto_emision = ?
-                AND YEAR(fecha_emision) = YEAR(CURDATE())
+            // Asegurar que existe la fila para este tenant/tipo/estab/pto. Si no existe, la crea con sec=0.
+            $stmtIns = $this->db->prepare("
+                INSERT INTO facturas_electronicas_secuenciales
+                    (sec_tenant_id, sec_tipo_comprobante, sec_establecimiento, sec_punto_emision, sec_secuencial_actual)
+                VALUES (?, ?, ?, ?, 0)
+                ON DUPLICATE KEY UPDATE sec_secuencial_actual = sec_secuencial_actual
             ");
-            $stmt->execute([$tenantId, $establecimiento, $puntoEmision]);
-            $resultado = $stmt->fetch(\PDO::FETCH_ASSOC);
-            
-            $siguiente = ($resultado['ultimo'] ?? 0) + 1;
-            
-            return str_pad($siguiente, $this->config['secuencial']['longitud'], $this->config['secuencial']['padding'], STR_PAD_LEFT);
+            $stmtIns->execute([$tenantId, $tipoComprobante, $establecimiento, $puntoEmision]);
+
+            // Incremento atómico: LAST_INSERT_ID(expr) devuelve expr y lo guarda
+            // como el último insert ID de esta conexión (aislado de otras sesiones).
+            $stmtUpd = $this->db->prepare("
+                UPDATE facturas_electronicas_secuenciales
+                SET sec_secuencial_actual = LAST_INSERT_ID(sec_secuencial_actual + 1),
+                    sec_updated_at = NOW()
+                WHERE sec_tenant_id = ?
+                  AND sec_tipo_comprobante = ?
+                  AND sec_establecimiento = ?
+                  AND sec_punto_emision = ?
+            ");
+            $stmtUpd->execute([$tenantId, $tipoComprobante, $establecimiento, $puntoEmision]);
+
+            // Leer el valor recién reservado (es connection-local, no hay race condition)
+            $nuevo = (int) $this->db->query("SELECT LAST_INSERT_ID()")->fetchColumn();
+
+            if ($nuevo < 1) {
+                throw new \Exception("No se pudo obtener el secuencial (resultado 0)");
+            }
+
+            $longitud = $this->config['secuencial']['longitud'] ?? 9;
+            return str_pad($nuevo, $longitud, '0', STR_PAD_LEFT);
+
         } catch (\Exception $e) {
             throw new \Exception("Error al obtener secuencial: " . $e->getMessage());
         }
@@ -196,27 +227,41 @@ class FacturaElectronicaService {
     private function crearInfoFactura($xml, $datosFactura) {
         $infoFactura = $xml->createElement('infoFactura');
         
-        $elementos = [
-            'fechaEmision' => $datosFactura['fecha_emision'], // dd/mm/aaaa
-            'dirEstablecimiento' => $this->config['emisor']['direccion_establecimiento'],
-            'obligadoContabilidad' => $this->config['emisor']['obligado_contabilidad'],
-            'tipoIdentificacionComprador' => $datosFactura['cliente']['tipo_identificacion'],
-            'razonSocialComprador' => $datosFactura['cliente']['razon_social'],
-            'identificacionComprador' => $datosFactura['cliente']['identificacion'],
-            'direccionComprador' => $datosFactura['cliente']['direccion'] ?? 'N/A',
-            'totalSinImpuestos' => number_format($datosFactura['totales']['subtotal'], 2, '.', ''),
-            'totalDescuento' => number_format($datosFactura['totales']['descuento'] ?? 0, 2, '.', ''),
-        ];
-        
-        // Contribuyente especial si aplica
+        // Orden según ficha técnica SRI v2.32
+        $infoFactura->appendChild($xml->createElement('fechaEmision', $datosFactura['fecha_emision']));
+        $infoFactura->appendChild($xml->createElement('dirEstablecimiento',
+            htmlspecialchars($this->config['emisor']['direccion_establecimiento'])));
+
+        // contribuyenteEspecial va antes de obligadoContabilidad y tipoIdentificacion
         if (!empty($this->config['emisor']['contribuyente_especial'])) {
-            $elementos['contribuyenteEspecial'] = $this->config['emisor']['contribuyente_especial'];
+            $infoFactura->appendChild($xml->createElement('contribuyenteEspecial',
+                htmlspecialchars($this->config['emisor']['contribuyente_especial'])));
         }
-        
-        foreach ($elementos as $nombre => $valor) {
-            $elemento = $xml->createElement($nombre, htmlspecialchars($valor));
-            $infoFactura->appendChild($elemento);
+
+        // obligadoContabilidad sólo si aplica
+        $obligado = $this->config['emisor']['obligado_contabilidad'] ?? '';
+        if ($obligado === 'SI' || $obligado === 'NO') {
+            $infoFactura->appendChild($xml->createElement('obligadoContabilidad',
+                htmlspecialchars($obligado)));
         }
+
+        $infoFactura->appendChild($xml->createElement('tipoIdentificacionComprador',
+            $datosFactura['cliente']['tipo_identificacion']));
+        $infoFactura->appendChild($xml->createElement('razonSocialComprador',
+            htmlspecialchars($datosFactura['cliente']['razon_social'])));
+        $infoFactura->appendChild($xml->createElement('identificacionComprador',
+            htmlspecialchars($datosFactura['cliente']['identificacion'])));
+
+        $dir = $datosFactura['cliente']['direccion'] ?? '';
+        if (!empty($dir) && $dir !== 'N/A') {
+            $infoFactura->appendChild($xml->createElement('direccionComprador',
+                htmlspecialchars($dir)));
+        }
+
+        $infoFactura->appendChild($xml->createElement('totalSinImpuestos',
+            number_format($datosFactura['totales']['subtotal'], 2, '.', '')));
+        $infoFactura->appendChild($xml->createElement('totalDescuento',
+            number_format($datosFactura['totales']['descuento'] ?? 0, 2, '.', '')));
         
         // Total con impuestos
         $totalConImpuestos = $xml->createElement('totalConImpuestos');
@@ -227,6 +272,9 @@ class FacturaElectronicaService {
             $totalImpuesto->appendChild($xml->createElement('codigo', $impuesto['codigo']));
             $totalImpuesto->appendChild($xml->createElement('codigoPorcentaje', $impuesto['codigo_porcentaje']));
             $totalImpuesto->appendChild($xml->createElement('baseImponible', number_format($impuesto['base_imponible'], 2, '.', '')));
+            if (isset($impuesto['tarifa'])) {
+                $totalImpuesto->appendChild($xml->createElement('tarifa', number_format($impuesto['tarifa'], 2, '.', '')));
+            }
             $totalImpuesto->appendChild($xml->createElement('valor', number_format($impuesto['valor'], 2, '.', '')));
             
             $totalConImpuestos->appendChild($totalImpuesto);

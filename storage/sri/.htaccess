@@ -1,0 +1,5 @@
+# Bloquear acceso web directo a los archivos XML y RIDE del SRI
+# Los archivos se sirven exclusivamente por el controlador PHP
+
+Order Deny,Allow
+Deny from all

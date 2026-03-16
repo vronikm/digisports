@@ -73,7 +73,8 @@ abstract class BaseController {
             $this->viewData['currentModule'] = 'instalaciones';
         } elseif (strpos($className, 'Reserva') !== false) {
             $this->viewData['currentModule'] = 'reservas';
-        } elseif (strpos($className, 'Factura') !== false || strpos($className, 'Comprobante') !== false) {
+        } elseif (strpos($className, 'Factura') !== false || strpos($className, 'Comprobante') !== false
+               || strpos($className, 'FormaPago') !== false) {
             $this->viewData['currentModule'] = 'facturacion';
         } elseif (strpos($className, 'Reporte') !== false || strpos($className, 'Kpi') !== false) {
             $this->viewData['currentModule'] = 'reportes';

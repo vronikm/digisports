@@ -256,48 +256,48 @@ $estadoIconos = [
                     <tbody>
                         <?php foreach ($facturas as $f): ?>
                         <tr>
-                            <td><?= $f['id'] ?></td>
+                            <td><?= $f['fac_id'] ?></td>
                             <td>
-                                <strong><?= htmlspecialchars($f['establecimiento'] . '-' . $f['punto_emision'] . '-' . $f['secuencial']) ?></strong>
+                                <strong><?= htmlspecialchars($f['fac_establecimiento'] . '-' . $f['fac_punto_emision'] . '-' . $f['fac_secuencial']) ?></strong>
                                 <br>
                                 <small class="text-muted" title="Clave de acceso">
-                                    <?= substr($f['clave_acceso'], 0, 15) ?>...
+                                    <?= substr($f['fac_clave_acceso'], 0, 15) ?>...
                                 </small>
                             </td>
                             <td>
-                                <?= date('d/m/Y', strtotime($f['fecha_emision'])) ?>
-                                <?php if ($f['ambiente'] == '1'): ?>
+                                <?= date('d/m/Y', strtotime($f['fac_fecha_emision'])) ?>
+                                <?php if ($f['fac_ambiente'] == '1'): ?>
                                 <br><span class="badge badge-secondary">PRUEBAS</span>
                                 <?php endif; ?>
                             </td>
                             <td>
-                                <strong><?= htmlspecialchars($f['cliente_razon_social']) ?></strong>
+                                <strong><?= htmlspecialchars($f['fac_cliente_razon_social']) ?></strong>
                                 <br>
-                                <small class="text-muted"><?= htmlspecialchars($f['cliente_identificacion']) ?></small>
+                                <small class="text-muted"><?= htmlspecialchars($f['fac_cliente_identificacion']) ?></small>
                             </td>
                             <td class="text-right">
-                                <strong>$<?= number_format($f['total'], 2) ?></strong>
+                                <strong>$<?= number_format($f['fac_total'], 2) ?></strong>
                                 <br>
-                                <small class="text-muted">IVA: $<?= number_format($f['iva'], 2) ?></small>
+                                <small class="text-muted">IVA: $<?= number_format($f['fac_iva'], 2) ?></small>
                             </td>
                             <td class="text-center">
-                                <span class="badge badge-<?= $estadoBadges[$f['estado_sri']] ?? 'secondary' ?>">
-                                    <i class="fas <?= $estadoIconos[$f['estado_sri']] ?? 'fa-question' ?> mr-1"></i>
-                                    <?= $f['estado_sri'] ?>
+                                <span class="badge badge-<?= $estadoBadges[$f['fac_estado_sri']] ?? 'secondary' ?>">
+                                    <i class="fas <?= $estadoIconos[$f['fac_estado_sri']] ?? 'fa-question' ?> mr-1"></i>
+                                    <?= $f['fac_estado_sri'] ?>
                                 </span>
-                                <?php if (!empty($f['mensaje_error']) && in_array($f['estado_sri'], ['ERROR', 'NO_AUTORIZADO', 'DEVUELTA'])): ?>
+                                <?php if (!empty($f['fac_mensaje_error']) && in_array($f['fac_estado_sri'], ['ERROR', 'NO_AUTORIZADO', 'DEVUELTA'])): ?>
                                 <br>
-                                <small class="text-danger" title="<?= htmlspecialchars($f['mensaje_error']) ?>">
+                                <small class="text-danger" title="<?= htmlspecialchars($f['fac_mensaje_error']) ?>">
                                     <i class="fas fa-exclamation-circle"></i>
-                                    <?= htmlspecialchars(substr($f['mensaje_error'], 0, 30)) ?>...
+                                    <?= htmlspecialchars(substr($f['fac_mensaje_error'], 0, 30)) ?>...
                                 </small>
                                 <?php endif; ?>
                             </td>
                             <td>
-                                <?php if ($f['numero_autorizacion']): ?>
+                                <?php if (!empty($f['fac_numero_autorizacion'])): ?>
                                 <small class="text-success">
                                     <i class="fas fa-check-circle"></i>
-                                    <?= date('d/m/Y H:i', strtotime($f['fecha_autorizacion'])) ?>
+                                    <?= date('d/m/Y H:i', strtotime($f['fac_fecha_autorizacion'])) ?>
                                 </small>
                                 <?php else: ?>
                                 <small class="text-muted">-</small>
@@ -305,24 +305,24 @@ $estadoIconos = [
                             </td>
                             <td class="text-center">
                                 <div class="btn-group">
-                                    <a href="?module=facturacion&controller=facturaelectronica&action=ver&id=<?= $f['id'] ?>" class="btn btn-sm btn-info" title="Ver detalle">
+                                    <a href="<?= url('facturacion', 'factura_electronica', 'ver', ['id' => $f['fac_id']]) ?>" class="btn btn-sm btn-info" title="Ver detalle">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    
-                                    <?php if ($f['estado_sri'] === 'AUTORIZADO'): ?>
-                                    <a href="?module=facturacion&controller=facturaelectronica&action=descargarRIDE&id=<?= $f['id'] ?>" class="btn btn-sm btn-success" title="Descargar RIDE" target="_blank">
+
+                                    <?php if ($f['fac_estado_sri'] === 'AUTORIZADO'): ?>
+                                    <a href="<?= url('facturacion', 'factura_electronica', 'descargarRIDE', ['id' => $f['fac_id']]) ?>" class="btn btn-sm btn-success" title="Descargar RIDE" target="_blank">
                                         <i class="fas fa-file-pdf"></i>
                                     </a>
-                                    <a href="?module=facturacion&controller=facturaelectronica&action=descargarXML&id=<?= $f['id'] ?>&tipo=autorizado" class="btn btn-sm btn-secondary" title="Descargar XML">
+                                    <a href="<?= url('facturacion', 'factura_electronica', 'descargarXML', ['id' => $f['fac_id'], 'tipo' => 'autorizado']) ?>" class="btn btn-sm btn-secondary" title="Descargar XML">
                                         <i class="fas fa-file-code"></i>
                                     </a>
-                                    <?php elseif (in_array($f['estado_sri'], ['ERROR', 'NO_AUTORIZADO', 'DEVUELTA'])): ?>
-                                    <button type="button" class="btn btn-sm btn-warning btn-reenviar" data-id="<?= $f['id'] ?>" title="Reenviar al SRI">
+                                    <?php elseif (in_array($f['fac_estado_sri'], ['ERROR', 'NO_AUTORIZADO', 'DEVUELTA'])): ?>
+                                    <button type="button" class="btn btn-sm btn-warning btn-reenviar" data-id="<?= $f['fac_id'] ?>" title="Reenviar al SRI">
                                         <i class="fas fa-sync"></i>
                                     </button>
                                     <?php endif; ?>
-                                    
-                                    <button type="button" class="btn btn-sm btn-outline-primary btn-consultar" data-clave="<?= $f['clave_acceso'] ?>" title="Consultar estado en SRI">
+
+                                    <button type="button" class="btn btn-sm btn-outline-primary btn-consultar" data-clave="<?= htmlspecialchars($f['fac_clave_acceso']) ?>" title="Consultar estado en SRI">
                                         <i class="fas fa-search"></i>
                                     </button>
                                 </div>
@@ -429,153 +429,167 @@ $estadoIconos = [
     </div>
 </div>
 
-<!-- Scripts -->
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const baseUrl = '<?= Config::baseUrl("index.php") ?>';
-    const csrfToken = '<?= $_SESSION['csrf_token'] ?? '' ?>';
-    
+<?php ob_start(); ?>
+<script nonce="<?= cspNonce() ?>">
+(function () {
+    'use strict';
+
+    var urlBase           = <?= json_encode(url('facturacion', 'factura_electronica', 'consultarEstado')) ?>;
+    var urlVerificar      = <?= json_encode(url('facturacion', 'factura_electronica', 'verificarConexion')) ?>;
+    var urlCertificado    = <?= json_encode(url('facturacion', 'factura_electronica', 'infoCertificado')) ?>;
+    var urlReenviar       = <?= json_encode(url('facturacion', 'factura_electronica', 'reenviar')) ?>;
+    var csrfToken         = <?= json_encode(\Security::generateCsrfToken()) ?>;
+
     // Consultar estado en SRI
-    document.querySelectorAll('.btn-consultar').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const claveAcceso = this.dataset.clave;
+    document.querySelectorAll('.btn-consultar').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var claveAcceso = this.dataset.clave;
             $('#modal-estado-sri').modal('show');
-            
-            fetch(`${baseUrl}?module=facturacion&controller=facturaelectronica&action=consultarEstado&clave_acceso=${claveAcceso}`)
-                .then(response => response.json())
-                .then(data => {
-                    let html = '';
-                    if (data.exito) {
-                        const resultado = data.datos;
-                        html = `
-                            <div class="alert alert-${resultado.estado === 'AUTORIZADO' ? 'success' : 'warning'}">
-                                <strong>Estado:</strong> ${resultado.estado || 'Sin información'}
-                            </div>
-                            <table class="table table-sm table-bordered">
-                                <tr><th>Clave de Acceso</th><td><code>${claveAcceso}</code></td></tr>
-                                <tr><th>Número Autorización</th><td>${resultado.numero_autorizacion || '-'}</td></tr>
-                                <tr><th>Fecha Autorización</th><td>${resultado.fecha_autorizacion || '-'}</td></tr>
-                                <tr><th>Ambiente</th><td>${resultado.ambiente === '1' ? 'PRUEBAS' : 'PRODUCCIÓN'}</td></tr>
-                            </table>
-                        `;
-                        
-                        if (resultado.mensajes && resultado.mensajes.length > 0) {
-                            html += '<h6 class="mt-3">Mensajes del SRI:</h6><ul class="list-group">';
-                            resultado.mensajes.forEach(msg => {
-                                html += `<li class="list-group-item list-group-item-${msg.tipo === 'ERROR' ? 'danger' : 'info'}">
-                                    <strong>${msg.identificador}:</strong> ${msg.mensaje}
-                                    ${msg.informacion_adicional ? '<br><small>' + msg.informacion_adicional + '</small>' : ''}
-                                </li>`;
-                            });
-                            html += '</ul>';
+            document.getElementById('resultado-consulta').innerHTML =
+                '<div class="text-center py-4"><i class="fas fa-spinner fa-spin fa-2x text-primary"></i><p class="mt-2">Consultando al SRI...</p></div>';
+
+            fetch(urlBase + '&clave_acceso=' + encodeURIComponent(claveAcceso))
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    var html = '';
+                    if (data.success) {
+                        var auths = (data.data && data.data.autorizaciones) ? data.data.autorizaciones : [];
+                        if (auths.length > 0) {
+                            var a = auths[0];
+                            html = '<div class="alert alert-' + (a.estado === 'AUTORIZADO' ? 'success' : 'warning') + '">' +
+                                '<strong>Estado:</strong> ' + (a.estado || 'Sin información') + '</div>' +
+                                '<table class="table table-sm table-bordered">' +
+                                '<tr><th>Clave de Acceso</th><td><code>' + claveAcceso + '</code></td></tr>' +
+                                '<tr><th>Nro. Autorización</th><td>' + (a.numero_autorizacion || '-') + '</td></tr>' +
+                                '<tr><th>Fecha Autorización</th><td>' + (a.fecha_autorizacion || '-') + '</td></tr>' +
+                                '<tr><th>Ambiente</th><td>' + (a.ambiente === '1' ? 'PRUEBAS' : 'PRODUCCIÓN') + '</td></tr>' +
+                                '</table>';
+                            if (a.mensajes && a.mensajes.length > 0) {
+                                html += '<h6 class="mt-3">Mensajes del SRI:</h6><ul class="list-group">';
+                                a.mensajes.forEach(function (msg) {
+                                    html += '<li class="list-group-item list-group-item-' + (msg.tipo === 'ERROR' ? 'danger' : 'info') + '">' +
+                                        '<strong>' + msg.identificador + ':</strong> ' + msg.mensaje +
+                                        (msg.informacion_adicional ? '<br><small>' + msg.informacion_adicional + '</small>' : '') +
+                                        '</li>';
+                                });
+                                html += '</ul>';
+                            }
+                        } else {
+                            html = '<div class="alert alert-warning">' +
+                                '<i class="fas fa-clock mr-2"></i>' +
+                                '<strong>En procesamiento:</strong> El SRI no devolvió autorización todavía. ' +
+                                'El comprobante puede estar siendo procesado. Intente nuevamente en unos minutos.' +
+                                '</div>' +
+                                '<table class="table table-sm table-bordered mt-2">' +
+                                '<tr><th>Clave de Acceso</th><td><code>' + claveAcceso + '</code></td></tr>' +
+                                '</table>';
                         }
                     } else {
-                        html = `<div class="alert alert-danger"><i class="fas fa-exclamation-circle mr-2"></i>${data.mensaje || 'Error al consultar'}</div>`;
+                        html = '<div class="alert alert-danger"><i class="fas fa-exclamation-circle mr-2"></i>' + (data.message || 'Error al consultar') + '</div>';
                     }
                     document.getElementById('resultado-consulta').innerHTML = html;
                 })
-                .catch(error => {
-                    document.getElementById('resultado-consulta').innerHTML = `
-                        <div class="alert alert-danger"><i class="fas fa-exclamation-circle mr-2"></i>Error de conexión: ${error.message}</div>
-                    `;
+                .catch(function (err) {
+                    document.getElementById('resultado-consulta').innerHTML =
+                        '<div class="alert alert-danger"><i class="fas fa-exclamation-circle mr-2"></i>Error de conexión: ' + err.message + '</div>';
                 });
         });
     });
-    
+
     // Reenviar al SRI
-    document.querySelectorAll('.btn-reenviar').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const id = this.dataset.id;
+    document.querySelectorAll('.btn-reenviar').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var self = this;
+            var id   = this.dataset.id;
             if (!confirm('¿Desea reenviar esta factura al SRI?')) return;
-            
-            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-            this.disabled = true;
-            
-            fetch(`${baseUrl}?module=facturacion&controller=facturaelectronica&action=reenviar&id=${id}`, {
+
+            self.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            self.disabled  = true;
+
+            fetch(urlReenviar + '&id=' + encodeURIComponent(id), {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: `csrf_token=${csrfToken}`
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: 'csrf_token=' + encodeURIComponent(csrfToken)
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.exito) {
-                    toastr.success(data.mensaje || 'Factura autorizada');
-                    setTimeout(() => location.reload(), 1500);
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (data.success) {
+                    toastr.success(data.message || 'Factura autorizada');
+                    setTimeout(function () { location.reload(); }, 1500);
                 } else {
-                    toastr.error(data.mensaje || 'Error al reenviar');
-                    this.innerHTML = '<i class="fas fa-sync"></i>';
-                    this.disabled = false;
+                    toastr.error(data.message || 'Error al reenviar');
+                    self.innerHTML = '<i class="fas fa-sync"></i>';
+                    self.disabled  = false;
                 }
             })
-            .catch(error => {
+            .catch(function () {
                 toastr.error('Error de conexión');
-                this.innerHTML = '<i class="fas fa-sync"></i>';
-                this.disabled = false;
+                self.innerHTML = '<i class="fas fa-sync"></i>';
+                self.disabled  = false;
             });
         });
     });
-    
+
     // Verificar conexión SRI
-    document.getElementById('btn-verificar-conexion').addEventListener('click', function() {
-        const btn = this;
+    document.getElementById('btn-verificar-conexion').addEventListener('click', function () {
+        var btn = this;
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verificando...';
-        btn.disabled = true;
-        
-        fetch(`${baseUrl}?module=facturacion&controller=facturaelectronica&action=verificarConexion`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.exito && data.datos.conectividad.recepcion && data.datos.conectividad.autorizacion) {
-                    toastr.success(`Conexión exitosa - Ambiente: ${data.datos.ambiente}`);
+        btn.disabled  = true;
+
+        fetch(urlVerificar)
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (data.success && data.data && data.data.conectividad &&
+                    data.data.conectividad.recepcion && data.data.conectividad.autorizacion) {
+                    toastr.success('Conexión exitosa - Ambiente: ' + (data.data.ambiente || ''));
                 } else {
                     toastr.warning('Hay problemas de conectividad con el SRI');
                 }
                 btn.innerHTML = '<i class="fas fa-plug"></i> Verificar SRI';
-                btn.disabled = false;
+                btn.disabled  = false;
             })
-            .catch(error => {
+            .catch(function () {
                 toastr.error('Error al verificar conexión');
                 btn.innerHTML = '<i class="fas fa-plug"></i> Verificar SRI';
-                btn.disabled = false;
+                btn.disabled  = false;
             });
     });
-    
+
     // Info certificado
-    document.getElementById('btn-info-certificado').addEventListener('click', function() {
+    document.getElementById('btn-info-certificado').addEventListener('click', function () {
         $('#modal-certificado').modal('show');
-        
-        fetch(`${baseUrl}?module=facturacion&controller=facturaelectronica&action=infoCertificado`)
-            .then(response => response.json())
-            .then(data => {
-                let html = '';
-                if (data.exito) {
-                    const cert = data.datos;
-                    const vigente = cert.vigente ? 'success' : 'danger';
-                    html = `
-                        <div class="alert alert-${vigente}">
-                            <i class="fas fa-${cert.vigente ? 'check-circle' : 'exclamation-triangle'} mr-2"></i>
-                            ${cert.vigente ? 'Certificado vigente' : 'Certificado expirado o próximo a vencer'}
-                        </div>
-                        <table class="table table-sm">
-                            <tr><th>Propietario</th><td>${cert.propietario || '-'}</td></tr>
-                            <tr><th>Emisor</th><td>${cert.emisor || '-'}</td></tr>
-                            <tr><th>Serial</th><td><code>${cert.serial || '-'}</code></td></tr>
-                            <tr><th>Válido desde</th><td>${cert.valido_desde || '-'}</td></tr>
-                            <tr><th>Válido hasta</th><td>${cert.valido_hasta || '-'}</td></tr>
-                            <tr><th>Días restantes</th><td><strong class="text-${cert.dias_restantes < 30 ? 'danger' : 'success'}">${cert.dias_restantes || '?'} días</strong></td></tr>
-                        </table>
-                    `;
+        document.getElementById('info-certificado').innerHTML =
+            '<div class="text-center py-4"><i class="fas fa-spinner fa-spin fa-2x text-info"></i><p class="mt-2">Cargando información...</p></div>';
+
+        fetch(urlCertificado)
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                var html = '';
+                if (data.success) {
+                    var cert    = data.data || {};
+                    var vigente = cert.vigente ? 'success' : 'danger';
+                    html = '<div class="alert alert-' + vigente + '">' +
+                        '<i class="fas fa-' + (cert.vigente ? 'check-circle' : 'exclamation-triangle') + ' mr-2"></i>' +
+                        (cert.vigente ? 'Certificado vigente' : 'Certificado expirado o próximo a vencer') +
+                        '</div>' +
+                        '<table class="table table-sm">' +
+                        '<tr><th>Propietario</th><td>' + (cert.propietario || '-') + '</td></tr>' +
+                        '<tr><th>Emisor</th><td>' + (cert.emisor || '-') + '</td></tr>' +
+                        '<tr><th>Serial</th><td><code>' + (cert.serial || '-') + '</code></td></tr>' +
+                        '<tr><th>Válido desde</th><td>' + (cert.valido_desde || '-') + '</td></tr>' +
+                        '<tr><th>Válido hasta</th><td>' + (cert.valido_hasta || '-') + '</td></tr>' +
+                        '<tr><th>Días restantes</th><td><strong class="text-' + (cert.dias_restantes < 30 ? 'danger' : 'success') + '">' + (cert.dias_restantes || '?') + ' días</strong></td></tr>' +
+                        '</table>';
                 } else {
-                    html = `<div class="alert alert-danger"><i class="fas fa-exclamation-circle mr-2"></i>${data.mensaje || 'Error al leer certificado'}</div>`;
+                    html = '<div class="alert alert-danger"><i class="fas fa-exclamation-circle mr-2"></i>' + (data.message || 'Error al leer certificado') + '</div>';
                 }
                 document.getElementById('info-certificado').innerHTML = html;
             })
-            .catch(error => {
-                document.getElementById('info-certificado').innerHTML = `
-                    <div class="alert alert-danger"><i class="fas fa-exclamation-circle mr-2"></i>Error: ${error.message}</div>
-                `;
+            .catch(function (err) {
+                document.getElementById('info-certificado').innerHTML =
+                    '<div class="alert alert-danger"><i class="fas fa-exclamation-circle mr-2"></i>Error: ' + err.message + '</div>';
             });
     });
-});
+}());
 </script>
+<?php $scripts = ob_get_clean(); ?>

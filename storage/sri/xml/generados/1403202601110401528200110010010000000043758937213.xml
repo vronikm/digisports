@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<factura id="comprobante" version="2.1.0">
+  <infoTributaria>
+    <ambiente>1</ambiente>
+    <tipoEmision>1</tipoEmision>
+    <razonSocial>EMPRESA S.A.</razonSocial>
+    <nombreComercial>Nombre Comercial</nombreComercial>
+    <ruc>0990000000001</ruc>
+    <claveAcceso>1403202601110401528200110010010000000043758937213</claveAcceso>
+    <codDoc>01</codDoc>
+    <estab>001</estab>
+    <ptoEmi>001</ptoEmi>
+    <secuencial>000000004</secuencial>
+    <dirMatriz>Dirección Matriz</dirMatriz>
+  </infoTributaria>
+  <infoFactura>
+    <fechaEmision>14/03/2026</fechaEmision>
+    <dirEstablecimiento>Dirección Establecimiento</dirEstablecimiento>
+    <obligadoContabilidad>SI</obligadoContabilidad>
+    <tipoIdentificacionComprador>05</tipoIdentificacionComprador>
+    <razonSocialComprador>Freddy Bolívar Pinzón Olmedo</razonSocialComprador>
+    <identificacionComprador>1103345292</identificacionComprador>
+    <direccionComprador>Loja, Rey david y los Olivos -336</direccionComprador>
+    <totalSinImpuestos>30.00</totalSinImpuestos>
+    <totalDescuento>0.00</totalDescuento>
+    <totalConImpuestos>
+      <totalImpuesto>
+        <codigo>2</codigo>
+        <codigoPorcentaje>4</codigoPorcentaje>
+        <baseImponible>30.00</baseImponible>
+        <valor>4.50</valor>
+      </totalImpuesto>
+    </totalConImpuestos>
+    <propina>0.00</propina>
+    <importeTotal>34.50</importeTotal>
+    <moneda>DOLAR</moneda>
+    <pagos>
+      <pago>
+        <formaPago>01</formaPago>
+        <total>34.50</total>
+      </pago>
+    </pagos>
+  </infoFactura>
+  <detalles>
+    <detalle>
+      <codigoPrincipal>SERV001</codigoPrincipal>
+      <descripcion>Pago de mensualidad | MAR26</descripcion>
+      <cantidad>1.00</cantidad>
+      <precioUnitario>30.00</precioUnitario>
+      <descuento>0.00</descuento>
+      <precioTotalSinImpuesto>30.00</precioTotalSinImpuesto>
+      <impuestos>
+        <impuesto>
+          <codigo>2</codigo>
+          <codigoPorcentaje>4</codigoPorcentaje>
+          <tarifa>15.00</tarifa>
+          <baseImponible>30.00</baseImponible>
+          <valor>4.50</valor>
+        </impuesto>
+      </impuestos>
+    </detalle>
+  </detalles>
+  <infoAdicional>
+    <campoAdicional nombre="Email">ENC::SJIp5vZVmLPnefVHtBt2rbd5GjyfAONmjzW3MyEeoSzfeRrCgi/2dCF0RbIhB5ut</campoAdicional>
+    <campoAdicional nombre="Teléfono">ENC::Wi4TBafq7H4H83WK3AYmhk2iJMoPnx86TbVZij7QFTM=</campoAdicional>
+  </infoAdicional>
+</factura>

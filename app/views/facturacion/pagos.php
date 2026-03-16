@@ -63,7 +63,7 @@ $estadoBadges = [
                             <td><strong><?= htmlspecialchars($p['numero_factura'] ?? '—') ?></strong></td>
                             <td><?= htmlspecialchars($p['nombre_cliente'] ?? 'Sin cliente') ?></td>
                             <td><?= htmlspecialchars($p['forma_pago_nombre'] ?? '—') ?></td>
-                            <td><?= isset($p['pag_fecha_pago']) ? date('d/m/Y', strtotime($p['pag_fecha_pago'])) : '—' ?></td>
+                            <td><?= !empty($p['pag_fecha']) ? date('d/m/Y', strtotime($p['pag_fecha'])) : '—' ?></td>
                             <td class="text-right"><strong>$<?= number_format($p['pag_monto'] ?? 0, 2) ?></strong></td>
                             <td class="text-center">
                                 <span class="badge badge-<?= $estadoBadges[$p['pag_estado']] ?? 'secondary' ?>">

@@ -10,6 +10,7 @@
 namespace App\Controllers\Futbol;
 
 require_once BASE_PATH . '/app/controllers/ModuleController.php';
+require_once BASE_PATH . '/app/services/FileManager.php';
 
 class SedeController extends \App\Controllers\ModuleController {
 
@@ -27,10 +28,11 @@ class SedeController extends \App\Controllers\ModuleController {
         try {
             $this->setupModule();
 
-            // Obtener sedes con stats de fútbol
+            // Obtener sedes con stats de fútbol y logo
             $stm = $this->db->prepare("
                 SELECT s.*,
-                    (SELECT COUNT(*) FROM alumnos a 
+                    arc.arc_id AS logo_arc_id,
+                    (SELECT COUNT(*) FROM alumnos a
                      JOIN futbol_ficha_alumno ffa ON ffa.ffa_alumno_id = a.alu_alumno_id AND ffa.ffa_tenant_id = a.alu_tenant_id
                      WHERE a.alu_sede_id = s.sed_sede_id AND a.alu_estado = 'ACTIVO' AND ffa.ffa_activo = 1) AS total_alumnos,
                     (SELECT COUNT(*) FROM instalaciones_canchas c JOIN instalaciones i ON c.can_instalacion_id = i.ins_instalacion_id WHERE i.ins_sede_id = s.sed_sede_id AND c.can_tipo = 'futbol' AND c.can_estado = 'ACTIVO') AS total_canchas,
@@ -43,6 +45,13 @@ class SedeController extends \App\Controllers\ModuleController {
                      WHERE feg_sede_id = s.sed_sede_id AND feg_estado IN ('REGISTRADO','PAGADO') 
                      AND DATE_FORMAT(feg_fecha, '%Y-%m') = ?) AS egresos_mes
                 FROM instalaciones_sedes s
+                LEFT JOIN core_archivos arc
+                       ON arc.arc_entidad = 'instalaciones_sedes'
+                      AND arc.arc_entidad_id = s.sed_sede_id
+                      AND arc.arc_tenant_id  = s.sed_tenant_id
+                      AND arc.arc_categoria  = 'logos'
+                      AND arc.arc_es_principal = 1
+                      AND arc.arc_estado = 'activo'
                 WHERE s.sed_tenant_id = ? AND s.sed_estado = 'A'
                 ORDER BY s.sed_es_principal DESC, s.sed_nombre
             ");
@@ -83,11 +92,16 @@ class SedeController extends \App\Controllers\ModuleController {
                 return $this->jsonResponse(['success' => false, 'message' => 'El código de sede ya existe']);
             }
 
+            $montoMensualidad  = (float)($this->post('monto_mensualidad')  ?? 0);
+            $montoMatricula    = (float)($this->post('monto_matricula')    ?? 0);
+            $comprobanteInicio = max(1, (int)($this->post('comprobante_inicio') ?? 1));
+
             $stm = $this->db->prepare("
-                INSERT INTO instalaciones_sedes (sed_tenant_id, sed_codigo, sed_nombre, sed_descripcion, sed_direccion, 
+                INSERT INTO instalaciones_sedes (sed_tenant_id, sed_codigo, sed_nombre, sed_descripcion, sed_direccion,
                     sed_ciudad, sed_provincia, sed_telefono, sed_email, sed_horario_apertura, sed_horario_cierre,
-                    sed_capacidad_total, sed_es_principal, sed_estado)
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                    sed_capacidad_total, sed_monto_mensualidad, sed_monto_matricula, sed_comprobante_inicio,
+                    sed_es_principal, sed_estado)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
             ");
             $stm->execute([
                 $this->tenantId,
@@ -102,14 +116,24 @@ class SedeController extends \App\Controllers\ModuleController {
                 $this->post('horario_apertura') ?: null,
                 $this->post('horario_cierre') ?: null,
                 (int)($this->post('capacidad_total') ?? 0) ?: null,
+                $montoMensualidad,
+                $montoMatricula,
+                $comprobanteInicio,
                 $this->post('es_principal') ? 'S' : 'N',
                 'A',
             ]);
 
+            $newId = (int)$this->db->lastInsertId();
+
             // Si es principal, quitar la marca a las demás
             if ($this->post('es_principal')) {
-                $newId = (int)$this->db->lastInsertId();
                 $this->db->prepare("UPDATE instalaciones_sedes SET sed_es_principal = 'N' WHERE sed_tenant_id = ? AND sed_sede_id != ?")->execute([$this->tenantId, $newId]);
+            }
+
+            // Subir logo si viene en el request
+            if (!empty($_FILES['logo_sede']['name'])) {
+                $fm = new \FileManager($this->db, $this->tenantId, (int)($_SESSION['user_id'] ?? 0));
+                $fm->uploadImage($_FILES['logo_sede'], 'instalaciones_sedes', $newId, 'logos', true);
             }
 
             return $this->jsonResponse(['success' => true, 'message' => 'Sede creada exitosamente']);
@@ -137,15 +161,19 @@ class SedeController extends \App\Controllers\ModuleController {
                 return $this->jsonResponse(['success' => false, 'message' => 'Nombre y dirección son obligatorios']);
             }
 
-            $stm = $this->db->prepare("
+            $montoMensualidad  = (float)($this->post('monto_mensualidad')  ?? 0);
+            $montoMatricula    = (float)($this->post('monto_matricula')    ?? 0);
+            $comprobanteInicio = max(1, (int)($this->post('comprobante_inicio') ?? 1));
+            $esPrincipal       = $this->post('es_principal') ? 'S' : 'N';
+
+            $this->db->prepare("
                 UPDATE instalaciones_sedes SET sed_nombre=?, sed_descripcion=?, sed_direccion=?,
                     sed_ciudad=?, sed_provincia=?, sed_telefono=?, sed_email=?,
                     sed_horario_apertura=?, sed_horario_cierre=?, sed_capacidad_total=?,
+                    sed_monto_mensualidad=?, sed_monto_matricula=?, sed_comprobante_inicio=?,
                     sed_es_principal=?, sed_estado=?
                 WHERE sed_sede_id=? AND sed_tenant_id=?
-            ");
-            $esPrincipal = $this->post('es_principal') ? 'S' : 'N';
-            $stm->execute([
+            ")->execute([
                 $nombre,
                 $this->post('descripcion') ?: null,
                 $direccion,
@@ -156,6 +184,9 @@ class SedeController extends \App\Controllers\ModuleController {
                 $this->post('horario_apertura') ?: null,
                 $this->post('horario_cierre') ?: null,
                 (int)($this->post('capacidad_total') ?? 0) ?: null,
+                $montoMensualidad,
+                $montoMatricula,
+                $comprobanteInicio,
                 $esPrincipal,
                 $this->post('estado') ?: 'A',
                 $id, $this->tenantId,
@@ -163,6 +194,12 @@ class SedeController extends \App\Controllers\ModuleController {
 
             if ($esPrincipal === 'S') {
                 $this->db->prepare("UPDATE instalaciones_sedes SET sed_es_principal = 'N' WHERE sed_tenant_id = ? AND sed_sede_id != ?")->execute([$this->tenantId, $id]);
+            }
+
+            // Subir logo si viene en el request
+            if (!empty($_FILES['logo_sede']['name'])) {
+                $fm = new \FileManager($this->db, $this->tenantId);
+                $fm->upload('logos', 'instalaciones_sedes', $id, $_FILES['logo_sede']);
             }
 
             return $this->jsonResponse(['success' => true, 'message' => 'Sede actualizada']);
