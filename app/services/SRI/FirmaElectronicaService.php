@@ -237,7 +237,14 @@ class FirmaElectronicaService {
         string $refDocId, string $digestDoc,
         string $sigPropId, string $digestSP
     ): string {
-        return '<ds:SignedInfo xmlns:ds="http://www.w3.org/2000/09/xmldsig#">'
+        // xmlns:etsi DEBE incluirse aunque no se use directamente en SignedInfo:
+        // el elemento queda dentro de <ds:Signature xmlns:etsi="...">, por lo que
+        // el C14N inclusivo del SRI al verificar hereda ese namespace del padre.
+        // Si no lo incluimos aquí, el bytestream firmado difiere del que verifica el SRI.
+        return '<ds:SignedInfo'
+            . ' xmlns:ds="http://www.w3.org/2000/09/xmldsig#"'
+            . ' xmlns:etsi="http://uri.etsi.org/01903/v1.3.2#"'
+            . '>'
             . '<ds:CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>'
             . '<ds:SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1"/>'
             // Referencia al documento (enveloped)
@@ -316,9 +323,10 @@ class FirmaElectronicaService {
         $issuerName = $this->formatearEmisor($parsed['issuer'] ?? []);
         $serial     = $parsed['serialNumber'] ?? '0';
 
-        // El SRI espera el serial en decimal; si viene en hex (0x...) convertir
+        // El SRI espera el serial en decimal; si viene en hex (0x...) convertir.
+        // Usar substr(,2) para eliminar el prefijo '0x' exacto (ltrim borra caracteres sueltos, no substrings).
         if (\strpos($serial, '0x') === 0 || \strpos($serial, '0X') === 0) {
-            $serial = \base_convert(\ltrim($serial, '0x'), 16, 10);
+            $serial = \base_convert(\substr($serial, 2), 16, 10);
         }
 
         return [$certB64, $certDigest, $issuerName, $serial];

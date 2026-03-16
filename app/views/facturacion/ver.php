@@ -357,52 +357,63 @@ $puedeVerificar  = ($estadoFe === 'ENVIADA');
     $('#btnEnviarSRI').on('click', function () {
         var $btn = $(this);
 
-        if (!confirm('¿Enviar esta factura al SRI para su autorización electrónica?\n\nEste proceso puede tardar unos segundos.')) {
-            return;
-        }
+        Swal.fire({
+            title: '¿Enviar al SRI?',
+            html: 'Se enviará esta factura al SRI para su autorización electrónica.<br>' +
+                  '<small class="text-muted">Este proceso puede tardar unos segundos.</small>',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#007bff',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: '<i class="fas fa-paper-plane"></i>&nbsp;Sí, enviar',
+            cancelButtonText: 'Cancelar',
+            reverseButtons: true,
+        }).then(function (result) {
+            if (!result.isConfirmed) return;
 
-        $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i> Procesando...');
-        $('#fe-status-body').html(
-            '<div class="text-center py-3"><i class="fas fa-spinner fa-spin fa-2x text-primary"></i>' +
-            '<p class="mt-2 text-muted">Enviando al SRI, por favor espere...</p></div>'
-        );
+            $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i> Procesando...');
+            $('#fe-status-body').html(
+                '<div class="text-center py-3"><i class="fas fa-spinner fa-spin fa-2x text-primary"></i>' +
+                '<p class="mt-2 text-muted">Enviando al SRI, por favor espere...</p></div>'
+            );
 
-        $.ajax({
-            url: urlEmitirSRI,
-            method: 'POST',
-            data: $('#formEnviarSRI').serialize(),
-            dataType: 'json',
-            timeout: 120000,
-            success: function (res) {
-                if (res.success) {
-                    var d = res.data || {};
-                    if (d.estado === 'EN_PROCESAMIENTO') {
-                        mostrarEnProcesamiento();
-                        toastr.warning(res.message || 'Factura enviada. En procesamiento en el SRI.');
+            $.ajax({
+                url: urlEmitirSRI,
+                method: 'POST',
+                data: $('#formEnviarSRI').serialize(),
+                dataType: 'json',
+                timeout: 120000,
+                success: function (res) {
+                    if (res.success) {
+                        var d = res.data || {};
+                        if (d.estado === 'EN_PROCESAMIENTO') {
+                            mostrarEnProcesamiento();
+                            Toast.fire({ icon: 'warning', title: res.message || 'Factura enviada. En procesamiento en el SRI.' });
+                        } else {
+                            mostrarAutorizado(d.numero_autorizacion);
+                            Toast.fire({ icon: 'success', title: res.message || 'Factura autorizada por el SRI.' });
+                        }
                     } else {
-                        mostrarAutorizado(d.numero_autorizacion);
-                        toastr.success(res.message || 'Factura autorizada por el SRI');
+                        $('#fe-status-body').html(
+                            '<div class="alert alert-danger mb-0">' +
+                            '<strong>Error SRI:</strong> ' + $('<div>').text(res.message || 'Error desconocido').html() +
+                            '</div>'
+                        );
+                        $btn.prop('disabled', false).html('<i class="fas fa-paper-plane mr-1"></i> Reintentar');
+                        Toast.fire({ icon: 'error', title: res.message || 'Error al enviar al SRI.' });
                     }
-                } else {
+                },
+                error: function (xhr) {
+                    var msg = 'Error de comunicación con el servidor';
+                    try { msg = JSON.parse(xhr.responseText).message || msg; } catch (e) {}
                     $('#fe-status-body').html(
-                        '<div class="alert alert-danger mb-0">' +
-                        '<strong>Error SRI:</strong> ' + $('<div>').text(res.message || 'Error desconocido').html() +
-                        '</div>'
+                        '<div class="alert alert-danger mb-0"><strong>Error:</strong> ' +
+                        $('<div>').text(msg).html() + '</div>'
                     );
                     $btn.prop('disabled', false).html('<i class="fas fa-paper-plane mr-1"></i> Reintentar');
-                    toastr.error(res.message || 'Error al enviar al SRI');
+                    Toast.fire({ icon: 'error', title: msg });
                 }
-            },
-            error: function (xhr) {
-                var msg = 'Error de comunicación con el servidor';
-                try { msg = JSON.parse(xhr.responseText).message || msg; } catch (e) {}
-                $('#fe-status-body').html(
-                    '<div class="alert alert-danger mb-0"><strong>Error:</strong> ' +
-                    $('<div>').text(msg).html() + '</div>'
-                );
-                $btn.prop('disabled', false).html('<i class="fas fa-paper-plane mr-1"></i> Reintentar');
-                toastr.error(msg);
-            }
+            });
         });
     });
 
@@ -422,20 +433,20 @@ $puedeVerificar  = ($estadoFe === 'ENVIADA');
                         var d = res.data || {};
                         if (d.estado === 'AUTORIZADO') {
                             mostrarAutorizado(d.numero_autorizacion);
-                            toastr.success(res.message || 'Factura autorizada por el SRI');
+                            Toast.fire({ icon: 'success', title: res.message || 'Factura autorizada por el SRI.' });
                         } else {
                             // Sigue en procesamiento
                             $btn.prop('disabled', false).html('<i class="fas fa-sync-alt mr-1"></i> Verificar estado');
-                            toastr.warning(res.message || 'Aún en procesamiento. Intente en unos minutos.');
+                            Toast.fire({ icon: 'warning', title: res.message || 'Aún en procesamiento. Intente en unos minutos.' });
                         }
                     } else {
                         $btn.prop('disabled', false).html('<i class="fas fa-sync-alt mr-1"></i> Verificar estado');
-                        toastr.error(res.message || 'Error al consultar estado');
+                        Toast.fire({ icon: 'error', title: res.message || 'Error al consultar estado.' });
                     }
                 },
                 error: function () {
                     $btn.prop('disabled', false).html('<i class="fas fa-sync-alt mr-1"></i> Verificar estado');
-                    toastr.error('Error de comunicación al verificar estado');
+                    Toast.fire({ icon: 'error', title: 'Error de comunicación al verificar estado.' });
                 }
             });
         });
