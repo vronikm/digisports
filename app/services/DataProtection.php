@@ -61,6 +61,13 @@ class DataProtection {
         'alumnos' => [
             'alu_identificacion' => ['hash' => true],
         ],
+        // Comprobantes electrónicos SRI — PII copiada del cliente al momento de emisión
+        'facturas_electronicas' => [
+            'fac_cliente_identificacion' => ['hash' => false],
+            'fac_cliente_email'          => ['hash' => false],
+            'fac_cliente_telefono'       => ['hash' => false],
+            'fac_cliente_direccion'      => ['hash' => false],
+        ],
     ];
 
     // ══════════════════════════════════════════════════════════════

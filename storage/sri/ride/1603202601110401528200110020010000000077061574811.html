@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>RIDE - Factura 002-001-000000007</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; font-size: 10px; line-height: 1.4; padding: 20px; max-width: 800px; margin: 0 auto; }
+        .ride-container { border: 1px solid #000; padding: 10px; }
+        .header { display: flex; justify-content: space-between; border-bottom: 1px solid #000; padding-bottom: 10px; margin-bottom: 10px; }
+        .logo-section { width: 30%; }
+        .logo-section img { max-width: 100%; max-height: 80px; }
+        .empresa-section { width: 35%; text-align: center; }
+        .documento-section { width: 35%; border: 1px solid #000; padding: 5px; font-size: 9px; }
+        .empresa-nombre { font-size: 14px; font-weight: bold; margin-bottom: 5px; }
+        .documento-titulo { font-size: 12px; font-weight: bold; text-align: center; margin-bottom: 5px; }
+        .info-row { display: flex; margin-bottom: 3px; }
+        .info-label { font-weight: bold; width: 100px; }
+        .info-value { flex: 1; }
+        .cliente-section { border: 1px solid #000; padding: 8px; margin: 10px 0; }
+        .cliente-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+        .detalle-section { margin: 10px 0; }
+        .detalle-table { width: 100%; border-collapse: collapse; font-size: 9px; }
+        .detalle-table th, .detalle-table td { border: 1px solid #000; padding: 4px; text-align: left; }
+        .detalle-table th { background: #f0f0f0; font-weight: bold; }
+        .detalle-table .numero { text-align: right; }
+        .totales-section { display: flex; justify-content: flex-end; margin-top: 10px; }
+        .totales-table { width: 300px; font-size: 10px; }
+        .totales-table td { padding: 3px 5px; }
+        .totales-table .label { text-align: right; font-weight: bold; }
+        .totales-table .total-final { font-size: 12px; font-weight: bold; background: #f0f0f0; }
+        .info-adicional { border: 1px solid #000; padding: 8px; margin-top: 10px; font-size: 9px; }
+        .autorizacion-section { background: #f9f9f9; border: 1px solid #000; padding: 8px; margin-top: 10px; }
+        .clave-acceso { font-family: monospace; font-size: 11px; word-break: break-all; }
+        .barcode { text-align: center; margin: 10px 0; }
+        .ambiente-pruebas { background: #fff3cd; color: #856404; padding: 5px; text-align: center; font-weight: bold; margin-bottom: 10px; }
+        @media print {
+            body { padding: 0; }
+            .ride-container { border: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="ride-container"><div class="ambiente-pruebas">⚠️ AMBIENTE DE PRUEBAS - SIN VALIDEZ TRIBUTARIA</div>
+        <div class="header">
+            <div class="logo-section">
+                <div class="empresa-nombre">Nombre Comercial</div>
+                <div>EMPRESA S.A.</div>
+                <div>RUC: 0990000000001</div>
+                <div>Dirección Matriz</div>
+                <div>Obligado a llevar contabilidad: SI</div>
+            </div>
+            <div class="documento-section">
+                <div class="documento-titulo">FACTURA</div>
+                <div class="info-row">
+                    <span class="info-label">No.:</span>
+                    <span class="info-value">002-001-000000007</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">AMBIENTE:</span>
+                    <span class="info-value">PRUEBAS</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">EMISIÓN:</span>
+                    <span class="info-value">NORMAL</span>
+                </div>
+                <div style="margin-top: 5px; font-weight: bold;">CLAVE DE ACCESO:</div>
+                <div class="clave-acceso">1603202601110401528200110020010000000077061574811</div>
+                <div class="barcode">
+                    <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNTAiPg0KICAgICAgICAgICAgICAgIDxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iNTAiIGZpbGw9IndoaXRlIi8+DQogICAgICAgICAgICAgICAgPHRleHQgeD0iMjAwIiB5PSIzNSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9Im1vbm9zcGFjZSIgZm9udC1zaXplPSI4Ij4xNjAzMjAyNjAxMTEwNDAxNTI4MjAwMTEwMDIwMDEwMDAwMDAwMDc3MDYxNTc0ODExPC90ZXh0Pg0KICAgICAgICAgICAgPC9zdmc+" alt="Código de barras" style="max-width: 100%; height: 40px;">
+                </div>
+                <div style="font-weight: bold;">Nro. AUTORIZACIÓN:</div>
+                <div style="font-size: 8px; word-break: break-all;">1603202601110401528200110020010000000077061574811</div>
+                <div style="margin-top: 3px;">FECHA Y HORA: 2026-03-16T22:42:39-05:00</div>
+            </div>
+        </div>
+        <div class="cliente-section">
+            <div class="cliente-grid">
+                <div class="info-row">
+                    <span class="info-label">Razón Social:</span>
+                    <span class="info-value">Freddy Bolívar Pinzón Olmedo</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Fecha Emisión:</span>
+                    <span class="info-value">16/03/2026</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Identificación:</span>
+                    <span class="info-value">1103345292</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Dirección:</span>
+                    <span class="info-value">Loja, Rey david y los Olivos -336</span>
+                </div>
+            </div>
+        </div>
+        <div class="detalle-section">
+            <table class="detalle-table">
+                <thead>
+                    <tr>
+                        <th style="width: 80px;">Cod. Principal</th>
+                        <th>Descripción</th>
+                        <th style="width: 50px;" class="numero">Cant.</th>
+                        <th style="width: 70px;" class="numero">P. Unitario</th>
+                        <th style="width: 60px;" class="numero">Dcto.</th>
+                        <th style="width: 70px;" class="numero">Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>SR1</td>
+                        <td>Pago pension febrero | MAR-26</td>
+                        <td class="numero">1.00</td>
+                        <td class="numero">$35.00</td>
+                        <td class="numero">$0.00</td>
+                        <td class="numero">$35.00</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="totales-section">
+            <table class="totales-table">
+                <tr>
+                    <td class="label">SUBTOTAL SIN IMPUESTOS:</td>
+                    <td class="numero">$35.00</td>
+                </tr>
+                <tr>
+                    <td class="label">SUBTOTAL 0%:</td>
+                    <td class="numero">$0.00</td>
+                </tr>
+                <tr>
+                    <td class="label">SUBTOTAL 15%:</td>
+                    <td class="numero">$35.00</td>
+                </tr>
+                <tr>
+                    <td class="label">DESCUENTO:</td>
+                    <td class="numero">$0.00</td>
+                </tr>
+                <tr>
+                    <td class="label">IVA 15%:</td>
+                    <td class="numero">$5.25</td>
+                </tr>
+                <tr class="total-final">
+                    <td class="label">TOTAL:</td>
+                    <td class="numero">$40.25</td>
+                </tr>
+            </table>
+        </div>
+        <div class="info-adicional">
+            <strong>FORMA DE PAGO:</strong><br>
+            <table class="detalle-table" style="margin-top: 5px;">
+                <thead>
+                    <tr>
+                        <th>Forma de Pago</th>
+                        <th class="numero">Valor</th>
+                        <th>Plazo</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>SIN UTILIZACIÓN DEL SISTEMA FINANCIERO</td>
+                        <td class="numero">$40.25</td>
+                        <td>- dias</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="info-adicional">
+            <strong>INFORMACIÓN ADICIONAL:</strong><br><div><strong>Email:</strong> fbpinzon@gmail.com</div><div><strong>Teléfono:</strong> 0993120984</div></div>
+    </div>
+</body>
+</html>

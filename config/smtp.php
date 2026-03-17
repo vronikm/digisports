@@ -1,11 +1,15 @@
 <?php
-// Configuración SMTP para PHPMailer (Gmail)
+/**
+ * Configuración SMTP — lee de .env, con fallback a valores de desarrollo.
+ * Variables esperadas en .env:
+ *   MAIL_HOST, MAIL_PORT, MAIL_USER, MAIL_PASS, MAIL_FROM, MAIL_FROM_NAME
+ */
 return [
-    'host' => 'smtp.gmail.com',
-    'username' => 'fbpinzon@gmail.com', // Cambia por tu correo Gmail
-    'password' => 'porr myhw nkrp pqrt',     // Usa una contraseña de aplicación de Gmail
-    'from' => 'fbpinzon@gmail.com',
-    'from_name' => 'DigiSports',
-    'port' => 587,
-    'secure' => PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS,
+    'host'      => env('MAIL_HOST',      'smtp.gmail.com'),
+    'port'      => (int) env('MAIL_PORT', 587),
+    'username'  => env('MAIL_USER',      ''),
+    'password'  => env('MAIL_PASS',      ''),
+    'from'      => env('MAIL_FROM',      env('MAIL_USER', '')),
+    'from_name' => env('MAIL_FROM_NAME', 'DigiSports'),
+    'secure'    => PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS,
 ];

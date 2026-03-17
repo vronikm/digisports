@@ -14,12 +14,14 @@ require_once BASE_PATH . '/app/services/SRI/FacturaElectronicaService.php';
 require_once BASE_PATH . '/app/services/SRI/FirmaElectronicaService.php';
 require_once BASE_PATH . '/app/services/SRI/WebServiceSRIService.php';
 require_once BASE_PATH . '/app/services/SRI/RIDEService.php';
+require_once BASE_PATH . '/app/services/MailService.php';
 require_once BASE_PATH . '/app/models/FacturaElectronica.php';
 
 use App\Services\SRI\FacturaElectronicaService;
 use App\Services\SRI\FirmaElectronicaService;
 use App\Services\SRI\WebServiceSRIService;
 use App\Services\SRI\RIDEService;
+use App\Services\MailService;
 use App\Models\FacturaElectronica;
 
 class FacturaElectronicaController extends \App\Controllers\ModuleController {
@@ -70,7 +72,16 @@ class FacturaElectronicaController extends \App\Controllers\ModuleController {
         $limite      = 20;
         $offset      = ($pagina - 1) * $limite;
 
-        $facturas       = $this->facturaModel->listar($this->tenantId, $filtros, $limite, $offset);
+        $facturas = $this->facturaModel->listar($this->tenantId, $filtros, $limite, $offset);
+        // Descifrar datos personales para visualización en el listado (LOPDP Ecuador)
+        foreach ($facturas as &$f) {
+            foreach (['fac_cliente_identificacion', 'fac_cliente_email', 'fac_cliente_telefono', 'fac_cliente_direccion'] as $campo) {
+                if (!empty($f[$campo])) {
+                    $f[$campo] = \DataProtection::decrypt($f[$campo]) ?? $f[$campo];
+                }
+            }
+        }
+        unset($f);
         $total          = $this->facturaModel->contar($this->tenantId, $filtros);
         $rawResumen = $this->facturaModel->obtenerResumenEstados(
             $this->tenantId,
@@ -176,6 +187,9 @@ class FacturaElectronicaController extends \App\Controllers\ModuleController {
             $archivoFirmado = $this->facturaService->guardarXML($xmlFirmado, $claveAcceso, 'firmados');
 
             // 5. Guardar cabecera en BD
+            // Los campos con datos personales se almacenan encriptados (LOPDP Ecuador).
+            // Se encripta aquí porque obtenerDatosFactura() ya devuelve los valores en claro
+            // (necesarios para generar el XML), y el modelo no debe recibir datos en claro.
             $idFE = $this->facturaModel->crear([
                 'tenant_id'                  => $this->tenantId,
                 'factura_id'                 => $facturaId,
@@ -189,10 +203,11 @@ class FacturaElectronicaController extends \App\Controllers\ModuleController {
                 'tipo_emision'               => (string) $this->configSRI['tipo_emision'],
                 'cliente_id'                 => $datosFactura['cliente']['id'] ?? null,
                 'cliente_tipo_identificacion'=> $datosFactura['cliente']['tipo_identificacion'],
-                'cliente_identificacion'     => $datosFactura['cliente']['identificacion'],
+                'cliente_identificacion'     => \DataProtection::encrypt($datosFactura['cliente']['identificacion']),
                 'cliente_razon_social'       => $datosFactura['cliente']['razon_social'],
-                'cliente_direccion'          => $datosFactura['cliente']['direccion'] ?? null,
-                'cliente_email'              => $datosFactura['cliente']['email'] ?? null,
+                'cliente_direccion'          => \DataProtection::encrypt($datosFactura['cliente']['direccion'] ?? null),
+                'cliente_email'              => \DataProtection::encrypt($datosFactura['cliente']['email'] ?? null),
+                'cliente_telefono'           => \DataProtection::encrypt($datosFactura['cliente']['telefono'] ?? null),
                 'subtotal_iva'               => $datosFactura['totales']['subtotal_iva'] ?? $datosFactura['totales']['subtotal'],
                 'subtotal_0'                 => $datosFactura['totales']['subtotal_0'] ?? 0,
                 'subtotal'                   => $datosFactura['totales']['subtotal'],
@@ -249,11 +264,25 @@ class FacturaElectronicaController extends \App\Controllers\ModuleController {
                 $rideHtml = $this->rideService->generarRIDEHtml($datosFactura, $autorizacion);
                 $this->rideService->guardarRIDE($rideHtml, $claveAcceso);
 
+                // Generar PDF del RIDE (falla silenciosa si wkhtmltopdf no está disponible)
+                $rutaPdf = $this->rideService->generarPDF($rideHtml, $claveAcceso);
+
+                // Enviar email al cliente con RIDE (PDF) y XML autorizado (falla silenciosa)
+                $emailResult = $this->enviarEmailFactura(
+                    $datosFactura['cliente']['email'] ?? '',
+                    $datosFactura,
+                    $autorizacion,
+                    $rutaPdf,
+                    $archivoAutorizado
+                );
+
                 return $this->jsonSuccess([
                     'id_fe'               => $idFE,
                     'clave_acceso'        => $claveAcceso,
                     'numero_autorizacion' => $autorizacion['numero_autorizacion'] ?? $claveAcceso,
                     'numero_factura'      => $datosFactura['numero_completo'],
+                    'email_enviado'       => $emailResult['exito'],
+                    'email_mensaje'       => $emailResult['mensaje'],
                 ], 'Factura electrónica emitida y autorizada exitosamente');
 
             } elseif (in_array($resultado['etapa'] ?? '', ['en_procesamiento', 'timeout'])) {
@@ -298,10 +327,11 @@ class FacturaElectronicaController extends \App\Controllers\ModuleController {
             return $this->error('Factura no encontrada', 404);
         }
 
-        // Descifrar campos sensibles almacenados encriptados
-        if (!empty($factura['fac_cliente_email'])) {
-            $factura['fac_cliente_email'] = \DataProtection::decrypt($factura['fac_cliente_email'])
-                ?? $factura['fac_cliente_email'];
+        // Descifrar todos los campos de datos personales (LOPDP Ecuador)
+        foreach (['fac_cliente_identificacion', 'fac_cliente_email', 'fac_cliente_telefono', 'fac_cliente_direccion'] as $campo) {
+            if (!empty($factura[$campo])) {
+                $factura[$campo] = \DataProtection::decrypt($factura[$campo]) ?? $factura[$campo];
+            }
         }
 
         $this->viewData['factura'] = $factura;
@@ -404,10 +434,24 @@ class FacturaElectronicaController extends \App\Controllers\ModuleController {
 
             if ($resultado['exito']) {
                 $autorizacion = $resultado['resultado']['autorizaciones'][0] ?? [];
+                $archivoAutorizado = null;
+                if (!empty($autorizacion['comprobante'])) {
+                    $archivoAutorizado = $this->facturaService->guardarXML(
+                        $autorizacion['comprobante'], $factura['fac_clave_acceso'], 'autorizados'
+                    );
+                }
                 $this->facturaModel->actualizarEstado($id, 'AUTORIZADO', [
                     'numero_autorizacion' => $autorizacion['numero_autorizacion'] ?? $factura['fac_clave_acceso'],
                     'fecha_autorizacion'  => $autorizacion['fecha_autorizacion']  ?? date('Y-m-d H:i:s'),
+                    'xml_autorizado'      => $archivoAutorizado,
                 ]);
+
+                // Enviar email (usa datos ya guardados en la FE, falla silenciosa)
+                $emailCliente = \DataProtection::decrypt($factura['fac_cliente_email'] ?? null) ?? '';
+                if ($emailCliente) {
+                    $this->enviarEmailDesdeRegistro($factura, $autorizacion, $archivoAutorizado);
+                }
+
                 return $this->jsonSuccess([
                     'numero_autorizacion' => $autorizacion['numero_autorizacion'] ?? $factura['fac_clave_acceso'],
                     'estado' => 'AUTORIZADO',
@@ -658,7 +702,7 @@ class FacturaElectronicaController extends \App\Controllers\ModuleController {
                     'tipo_identificacion' => $tipoIdent,
                     'identificacion'      => \DataProtection::decrypt($factura['identificacion'] ?? null) ?? 'CONSUMIDOR FINAL',
                     'razon_social'        => trim($factura['razon_social'] ?? 'Consumidor Final'),
-                    'direccion'           => $factura['direccion'] ?? 'N/A',
+                    'direccion'           => \DataProtection::decrypt($factura['direccion'] ?? null) ?? ($factura['direccion'] ?? 'N/A'),
                     'email'               => \DataProtection::decrypt($factura['email'] ?? null) ?? ($factura['email'] ?? ''),
                     'telefono'            => \DataProtection::decrypt($factura['telefono'] ?? null) ?? ($factura['telefono'] ?? ''),
                 ],
@@ -835,6 +879,100 @@ class FacturaElectronicaController extends \App\Controllers\ModuleController {
                     error_log('[FE] No se pudo descifrar clave certificado tenant: ' . $e->getMessage());
                 }
             }
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // EMAIL — ENVÍO DE FACTURA AUTORIZADA
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Enviar email de factura autorizada con datos frescos de obtenerDatosFactura().
+     * Usado en emitir() donde $datosFactura ya está en claro.
+     * Falla silenciosamente: no interrumpe el flujo principal.
+     *
+     * @param string      $emailCliente     Email en claro (ya desencriptado)
+     * @param array       $datosFactura     Estructura devuelta por obtenerDatosFactura()
+     * @param array       $autorizacion     Respuesta de autorización del SRI
+     * @param string|null $rutaPdf          Ruta al PDF del RIDE (o null)
+     * @param string|null $rutaXmlAutorizado Ruta al XML autorizado (o null)
+     * @return array{exito: bool, mensaje: string}
+     */
+    private function enviarEmailFactura(
+        string  $emailCliente,
+        array   $datosFactura,
+        array   $autorizacion,
+        ?string $rutaPdf,
+        ?string $rutaXmlAutorizado
+    ): array {
+        if (empty($emailCliente)) {
+            return ['exito' => false, 'mensaje' => 'El cliente no tiene email registrado'];
+        }
+
+        try {
+            $mailService = new MailService();
+            $datos = [
+                'numero'                 => $datosFactura['numero_completo']    ?? '',
+                'clave_acceso'           => $datosFactura['clave_acceso']       ?? '',
+                'numero_autorizacion'    => $autorizacion['numero_autorizacion'] ?? $datosFactura['clave_acceso'] ?? '',
+                'fecha_emision'          => $datosFactura['fecha_emision']      ?? date('d/m/Y'),
+                'fecha_autorizacion'     => $autorizacion['fecha_autorizacion'] ?? date('Y-m-d H:i:s'),
+                'cliente_nombre'         => $datosFactura['cliente']['razon_social']   ?? '',
+                'cliente_identificacion' => $datosFactura['cliente']['identificacion'] ?? '',
+                'emisor_nombre'          => $this->configSRI['emisor']['razon_social'] ?? 'DigiSports',
+                'subtotal_iva'           => $datosFactura['totales']['subtotal_iva'] ?? 0,
+                'subtotal_0'             => $datosFactura['totales']['subtotal_0']   ?? 0,
+                'iva'                    => $datosFactura['totales']['iva']           ?? 0,
+                'total'                  => $datosFactura['totales']['total']         ?? 0,
+                'ambiente'               => (int) ($this->configSRI['ambiente']       ?? 1),
+            ];
+
+            return $mailService->enviarFacturaElectronica($emailCliente, $datos, $rutaPdf, $rutaXmlAutorizado);
+
+        } catch (\Exception $e) {
+            error_log('[FE] Error al enviar email de factura: ' . $e->getMessage());
+            return ['exito' => false, 'mensaje' => $e->getMessage()];
+        }
+    }
+
+    /**
+     * Enviar email usando el registro ya guardado en facturas_electronicas.
+     * Usado en reenviar() y verificarEstado() donde $datosFactura no está disponible.
+     * Los datos del cliente se desencriptan desde la FE en BD.
+     */
+    private function enviarEmailDesdeRegistro(array $fe, array $autorizacion, ?string $rutaXmlAutorizado): void {
+        try {
+            $emailCliente = \DataProtection::decrypt($fe['fac_cliente_email'] ?? null) ?? '';
+            if (empty($emailCliente)) return;
+
+            $rutaPdf = null;
+            $rideDir = $this->configSRI['storage']['ride'] ?? '';
+            $posiblePdf = $rideDir . $fe['fac_clave_acceso'] . '.pdf';
+            if (file_exists($posiblePdf)) {
+                $rutaPdf = $posiblePdf;
+            }
+
+            $mailService = new MailService();
+            $datos = [
+                'numero'                 => $fe['fac_establecimiento'] . '-' . $fe['fac_punto_emision'] . '-' . $fe['fac_secuencial'],
+                'clave_acceso'           => $fe['fac_clave_acceso'],
+                'numero_autorizacion'    => $autorizacion['numero_autorizacion'] ?? $fe['fac_clave_acceso'],
+                'fecha_emision'          => date('d/m/Y', strtotime($fe['fac_fecha_emision'])),
+                'fecha_autorizacion'     => $autorizacion['fecha_autorizacion'] ?? date('Y-m-d H:i:s'),
+                'cliente_nombre'         => $fe['fac_cliente_razon_social'] ?? '',
+                'cliente_identificacion' => \DataProtection::decrypt($fe['fac_cliente_identificacion'] ?? null) ?? '',
+                'emisor_nombre'          => $this->configSRI['emisor']['razon_social'] ?? 'DigiSports',
+                'subtotal_iva'           => $fe['fac_subtotal_iva'] ?? 0,
+                'subtotal_0'             => $fe['fac_subtotal_0']   ?? 0,
+                'iva'                    => $fe['fac_iva']          ?? 0,
+                'total'                  => $fe['fac_total']        ?? 0,
+                'ambiente'               => (int) ($fe['fac_ambiente'] ?? 1),
+            ];
+
+            $mailService->enviarFacturaElectronica($emailCliente, $datos, $rutaPdf, $rutaXmlAutorizado);
+
+        } catch (\Exception $e) {
+            error_log('[FE] enviarEmailDesdeRegistro: ' . $e->getMessage());
         }
     }
 }

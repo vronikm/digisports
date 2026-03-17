@@ -310,8 +310,15 @@ class RIDEService {
         // Guardar HTML temporal
         file_put_contents($archivoHtml, $html);
         
+        // Resolver ruta al binario (PATH o instalación estándar de Windows)
+        $binario = $this->resolverBinarioWkhtmltopdf();
+        if (!$binario) {
+            @unlink($archivoHtml);
+            return null;
+        }
+
         // Intentar convertir con wkhtmltopdf
-        $comando = 'wkhtmltopdf --page-size A4 --margin-top 10 --margin-bottom 10 --margin-left 10 --margin-right 10 "' . $archivoHtml . '" "' . $archivoPdf . '" 2>&1';
+        $comando = '"' . $binario . '" --page-size A4 --margin-top 10 --margin-bottom 10 --margin-left 10 --margin-right 10 "' . $archivoHtml . '" "' . $archivoPdf . '" 2>&1';
         
         exec($comando, $output, $returnCode);
         
@@ -321,7 +328,42 @@ class RIDEService {
         if ($returnCode === 0 && file_exists($archivoPdf)) {
             return $archivoPdf;
         }
-        
+
+        return null;
+    }
+
+    /**
+     * Localiza el ejecutable wkhtmltopdf en PATH o en rutas estándar de Windows/Linux.
+     * Retorna la ruta absoluta o null si no está disponible.
+     */
+    private function resolverBinarioWkhtmltopdf(): ?string {
+        // 1. Ruta explícita en config/sri.php (prioridad máxima)
+        if (!empty($this->config['wkhtmltopdf_path']) && is_executable($this->config['wkhtmltopdf_path'])) {
+            return $this->config['wkhtmltopdf_path'];
+        }
+
+        // 2. Rutas estándar de instalación
+        $candidatos = [
+            'C:\\Program Files\\wkhtmltopdf\\bin\\wkhtmltopdf.exe',
+            'C:\\Program Files (x86)\\wkhtmltopdf\\bin\\wkhtmltopdf.exe',
+            '/usr/local/bin/wkhtmltopdf',
+            '/usr/bin/wkhtmltopdf',
+        ];
+        foreach ($candidatos as $ruta) {
+            if (file_exists($ruta)) {
+                return $ruta;
+            }
+        }
+
+        // 3. Verificar que esté en PATH del sistema
+        $cmd = PHP_OS_FAMILY === 'Windows'
+            ? 'where wkhtmltopdf 2>nul'
+            : 'which wkhtmltopdf 2>/dev/null';
+        $resultado = trim(shell_exec($cmd) ?? '');
+        if ($resultado && file_exists(strtok($resultado, PHP_EOL))) {
+            return strtok($resultado, PHP_EOL);
+        }
+
         return null;
     }
 }
