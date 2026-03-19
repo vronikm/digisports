@@ -143,23 +143,89 @@ $moduloColor ??= 'var(--module-color)';
                         <!-- Selector de cliente -->
                         <div class="col-md-6">
                             <?php if ($origen_modulo === 'libre'): ?>
+                            <!-- Búsqueda por identificación -->
                             <div class="form-group">
-                                <label>Razón Social / Cliente <span class="text-danger">*</span></label>
-                                <select id="cliente_id" class="form-control" required>
-                                    <option value="">-- Seleccionar cliente --</option>
-                                    <?php foreach ($clientes as $c): ?>
-                                    <option value="<?= (int)$c['id'] ?>"
-                                            data-tipo="<?= htmlspecialchars($c['tipo_ident']) ?>"
-                                            data-ident="<?= htmlspecialchars($c['identificacion']) ?>"
-                                            data-nombre="<?= htmlspecialchars($c['nombre']) ?>"
-                                            data-email="<?= htmlspecialchars($c['email']) ?>"
-                                            data-tel="<?= htmlspecialchars($c['telefono']) ?>"
-                                            data-dir="<?= htmlspecialchars($c['direccion'] ?? '') ?>">
-                                        <?= htmlspecialchars($c['identificacion'] . ' — ' . $c['nombre']) ?>
-                                    </option>
-                                    <?php endforeach; ?>
-                                </select>
-                                <small class="form-text text-muted">Busca por cédula/RUC o nombre</small>
+                                <label>Identificación / RUC <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <input type="text" id="buscarIdent" class="form-control"
+                                           placeholder="Cédula o RUC del cliente" maxlength="20"
+                                           autocomplete="off">
+                                    <div class="input-group-append">
+                                        <button type="button" class="btn btn-outline-primary"
+                                                id="btnBuscarCliente" title="Buscar cliente">
+                                            <i class="fas fa-search" id="iconBuscar"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div id="buscarStatus" class="mt-1" style="font-size:.82rem;min-height:1.2em;"></div>
+                            </div>
+                            <!-- ID del cliente seleccionado -->
+                            <input type="hidden" id="cliente_id" value="">
+                            <!-- Panel de datos: cliente nuevo o cross-tenant -->
+                            <div id="panelNuevoCliente" style="display:none;">
+                                <div class="border rounded p-2" style="background:#f8f9fa;font-size:.83rem;">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <strong id="panelNuevoClienteTitle">
+                                            <i class="fas fa-user-plus mr-1"></i>Datos del cliente
+                                        </strong>
+                                        <button type="button" class="btn btn-xs btn-outline-secondary"
+                                                id="btnCerrarPanel" title="Cerrar">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                    <div class="form-group mb-1">
+                                        <label class="mb-0">Tipo identificación</label>
+                                        <select id="nc_tipo" class="form-control form-control-sm">
+                                            <?php foreach ($tipos_identificacion as $t): ?>
+                                            <option value="<?= htmlspecialchars($t['stc_codigo']) ?>">
+                                                <?= htmlspecialchars($t['stc_etiqueta'] ?: $t['stc_codigo']) ?>
+                                            </option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <div class="form-group mb-1">
+                                                <label class="mb-0">Nombres <span class="text-danger">*</span></label>
+                                                <input type="text" id="nc_nombres" class="form-control form-control-sm"
+                                                       placeholder="Nombres / Razón Social">
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="form-group mb-1">
+                                                <label class="mb-0">Apellidos</label>
+                                                <input type="text" id="nc_apellidos" class="form-control form-control-sm"
+                                                       placeholder="Apellidos">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <div class="form-group mb-1">
+                                                <label class="mb-0">Email</label>
+                                                <input type="email" id="nc_email" class="form-control form-control-sm"
+                                                       placeholder="correo@ejemplo.com">
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="form-group mb-1">
+                                                <label class="mb-0">Teléfono</label>
+                                                <input type="text" id="nc_telefono" class="form-control form-control-sm"
+                                                       placeholder="0999999999">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group mb-2">
+                                        <label class="mb-0">Dirección</label>
+                                        <input type="text" id="nc_direccion" class="form-control form-control-sm"
+                                               placeholder="Dirección">
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-success btn-block"
+                                            id="btnGuardarCliente">
+                                        <i class="fas fa-user-check mr-1"></i>
+                                        <span id="btnGuardarClienteText">Registrar y usar este cliente</span>
+                                    </button>
+                                </div>
                             </div>
                             <?php else: ?>
                             <div class="form-group">
@@ -181,17 +247,25 @@ $moduloColor ??= 'var(--module-color)';
                     </div>
 
                     <!-- Tarjeta info cliente (se rellena al seleccionar) -->
-                    <div id="clienteInfoCard" class="alert alert-light border p-2 mb-0" style="display:none;font-size:.82rem;">
-                        <div class="row">
-                            <div class="col-sm-6">
-                                <div><span class="text-muted">Tipo ID:</span> <strong id="ci_tipo"></strong></div>
-                                <div><span class="text-muted">CI / RUC:</span> <strong id="ci_ident"></strong></div>
-                                <div><span class="text-muted">Email:</span> <span id="ci_email"></span></div>
+                    <div id="clienteInfoCard" class="alert alert-success border p-2 mb-0" style="display:none;font-size:.82rem;">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="row flex-fill mr-2">
+                                <div class="col-sm-6">
+                                    <div><span class="text-muted">Cliente:</span> <strong id="ci_nombre"></strong></div>
+                                    <div><span class="text-muted">Tipo ID:</span> <strong id="ci_tipo"></strong></div>
+                                    <div><span class="text-muted">CI / RUC:</span> <strong id="ci_ident"></strong></div>
+                                    <div><span class="text-muted">Email:</span> <span id="ci_email"></span></div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div><span class="text-muted">Dirección:</span> <span id="ci_dir"></span></div>
+                                    <div><span class="text-muted">Teléfono:</span> <span id="ci_tel"></span></div>
+                                </div>
                             </div>
-                            <div class="col-sm-6">
-                                <div><span class="text-muted">Dirección:</span> <span id="ci_dir"></span></div>
-                                <div><span class="text-muted">Teléfono:</span> <span id="ci_tel"></span></div>
-                            </div>
+                            <a href="#" id="linkCambiarCliente"
+                               class="btn btn-xs btn-outline-secondary" title="Cambiar cliente"
+                               style="white-space:nowrap;">
+                                <i class="fas fa-times"></i> Cambiar
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -692,9 +766,6 @@ $moduloColor ??= 'var(--module-color)';
         renderLineas();
         $('#nDesc').focus();
 
-        // Cliente preseleccionado
-        if ($('#cliente_id').val()) { $('#cliente_id').trigger('change'); }
-
         /* ── Editar línea ──────────────────────────────── */
         $(document).on('click', '.btn-editar', function () {
             var idx = parseInt($(this).data('idx'));
@@ -745,24 +816,181 @@ $moduloColor ??= 'var(--module-color)';
         /* ── Descuento global recalcula totales ─────────── */
         $('#descuento').on('input', calcularTotales);
 
-        /* ── Info cliente ────────────────────────────────── */
-        $('#cliente_id').on('change', function () {
-            var $opt = $(this).find(':selected');
-            var id   = $(this).val();
-            if (!id) { $('#clienteInfoCard').hide(); return; }
-            $('#ci_tipo').text($opt.data('tipo')   || '—');
-            $('#ci_ident').text($opt.data('ident') || '—');
-            $('#ci_dir').text($opt.data('dir')     || '—');
-            $('#ci_tel').text($opt.data('tel')     || '—');
-            $('#ci_email').text($opt.data('email') || '—');
+        /* ── Lookup de cliente por identificación ─────────────────────── */
+        function limpiarSeleccionCliente() {
+            $('#cliente_id').val('');
+            $('#clienteInfoCard').hide();
+            $('#panelNuevoCliente').hide();
+            $('#buscarStatus').html('');
+        }
+
+        function mostrarInfoCliente(data) {
+            var nombre = $.trim((data.nombres || '') + ' ' + (data.apellidos || ''));
+            $('#ci_nombre').text(nombre || '—');
+            $('#ci_tipo').text(data.tipo      || '—');
+            $('#ci_ident').text($('#buscarIdent').val() || '—');
+            $('#ci_email').text(data.email    || '—');
+            $('#ci_tel').text(data.telefono   || '—');
+            $('#ci_dir').text(data.direccion  || '—');
             $('#clienteInfoCard').show();
-        });
+        }
+
+        function buscarCliente() {
+            var ident = $.trim($('#buscarIdent').val());
+            if (ident.length < 5) {
+                toast('Ingrese al menos 5 dígitos', 'warning');
+                return;
+            }
+            limpiarSeleccionCliente();
+            var $icon = $('#iconBuscar');
+            $icon.removeClass('fa-search').addClass('fa-spinner fa-spin');
+            $('#btnBuscarCliente').prop('disabled', true);
+
+            $.ajax({
+                url: '<?= url('facturacion', 'factura', 'buscarClientePorIdentificacion') ?>',
+                type: 'GET',
+                data: { identificacion: ident },
+                dataType: 'json',
+                success: function (res) {
+                    $icon.removeClass('fa-spinner fa-spin').addClass('fa-search');
+                    $('#btnBuscarCliente').prop('disabled', false);
+
+                    if (res.found && res.local) {
+                        $('#cliente_id').val(res.id);
+                        $('#buscarStatus').html(
+                            '<span class="text-success"><i class="fas fa-check-circle mr-1"></i>' +
+                            esc($.trim(res.nombres + ' ' + res.apellidos)) + '</span>'
+                        );
+                        mostrarInfoCliente(res);
+
+                    } else if (res.found && !res.local) {
+                        $('#panelNuevoClienteTitle').html(
+                            '<i class="fas fa-user-clock mr-1 text-info"></i>' +
+                            'Datos encontrados — confirme y registre en su cuenta'
+                        );
+                        $('#nc_tipo').val(res.tipo      || 'CC');
+                        $('#nc_nombres').val(res.nombres   || '');
+                        $('#nc_apellidos').val(res.apellidos || '');
+                        $('#nc_email').val(res.email     || '');
+                        $('#nc_telefono').val(res.telefono  || '');
+                        $('#nc_direccion').val(res.direccion || '');
+                        $('#panelNuevoCliente').show();
+                        $('#buscarStatus').html(
+                            '<span class="text-info"><i class="fas fa-info-circle mr-1"></i>' +
+                            'Encontrado en el sistema — revise y registre</span>'
+                        );
+
+                    } else {
+                        $('#panelNuevoClienteTitle').html(
+                            '<i class="fas fa-user-plus mr-1 text-warning"></i>' +
+                            'Cliente no registrado — complete para agregar'
+                        );
+                        $('#nc_tipo').val('CC');
+                        $('#nc_nombres').val('');
+                        $('#nc_apellidos').val('');
+                        $('#nc_email').val('');
+                        $('#nc_telefono').val('');
+                        $('#nc_direccion').val('');
+                        $('#panelNuevoCliente').show();
+                        $('#buscarStatus').html(
+                            '<span class="text-muted"><i class="fas fa-user-slash mr-1"></i>' +
+                            'No encontrado — complete los datos para registrar</span>'
+                        );
+                        setTimeout(function () { $('#nc_nombres').focus(); }, 80);
+                    }
+                },
+                error: function () {
+                    $icon.removeClass('fa-spinner fa-spin').addClass('fa-search');
+                    $('#btnBuscarCliente').prop('disabled', false);
+                    toast('Error al buscar el cliente', 'error');
+                }
+            });
+        }
+
+        function guardarNuevoCliente() {
+            var nombres = $.trim($('#nc_nombres').val());
+            if (!nombres) {
+                toast('Ingrese el nombre del cliente', 'warning');
+                $('#nc_nombres').focus().addClass('is-invalid');
+                return;
+            }
+            $('#nc_nombres').removeClass('is-invalid');
+
+            var $btn = $('#btnGuardarCliente');
+            $btn.prop('disabled', true)
+                .html('<i class="fas fa-spinner fa-spin mr-1"></i>Registrando...');
+
+            $.ajax({
+                url: '<?= url('facturacion', 'factura', 'crearClienteRapido') ?>',
+                type: 'POST',
+                data: {
+                    csrf_token:          $('#csrf_token').val(),
+                    tipo_identificacion: $('#nc_tipo').val(),
+                    identificacion:      $.trim($('#buscarIdent').val()),
+                    nombres:             nombres,
+                    apellidos:           $.trim($('#nc_apellidos').val()),
+                    email:               $.trim($('#nc_email').val()),
+                    telefono:            $.trim($('#nc_telefono').val()),
+                    direccion:           $.trim($('#nc_direccion').val()),
+                },
+                dataType: 'json',
+                success: function (res) {
+                    $btn.prop('disabled', false)
+                        .html('<i class="fas fa-user-check mr-1"></i>' +
+                              '<span id="btnGuardarClienteText">Registrar y usar este cliente</span>');
+                    if (res.success) {
+                        $('#cliente_id').val(res.data.cliente_id);
+                        $('#panelNuevoCliente').hide();
+                        $('#buscarStatus').html(
+                            '<span class="text-success"><i class="fas fa-check-circle mr-1"></i>' +
+                            esc(res.data.nombre) + ' — registrado</span>'
+                        );
+                        mostrarInfoCliente({
+                            nombres:   $.trim($('#nc_nombres').val()),
+                            apellidos: $.trim($('#nc_apellidos').val()),
+                            tipo:      $('#nc_tipo').val(),
+                            email:     $.trim($('#nc_email').val()),
+                            telefono:  $.trim($('#nc_telefono').val()),
+                            direccion: $.trim($('#nc_direccion').val()),
+                        });
+                        toast('Cliente registrado', 'success');
+                    } else {
+                        toast(res.message || 'Error al registrar el cliente', 'error');
+                    }
+                },
+                error: function (xhr) {
+                    $btn.prop('disabled', false)
+                        .html('<i class="fas fa-user-check mr-1"></i>' +
+                              '<span>Registrar y usar este cliente</span>');
+                    var msg = 'Error de comunicación';
+                    try { msg = JSON.parse(xhr.responseText).message || msg; } catch (e) {}
+                    toast(msg, 'error');
+                }
+            });
+        }
+
+        if ($('#buscarIdent').length) {
+            $('#btnBuscarCliente').on('click', buscarCliente);
+            $('#buscarIdent').on('keydown', function (e) {
+                if (e.key === 'Enter') { e.preventDefault(); buscarCliente(); }
+            });
+            $('#btnGuardarCliente').on('click', guardarNuevoCliente);
+            $('#btnCerrarPanel').on('click', function () {
+                $('#panelNuevoCliente').hide();
+                $('#buscarStatus').html('');
+            });
+            $('#linkCambiarCliente').on('click', function (e) {
+                e.preventDefault();
+                limpiarSeleccionCliente();
+                $('#buscarIdent').val('').focus();
+            });
+        }
 
         /* ── Guardar (AJAX) ─────────────────────────────── */
         $('#btnGuardar').on('click', function () {
             var clienteId   = $('#cliente_id').val();
             var formaPagoId = $('#forma_pago_id').val();
-            if (!clienteId)        { toast('Debe seleccionar un cliente',           'warning'); $('#cliente_id').focus();    return; }
+            if (!clienteId)        { toast('Debe seleccionar un cliente',           'warning'); $('#buscarIdent, #cliente_id').first().filter(':visible').focus();    return; }
             if (!formaPagoId)      { toast('Seleccione una forma de pago',          'warning'); $('#forma_pago_id').focus(); return; }
             if (lineas.length < 1) { toast('Agregue al menos un ítem a la factura', 'warning'); $('#nDesc').focus();         return; }
 

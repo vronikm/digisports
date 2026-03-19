@@ -116,12 +116,24 @@ class FacturaController extends \App\Controllers\ModuleController {
             $stmt->execute([$this->tenantId]);
             $formas_pago = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
-            $this->viewData['origen_modulo'] = $origen_modulo;
-            $this->viewData['origen_id']     = $origen_id;
-            $this->viewData['config']        = $config;
-            $this->viewData['num_preview']   = $numPreview;
-            $this->viewData['clientes']      = $clientes;
-            $this->viewData['formas_pago']   = $formas_pago;
+            // Tipos de identificación desde catálogo
+            $stmt = $this->db->prepare("
+                SELECT stc.stc_codigo, stc.stc_etiqueta
+                FROM seguridad_tabla_catalogo stc
+                JOIN seguridad_tabla st ON st.st_id = stc.stc_tabla_id
+                WHERE st.st_nombre = 'tipo_documento' AND stc.stc_activo = 1
+                ORDER BY stc.stc_orden
+            ");
+            $stmt->execute();
+            $tipos_identificacion = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
+            $this->viewData['origen_modulo']       = $origen_modulo;
+            $this->viewData['origen_id']           = $origen_id;
+            $this->viewData['config']              = $config;
+            $this->viewData['num_preview']         = $numPreview;
+            $this->viewData['clientes']            = $clientes;
+            $this->viewData['formas_pago']         = $formas_pago;
+            $this->viewData['tipos_identificacion'] = $tipos_identificacion;
             $this->viewData['csrf_token']    = \Security::generateCsrfToken();
             $this->viewData['title']         = 'Nueva Factura';
             $this->renderModule('facturacion/crear', $this->viewData);
@@ -295,6 +307,127 @@ class FacturaController extends \App\Controllers\ModuleController {
         } catch (\Exception $e) {
             $this->logError('Error guardar factura: ' . $e->getMessage());
             $this->error('Error al guardar la factura: ' . $e->getMessage());
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // BUSCAR CLIENTE POR IDENTIFICACIÓN — AJAX (cross-tenant)
+    // ─────────────────────────────────────────────────────────────────────────
+
+    public function buscarClientePorIdentificacion() {
+        $this->authorize('crear', 'facturacion');
+        header('Content-Type: application/json');
+
+        $ident = trim($this->get('identificacion') ?? '');
+        if (strlen($ident) < 5) {
+            echo json_encode(['found' => false]);
+            exit;
+        }
+
+        try {
+            // Usar blind index para búsqueda eficiente sin escanear toda la tabla
+            $hash = \DataProtection::blindIndex($ident);
+
+            // Own tenant primero; luego otros tenants
+            $stmt = $this->db->prepare("
+                SELECT cli_cliente_id, cli_tenant_id, cli_tipo_identificacion,
+                       cli_identificacion, cli_nombres, cli_apellidos,
+                       cli_email, cli_telefono, cli_direccion
+                FROM clientes
+                WHERE cli_identificacion_hash = ? AND cli_estado = 'A'
+                ORDER BY CASE WHEN cli_tenant_id = ? THEN 0 ELSE 1 END ASC
+                LIMIT 5
+            ");
+            $stmt->execute([$hash, $this->tenantId]);
+            $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
+            foreach ($rows as $c) {
+                // Verificar coincidencia exacta tras descifrar (evita colisiones de hash)
+                $identDecr = \DataProtection::decrypt($c['cli_identificacion'] ?? null) ?? '';
+                if (strtolower(trim($identDecr)) !== strtolower($ident)) {
+                    continue;
+                }
+                $local = ((int)$c['cli_tenant_id'] === (int)$this->tenantId);
+                echo json_encode([
+                    'found'     => true,
+                    'local'     => $local,
+                    'id'        => $local ? (int)$c['cli_cliente_id'] : null,
+                    'tipo'      => $c['cli_tipo_identificacion'] ?? 'CC',
+                    'nombres'   => $c['cli_nombres'] ?? '',
+                    'apellidos' => $c['cli_apellidos'] ?? '',
+                    'email'     => \DataProtection::decrypt($c['cli_email']     ?? null) ?? '',
+                    'telefono'  => \DataProtection::decrypt($c['cli_telefono']  ?? null) ?? '',
+                    'direccion' => \DataProtection::decrypt($c['cli_direccion'] ?? null) ?? '',
+                ]);
+                exit;
+            }
+
+            echo json_encode(['found' => false]);
+            exit;
+
+        } catch (\Exception $e) {
+            $this->logError('buscarClientePorIdentificacion: ' . $e->getMessage());
+            echo json_encode(['found' => false, 'error' => true]);
+            exit;
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // CREAR CLIENTE RÁPIDO — AJAX (desde nueva factura)
+    // ─────────────────────────────────────────────────────────────────────────
+
+    public function crearClienteRapido() {
+        $this->authorize('crear', 'facturacion');
+
+        if (!$this->isPost()) { $this->error('Método no permitido', 405); }
+        if (!$this->validateCsrf()) { $this->error('Token de seguridad inválido', 403); }
+
+        $tipo      = trim($this->post('tipo_identificacion') ?? 'CC');
+        $ident     = trim($this->post('identificacion')      ?? '');
+        $nombres   = trim($this->post('nombres')             ?? '');
+        $apellidos = trim($this->post('apellidos')           ?? '');
+        $email     = trim($this->post('email')               ?? '');
+        $tel       = trim($this->post('telefono')            ?? '');
+        $dir       = trim($this->post('direccion')           ?? '');
+
+        if (empty($ident) || empty($nombres)) {
+            $this->error('Identificación y nombres son obligatorios');
+        }
+
+        try {
+            $stmt = $this->db->prepare("
+                INSERT INTO clientes
+                    (cli_tenant_id, cli_tipo_identificacion,
+                     cli_identificacion, cli_identificacion_hash,
+                     cli_nombres, cli_apellidos,
+                     cli_email, cli_email_hash,
+                     cli_telefono, cli_direccion, cli_estado)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'A')
+            ");
+            $stmt->execute([
+                $this->tenantId,
+                $tipo,
+                \DataProtection::encrypt($ident),
+                \DataProtection::blindIndex($ident),
+                $nombres,
+                $apellidos,
+                $email ? \DataProtection::encrypt($email)              : null,
+                $email ? \DataProtection::blindIndex($email)           : null,
+                $tel   ? \DataProtection::encrypt($tel)                : null,
+                $dir   ? \DataProtection::encrypt($dir)                : null,
+            ]);
+            $clienteId = (int)$this->db->lastInsertId();
+
+            $this->audit('clientes', $clienteId, 'INSERT', [], ['identificacion' => $ident]);
+
+            $this->success([
+                'cliente_id' => $clienteId,
+                'nombre'     => trim("$nombres $apellidos"),
+            ], 'Cliente registrado');
+
+        } catch (\Exception $e) {
+            $this->logError('crearClienteRapido: ' . $e->getMessage());
+            $this->error('Error al registrar el cliente: ' . $e->getMessage());
         }
     }
 
