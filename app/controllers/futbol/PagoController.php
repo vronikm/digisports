@@ -139,6 +139,7 @@ class PagoController extends \App\Controllers\ModuleController {
                        fct.fct_nombre AS categoria_nombre, fct.fct_color AS categoria_color,
                        fg.fgr_grupo_id, fg.fgr_nombre AS grupo_nombre, fg.fgr_color AS grupo_color,
                        fin.fin_inscripcion_id, fin.fin_estado AS estado_inscripcion,
+                       c.cli_cliente_id AS rep_cliente_id,
                        c.cli_nombres AS rep_nombres, c.cli_apellidos AS rep_apellidos,
                        c.cli_telefono AS rep_telefono, c.cli_email AS rep_email,
                        arc.arc_id AS foto_arc_id
@@ -189,12 +190,58 @@ class PagoController extends \App\Controllers\ModuleController {
             $stmG = $this->db->prepare("SELECT fgr_grupo_id, fgr_nombre FROM futbol_grupos WHERE fgr_tenant_id = ? AND fgr_estado IN ('ABIERTO','EN_CURSO') ORDER BY fgr_nombre");
             $stmG->execute([$this->tenantId]);
 
+            // Rubros activos del tenant para el selector de tipo de pago
+            $stmR = $this->db->prepare("
+                SELECT rub_id, rub_codigo, rub_nombre, rub_aplica_iva, rub_porcentaje_iva
+                FROM facturacion_rubros
+                WHERE rub_tenant_id = ? AND rub_estado = 'ACTIVO'
+                ORDER BY rub_nombre ASC
+            ");
+            $stmR->execute([$this->tenantId]);
+            $rubros = $stmR->fetchAll(\PDO::FETCH_ASSOC);
+
+            // Mapear tipo sugerido (fpg_tipo enum) por keywords en nombre/código
+            $tipoKeywords = [
+                'MENSUALIDAD' => ['mensual', 'cuota', 'mens'],
+                'MATRICULA'   => ['matric', 'inscr'],
+                'UNIFORME'    => ['uniform', 'ropa', 'equip'],
+                'TORNEO'      => ['torneo', 'compet', 'copa'],
+            ];
+            foreach ($rubros as &$r) {
+                $r['tipo_sugerido'] = 'OTRO';
+                $buscar = strtolower($r['rub_nombre'] . ' ' . $r['rub_codigo']);
+                foreach ($tipoKeywords as $tipo => $kws) {
+                    foreach ($kws as $kw) {
+                        if (str_contains($buscar, $kw)) {
+                            $r['tipo_sugerido'] = $tipo;
+                            break 2;
+                        }
+                    }
+                }
+            }
+            unset($r);
+
+            // Becas activas del alumno con rubro vinculado
+            $stmBeca = $this->db->prepare("
+                SELECT fb.fbe_nombre, fb.fbe_tipo, fb.fbe_valor,
+                       r.rub_nombre AS rub_nombre
+                FROM futbol_beca_asignaciones fba
+                JOIN futbol_becas fb ON fba.fba_beca_id = fb.fbe_beca_id AND fb.fbe_tenant_id = fba.fba_tenant_id
+                LEFT JOIN facturacion_rubros r ON fb.fbe_rubro_id = r.rub_id
+                WHERE fba.fba_alumno_id = ? AND fba.fba_tenant_id = ? AND fba.fba_estado = 'ACTIVA'
+                ORDER BY fba.fba_fecha_asignacion DESC
+            ");
+            $stmBeca->execute([$alumnoId, $this->tenantId]);
+            $becasAlumno = $stmBeca->fetchAll(\PDO::FETCH_ASSOC);
+
             $this->viewData = array_merge($this->viewData, [
                 'alumno'          => $alumno,
                 'historial'       => $historial,
                 'total_pagado'    => $totalPagado,
                 'total_pendiente' => $totalPendiente,
                 'grupos'          => $stmG->fetchAll(\PDO::FETCH_ASSOC),
+                'rubros'          => $rubros,
+                'becas_alumno'    => $becasAlumno,
                 'csrf_token'      => \Security::generateCsrfToken(),
                 'title'           => 'Pagos — ' . trim($alumno['alu_nombres'] . ' ' . $alumno['alu_apellidos']),
             ]);
@@ -214,9 +261,10 @@ class PagoController extends \App\Controllers\ModuleController {
             if ($_SERVER['REQUEST_METHOD'] !== 'POST') return $this->jsonResponse(['success' => false, 'message' => 'POST requerido']);
             if (!\Security::validateCsrfToken($this->post('csrf_token'))) return $this->jsonResponse(['success' => false, 'message' => 'Token inválido']);
 
-            $alumnoId = (int)($this->post('alumno_id') ?? 0);
-            $grupoId  = (int)($this->post('grupo_id')  ?? 0);
-            $monto    = (float)($this->post('monto')   ?? 0);
+            $alumnoId   = (int)($this->post('alumno_id')  ?? 0);
+            $grupoId    = (int)($this->post('grupo_id')   ?? 0);
+            $clienteId  = (int)($this->post('cliente_id') ?? 0) ?: null;
+            $monto      = (float)($this->post('monto')    ?? 0);
             if (!$alumnoId || !$grupoId || $monto <= 0) return $this->jsonResponse(['success' => false, 'message' => 'Alumno, grupo y monto válido son obligatorios']);
 
             $tipo        = $this->post('tipo') ?: 'MENSUALIDAD';
@@ -233,15 +281,16 @@ class PagoController extends \App\Controllers\ModuleController {
 
             $this->db->prepare("
                 INSERT INTO futbol_pagos (fpg_tenant_id, fpg_sede_id, fpg_alumno_id, fpg_grupo_id,
-                    fpg_tipo, fpg_concepto, fpg_mes_correspondiente, fpg_monto,
+                    fpg_cliente_id, fpg_tipo, fpg_concepto, fpg_mes_correspondiente, fpg_monto,
                     fpg_descuento, fpg_beca_descuento, fpg_recargo_mora, fpg_total,
                     fpg_metodo_pago, fpg_referencia, fpg_fecha, fpg_estado, fpg_notas)
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,CURDATE(),?,?)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,CURDATE(),?,?)
             ")->execute([
                 $this->tenantId,
                 $sedeIdPago,
                 $alumnoId,
                 $grupoId,
+                $clienteId,
                 $tipo,
                 $concepto,
                 $mes,

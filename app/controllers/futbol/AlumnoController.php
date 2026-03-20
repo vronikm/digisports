@@ -500,7 +500,7 @@ class AlumnoController extends \App\Controllers\ModuleController {
             $alumno = \DataProtection::decryptRow('alumnos', $alumno);
 
             // Descifrar PII del representante (campos aliased desde clientes)
-            foreach (['rep_identificacion', 'rep_telefono', 'rep_email'] as $field) {
+            foreach (['rep_identificacion', 'rep_telefono', 'rep_celular', 'rep_email', 'rep_direccion'] as $field) {
                 if (!empty($alumno[$field])) {
                     $alumno[$field] = \DataProtection::decrypt($alumno[$field]);
                 }
@@ -559,9 +559,38 @@ class AlumnoController extends \App\Controllers\ModuleController {
                 // Tabla puede no existir aún
             }
 
+            // Becas activas del alumno
+            $becas = [];
+            try {
+                $stmBeca = $this->db->prepare("
+                    SELECT fba.fba_asignacion_id,
+                           fba.fba_fecha_asignacion,
+                           fba.fba_fecha_vencimiento,
+                           fba.fba_motivo,
+                           fba.fba_estado,
+                           fb.fbe_nombre,
+                           fb.fbe_tipo,
+                           fb.fbe_valor,
+                           fb.fbe_descripcion,
+                           fb.fbe_aplica_matricula,
+                           fb.fbe_aplica_mensualidad
+                    FROM futbol_beca_asignaciones fba
+                    JOIN futbol_becas fb ON fba.fba_beca_id = fb.fbe_beca_id
+                    WHERE fba.fba_alumno_id = ?
+                      AND fba.fba_tenant_id = ?
+                      AND fba.fba_estado = 'ACTIVA'
+                    ORDER BY fba.fba_fecha_asignacion DESC
+                ");
+                $stmBeca->execute([$id, $this->tenantId]);
+                $becas = $stmBeca->fetchAll(\PDO::FETCH_ASSOC);
+            } catch (\Exception $e) {
+                // Tabla puede no existir aún
+            }
+
             $this->viewData['alumno'] = $alumno;
             $this->viewData['ficha'] = $alumno; // viene en el mismo JOIN
             $this->viewData['hermanos'] = $hermanos;
+            $this->viewData['becas'] = $becas;
             $this->viewData['inscripciones'] = $inscripciones;
             $this->viewData['evaluaciones'] = $evaluaciones;
             $this->viewData['asistencia_resumen'] = $asistencia;

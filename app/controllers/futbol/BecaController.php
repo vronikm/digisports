@@ -46,11 +46,13 @@ class BecaController extends \App\Controllers\ModuleController {
             // Asignaciones recientes
             $sedeSQL = $sedeId ? ' AND a.alu_sede_id = ?' : '';
             $stm2 = $this->db->prepare("
-                SELECT fba.*, b.fbe_nombre, b.fbe_tipo, b.fbe_valor,
-                       a.alu_nombres, a.alu_apellidos
+                SELECT fba.*, b.fbe_nombre, b.fbe_tipo, b.fbe_valor, b.fbe_rubro_id,
+                       a.alu_nombres, a.alu_apellidos,
+                       r.rub_nombre AS rub_nombre, r.rub_codigo AS rub_codigo
                 FROM futbol_beca_asignaciones fba
                 JOIN futbol_becas b ON fba.fba_beca_id = b.fbe_beca_id AND b.fbe_tenant_id = fba.fba_tenant_id
                 JOIN alumnos a ON fba.fba_alumno_id = a.alu_alumno_id AND a.alu_tenant_id = fba.fba_tenant_id
+                LEFT JOIN facturacion_rubros r ON b.fbe_rubro_id = r.rub_id
                 WHERE fba.fba_tenant_id = ?{$sedeSQL}
                 ORDER BY fba.fba_fecha_asignacion DESC
                 LIMIT 50
@@ -72,6 +74,16 @@ class BecaController extends \App\Controllers\ModuleController {
             if ($sedeId) $params3[] = (int)$sedeId;
             $stm3->execute($params3);
             $this->viewData['alumnos'] = $stm3->fetchAll(\PDO::FETCH_ASSOC);
+
+            // Rubros activos del tenant para vincular a becas
+            $stmR = $this->db->prepare("
+                SELECT rub_id, rub_codigo, rub_nombre
+                FROM facturacion_rubros
+                WHERE rub_tenant_id = ? AND rub_estado = 'ACTIVO'
+                ORDER BY rub_nombre ASC
+            ");
+            $stmR->execute([$this->tenantId]);
+            $this->viewData['rubros'] = $stmR->fetchAll(\PDO::FETCH_ASSOC);
 
             $this->viewData['csrf_token'] = \Security::generateCsrfToken();
             $this->viewData['title'] = 'Becas';
@@ -97,9 +109,11 @@ class BecaController extends \App\Controllers\ModuleController {
             if (empty($nombre)) return $this->jsonResponse(['success' => false, 'message' => 'El nombre es obligatorio']);
             if (!in_array($tipo, ['PORCENTAJE', 'MONTO_FIJO', 'EXONERACION'])) return $this->jsonResponse(['success' => false, 'message' => 'Tipo de beca inválido']);
 
+            $rubroId = (int)($this->post('rubro_id') ?? 0) ?: null;
+
             $stm = $this->db->prepare("
-                INSERT INTO futbol_becas (fbe_tenant_id, fbe_nombre, fbe_tipo, fbe_valor, fbe_descripcion, fbe_activo)
-                VALUES (?, ?, ?, ?, ?, 1)
+                INSERT INTO futbol_becas (fbe_tenant_id, fbe_nombre, fbe_tipo, fbe_valor, fbe_descripcion, fbe_rubro_id, fbe_activo)
+                VALUES (?, ?, ?, ?, ?, ?, 1)
             ");
             $stm->execute([
                 $this->tenantId,
@@ -107,6 +121,7 @@ class BecaController extends \App\Controllers\ModuleController {
                 $tipo,
                 $valor,
                 $this->post('descripcion') ?: null,
+                $rubroId,
             ]);
 
             return $this->jsonResponse(['success' => true, 'message' => 'Beca creada correctamente']);
@@ -133,9 +148,11 @@ class BecaController extends \App\Controllers\ModuleController {
             if (empty($nombre)) return $this->jsonResponse(['success' => false, 'message' => 'El nombre es obligatorio']);
             if (!in_array($tipo, ['PORCENTAJE', 'MONTO_FIJO', 'EXONERACION'])) return $this->jsonResponse(['success' => false, 'message' => 'Tipo de beca inválido']);
 
+            $rubroId = (int)($this->post('rubro_id') ?? 0) ?: null;
+
             $stm = $this->db->prepare("
-                UPDATE futbol_becas 
-                SET fbe_nombre = ?, fbe_tipo = ?, fbe_valor = ?, fbe_descripcion = ?, fbe_updated_at = NOW()
+                UPDATE futbol_becas
+                SET fbe_nombre = ?, fbe_tipo = ?, fbe_valor = ?, fbe_descripcion = ?, fbe_rubro_id = ?, fbe_updated_at = NOW()
                 WHERE fbe_beca_id = ? AND fbe_tenant_id = ?
             ");
             $stm->execute([
@@ -143,6 +160,7 @@ class BecaController extends \App\Controllers\ModuleController {
                 $tipo,
                 (float)($this->post('valor') ?? 0),
                 $this->post('descripcion') ?: null,
+                $rubroId,
                 $id,
                 $this->tenantId,
             ]);
@@ -222,6 +240,52 @@ class BecaController extends \App\Controllers\ModuleController {
         } catch (\Exception $e) {
             $this->logError("Error asignando beca: " . $e->getMessage());
             return $this->jsonResponse(['success' => false, 'message' => 'Error al asignar beca']);
+        }
+    }
+
+    /**
+     * Editar asignación de beca (cambiar beca, estado, fecha fin, motivo)
+     */
+    public function editarAsignacion() {
+        try {
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') return $this->jsonResponse(['success' => false, 'message' => 'POST requerido']);
+            if (!\Security::validateCsrfToken($this->post('csrf_token'))) return $this->jsonResponse(['success' => false, 'message' => 'Token inválido']);
+
+            $asignacionId = (int)($this->post('asignacion_id') ?? 0);
+            $becaId       = (int)($this->post('beca_id') ?? 0);
+            if (!$asignacionId || !$becaId) return $this->jsonResponse(['success' => false, 'message' => 'Datos incompletos']);
+
+            $estado = $this->post('estado') ?: 'ACTIVA';
+            if (!in_array($estado, ['ACTIVA', 'SUSPENDIDA'])) return $this->jsonResponse(['success' => false, 'message' => 'Estado inválido']);
+
+            // Verificar que la asignación pertenezca a este tenant y sea editable
+            $stm = $this->db->prepare("SELECT fba_asignacion_id FROM futbol_beca_asignaciones WHERE fba_asignacion_id = ? AND fba_tenant_id = ? AND fba_estado IN ('ACTIVA','SUSPENDIDA')");
+            $stm->execute([$asignacionId, $this->tenantId]);
+            if (!$stm->fetchColumn()) return $this->jsonResponse(['success' => false, 'message' => 'Asignación no encontrada o no editable']);
+
+            // Verificar que la beca nueva esté activa en este tenant
+            $stm2 = $this->db->prepare("SELECT fbe_beca_id FROM futbol_becas WHERE fbe_beca_id = ? AND fbe_tenant_id = ? AND fbe_activo = 1");
+            $stm2->execute([$becaId, $this->tenantId]);
+            if (!$stm2->fetchColumn()) return $this->jsonResponse(['success' => false, 'message' => 'Beca no encontrada o inactiva']);
+
+            $this->db->prepare("
+                UPDATE futbol_beca_asignaciones
+                SET fba_beca_id = ?, fba_estado = ?, fba_fecha_vencimiento = ?, fba_motivo = ?
+                WHERE fba_asignacion_id = ? AND fba_tenant_id = ?
+            ")->execute([
+                $becaId,
+                $estado,
+                $this->post('fecha_fin') ?: null,
+                $this->post('motivo') ?: null,
+                $asignacionId,
+                $this->tenantId,
+            ]);
+
+            return $this->jsonResponse(['success' => true, 'message' => 'Asignación actualizada correctamente']);
+
+        } catch (\Exception $e) {
+            $this->logError("Error editando asignación: " . $e->getMessage());
+            return $this->jsonResponse(['success' => false, 'message' => 'Error al actualizar asignación']);
         }
     }
 

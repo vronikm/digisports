@@ -8,6 +8,7 @@
 $a             = $alumno ?? [];
 $ficha         = $ficha ?? [];
 $hermanos      = $hermanos ?? [];
+$becas         = $becas ?? [];
 $inscripciones = $inscripciones ?? [];
 $evaluaciones  = $evaluaciones ?? [];
 $asistencia    = $asistencia_resumen ?? [];
@@ -93,54 +94,97 @@ $moduloColor   = $modulo_actual['color'] ?? '#22C55E';
                 </div>
 
                 <!-- Representante -->
-                <?php if (!empty($a['rep_nombre_completo'])): ?>
+                <?php
+                $parentLabels = ['PADRE'=>'Padre','MADRE'=>'Madre','TUTOR'=>'Tutor Legal','ABUELO'=>'Abuelo/a','TIO'=>'Tío/a','HERMANO'=>'Hermano/a','OTRO'=>'Otro'];
+                $tieneRep = !empty($a['rep_nombre_completo']);
+                ?>
                 <div class="card card-outline card-warning">
-                    <div class="card-header">
-                        <h3 class="card-title"><i class="fas fa-user-friends mr-2"></i>Representante</h3>
-                    </div>
-                    <div class="card-body">
-                        <h5 class="mb-2"><?= htmlspecialchars($a['rep_nombre_completo']) ?></h5>
-                        <?php if (!empty($a['rep_identificacion'])): ?>
-                        <p class="mb-1"><i class="fas fa-id-card mr-2 text-muted"></i>
-                            <code><?= htmlspecialchars($a['rep_identificacion']) ?></code>
-                        </p>
-                        <?php endif; ?>
-                        <?php if (!empty($a['alu_parentesco'])): ?>
-                        <p class="mb-1"><i class="fas fa-link mr-2 text-muted"></i>
-                            <?php
-                            $parentLabels = ['PADRE'=>'Padre','MADRE'=>'Madre','TUTOR'=>'Tutor Legal','ABUELO'=>'Abuelo/a','TIO'=>'Tío/a','HERMANO'=>'Hermano/a','OTRO'=>'Otro'];
-                            echo $parentLabels[$a['alu_parentesco']] ?? $a['alu_parentesco'];
-                            ?>
-                        </p>
-                        <?php endif; ?>
-                        <?php if (!empty($a['rep_telefono'])): ?>
-                        <p class="mb-1"><i class="fas fa-phone mr-2 text-muted"></i>
-                            <?= htmlspecialchars($a['rep_telefono']) ?>
-                        </p>
-                        <?php endif; ?>
-                        <?php if (!empty($a['rep_email'])): ?>
-                        <p class="mb-1"><i class="fas fa-envelope mr-2 text-muted"></i>
-                            <?= htmlspecialchars($a['rep_email']) ?>
-                        </p>
-                        <?php endif; ?>
-                        <?php if (!empty($a['rep_direccion'])): ?>
-                        <p class="mb-1"><i class="fas fa-map-marker-alt mr-2 text-muted"></i>
-                            <?= htmlspecialchars($a['rep_direccion']) ?>
-                        </p>
-                        <?php endif; ?>
-                        <?php if ($a['rep_consentimiento'] ?? 0): ?>
-                        <p class="mb-0"><span class="badge badge-success"><i class="fas fa-check mr-1"></i>Consentimiento de datos otorgado</span></p>
+                    <div class="card-header py-2">
+                        <h3 class="card-title">
+                            <i class="fas fa-user-friends mr-2"></i>Representante
+                        </h3>
+                        <?php if ($tieneRep && !empty($a['alu_parentesco'])): ?>
+                        <div class="card-tools">
+                            <span class="badge badge-warning">
+                                <?= htmlspecialchars($parentLabels[$a['alu_parentesco']] ?? $a['alu_parentesco']) ?>
+                            </span>
+                        </div>
                         <?php endif; ?>
                     </div>
+                    <?php if ($tieneRep): ?>
+                    <div class="card-body p-0">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item py-2">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span>
+                                        <i class="fas fa-user mr-2 text-warning"></i>
+                                        <strong><?= htmlspecialchars($a['rep_nombre_completo']) ?></strong>
+                                    </span>
+                                    <?php if ($a['rep_consentimiento'] ?? 0): ?>
+                                    <span class="badge badge-success" title="Consentimiento de datos otorgado">
+                                        <i class="fas fa-shield-alt mr-1"></i>LOPDP
+                                    </span>
+                                    <?php endif; ?>
+                                </div>
+                            </li>
+                            <?php if (!empty($a['rep_identificacion'])): ?>
+                            <li class="list-group-item py-2">
+                                <i class="fas fa-id-card mr-2 text-muted"></i>
+                                <code><?= htmlspecialchars($a['rep_identificacion']) ?></code>
+                            </li>
+                            <?php endif; ?>
+                            <?php if (!empty($a['rep_telefono'])): ?>
+                            <li class="list-group-item py-2">
+                                <i class="fas fa-phone mr-2 text-muted"></i>
+                                <a href="tel:<?= htmlspecialchars($a['rep_telefono']) ?>">
+                                    <?= htmlspecialchars($a['rep_telefono']) ?>
+                                </a>
+                            </li>
+                            <?php endif; ?>
+                            <?php if (!empty($a['rep_celular'] ?? '')): ?>
+                            <li class="list-group-item py-2">
+                                <i class="fas fa-mobile-alt mr-2 text-muted"></i>
+                                <a href="tel:<?= htmlspecialchars($a['rep_celular']) ?>">
+                                    <?= htmlspecialchars($a['rep_celular']) ?>
+                                </a>
+                                <span class="badge badge-light ml-1">celular</span>
+                            </li>
+                            <?php endif; ?>
+                            <?php if (!empty($a['rep_email'])): ?>
+                            <li class="list-group-item py-2">
+                                <i class="fas fa-envelope mr-2 text-muted"></i>
+                                <a href="mailto:<?= htmlspecialchars($a['rep_email']) ?>">
+                                    <?= htmlspecialchars($a['rep_email']) ?>
+                                </a>
+                            </li>
+                            <?php endif; ?>
+                            <?php if (!empty($a['rep_direccion'])): ?>
+                            <li class="list-group-item py-2">
+                                <i class="fas fa-map-marker-alt mr-2 text-muted"></i>
+                                <?= htmlspecialchars($a['rep_direccion']) ?>
+                            </li>
+                            <?php endif; ?>
+                        </ul>
+                    </div>
+                    <?php else: ?>
+                    <div class="card-body text-center text-muted py-3">
+                        <i class="fas fa-user-slash fa-2x mb-2 d-block"></i>
+                        <small>Sin representante asignado</small>
+                    </div>
+                    <?php endif; ?>
                 </div>
-                <?php endif; ?>
 
                 <!-- Hermanos inscritos -->
-                <?php if (!empty($hermanos)): ?>
                 <div class="card card-outline card-success">
                     <div class="card-header py-2">
                         <h3 class="card-title"><i class="fas fa-users mr-2"></i>Hermanos Inscritos</h3>
+                        <?php if (!empty($hermanos)): ?>
+                        <div class="card-tools">
+                            <span class="badge badge-success"><?= count($hermanos) ?></span>
+                        </div>
+                        <?php endif; ?>
                     </div>
+                    <?php if (!empty($hermanos)): ?>
                     <div class="card-body p-0">
                         <ul class="list-group list-group-flush">
                             <?php foreach ($hermanos as $h): ?>
@@ -159,8 +203,81 @@ $moduloColor   = $modulo_actual['color'] ?? '#22C55E';
                             <small class="text-muted"><i class="fas fa-tag mr-1"></i>Puede aplicar beca por hermanos</small>
                         </div>
                     </div>
+                    <?php else: ?>
+                    <div class="card-body text-center text-muted py-3">
+                        <i class="fas fa-users-slash fa-2x mb-2 d-block"></i>
+                        <small>Sin hermanos inscritos</small>
+                    </div>
+                    <?php endif; ?>
                 </div>
-                <?php endif; ?>
+
+                <!-- Becas y Descuentos -->
+                <div class="card card-outline card-purple">
+                    <div class="card-header py-2">
+                        <h3 class="card-title">
+                            <i class="fas fa-award mr-2"></i>Becas y Descuentos
+                        </h3>
+                        <?php if (!empty($becas)): ?>
+                        <div class="card-tools">
+                            <span class="badge badge-warning"><?= count($becas) ?></span>
+                        </div>
+                        <?php endif; ?>
+                    </div>
+                    <?php if (!empty($becas)): ?>
+                    <div class="card-body p-0">
+                        <ul class="list-group list-group-flush">
+                            <?php foreach ($becas as $b):
+                                $tipoLabel = match($b['fbe_tipo']) {
+                                    'PORCENTAJE'  => number_format($b['fbe_valor'], 0) . '%',
+                                    'MONTO_FIJO'  => '$' . number_format($b['fbe_valor'], 2),
+                                    'EXONERACION' => 'Exoneración total',
+                                    default       => $b['fbe_valor'],
+                                };
+                                $vence = !empty($b['fba_fecha_vencimiento'])
+                                    ? date('d/m/Y', strtotime($b['fba_fecha_vencimiento']))
+                                    : null;
+                                $aplica = [];
+                                if ($b['fbe_aplica_matricula'])   $aplica[] = 'Matrícula';
+                                if ($b['fbe_aplica_mensualidad']) $aplica[] = 'Mensualidad';
+                            ?>
+                            <li class="list-group-item py-2">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <strong class="d-block">
+                                            <i class="fas fa-tag mr-1 text-warning"></i>
+                                            <?= htmlspecialchars($b['fbe_nombre']) ?>
+                                        </strong>
+                                        <?php if (!empty($b['fbe_descripcion'])): ?>
+                                        <small class="text-muted d-block">
+                                            <?= htmlspecialchars($b['fbe_descripcion']) ?>
+                                        </small>
+                                        <?php endif; ?>
+                                        <?php if (!empty($aplica)): ?>
+                                        <small class="text-muted d-block">
+                                            Aplica: <?= implode(', ', $aplica) ?>
+                                        </small>
+                                        <?php endif; ?>
+                                        <?php if ($vence): ?>
+                                        <small class="text-muted d-block">
+                                            <i class="fas fa-calendar-times mr-1"></i>Vence: <?= $vence ?>
+                                        </small>
+                                        <?php endif; ?>
+                                    </div>
+                                    <span class="badge badge-warning ml-2 text-nowrap" style="font-size:.85rem;">
+                                        <?= htmlspecialchars($tipoLabel) ?>
+                                    </span>
+                                </div>
+                            </li>
+                            <?php endforeach; ?>
+                        </ul>
+                    </div>
+                    <?php else: ?>
+                    <div class="card-body text-center text-muted py-3">
+                        <i class="fas fa-award fa-2x mb-2 d-block opacity-50"></i>
+                        <small>Sin becas asignadas</small>
+                    </div>
+                    <?php endif; ?>
+                </div>
 
                 <!-- Contacto de Emergencia -->
                 <?php if (!empty($a['alu_contacto_emergencia']) || !empty($a['alu_telefono_emergencia'])): ?>

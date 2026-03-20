@@ -496,10 +496,10 @@ class AuthController extends \BaseController {
             if ($this->isAjax()) {
                 $this->success([
                     'redirect' => $redirect
-                ], '¡Bienvenido ' . $user['nombres'] . '!');
+                ], '¡Bienvenido ' . $user['usu_nombres'] . '!');
             } else {
                 // Guardar mensaje flash para mostrar después de la redirección
-                setFlashMessage('success', '¡Bienvenido ' . $user['nombres'] . '!');
+                setFlashMessage('success', '¡Bienvenido ' . $user['usu_nombres'] . '!');
                 header('Location: ' . $redirect);
                 exit;
             }

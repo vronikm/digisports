@@ -101,9 +101,9 @@ abstract class BaseController {
             $stmt = $this->db->prepare("
                 SELECT
                     t.*,
-                    p.pla_nombre as plan_nombre
+                    p.sus_nombre as plan_nombre
                 FROM seguridad_tenants t
-                LEFT JOIN seguridad_planes p ON t.ten_plan_id = p.pla_plan_id
+                LEFT JOIN seguridad_planes_suscripcion p ON t.ten_plan_id = p.sus_plan_id
                 WHERE t.ten_tenant_id = ?
             ");
             $stmt->execute([$this->tenantId]);

@@ -19,15 +19,21 @@ $grupos         = $grupos ?? [];
 $nombreCompleto = trim(($alumno['alu_nombres'] ?? '') . ' ' . ($alumno['alu_apellidos'] ?? ''));
 $grupoActualId  = $alumno['fgr_grupo_id'] ?? '';
 $alumnoId       = (int)($alumno['alu_alumno_id'] ?? 0);
+$becasAlumno    = $becas_alumno ?? [];
 
-// Tipos de pago disponibles con sus iconos y color de referencia
-$tiposPago = [
-    'MENSUALIDAD' => ['label' => 'Mensualidad', 'icon' => 'fas fa-calendar-alt',  'color' => '#22C55E'],
-    'MATRICULA'   => ['label' => 'Matrícula',   'icon' => 'fas fa-user-plus',     'color' => '#3B82F6'],
-    'UNIFORME'    => ['label' => 'Uniforme',     'icon' => 'fas fa-tshirt',        'color' => '#8B5CF6'],
-    'TORNEO'      => ['label' => 'Torneo',       'icon' => 'fas fa-trophy',        'color' => '#F59E0B'],
-    'OTRO'        => ['label' => 'Otro',         'icon' => 'fas fa-ellipsis-h',    'color' => '#6B7280'],
+// Paleta de colores para rubros dinámicos
+$rubroColores = ['#22C55E','#3B82F6','#8B5CF6','#F59E0B','#EF4444','#06B6D4','#F97316','#6B7280'];
+
+// Fallback: si no hay rubros configurados, usar tipos fijos
+$tiposFallback = [
+    ['rub_id' => 0, 'rub_codigo' => 'MENSUALIDAD', 'rub_nombre' => 'Mensualidad', 'tipo_sugerido' => 'MENSUALIDAD'],
+    ['rub_id' => 0, 'rub_codigo' => 'MATRICULA',   'rub_nombre' => 'Matrícula',   'tipo_sugerido' => 'MATRICULA'],
+    ['rub_id' => 0, 'rub_codigo' => 'UNIFORME',     'rub_nombre' => 'Uniforme',    'tipo_sugerido' => 'UNIFORME'],
+    ['rub_id' => 0, 'rub_codigo' => 'TORNEO',       'rub_nombre' => 'Torneo',      'tipo_sugerido' => 'TORNEO'],
+    ['rub_id' => 0, 'rub_codigo' => 'OTRO',         'rub_nombre' => 'Otro',        'tipo_sugerido' => 'OTRO'],
 ];
+$rubrosSelector = !empty($rubros) ? $rubros : $tiposFallback;
+$primerRubro    = $rubrosSelector[0];
 
 $estadoClass = [
     'PENDIENTE' => 'warning',
@@ -115,6 +121,36 @@ $estadoClass = [
                                 <?php endif; ?>
                             </div>
                         </div>
+                        <?php if (!empty($becasAlumno)): ?>
+                        <hr class="my-2">
+                        <div class="small">
+                            <span class="font-weight-bold text-purple"><i class="fas fa-graduation-cap mr-1"></i>Beca<?= count($becasAlumno) > 1 ? 's' : '' ?> activa<?= count($becasAlumno) > 1 ? 's' : '' ?>:</span>
+                            <?php foreach ($becasAlumno as $beca): ?>
+                            <div class="d-flex align-items-center justify-content-between mt-1">
+                                <span><?= htmlspecialchars($beca['fbe_nombre']) ?></span>
+                                <span>
+                                    <span class="badge badge-success ml-1">
+                                        <?php if ($beca['fbe_tipo'] === 'EXONERACION'): ?>
+                                            100%
+                                        <?php elseif ($beca['fbe_tipo'] === 'PORCENTAJE'): ?>
+                                            <?= number_format($beca['fbe_valor'], 0) ?>%
+                                        <?php else: ?>
+                                            $<?= number_format($beca['fbe_valor'], 2) ?>
+                                        <?php endif; ?>
+                                    </span>
+                                    <?php if (!empty($beca['rub_nombre'])): ?>
+                                    <span class="badge badge-light border ml-1"><?= htmlspecialchars($beca['rub_nombre']) ?></span>
+                                    <?php else: ?>
+                                    <span class="badge badge-light border ml-1 text-muted">Todos los rubros</span>
+                                    <?php endif; ?>
+                                </span>
+                            </div>
+                            <?php endforeach; ?>
+                        </div>
+                        <?php else: ?>
+                        <hr class="my-2">
+                        <p class="small text-muted mb-0"><i class="fas fa-graduation-cap mr-1"></i>Sin becas asignadas</p>
+                        <?php endif; ?>
                     </div>
                 </div>
 
@@ -147,16 +183,25 @@ $estadoClass = [
                     </div>
                     <div class="card-body">
 
-                        <!-- Selector de tipo de pago -->
-                        <div class="mb-3">
-                            <label class="small font-weight-bold d-block mb-2">Tipo de Pago</label>
-                            <div class="d-flex flex-wrap" style="gap:6px;">
-                                <?php foreach ($tiposPago as $key => $tp): ?>
+                        <!-- Selector de tipo de pago (rubros dinámicos) -->
+                        <div class="mb-2">
+                            <label class="small font-weight-bold d-block mb-1">
+                                Rubro / Tipo de Pago
+                                <?php if (!empty($rubros)): ?>
+                                <span class="badge badge-info ml-1" style="font-weight:400;font-size:.7rem;">
+                                    <i class="fas fa-sync-alt mr-1"></i>Desde Facturación
+                                </span>
+                                <?php endif; ?>
+                            </label>
+                            <div class="d-flex flex-wrap" id="contenedorRubros" style="gap:5px;">
+                                <?php foreach ($rubrosSelector as $i => $r): ?>
                                 <button type="button"
                                         class="btn btn-sm btn-outline-secondary js-tipo-pago"
-                                        data-tipo="<?= $key ?>"
-                                        style="--tipo-color:<?= $tp['color'] ?>">
-                                    <i class="<?= $tp['icon'] ?> mr-1"></i><?= $tp['label'] ?>
+                                        data-tipo="<?= htmlspecialchars($r['tipo_sugerido']) ?>"
+                                        data-concepto="<?= htmlspecialchars($r['rub_nombre']) ?>"
+                                        data-rubro-id="<?= (int)$r['rub_id'] ?>"
+                                        style="--tipo-color:<?= $rubroColores[$i % count($rubroColores)] ?>">
+                                    <i class="fas fa-tag mr-1"></i><?= htmlspecialchars($r['rub_nombre']) ?>
                                 </button>
                                 <?php endforeach; ?>
                             </div>
@@ -165,7 +210,17 @@ $estadoClass = [
                         <form id="formNuevoPago">
                             <input type="hidden" name="csrf_token"  value="<?= htmlspecialchars($csrf_token) ?>">
                             <input type="hidden" name="alumno_id"   value="<?= $alumnoId ?>">
-                            <input type="hidden" id="fpg_tipo"      name="tipo" value="MENSUALIDAD">
+                            <input type="hidden" name="cliente_id"  value="<?= (int)($alumno['rep_cliente_id'] ?? 0) ?>">
+                            <input type="hidden" id="fpg_tipo"      name="tipo"     value="<?= htmlspecialchars($primerRubro['tipo_sugerido']) ?>">
+                            <input type="hidden" id="fpg_rubro_id"  name="rubro_id" value="<?= (int)$primerRubro['rub_id'] ?>">
+
+                            <div class="form-group mb-2">
+                                <label class="small">Concepto</label>
+                                <input type="text" id="fpg_concepto" name="concepto"
+                                       class="form-control form-control-sm"
+                                       value="<?= htmlspecialchars($primerRubro['rub_nombre']) ?>"
+                                       placeholder="Descripción del pago" maxlength="200">
+                            </div>
 
                             <div class="row">
                                 <div class="col-md-6">
@@ -360,16 +415,18 @@ $estadoClass = [
     var URL_COBRAR   = '<?= url('futbol', 'pago', 'cobrar') ?>';
     var URL_ANULAR   = '<?= url('futbol', 'pago', 'anular') ?>';
 
-    // --- Selector de tipo de pago ---
-    var tipoActivo = 'MENSUALIDAD';
-    document.querySelectorAll('.js-tipo-pago').forEach(function (btn) {
-        if (btn.dataset.tipo === tipoActivo) activarTipo(btn);
+    // --- Selector de rubro / tipo de pago ---
+    var btns = document.querySelectorAll('.js-tipo-pago');
+    // Activar el primer botón por defecto
+    if (btns.length > 0) activarTipo(btns[0]);
 
+    btns.forEach(function (btn) {
         btn.addEventListener('click', function () {
-            document.querySelectorAll('.js-tipo-pago').forEach(function (b) { desactivarTipo(b); });
+            btns.forEach(function (b) { desactivarTipo(b); });
             activarTipo(btn);
-            tipoActivo = btn.dataset.tipo;
-            document.getElementById('fpg_tipo').value = tipoActivo;
+            document.getElementById('fpg_tipo').value     = btn.dataset.tipo     || 'OTRO';
+            document.getElementById('fpg_rubro_id').value = btn.dataset.rubroId  || '0';
+            document.getElementById('fpg_concepto').value = btn.dataset.concepto || '';
         });
     });
 

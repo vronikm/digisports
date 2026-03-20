@@ -293,6 +293,22 @@ class FacturaController extends \App\Controllers\ModuleController {
                 WHERE fac_id = ?
             ")->execute([$factura_id]);
 
+            // ── Vincular pagos de subsistemas incluidos en la factura ─────────
+            $pagosFutbolIds = [];
+            foreach ($lineas as $lin) {
+                if (($lin['ref_fuente'] ?? '') === 'futbol_pago' && !empty($lin['ref_id'])) {
+                    $pagosFutbolIds[] = (int)$lin['ref_id'];
+                }
+            }
+            if (!empty($pagosFutbolIds)) {
+                $ph = implode(',', array_fill(0, count($pagosFutbolIds), '?'));
+                $this->db->prepare("
+                    UPDATE futbol_pagos
+                    SET fpg_factura_id = ?
+                    WHERE fpg_pago_id IN ($ph) AND fpg_tenant_id = ? AND fpg_factura_id IS NULL
+                ")->execute(array_merge([$factura_id], $pagosFutbolIds, [$this->tenantId]));
+            }
+
             // ── Auditoría ─────────────────────────────────────────────────────
             $this->audit('facturacion_facturas', $factura_id, 'INSERT', [], [
                 'numero' => $fac_numero, 'total' => $total,
@@ -474,6 +490,151 @@ class FacturaController extends \App\Controllers\ModuleController {
         } catch (\Exception $e) {
             $this->logError('clienteInfo: ' . $e->getMessage());
             $this->error('Error al obtener cliente', 500);
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // OBTENER ITEMS PARA FACTURAR — AJAX (rubros + comprobantes pendientes)
+    // ─────────────────────────────────────────────────────────────────────────
+
+    public function obtenerItemsParaFacturar() {
+        $this->authorize('crear', 'facturacion');
+
+        try {
+            // ── 1. Rubros activos del tenant ─────────────────────────────────
+            $stmt = $this->db->prepare("
+                SELECT rub_id, rub_codigo, rub_nombre, rub_descripcion,
+                       rub_aplica_iva, rub_porcentaje_iva
+                FROM facturacion_rubros
+                WHERE rub_tenant_id = ? AND rub_estado = 'ACTIVO'
+                ORDER BY rub_nombre ASC
+            ");
+            $stmt->execute([$this->tenantId]);
+            $rubros = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
+            // ── 2. Comprobantes pendientes por subsistema ─────────────────────
+            $filtroClienteId = (int)($this->get('cliente_id') ?? 0) ?: null;
+            $comprobantes = [];
+
+            // 2a. Fútbol — recibos EMITIDO sin factura electrónica asociada
+            try {
+                $stmt = $this->db->prepare("
+                    SELECT
+                        fc.fcm_comprobante_id   AS id,
+                        'futbol'                AS fuente,
+                        fc.fcm_numero           AS numero,
+                        fc.fcm_concepto         AS concepto,
+                        CONCAT(a.alu_nombres, ' ', a.alu_apellidos) AS alumno,
+                        fc.fcm_subtotal         AS subtotal,
+                        fc.fcm_descuento        AS descuento,
+                        fc.fcm_iva              AS iva_monto,
+                        fc.fcm_total            AS total,
+                        fc.fcm_fecha_emision    AS fecha
+                    FROM futbol_comprobantes fc
+                    LEFT JOIN futbol_alumnos a ON fc.fcm_alumno_id = a.alu_id
+                    WHERE fc.fcm_tenant_id = ?
+                      AND fc.fcm_estado    = 'EMITIDO'
+                      AND fc.fcm_tipo      = 'RECIBO'
+                    ORDER BY fc.fcm_fecha_emision DESC
+                    LIMIT 100
+                ");
+                $stmt->execute([$this->tenantId]);
+                $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
+                foreach ($rows as $row) {
+                    $base    = (float)$row['subtotal'] - (float)$row['descuento'];
+                    $ivaPct  = ($base > 0 && (float)$row['iva_monto'] > 0)
+                               ? (int)round((float)$row['iva_monto'] / $base * 100)
+                               : 0;
+                    // Normalizar a valores SRI válidos
+                    $ivaPct  = in_array($ivaPct, [0, 5, 12, 14, 15]) ? $ivaPct : 15;
+
+                    $comprobantes[] = [
+                        'fuente'      => 'futbol',
+                        'fuente_label'=> 'Fútbol',
+                        'id'          => (int)$row['id'],
+                        'numero'      => $row['numero'],
+                        'descripcion' => $row['concepto'],
+                        'alumno'      => $row['alumno'] ?? '—',
+                        'precio'      => (float)$base,
+                        'pct_iva'     => $ivaPct,
+                        'total'       => (float)$row['total'],
+                        'fecha'       => $row['fecha'],
+                    ];
+                }
+            } catch (\Exception $e) {
+                // Subsistema no disponible — no interrumpir
+            }
+
+            // 2b. Fútbol — pagos registrados (estado PAGADO) filtrados por cliente
+            // Solo se ejecuta cuando se provee un cliente; sin cliente no tiene sentido mostrar pagos
+            if ($filtroClienteId) try {
+                $whereCliente = ' AND fp.fpg_cliente_id = ?';
+                $stmtPagos = $this->db->prepare("
+                    SELECT
+                        fp.fpg_pago_id          AS id,
+                        fp.fpg_concepto         AS concepto,
+                        fp.fpg_tipo,
+                        fp.fpg_mes_correspondiente AS mes,
+                        fp.fpg_total            AS total,
+                        fp.fpg_comprobante_num  AS numero,
+                        fp.fpg_fecha            AS fecha,
+                        a.alu_nombres,
+                        a.alu_apellidos
+                    FROM futbol_pagos fp
+                    LEFT JOIN alumnos a
+                           ON fp.fpg_alumno_id = a.alu_alumno_id
+                          AND a.alu_tenant_id  = fp.fpg_tenant_id
+                    WHERE fp.fpg_tenant_id  = ?
+                      AND fp.fpg_estado     = 'PAGADO'
+                      AND fp.fpg_factura_id IS NULL
+                      {$whereCliente}
+                    ORDER BY fp.fpg_fecha DESC
+                    LIMIT 200
+                ");
+                $stmtPagos->execute([$this->tenantId, $filtroClienteId]);
+                $pagos = $stmtPagos->fetchAll(\PDO::FETCH_ASSOC);
+
+                foreach ($pagos as $row) {
+                    $nombres   = !empty($row['alu_nombres'])   ? \DataProtection::decrypt($row['alu_nombres'])   : '';
+                    $apellidos = !empty($row['alu_apellidos']) ? \DataProtection::decrypt($row['alu_apellidos']) : '';
+                    $alumno    = trim("$nombres $apellidos") ?: '—';
+
+                    $desc = $row['concepto'];
+                    if (!empty($row['mes'])) {
+                        $desc .= ' (' . $row['mes'] . ')';
+                    }
+
+                    $comprobantes[] = [
+                        'fuente'       => 'futbol_pago',
+                        'fuente_label' => 'Fútbol',
+                        'id'           => (int)$row['id'],
+                        'numero'       => $row['numero'] ?: ('PG-' . $row['id']),
+                        'descripcion'  => $desc,
+                        'alumno'       => $alumno,
+                        'precio'       => (float)$row['total'],
+                        'pct_iva'      => 0,
+                        'total'        => (float)$row['total'],
+                        'fecha'        => $row['fecha'],
+                    ];
+                }
+            } catch (\Exception $e) {
+                // Subsistema no disponible — no interrumpir
+            }
+
+            // Aquí se agregarán más subsistemas: basket, natacion, etc.
+
+            header('Content-Type: application/json');
+            echo json_encode([
+                'success'      => true,
+                'rubros'       => $rubros,
+                'comprobantes' => $comprobantes,
+            ]);
+            exit;
+
+        } catch (\Exception $e) {
+            $this->logError('obtenerItemsParaFacturar: ' . $e->getMessage());
+            $this->error('Error al obtener ítems', 500);
         }
     }
 

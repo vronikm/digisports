@@ -278,7 +278,11 @@ $moduloColor ??= 'var(--module-color)';
                         <i class="fas fa-list mr-2" style="color:var(--module-color)"></i>
                         Detalles
                     </h3>
-                    <div class="card-tools">
+                    <div class="card-tools d-flex align-items-center">
+                        <button type="button" class="btn btn-sm btn-outline-primary mr-2"
+                                id="btnCargarItems" title="Cargar rubros o comprobantes de otros subsistemas">
+                            <i class="fas fa-layer-group mr-1"></i>Cargar comprobantes / Rubros
+                        </button>
                         <span class="badge badge-secondary" id="contadorLineas">0 ítems</span>
                     </div>
                 </div>
@@ -500,6 +504,128 @@ $moduloColor ??= 'var(--module-color)';
 
 </div><!-- /container-fluid -->
 </div><!-- /content -->
+
+<!-- ══════════════════════════════════════════════════════════
+     MODAL — CARGAR COMPROBANTES / RUBROS
+══════════════════════════════════════════════════════════ -->
+<div class="modal fade" id="modalCargarItems" tabindex="-1" role="dialog"
+     aria-labelledby="modalCargarItemsLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+
+            <div class="modal-header" style="background:var(--module-color);color:#fff;">
+                <h5 class="modal-title" id="modalCargarItemsLabel">
+                    <i class="fas fa-layer-group mr-2"></i>Cargar comprobantes / Rubros
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <div class="modal-body p-0">
+                <!-- Tabs -->
+                <ul class="nav nav-tabs px-3 pt-2" id="tabsCargar" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" id="tab-rubros-tab" data-toggle="tab"
+                           href="#tab-rubros" role="tab">
+                            <i class="fas fa-tags mr-1"></i>Rubros
+                            <span class="badge badge-secondary ml-1" id="badgeRubros">0</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="tab-comprobantes-tab" data-toggle="tab"
+                           href="#tab-comprobantes" role="tab">
+                            <i class="fas fa-receipt mr-1"></i>Comprobantes pendientes
+                            <span class="badge badge-secondary ml-1" id="badgeComprobantes">0</span>
+                        </a>
+                    </li>
+                </ul>
+
+                <div class="tab-content px-3 pb-3 pt-2" id="tabsCargarContent">
+
+                    <!-- ── TAB RUBROS ───────────────────────────── -->
+                    <div class="tab-pane fade show active" id="tab-rubros" role="tabpanel">
+                        <p class="text-muted small mb-2">
+                            Seleccione un rubro para agregarlo a la factura. Ajuste cantidad y precio antes de confirmar.
+                        </p>
+                        <div id="loadingRubros" class="text-center py-4">
+                            <i class="fas fa-spinner fa-spin fa-2x text-secondary"></i>
+                        </div>
+                        <div id="listaRubros" style="display:none;">
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover mb-0" id="tblRubros">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th style="width:30px;"></th>
+                                            <th style="width:80px;">Código</th>
+                                            <th>Nombre</th>
+                                            <th style="width:80px;" class="text-center">IVA</th>
+                                            <th style="width:90px;" class="text-right">Precio unit.</th>
+                                            <th style="width:70px;" class="text-right">Cantidad</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tbodyRubros"></tbody>
+                                </table>
+                            </div>
+                            <div class="alert alert-warning mt-2 mb-0 py-1 small" id="alertSinRubros" style="display:none;">
+                                <i class="fas fa-info-circle mr-1"></i>No hay rubros activos configurados.
+                                <a href="<?= url('facturacion','rubro','index') ?>">Ir a Rubros</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ── TAB COMPROBANTES ─────────────────────── -->
+                    <div class="tab-pane fade" id="tab-comprobantes" role="tabpanel">
+                        <p class="text-muted small mb-2">
+                            Comprobantes / recibos emitidos desde otros módulos que aún no han sido facturados electrónicamente.
+                        </p>
+                        <div id="alertSinClienteComp" class="alert alert-warning py-2 small" style="display:none;">
+                            <i class="fas fa-user-slash mr-1"></i>
+                            Ingrese y seleccione un cliente en el campo <strong>Identificación / RUC</strong> para ver sus comprobantes pendientes.
+                        </div>
+                        <div id="loadingComprobantes" class="text-center py-4" style="display:none;">
+                            <i class="fas fa-spinner fa-spin fa-2x text-secondary"></i>
+                        </div>
+                        <div id="listaComprobantes" style="display:none;">
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover mb-0" id="tblComprobantes">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th style="width:30px;"></th>
+                                            <th style="width:80px;">Módulo</th>
+                                            <th style="width:100px;">Número</th>
+                                            <th>Concepto</th>
+                                            <th>Alumno / Persona</th>
+                                            <th style="width:70px;" class="text-center">IVA</th>
+                                            <th style="width:90px;" class="text-right">Total</th>
+                                            <th style="width:90px;" class="text-right">Fecha</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tbodyComprobantes"></tbody>
+                                </table>
+                            </div>
+                            <div class="alert alert-info mt-2 mb-0 py-1 small" id="alertSinComprobantes" style="display:none;">
+                                <i class="fas fa-info-circle mr-1"></i>No hay comprobantes pendientes de facturar.
+                            </div>
+                        </div>
+                    </div>
+
+                </div><!-- /tab-content -->
+            </div><!-- /modal-body -->
+
+            <div class="modal-footer">
+                <span class="text-muted small mr-auto" id="infoSeleccion">Ningún ítem seleccionado</span>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                    <i class="fas fa-times mr-1"></i>Cancelar
+                </button>
+                <button type="button" class="btn btn-primary" id="btnAgregarSeleccionados" disabled>
+                    <i class="fas fa-plus mr-1"></i>Agregar seleccionados a la factura
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
 
 <!-- ══════════════════════════════════════════════════════════
      JAVASCRIPT
@@ -985,6 +1111,236 @@ $moduloColor ??= 'var(--module-color)';
                 $('#buscarIdent').val('').focus();
             });
         }
+
+        /* ══════════════════════════════════════════════════════════
+           MODAL: CARGAR COMPROBANTES / RUBROS
+        ══════════════════════════════════════════════════════════ */
+
+        var itemsCache         = null; // cache de la respuesta del servidor
+        var itemsCacheClientId = null; // cliente para el que se cachearon los items
+
+        function actualizarInfoSeleccion() {
+            var total = $('.chk-rubro:checked').length + $('.chk-comp:checked').length;
+            if (total === 0) {
+                $('#infoSeleccion').text('Ningún ítem seleccionado');
+                $('#btnAgregarSeleccionados').prop('disabled', true);
+            } else {
+                $('#infoSeleccion').text(total + (total === 1 ? ' ítem seleccionado' : ' ítems seleccionados'));
+                $('#btnAgregarSeleccionados').prop('disabled', false);
+            }
+        }
+
+        function renderRubros(rubros) {
+            var $tbody = $('#tbodyRubros').empty();
+            if (!rubros || rubros.length === 0) {
+                $('#alertSinRubros').show();
+                return;
+            }
+            $('#alertSinRubros').hide();
+            $('#badgeRubros').text(rubros.length);
+
+            $.each(rubros, function (i, r) {
+                var ivaBadge = r.rub_aplica_iva == 1
+                    ? '<span class="badge badge-warning">IVA ' + r.rub_porcentaje_iva + '%</span>'
+                    : '<span class="badge badge-secondary">Exento</span>';
+                var ivaPct = r.rub_aplica_iva == 1 ? parseFloat(r.rub_porcentaje_iva) : 0;
+
+                $tbody.append(
+                    '<tr>' +
+                    '<td class="text-center"><input type="checkbox" class="chk-rubro" ' +
+                        'data-codigo="' + esc(r.rub_codigo) + '" ' +
+                        'data-nombre="' + esc(r.rub_nombre) + '" ' +
+                        'data-iva="' + ivaPct + '"></td>' +
+                    '<td><small class="text-muted">' + esc(r.rub_codigo || '—') + '</small></td>' +
+                    '<td>' + esc(r.rub_nombre) +
+                        (r.rub_descripcion ? '<br><small class="text-muted">' + esc(r.rub_descripcion) + '</small>' : '') +
+                    '</td>' +
+                    '<td class="text-center">' + ivaBadge + '</td>' +
+                    '<td><input type="number" class="form-control form-control-sm text-right inp-precio-rubro" ' +
+                        'value="0.00" min="0" step="0.01" style="min-width:80px;"></td>' +
+                    '<td><input type="number" class="form-control form-control-sm text-right inp-cant-rubro" ' +
+                        'value="1" min="0.01" step="0.01" style="min-width:55px;"></td>' +
+                    '</tr>'
+                );
+            });
+
+            $('#tblRubros').off('change', '.chk-rubro').on('change', '.chk-rubro', actualizarInfoSeleccion);
+        }
+
+        function renderComprobantes(comprobantes) {
+            var $tbody = $('#tbodyComprobantes').empty();
+            if (!comprobantes || comprobantes.length === 0) {
+                $('#alertSinComprobantes').show();
+                return;
+            }
+            $('#alertSinComprobantes').hide();
+            $('#badgeComprobantes').text(comprobantes.length);
+
+            var fuenteIconos = { futbol: 'fas fa-futbol', futbol_pago: 'fas fa-futbol', basket: 'fas fa-basketball-ball', natacion: 'fas fa-swimmer' };
+
+            $.each(comprobantes, function (i, c) {
+                var ivaBadge = c.pct_iva > 0
+                    ? '<span class="badge badge-warning">' + c.pct_iva + '%</span>'
+                    : '<span class="badge badge-secondary">0%</span>';
+                var icono = fuenteIconos[c.fuente] || 'fas fa-receipt';
+
+                $tbody.append(
+                    '<tr>' +
+                    '<td class="text-center"><input type="checkbox" class="chk-comp" ' +
+                        'data-fuente="' + esc(c.fuente) + '" ' +
+                        'data-id="' + c.id + '" ' +
+                        'data-numero="' + esc(c.numero) + '" ' +
+                        'data-desc="' + esc(c.descripcion) + '" ' +
+                        'data-alumno="' + esc(c.alumno) + '" ' +
+                        'data-precio="' + c.precio + '" ' +
+                        'data-iva="' + c.pct_iva + '"></td>' +
+                    '<td><small><i class="' + icono + ' mr-1"></i>' + esc(c.fuente_label) + '</small></td>' +
+                    '<td><small class="font-weight-bold">' + esc(c.numero) + '</small></td>' +
+                    '<td>' + esc(c.descripcion) + '</td>' +
+                    '<td><small class="text-muted">' + esc(c.alumno) + '</small></td>' +
+                    '<td class="text-center">' + ivaBadge + '</td>' +
+                    '<td class="text-right font-weight-bold">$' + parseFloat(c.total).toFixed(2) + '</td>' +
+                    '<td class="text-right"><small>' + esc(c.fecha) + '</small></td>' +
+                    '</tr>'
+                );
+            });
+
+            $('#tblComprobantes').off('change', '.chk-comp').on('change', '.chk-comp', actualizarInfoSeleccion);
+        }
+
+        function cargarItemsModal() {
+            var clienteId = $('#cliente_id').val() || '';
+
+            // Si no hay cliente: limpiar y ocultar comprobantes, mostrar aviso
+            if (!clienteId) {
+                $('#alertSinClienteComp').show();
+                $('#loadingComprobantes').hide();
+                $('#listaComprobantes').hide();
+                $('#tbodyComprobantes').empty();
+                $('#badgeComprobantes').text('0');
+            } else {
+                $('#alertSinClienteComp').hide();
+            }
+
+            // Usar caché solo si el cliente no cambió
+            if (itemsCache && itemsCacheClientId === clienteId) {
+                renderRubros(itemsCache.rubros);
+                if (clienteId) renderComprobantes(itemsCache.comprobantes);
+                $('#loadingRubros').hide();
+                $('#listaRubros').show();
+                return;
+            }
+
+            $('#loadingRubros').show();
+            $('#listaRubros').hide();
+            // Limpiar comprobantes del cliente anterior antes de cargar los nuevos
+            $('#tbodyComprobantes').empty();
+            $('#listaComprobantes').hide();
+            $('#badgeComprobantes').text('0');
+
+            $.ajax({
+                url: '<?= url('facturacion', 'factura', 'obtenerItemsParaFacturar') ?>',
+                type: 'GET',
+                data: { cliente_id: clienteId },
+                dataType: 'json',
+                success: function (res) {
+                    $('#loadingRubros').hide();
+                    $('#listaRubros').show();
+                    if (res.success) {
+                        itemsCache         = res;
+                        itemsCacheClientId = clienteId;
+                        renderRubros(res.rubros);
+                        if (clienteId) {
+                            $('#loadingComprobantes').hide();
+                            $('#listaComprobantes').show();
+                            renderComprobantes(res.comprobantes);
+                        }
+                    } else {
+                        toast(res.message || 'Error al cargar ítems', 'error');
+                    }
+                },
+                error: function () {
+                    $('#loadingRubros').hide();
+                    toast('Error de comunicación al cargar ítems', 'error');
+                }
+            });
+        }
+
+        $('#btnCargarItems').on('click', function () {
+            // Resetear selección
+            actualizarInfoSeleccion();
+            $('#modalCargarItems').modal('show');
+        });
+
+        $('#modalCargarItems').on('shown.bs.modal', function () {
+            cargarItemsModal();
+        });
+
+        // Al cambiar de tab, mostrar spinner de comprobantes si aún no cargaron
+        $('a[href="#tab-comprobantes"]').on('shown.bs.tab', function () {
+            if (itemsCache) {
+                $('#loadingComprobantes').hide();
+                $('#listaComprobantes').show();
+            } else {
+                $('#loadingComprobantes').show();
+                $('#listaComprobantes').hide();
+            }
+        });
+
+        $('#btnAgregarSeleccionados').on('click', function () {
+            var agregados = 0;
+
+            // ── Rubros seleccionados ────────────────────────────────────────
+            $('.chk-rubro:checked').each(function () {
+                var $chk   = $(this);
+                var $row   = $chk.closest('tr');
+                var precio = Math.max(0, parseFloat($row.find('.inp-precio-rubro').val()) || 0);
+                var cant   = Math.max(0.01, parseFloat($row.find('.inp-cant-rubro').val()) || 1);
+
+                if (precio <= 0) {
+                    toast('El rubro "' + $chk.data('nombre') + '" requiere precio mayor a 0', 'warning');
+                    $row.find('.inp-precio-rubro').focus();
+                    return false; // break
+                }
+
+                lineas.push({
+                    codigo:        $chk.data('codigo') || '',
+                    descripcion:   $chk.data('nombre'),
+                    periodo:       '',
+                    cantidad:      cant,
+                    precio:        precio,
+                    descuento_lin: 0,
+                    pct_iva:       parseInt($chk.data('iva')) || 0,
+                });
+                agregados++;
+            });
+
+            // ── Comprobantes seleccionados ──────────────────────────────────
+            $('.chk-comp:checked').each(function () {
+                var $chk = $(this);
+                lineas.push({
+                    codigo:        $chk.data('numero'),
+                    descripcion:   $chk.data('desc') + ' — ' + $chk.data('alumno'),
+                    periodo:       '',
+                    cantidad:      1,
+                    precio:        parseFloat($chk.data('precio')) || 0,
+                    descuento_lin: 0,
+                    pct_iva:       parseInt($chk.data('iva')) || 0,
+                    ref_fuente:    $chk.data('fuente'),
+                    ref_id:        parseInt($chk.data('id')) || 0,
+                });
+                agregados++;
+            });
+
+            if (agregados > 0) {
+                renderLineas();
+                $('#modalCargarItems').modal('hide');
+                toast(agregados + (agregados === 1 ? ' ítem agregado' : ' ítems agregados') + ' a la factura', 'success');
+                // Invalidar caché para que recargue en la próxima apertura
+                itemsCache         = null;
+                itemsCacheClientId = null;
+            }
+        });
 
         /* ── Guardar (AJAX) ─────────────────────────────── */
         $('#btnGuardar').on('click', function () {

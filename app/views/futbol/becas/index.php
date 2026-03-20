@@ -144,6 +144,7 @@ $moduloNombre = $modulo_actual['nombre'] ?? 'Fútbol';
                                 <th>Beca</th>
                                 <th>Tipo</th>
                                 <th>Descuento</th>
+                                <th>Rubro</th>
                                 <th>Fecha Asignación</th>
                                 <th>Estado</th>
                                 <th>Acciones</th>
@@ -167,6 +168,15 @@ $moduloNombre = $modulo_actual['nombre'] ?? 'Fútbol';
                                         $<?= number_format($asig['fbe_valor'] ?? 0, 2) ?>
                                     <?php endif; ?>
                                 </td>
+                                <td>
+                                    <?php if (!empty($asig['rub_nombre'])): ?>
+                                        <span class="badge badge-light border">
+                                            <?= htmlspecialchars($asig['rub_nombre']) ?>
+                                        </span>
+                                    <?php else: ?>
+                                        <span class="text-muted small">Todos</span>
+                                    <?php endif; ?>
+                                </td>
                                 <td><?= date('d/m/Y', strtotime($asig['fba_fecha_asignacion'])) ?></td>
                                 <td>
                                     <?php
@@ -181,6 +191,17 @@ $moduloNombre = $modulo_actual['nombre'] ?? 'Fútbol';
                                     <span class="badge badge-<?= $estadoBadge ?>"><?= $asig['fba_estado'] ?></span>
                                 </td>
                                 <td>
+                                    <?php if (in_array($asig['fba_estado'], ['ACTIVA', 'SUSPENDIDA'])): ?>
+                                    <button class="btn btn-xs btn-outline-primary mr-1 js-editar-asignacion"
+                                            data-id="<?= (int)$asig['fba_asignacion_id'] ?>"
+                                            data-beca-id="<?= (int)$asig['fba_beca_id'] ?>"
+                                            data-fecha-fin="<?= htmlspecialchars($asig['fba_fecha_vencimiento'] ?? '') ?>"
+                                            data-motivo="<?= htmlspecialchars($asig['fba_motivo'] ?? '') ?>"
+                                            data-estado="<?= htmlspecialchars($asig['fba_estado']) ?>"
+                                            title="Editar">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <?php endif; ?>
                                     <?php if ($asig['fba_estado'] === 'ACTIVA'): ?>
                                     <button class="btn btn-xs btn-outline-danger js-revocar"
                                             data-id="<?= (int)$asig['fba_asignacion_id'] ?>"
@@ -239,6 +260,20 @@ $moduloNombre = $modulo_actual['nombre'] ?? 'Fútbol';
                         <label>Valor <span class="text-danger">*</span></label>
                         <input type="number" name="valor" id="beca_valor" class="form-control" step="0.01" min="0" required>
                         <small class="text-muted">Porcentaje: 0–100. Monto fijo: valor en USD. Exoneración: dejar en 100.</small>
+                    </div>
+                    <div class="form-group">
+                        <label>Rubro de Facturación</label>
+                        <select name="rubro_id" id="beca_rubro_id" class="form-control">
+                            <option value="">— Todos los rubros —</option>
+                            <?php if (!empty($rubros)): ?>
+                                <?php foreach ($rubros as $rubro): ?>
+                                <option value="<?= $rubro['rub_id'] ?>">
+                                    <?= htmlspecialchars(($rubro['rub_codigo'] ? '[' . $rubro['rub_codigo'] . '] ' : '') . $rubro['rub_nombre']) ?>
+                                </option>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </select>
+                        <small class="text-muted">Si se selecciona un rubro, el descuento aplica solo a ese concepto de facturación.</small>
                     </div>
                     <div class="form-group">
                         <label>Descripción</label>
@@ -315,6 +350,61 @@ $moduloNombre = $modulo_actual['nombre'] ?? 'Fútbol';
 </div>
 
 <!-- ============================================================= -->
+<!-- MODAL: EDITAR ASIGNACIÓN -->
+<!-- ============================================================= -->
+<div class="modal fade" id="modalEditarAsignacion" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header text-white" style="background-color: <?= $moduloColor ?>">
+                <h5 class="modal-title"><i class="fas fa-edit mr-2"></i>Editar Asignación de Beca</h5>
+                <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <form id="formEditarAsignacion" method="POST"
+                  data-url="<?= url('futbol', 'beca', 'editarAsignacion') ?>">
+                <input type="hidden" name="csrf_token" value="<?= $csrf_token ?>">
+                <input type="hidden" name="asignacion_id" id="edit_asignacion_id">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Beca <span class="text-danger">*</span></label>
+                        <select name="beca_id" id="edit_beca_id" class="form-control" required>
+                            <option value="">Seleccione beca...</option>
+                            <?php if (!empty($becas)): ?>
+                                <?php foreach ($becas as $beca): ?>
+                                    <?php if ($beca['fbe_activo']): ?>
+                                    <option value="<?= $beca['fbe_beca_id'] ?>"><?= htmlspecialchars($beca['fbe_nombre']) ?> (<?= $beca['fbe_tipo'] === 'PORCENTAJE' || $beca['fbe_tipo'] === 'EXONERACION' ? $beca['fbe_valor'] . '%' : '$' . number_format($beca['fbe_valor'], 2) ?>)</option>
+                                    <?php endif; ?>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Estado</label>
+                        <select name="estado" id="edit_estado" class="form-control">
+                            <option value="ACTIVA">Activa</option>
+                            <option value="SUSPENDIDA">Suspendida</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Fecha Fin (opcional)</label>
+                        <input type="date" name="fecha_fin" id="edit_fecha_fin" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Motivo</label>
+                        <textarea name="motivo" id="edit_motivo" class="form-control" rows="2" placeholder="Motivo de la asignación..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn text-white" style="background-color: <?= $moduloColor ?>">
+                        <i class="fas fa-save mr-1"></i> Guardar Cambios
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================= -->
 <!-- SCRIPTS — sin inline onclick: todo vía jQuery event binding   -->
 <!-- ============================================================= -->
 <?php ob_start(); ?>
@@ -357,6 +447,7 @@ $(function() {
         $('#beca_nombre').val(obj.fbe_nombre);
         $('#beca_tipo').val(obj.fbe_tipo);
         $('#beca_valor').val(obj.fbe_valor);
+        $('#beca_rubro_id').val(obj.fbe_rubro_id || '');
         $('#beca_descripcion').val(obj.fbe_descripcion || '');
         $('#modalBecaTitle').html('<i class="fas fa-edit mr-2"></i>Editar Tipo de Beca');
         $('#formBeca').data('mode', 'editar');
@@ -463,6 +554,37 @@ $(function() {
             }
         }, 'json').fail(function() {
             Swal.fire('Error', 'Error de conexión al asignar.', 'error');
+        }).always(function() { $btn.prop('disabled', false); });
+    });
+
+    /* ── Abrir modal EDITAR asignación ── */
+    $(document).on('click', '.js-editar-asignacion', function() {
+        var $btn = $(this);
+        $('#edit_asignacion_id').val($btn.data('id'));
+        $('#edit_beca_id').val($btn.data('beca-id'));
+        $('#edit_estado').val($btn.data('estado'));
+        var fechaFin = $btn.data('fecha-fin') || '';
+        $('#edit_fecha_fin').val(fechaFin ? fechaFin.substring(0, 10) : '');
+        $('#edit_motivo').val($btn.data('motivo') || '');
+        $('#modalEditarAsignacion').modal('show');
+    });
+
+    /* ── SUBMIT: editar asignación ── */
+    $('#formEditarAsignacion').on('submit', function(e) {
+        e.preventDefault();
+        var action = $(this).attr('data-url');
+        var $btn   = $(this).find('[type=submit]').prop('disabled', true);
+
+        $.post(action, $(this).serialize(), function(res) {
+            if (res.success) {
+                $('#modalEditarAsignacion').modal('hide');
+                Toast.fire({ icon: 'success', title: res.message });
+                setTimeout(function() { location.reload(); }, 1500);
+            } else {
+                Swal.fire('Error', res.message, 'error');
+            }
+        }, 'json').fail(function() {
+            Swal.fire('Error', 'Error de conexión al guardar.', 'error');
         }).always(function() { $btn.prop('disabled', false); });
     });
 
