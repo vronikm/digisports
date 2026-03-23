@@ -260,6 +260,13 @@ class Router {
      */
     private function checkAuthentication() {
         if (!isset($_SESSION['user_id']) || !isset($_SESSION['tenant_id'])) {
+            if ($this->isAjaxRequest()) {
+                while (ob_get_level() > 0) ob_end_clean();
+                http_response_code(401);
+                header('Content-Type: application/json; charset=utf-8');
+                echo json_encode(['success' => false, 'message' => 'Sesión expirada. Por favor, inicie sesión nuevamente.', 'redirect' => $this->generateUrl('core', 'auth', 'login')]);
+                exit;
+            }
             // Guardar URL solicitada para redirigir después del login
             $_SESSION['redirect_after_login'] = $_SERVER['REQUEST_URI'];
             if (session_status() === PHP_SESSION_ACTIVE) {
@@ -271,6 +278,14 @@ class Router {
 
         // Verificar que el tenant esté activo
         $this->checkTenantStatus();
+    }
+
+    /**
+     * Detectar si la petición es AJAX (XMLHttpRequest)
+     */
+    private function isAjaxRequest(): bool {
+        return isset($_SERVER['HTTP_X_REQUESTED_WITH']) &&
+               strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
     }
     
     /**
@@ -333,6 +348,13 @@ class Router {
 
             if (!$stmt->fetch()) {
                 // El módulo existe en la plataforma pero el tenant no lo tiene contratado
+                if ($this->isAjaxRequest()) {
+                    while (ob_get_level() > 0) ob_end_clean();
+                    http_response_code(403);
+                    header('Content-Type: application/json; charset=utf-8');
+                    echo json_encode(['success' => false, 'message' => 'No tiene acceso a este módulo.']);
+                    exit;
+                }
                 $_SESSION['flash_error'] = 'No tiene acceso a este módulo. Contacte a soporte para contratarlo.';
                 header('Location: ' . $this->generateUrl('core', 'hub', 'index'));
                 exit;

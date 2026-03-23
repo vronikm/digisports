@@ -1025,10 +1025,14 @@ $moduloColor ??= 'var(--module-color)';
                         setTimeout(function () { $('#nc_nombres').focus(); }, 80);
                     }
                 },
-                error: function () {
+                error: function (xhr) {
                     $icon.removeClass('fa-spinner fa-spin').addClass('fa-search');
                     $('#btnBuscarCliente').prop('disabled', false);
-                    toast('Error al buscar el cliente', 'error');
+                    if (xhr.status === 401) {
+                        toast('Sesión expirada. Recargue la página para continuar.', 'warning');
+                    } else {
+                        toast('Error al buscar el cliente', 'error');
+                    }
                 }
             });
         }
@@ -1176,7 +1180,8 @@ $moduloColor ??= 'var(--module-color)';
             $('#alertSinComprobantes').hide();
             $('#badgeComprobantes').text(comprobantes.length);
 
-            var fuenteIconos = { futbol: 'fas fa-futbol', futbol_pago: 'fas fa-futbol', basket: 'fas fa-basketball-ball', natacion: 'fas fa-swimmer' };
+            var fuenteIconos = { futbol: 'fas fa-futbol', futbol_pago: 'fas fa-futbol', basket: 'fas fa-basketball-ball', natacion: 'fas fa-swimmer',
+                                 ext_digitech_soccereasy: 'fas fa-futbol', ext_digitech_cdjg: 'fas fa-shield-alt', ext_digitech_adfpl: 'fas fa-running' };
 
             $.each(comprobantes, function (i, c) {
                 var ivaBadge = c.pct_iva > 0

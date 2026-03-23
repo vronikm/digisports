@@ -569,6 +569,79 @@ class ModuloController extends \App\Controllers\ModuleController {
     }
 
     /**
+     * Duplica un módulo existente y redirige al formulario de edición del nuevo
+     */
+    public function duplicar() {
+        $this->authorize('crear', 'modulos');
+
+        $id = $_GET['id'] ?? null;
+        if (!$id) {
+            header('Location: ' . url('seguridad', 'modulo', 'index'));
+            exit;
+        }
+
+        try {
+            $stmt = $this->db->prepare("SELECT * FROM seguridad_modulos WHERE mod_id = ?");
+            $stmt->execute([$id]);
+            $original = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+            if (!$original) {
+                header('Location: ' . url('seguridad', 'modulo', 'index'));
+                exit;
+            }
+
+            // Generar código único para la copia
+            $baseCode = strtoupper(substr($original['mod_codigo'], 0, 18)) . '_COPIA';
+            $newCode  = $baseCode;
+            $suffix   = 1;
+            while (true) {
+                $chk = $this->db->prepare("SELECT mod_id FROM seguridad_modulos WHERE mod_codigo = ?");
+                $chk->execute([$newCode]);
+                if (!$chk->fetch()) break;
+                $newCode = $baseCode . $suffix;
+                $suffix++;
+            }
+
+            $sql = "INSERT INTO seguridad_modulos
+                        (mod_codigo, mod_nombre, mod_descripcion, mod_icono, mod_color_fondo,
+                         mod_orden, mod_activo, mod_es_externo, mod_url_externa,
+                         mod_ruta_modulo, mod_ruta_controller, mod_ruta_action,
+                         mod_requiere_licencia, mod_created_at)
+                    VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, NOW())";
+
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([
+                $newCode,
+                'Copia de ' . $original['mod_nombre'],
+                $original['mod_descripcion'],
+                $original['mod_icono'],
+                $original['mod_color_fondo'],
+                $original['mod_orden'],
+                $original['mod_es_externo'],
+                $original['mod_url_externa'],
+                $original['mod_ruta_modulo'],
+                $original['mod_ruta_controller'],
+                $original['mod_ruta_action'],
+                $original['mod_requiere_licencia'],
+            ]);
+
+            $newId = $this->db->lastInsertId();
+
+            $this->registrarAuditoria('duplicar_modulo', 'seguridad_modulos', $newId, null, [
+                'mod_codigo'  => $newCode,
+                'original_id' => $id,
+            ]);
+
+            header('Location: ' . url('seguridad', 'modulo', 'editar', ['id' => $newId]));
+            exit;
+
+        } catch (\Exception $e) {
+            header('Location: ' . url('seguridad', 'modulo', 'index'));
+            exit;
+        }
+    }
+
+    /**
      * Configuración del sistema
      */
     public function configuracion() {

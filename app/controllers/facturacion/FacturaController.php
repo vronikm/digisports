@@ -309,6 +309,20 @@ class FacturaController extends \App\Controllers\ModuleController {
                 ")->execute(array_merge([$factura_id], $pagosFutbolIds, [$this->tenantId]));
             }
 
+            // ── Registrar comprobantes externos usados (evitar duplicados) ──────
+            $stmtExtReg = $this->db->prepare("
+                INSERT IGNORE INTO facturacion_comprobantes_ext
+                    (fce_tenant_id, fce_fac_id, fce_ext_db, fce_ext_pago_id)
+                VALUES (?, ?, ?, ?)
+            ");
+            foreach ($lineas as $lin) {
+                $fuente = $lin['ref_fuente'] ?? '';
+                if (strncmp($fuente, 'ext_', 4) === 0 && !empty($lin['ref_id'])) {
+                    $extDb = substr($fuente, 4); // 'digitech_soccereasy', etc.
+                    $stmtExtReg->execute([$this->tenantId, $factura_id, $extDb, (int)$lin['ref_id']]);
+                }
+            }
+
             // ── Auditoría ─────────────────────────────────────────────────────
             $this->audit('facturacion_facturas', $factura_id, 'INSERT', [], [
                 'numero' => $fac_numero, 'total' => $total,
@@ -332,6 +346,7 @@ class FacturaController extends \App\Controllers\ModuleController {
 
     public function buscarClientePorIdentificacion() {
         $this->authorize('crear', 'facturacion');
+        while (ob_get_level() > 0) ob_end_clean();
         header('Content-Type: application/json');
 
         $ident = trim($this->get('identificacion') ?? '');
@@ -623,6 +638,159 @@ class FacturaController extends \App\Controllers\ModuleController {
             }
 
             // Aquí se agregarán más subsistemas: basket, natacion, etc.
+
+            // ── 3. Pagos externos — SoccerEasy, CDJG, ADF Pedro Larrea ──────────
+            // Identificación del cliente para filtrar por representante en BD externas
+            $clienteCedula = '';
+            if ($filtroClienteId) {
+                try {
+                    $stmtCli = $this->db->prepare("
+                        SELECT cli_identificacion
+                        FROM clientes
+                        WHERE cli_cliente_id = ? AND cli_tenant_id = ? LIMIT 1
+                    ");
+                    $stmtCli->execute([$filtroClienteId, $this->tenantId]);
+                    $rowCli = $stmtCli->fetch(\PDO::FETCH_ASSOC);
+                    if ($rowCli) {
+                        $clienteCedula = \DataProtection::decrypt($rowCli['cli_identificacion'] ?? '') ?? '';
+                    }
+                } catch (\Exception $e) { /* no interrumpir */ }
+            }
+
+            $dbHost = function_exists('env') ? env('DB_HOST', 'localhost') : 'localhost';
+            $dbUser = function_exists('env') ? env('DB_USER', 'root')      : 'root';
+            $dbPass = function_exists('env') ? env('DB_PASS', '')          : '';
+
+            // Cargar pago_ids de BDs externas que ya fueron facturados (excluyendo anuladas)
+            $pagosYaFacturados = [];
+            try {
+                $stmtUsed = $this->db->prepare("
+                    SELECT e.fce_ext_db, e.fce_ext_pago_id
+                    FROM facturacion_comprobantes_ext e
+                    INNER JOIN facturacion_facturas f ON f.fac_id = e.fce_fac_id
+                    WHERE e.fce_tenant_id = ?
+                      AND f.fac_estado NOT IN ('ANULADA', 'CANCELADA')
+                ");
+                $stmtUsed->execute([$this->tenantId]);
+                foreach ($stmtUsed->fetchAll(\PDO::FETCH_ASSOC) as $row) {
+                    $pagosYaFacturados[$row['fce_ext_db']][] = (int)$row['fce_ext_pago_id'];
+                }
+            } catch (\Exception $e) { /* tabla puede no existir aún — no interrumpir */ }
+
+            // Bases de datos externas a consultar
+            $externalDbs = [
+                'digitech_soccereasy' => 'SoccerEasy',
+                'digitech_cdjg'       => 'CDJG',
+                'digitech_adfpl'      => 'ADF Pedro Larrea',
+            ];
+
+            foreach ($externalDbs as $dbName => $dbLabel) {
+                try {
+                    $pdoExt = new \PDO(
+                        'mysql:host=' . $dbHost . ';dbname=' . $dbName . ';charset=utf8',
+                        $dbUser,
+                        $dbPass,
+                        [\PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION, \PDO::ATTR_TIMEOUT => 3]
+                    );
+
+                    // IDs ya facturados de esta BD específica
+                    $excluidos = $pagosYaFacturados[$dbName] ?? [];
+                    $notInSql  = !empty($excluidos)
+                        ? 'AND RP.pago_id NOT IN (' . implode(',', array_fill(0, count($excluidos), '?')) . ')'
+                        : '';
+                    $notInSqlP = !empty($excluidos)
+                        ? 'AND P.pago_id NOT IN (' . implode(',', array_fill(0, count($excluidos), '?')) . ')'
+                        : '';
+
+                    if (!empty($clienteCedula)) {
+                        // Con cliente: buscar pagos del representante por identificación
+                        $sqlExt = "
+                            SELECT RE.repre_identificacion,
+                                   RE.representante,
+                                   RP.pago_fecharegistro,
+                                   RP.pago_valor,
+                                   RP.detalle,
+                                   RP.alumno,
+                                   RP.pago_id,
+                                   RP.codigo
+                            FROM (
+                                SELECT R.repre_identificacion,
+                                       R.repre_id,
+                                       CONCAT(R.repre_primernombre, ' ', R.repre_segundonombre, ' ',
+                                              R.repre_apellidopaterno, ' ', R.repre_apellidomaterno) AS representante
+                                FROM sujeto_alumno A
+                                INNER JOIN alumno_representante R ON R.repre_id = A.alumno_repreid
+                                WHERE R.repre_identificacion = ?
+                            ) RE
+                            LEFT JOIN (
+                                SELECT P.pago_fecharegistro, P.pago_valor,
+                                       CONCAT(C.catalogo_descripcion, ' ', P.pago_periodo, ', ', P.pago_concepto) AS detalle,
+                                       CONCAT(AL.alumno_primernombre, ' ', AL.alumno_segundonombre, ' ',
+                                              AL.alumno_apellidopaterno, ' ', AL.alumno_apellidomaterno) AS alumno,
+                                       P.pago_id, R.repre_id,
+                                       C.catalogo_valor AS codigo
+                                FROM alumno_representante R
+                                INNER JOIN sujeto_alumno AL ON AL.alumno_repreid = R.repre_id
+                                INNER JOIN alumno_pago P ON P.pago_alumnoid = AL.alumno_id
+                                INNER JOIN general_tabla_catalogo C ON C.catalogo_valor = P.pago_rubroid
+                                WHERE P.pago_estado = 'C'
+                                  AND P.pago_fecharegistro >= '2026/01/01'
+                            ) RP ON RP.repre_id = RE.repre_id
+                            WHERE RP.pago_id IS NOT NULL
+                            $notInSql
+                            ORDER BY RP.pago_fecharegistro DESC
+                        ";
+                        $params = array_merge([$clienteCedula], $excluidos);
+                        $stmtExt = $pdoExt->prepare($sqlExt);
+                        $stmtExt->execute($params);
+                    } else {
+                        // Sin cliente: últimos 50 pagos recientes del sistema
+                        $sqlExt = "
+                            SELECT P.pago_id,
+                                   CONCAT(C.catalogo_descripcion, ' ', P.pago_periodo, ', ', P.pago_concepto) AS detalle,
+                                   CONCAT(AL.alumno_primernombre, ' ', AL.alumno_segundonombre, ' ',
+                                          AL.alumno_apellidopaterno, ' ', AL.alumno_apellidomaterno) AS alumno,
+                                   P.pago_fecharegistro,
+                                   P.pago_valor,
+                                   C.catalogo_valor AS codigo
+                            FROM alumno_pago P
+                            INNER JOIN sujeto_alumno AL ON P.pago_alumnoid = AL.alumno_id
+                            INNER JOIN alumno_representante R ON R.repre_id = AL.alumno_repreid
+                            INNER JOIN general_tabla_catalogo C ON C.catalogo_valor = P.pago_rubroid
+                            WHERE P.pago_estado = 'C'
+                              AND P.pago_fecharegistro >= '2026/01/01'
+                            $notInSqlP
+                            ORDER BY P.pago_fecharegistro DESC
+                            LIMIT 50
+                        ";
+                        $stmtExt = $pdoExt->prepare($sqlExt);
+                        $stmtExt->execute($excluidos);
+                    }
+
+                    $pagosExt = $stmtExt->fetchAll(\PDO::FETCH_ASSOC);
+
+                    foreach ($pagosExt as $pago) {
+                        $desc  = trim(preg_replace('/\s+/', ' ', $pago['detalle'] ?? '')) ?: '—';
+                        $alumnoNombre = trim(preg_replace('/\s+/', ' ', $pago['alumno'] ?? '')) ?: '—';
+
+                        $comprobantes[] = [
+                            'fuente'       => 'ext_' . preg_replace('/[^a-z0-9]/', '_', strtolower($dbName)),
+                            'fuente_label' => $dbLabel,
+                            'id'           => (int)$pago['pago_id'],
+                            'numero'       => 'EXT-' . $pago['pago_id'],
+                            'descripcion'  => $desc,
+                            'alumno'       => $alumnoNombre,
+                            'precio'       => (float)$pago['pago_valor'],
+                            'pct_iva'      => 0,
+                            'total'        => (float)$pago['pago_valor'],
+                            'fecha'        => $pago['pago_fecharegistro'],
+                        ];
+                    }
+
+                } catch (\Exception $e) {
+                    // BD externa no disponible — no interrumpir
+                }
+            }
 
             header('Content-Type: application/json');
             echo json_encode([
