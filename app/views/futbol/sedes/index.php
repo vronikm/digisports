@@ -243,21 +243,39 @@ $sedeActiva  = $sede_activa ?? null;
                     <hr>
                     <!-- Logo -->
                     <h6 class="text-muted mb-2"><i class="fas fa-image mr-1"></i>Logo de la Sede</h6>
-                    <div class="row align-items-center">
-                        <div class="col-md-3 text-center">
-                            <img id="logoPreview" src="" alt="Preview"
-                                 class="rounded border"
-                                 style="width:80px;height:80px;object-fit:contain;display:none;background:#f8f9fa;padding:4px;">
-                            <div id="logoPlaceholder" class="rounded border d-flex align-items-center justify-content-center"
-                                 style="width:80px;height:80px;background:#f8f9fa;margin:0 auto;">
-                                <i class="fas fa-image fa-2x text-muted"></i>
+                    <input type="hidden" name="quitar_logo" id="inp_quitar_logo" value="0">
+                    <div class="d-flex align-items-center">
+                        <!-- Zona de preview / upload clickeable -->
+                        <div id="logoUploadZone" title="Clic para seleccionar logo"
+                             style="width:100px;height:100px;border:2px dashed #dee2e6;border-radius:8px;
+                                    cursor:pointer;position:relative;overflow:hidden;flex-shrink:0;
+                                    background:#f8f9fa;transition:border-color .2s;">
+                            <img id="logoPreview" src="" alt="Logo"
+                                 style="width:100%;height:100%;object-fit:contain;padding:4px;display:none;">
+                            <div id="logoPlaceholder"
+                                 style="width:100%;height:100%;display:flex;flex-direction:column;
+                                        align-items:center;justify-content:center;color:#adb5bd;text-align:center;padding:8px;">
+                                <i class="fas fa-cloud-upload-alt fa-2x mb-1"></i>
+                                <small style="font-size:10px;line-height:1.3;">Subir<br>logo</small>
+                            </div>
+                            <div id="logoOverlay"
+                                 style="display:none;position:absolute;inset:0;background:rgba(0,0,0,.45);
+                                        flex-direction:column;align-items:center;justify-content:center;
+                                        color:#fff;text-align:center;cursor:pointer;">
+                                <i class="fas fa-camera fa-lg mb-1"></i>
+                                <small style="font-size:10px;">Cambiar</small>
                             </div>
                         </div>
-                        <div class="col-md-9">
-                            <div class="form-group mb-0">
-                                <label>Subir logo <small class="text-muted">(JPG, PNG, SVG — máx. 2 MB)</small></label>
-                                <input type="file" name="logo_sede" id="sed_logo" class="form-control-file" accept="image/jpeg,image/png,image/svg+xml">
-                            </div>
+                        <!-- Controles -->
+                        <div class="ml-3">
+                            <label class="btn btn-sm btn-outline-secondary d-block mb-1" for="sed_logo" style="cursor:pointer;white-space:nowrap;">
+                                <i class="fas fa-folder-open mr-1"></i>Seleccionar archivo
+                            </label>
+                            <input type="file" name="logo_sede" id="sed_logo" class="d-none" accept="image/jpeg,image/png,image/svg+xml">
+                            <small class="text-muted d-block">JPG, PNG, SVG — máx. 2 MB</small>
+                            <button type="button" id="btnQuitarLogo" class="btn btn-sm btn-outline-danger mt-2 d-none">
+                                <i class="fas fa-times mr-1"></i>Quitar logo
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -287,8 +305,33 @@ $(function() {
         reader.onload = function(e) {
             $('#logoPreview').attr('src', e.target.result).show();
             $('#logoPlaceholder').hide();
+            $('#logoOverlay').hide();
+            $('#btnQuitarLogo').removeClass('d-none');
+            $('#inp_quitar_logo').val('0');
+            $('#logoUploadZone').css({'border-color': '#adb5bd', 'border-style': 'solid'});
         };
         reader.readAsDataURL(file);
+    });
+
+    // ── Clic en zona de upload ──
+    $('#logoUploadZone').on('click', function() { $('#sed_logo').trigger('click'); });
+
+    // ── Hover overlay "Cambiar" ──
+    $('#logoUploadZone').on('mouseenter', function() {
+        if ($('#logoPreview').is(':visible')) $('#logoOverlay').css('display', 'flex');
+    }).on('mouseleave', function() {
+        $('#logoOverlay').hide();
+    });
+
+    // ── Quitar logo ──
+    $('#btnQuitarLogo').on('click', function() {
+        $('#logoPreview').hide().attr('src', '');
+        $('#logoPlaceholder').show();
+        $('#logoOverlay').hide();
+        $('#sed_logo').val('');
+        $('#btnQuitarLogo').addClass('d-none');
+        $('#inp_quitar_logo').val('1');
+        $('#logoUploadZone').css({'border-color': '#dee2e6', 'border-style': 'dashed'});
     });
 
     // ── Abrir modal nuevo ──
@@ -300,6 +343,10 @@ $(function() {
         $('#sed_comprobante_inicio').val('1');
         $('#logoPreview').hide().attr('src', '');
         $('#logoPlaceholder').show();
+        $('#logoOverlay').hide();
+        $('#btnQuitarLogo').addClass('d-none');
+        $('#inp_quitar_logo').val('0');
+        $('#logoUploadZone').css({'border-color': '#dee2e6', 'border-style': 'dashed'});
         $('#modalTitulo').html('<i class="fas fa-building mr-2"></i>Nueva Sede');
         $('#formSede').data('mode', 'crear');
         $('#modalSede').modal('show');
@@ -323,13 +370,19 @@ $(function() {
         $('#sed_monto_matricula').val(parseFloat(s.sed_monto_matricula || 0).toFixed(2));
         $('#sed_comprobante_inicio').val(parseInt(s.sed_comprobante_inicio || 1));
         // Logo preview
+        $('#logoOverlay').hide();
+        $('#inp_quitar_logo').val('0');
         if (s.logo_arc_id) {
             var baseUrl = '<?= \Config::baseUrl('archivo.php?id=') ?>';
             $('#logoPreview').attr('src', baseUrl + s.logo_arc_id).show();
             $('#logoPlaceholder').hide();
+            $('#btnQuitarLogo').removeClass('d-none');
+            $('#logoUploadZone').css({'border-color': '#adb5bd', 'border-style': 'solid'});
         } else {
             $('#logoPreview').hide().attr('src', '');
             $('#logoPlaceholder').show();
+            $('#btnQuitarLogo').addClass('d-none');
+            $('#logoUploadZone').css({'border-color': '#dee2e6', 'border-style': 'dashed'});
         }
         $('#modalTitulo').html('<i class="fas fa-edit mr-2"></i>Editar Sede');
         $('#formSede').data('mode', 'editar');

@@ -196,10 +196,25 @@ class SedeController extends \App\Controllers\ModuleController {
                 $this->db->prepare("UPDATE instalaciones_sedes SET sed_es_principal = 'N' WHERE sed_tenant_id = ? AND sed_sede_id != ?")->execute([$this->tenantId, $id]);
             }
 
+            // Quitar logo si se solicitó
+            if ($this->post('quitar_logo') === '1') {
+                $stm = $this->db->prepare("
+                    SELECT arc_id FROM core_archivos
+                     WHERE arc_entidad = 'instalaciones_sedes' AND arc_entidad_id = ?
+                       AND arc_categoria = 'logos' AND arc_tenant_id = ? AND arc_estado = 'activo'
+                     LIMIT 1
+                ");
+                $stm->execute([$id, $this->tenantId]);
+                $arcId = $stm->fetchColumn();
+                if ($arcId) {
+                    (new \FileManager($this->db, $this->tenantId, $this->userId))->deleteFile((int)$arcId);
+                }
+            }
+
             // Subir logo si viene en el request
             if (!empty($_FILES['logo_sede']['name'])) {
-                $fm = new \FileManager($this->db, $this->tenantId);
-                $fm->upload('logos', 'instalaciones_sedes', $id, $_FILES['logo_sede']);
+                $fm = new \FileManager($this->db, $this->tenantId, $this->userId);
+                $fm->uploadImage($_FILES['logo_sede'], 'instalaciones_sedes', $id, 'logos');
             }
 
             return $this->jsonResponse(['success' => true, 'message' => 'Sede actualizada']);
