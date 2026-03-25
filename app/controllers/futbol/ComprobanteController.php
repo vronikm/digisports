@@ -294,6 +294,73 @@ class ComprobanteController extends \App\Controllers\ModuleController {
         }
     }
 
+    /**
+     * Enviar comprobante por correo electrónico
+     */
+    public function enviar() {
+        try {
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') return $this->jsonResponse(['success' => false, 'message' => 'POST requerido']);
+            if (!\Security::validateCsrfToken($this->post('csrf_token'))) return $this->jsonResponse(['success' => false, 'message' => 'Token inválido']);
+
+            $id = (int)($this->post('id') ?? 0);
+            if (!$id) return $this->jsonResponse(['success' => false, 'message' => 'ID de comprobante requerido']);
+
+            $stm = $this->db->prepare("
+                SELECT fcm.*,
+                       p.fpg_tipo AS pago_tipo, p.fpg_fecha AS pago_fecha,
+                       p.fpg_metodo_pago AS pago_metodo, p.fpg_total AS pago_total,
+                       p.fpg_monto AS pago_monto, p.fpg_descuento AS pago_descuento,
+                       p.fpg_beca_descuento AS pago_beca_descuento,
+                       a.alu_nombres, a.alu_apellidos, a.alu_identificacion,
+                       c.cli_nombres AS rep_nombres, c.cli_apellidos AS rep_apellidos,
+                       c.cli_email AS rep_email,
+                       s.sed_nombre AS sede_nombre
+                FROM futbol_comprobantes fcm
+                LEFT JOIN futbol_pagos p ON fcm.fcm_pago_id = p.fpg_pago_id
+                LEFT JOIN alumnos a ON p.fpg_alumno_id = a.alu_alumno_id
+                LEFT JOIN clientes c ON a.alu_representante_id = c.cli_cliente_id AND c.cli_tenant_id = a.alu_tenant_id
+                LEFT JOIN instalaciones_sedes s ON p.fpg_sede_id = s.sed_sede_id
+                WHERE fcm.fcm_comprobante_id = ? AND fcm.fcm_tenant_id = ?
+            ");
+            $stm->execute([$id, $this->tenantId]);
+            $c = $stm->fetch(\PDO::FETCH_ASSOC);
+
+            if (!$c) return $this->jsonResponse(['success' => false, 'message' => 'Comprobante no encontrado']);
+            if ($c['fcm_estado'] !== 'EMITIDO') return $this->jsonResponse(['success' => false, 'message' => 'El comprobante no está activo']);
+
+            // Descifrar PII
+            if (!empty($c['alu_identificacion'])) $c['alu_identificacion'] = \DataProtection::decrypt($c['alu_identificacion']);
+            if (!empty($c['rep_email']))           $c['rep_email']          = \DataProtection::decrypt($c['rep_email']);
+
+            if (empty($c['rep_email'])) return $this->jsonResponse(['success' => false, 'message' => 'El representante no tiene email registrado']);
+
+            $mail   = new \App\Services\MailService();
+            $result = $mail->enviarComprobantePago($c['rep_email'], [
+                'rep_nombre'     => trim(($c['rep_nombres'] ?? '') . ' ' . ($c['rep_apellidos'] ?? '')),
+                'alumno_nombre'  => trim(($c['alu_nombres'] ?? '') . ' ' . ($c['alu_apellidos'] ?? '')),
+                'numero'         => $c['fcm_numero'],
+                'tipo'           => $c['fcm_tipo'],
+                'concepto'       => $c['fcm_concepto'],
+                'fecha'          => $c['fcm_fecha_emision'],
+                'total'          => $c['fcm_total'],
+                'pago_metodo'    => $c['pago_metodo'],
+                'sede_nombre'    => $c['sede_nombre'] ?? '',
+                'empresa_nombre' => $_SESSION['tenant_nombre'] ?? 'Escuela de Fútbol',
+            ]);
+
+            if ($result['exito']) {
+                $this->db->prepare("UPDATE futbol_comprobantes SET fcm_enviado_email = 1 WHERE fcm_comprobante_id = ? AND fcm_tenant_id = ?")
+                    ->execute([$id, $this->tenantId]);
+                return $this->jsonResponse(['success' => true, 'message' => 'Comprobante enviado a ' . $c['rep_email']]);
+            }
+            return $this->jsonResponse(['success' => false, 'message' => 'Error al enviar: ' . $result['mensaje']]);
+
+        } catch (\Exception $e) {
+            $this->logError("Error enviando comprobante: " . $e->getMessage());
+            return $this->jsonResponse(['success' => false, 'message' => 'Error al enviar comprobante']);
+        }
+    }
+
     private function jsonResponse($data) {
         header('Content-Type: application/json');
         echo json_encode($data, JSON_UNESCAPED_UNICODE);

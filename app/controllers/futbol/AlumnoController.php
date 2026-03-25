@@ -264,10 +264,19 @@ class AlumnoController extends \App\Controllers\ModuleController {
                     $hermanos = $this->getHermanos($alumno['alu_representante_id'], $id);
                 }
 
+                // Verificar si el alumno ya tiene una beca activa asignada
+                $stmBeca = $this->db->prepare("
+                    SELECT COUNT(*) FROM futbol_beca_asignaciones
+                    WHERE fba_alumno_id = ? AND fba_tenant_id = ? AND fba_estado = 'ACTIVA'
+                ");
+                $stmBeca->execute([$id, $this->tenantId]);
+                $tieneBeca = (int)$stmBeca->fetchColumn() > 0;
+
                 $this->viewData['alumno'] = $alumno;
                 $this->viewData['ficha'] = $alumno; // ficha viene en el mismo JOIN
                 $this->viewData['representante'] = $representante;
                 $this->viewData['hermanos'] = $hermanos;
+                $this->viewData['tiene_beca'] = $tieneBeca;
                 $this->viewData['categorias'] = $this->getCategoriasActivas();
                 $this->viewData['sedes'] = $this->getSedesActivas();
                 $this->viewData['campos_ficha'] = $this->getCamposActivos();
@@ -681,10 +690,23 @@ class AlumnoController extends \App\Controllers\ModuleController {
             // Buscar hermanos (otros alumnos con este mismo representante)
             $hermanos = $this->getHermanos($cliente['cli_cliente_id']);
 
+            // Si se está editando un alumno existente, verificar si ya tiene beca activa
+            $tieneBeca = false;
+            $alumnoId  = (int)($this->get('alumno_id') ?? 0);
+            if ($alumnoId) {
+                $stmBeca = $this->db->prepare("
+                    SELECT COUNT(*) FROM futbol_beca_asignaciones
+                    WHERE fba_alumno_id = ? AND fba_tenant_id = ? AND fba_estado = 'ACTIVA'
+                ");
+                $stmBeca->execute([$alumnoId, $this->tenantId]);
+                $tieneBeca = (int)$stmBeca->fetchColumn() > 0;
+            }
+
             return $this->jsonResponse([
-                'success'  => true,
-                'data'     => $cliente,
-                'hermanos' => $hermanos,
+                'success'    => true,
+                'data'       => $cliente,
+                'hermanos'   => $hermanos,
+                'tiene_beca' => $tieneBeca,
             ]);
 
         } catch (\Exception $e) {

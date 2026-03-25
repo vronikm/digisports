@@ -5,10 +5,10 @@
  * 
  * @vars $alumno, $ficha, $categorias, $sedes, $sede_activa, $csrf_token, $modulo_actual
  */
-$alumno       = $alumno ?? [];
-$ficha        = $ficha ?? [];
-$categorias   = $categorias ?? [];
-$sedes        = $sedes ?? [];
+$alumno       ??= [];
+$ficha        ??= [];
+$categorias   ??= [];
+$sedes        ??= [];
 $sedeActiva   = $sede_activa ?? null;
 $editando     = !empty($alumno);
 $moduloColor  = $modulo_actual['color'] ?? '#22C55E';
@@ -37,7 +37,7 @@ $fotoAlumno   = $foto_alumno ?? null;  // array de core_archivos o null
 
 <section class="content">
     <div class="container-fluid">
-        <form id="formAlumnoFutbol">
+        <form id="formAlumnoFutbol" novalidate>
             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token ?? '') ?>">
             <?php if ($editando): ?>
             <input type="hidden" name="id" value="<?= $alumno['alu_alumno_id'] ?>">
@@ -250,7 +250,7 @@ $fotoAlumno   = $foto_alumno ?? null;  // array de core_archivos o null
 
                     <!-- Campos de Ficha Adicionales -->
                     <?php
-                    $campos_ficha = $campos_ficha ?? [];
+                    $campos_ficha ??= [];
                     $datosCustom  = [];
                     if (!empty($ficha['ffa_datos_custom'])) {
                         $datosCustom = json_decode($ficha['ffa_datos_custom'], true) ?: [];
@@ -455,8 +455,9 @@ $fotoAlumno   = $foto_alumno ?? null;  // array de core_archivos o null
                     <!-- Representante / Padre de Familia -->
                     <?php
                     // Datos del representante precargados (si estamos editando)
-                    $rep = $representante ?? [];
-                    $hermanos = $hermanos ?? [];
+                    $rep       = $representante ?? [];
+                    $hermanos  ??= [];
+                    $tieneBeca = $tiene_beca ?? false;
                     ?>
                     <div class="card card-outline card-warning">
                         <div class="card-header">
@@ -669,19 +670,31 @@ $fotoAlumno   = $foto_alumno ?? null;  // array de core_archivos o null
                                 </button>
                             </div>
 
-                            <!-- Alerta de hermanos inscritos -->
+                            <!-- Panel de hermanos inscritos -->
                             <div id="panelHermanos" style="<?= !empty($hermanos) ? '' : 'display:none;' ?>" class="mt-3">
-                                <div class="alert alert-success py-2 mb-0">
-                                    <i class="fas fa-users mr-1"></i>
-                                    <strong>Hermanos inscritos:</strong>
-                                    <span id="hermanosLista">
-                                        <?php if (!empty($hermanos)): ?>
-                                        <?php foreach ($hermanos as $h): ?>
-                                        <span class="badge badge-light ml-1"><?= htmlspecialchars($h['alu_nombres'] . ' ' . $h['alu_apellidos']) ?></span>
-                                        <?php endforeach; ?>
-                                        <?php endif; ?>
-                                    </span>
-                                    <br><small class="text-muted"><i class="fas fa-tag mr-1"></i>Puede aplicar beca por hermanos</small>
+                                <div class="card mb-0" style="border-left:4px solid #28a745;border-radius:4px;background:#f6fff8;">
+                                    <div class="card-body py-2 px-3">
+                                        <div class="d-flex align-items-start">
+                                            <i class="fas fa-users text-success mr-2 mt-1"></i>
+                                            <div class="flex-grow-1">
+                                                <div class="d-flex align-items-center flex-wrap mb-1">
+                                                    <strong class="text-success mr-2" style="font-size:.875rem;">Hermanos inscritos:</strong>
+                                                    <span id="hermanosLista">
+                                                        <?php foreach ($hermanos as $h): ?>
+                                                        <span class="badge badge-success mr-1"><?= htmlspecialchars($h['alu_nombres'] . ' ' . $h['alu_apellidos']) ?></span>
+                                                        <?php endforeach; ?>
+                                                    </span>
+                                                </div>
+                                                <div id="becaHermanoEstado">
+                                                    <?php if ($tieneBeca): ?>
+                                                    <span class="badge badge-pill badge-secondary"><i class="fas fa-check-circle mr-1"></i>Ya tiene beca/descuento por hermanos asignado</span>
+                                                    <?php else: ?>
+                                                    <span class="badge badge-pill badge-warning text-dark"><i class="fas fa-tag mr-1"></i>Puede aplicar beca por hermanos — revisar en módulo de Becas</span>
+                                                    <?php endif; ?>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -714,6 +727,8 @@ $fotoAlumno   = $foto_alumno ?? null;  // array de core_archivos o null
 
 <?php ob_start(); ?>
 <script nonce="<?= cspNonce() ?>">
+var alumnoId = <?= (int)($alumno['alu_alumno_id'] ?? 0) ?>;
+
 $(function() {
     // Calcular edad al cambiar fecha de nacimiento
     $('#fecha_nacimiento').on('change', calcularEdad).trigger('change');
@@ -731,9 +746,14 @@ $(function() {
     });
     <?php endif; ?>
 
-    // Buscar representante al presionar Enter o botón
-    $('#rep_cedula').on('keypress', function(e) {
-        if (e.which === 13) { e.preventDefault(); buscarRepresentante(); }
+    // Buscar representante al presionar Enter, al salir del campo, o al hacer clic en el botón
+    $('#rep_cedula').on('keydown', function(e) {
+        if (e.key === 'Enter' || e.keyCode === 13) { e.preventDefault(); buscarRepresentante(); }
+    });
+    $('#rep_cedula').on('blur', function() {
+        var val = $(this).val().trim();
+        if ($('#representante_id').val() || !val) return;
+        buscarRepresentante();
     });
     $('#btnBuscarRep').on('click', buscarRepresentante);
     $('#btnLimpiarRep').on('click', limpiarRepresentante);
@@ -1017,22 +1037,6 @@ $('#tipo_identificacion').on('change', function() {
     $('#id_feedback').text('');
 });
 
-// Feedback en tiempo real para identificación del representante
-$('#rep_cedula').on('blur', function() {
-    var val = $(this).val().trim();
-    var tipo = $('#tipo_id_rep').val();
-    var fb = $('#rep_feedback');
-    if ($('#representante_id').val()) return; // ya hay representante cargado
-    if (!val) { fb.text(''); return; }
-    var r = validarDoc(val, tipo);
-    if (r.valido) {
-        fb.text(r.mensaje).removeClass('text-danger text-warning text-info').addClass('text-success');
-    } else if (val.length >= 5) {
-        fb.text(r.mensaje).removeClass('text-success text-warning text-info').addClass('text-danger');
-    } else {
-        fb.text('').removeClass('text-danger text-success text-info text-warning');
-    }
-});
 
 // Al cambiar tipo de identificación del representante: resetear feedback y ajustar placeholder
 $('#tipo_id_rep').on('change', function() {
@@ -1058,7 +1062,7 @@ function buscarRepresentante() {
         return;
     }
     var r = validarDoc(cedula, tipo);
-    if (!r.valido) {
+    if (!r.valido && tipo !== 'PAS' && cedula.length < 10) {
         $('#rep_feedback').text(r.mensaje || 'Identificación inválida').removeClass('text-success text-info text-warning').addClass('text-danger');
         return;
     }
@@ -1069,7 +1073,7 @@ function buscarRepresentante() {
     $.ajax({
         url: '<?= url('futbol', 'alumno', 'buscarRepresentante') ?>',
         type: 'GET',
-        data: { cedula: cedula },
+        data: { cedula: cedula, alumno_id: alumnoId },
         dataType: 'json',
         success: function(res) {
             $('#btnBuscarRep').prop('disabled', false).html('<i class="fas fa-search mr-1"></i>Buscar');
@@ -1077,9 +1081,9 @@ function buscarRepresentante() {
                 // Representante encontrado → mostrar datos
                 cargarRepresentante(res.data);
                 $('#rep_feedback').text('✓ Representante encontrado').removeClass('text-danger text-warning text-info').addClass('text-success');
-                // Cargar hermanos
+                // Cargar hermanos con estado de beca
                 if (res.hermanos && res.hermanos.length > 0) {
-                    mostrarHermanos(res.hermanos);
+                    mostrarHermanos(res.hermanos, res.tiene_beca || false);
                 } else {
                     $('#panelHermanos').hide();
                 }
@@ -1194,18 +1198,24 @@ function guardarEdicionRepresentante() {
 }
 
 /**
- * Mostrar hermanos inscritos (detección de beca)
+ * Mostrar hermanos inscritos con estado de beca
  */
-function mostrarHermanos(hermanos) {
+function mostrarHermanos(hermanos, tieneBeca) {
     if (!hermanos || hermanos.length === 0) {
         $('#panelHermanos').hide();
         return;
     }
     var html = '';
     hermanos.forEach(function(h) {
-        html += '<span class="badge badge-light ml-1">' + (h.alu_nombres || '') + ' ' + (h.alu_apellidos || '') + '</span>';
+        html += '<span class="badge badge-success mr-1">' + (h.alu_nombres || '') + ' ' + (h.alu_apellidos || '') + '</span>';
     });
     $('#hermanosLista').html(html);
+
+    var becaHtml = tieneBeca
+        ? '<span class="badge badge-pill badge-secondary"><i class="fas fa-check-circle mr-1"></i>Ya tiene beca/descuento por hermanos asignado</span>'
+        : '<span class="badge badge-pill badge-warning text-dark"><i class="fas fa-tag mr-1"></i>Puede aplicar beca por hermanos — revisar en módulo de Becas</span>';
+    $('#becaHermanoEstado').html(becaHtml);
+
     $('#panelHermanos').slideDown();
 }
 

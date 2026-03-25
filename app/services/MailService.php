@@ -92,6 +92,44 @@ class MailService {
     }
 
     // ──────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Enviar comprobante/recibo de pago al representante.
+     *
+     * @param string $emailDestino  Email del representante (ya desencriptado)
+     * @param array  $datos         rep_nombre, alumno_nombre, numero, tipo, concepto,
+     *                              fecha, total, pago_metodo, sede_nombre, empresa_nombre
+     * @return array{exito: bool, mensaje: string}
+     */
+    public function enviarComprobantePago(string $emailDestino, array $datos): array {
+        if (empty($emailDestino) || !filter_var($emailDestino, FILTER_VALIDATE_EMAIL)) {
+            return ['exito' => false, 'mensaje' => 'Email del representante no válido o no disponible'];
+        }
+        try {
+            $mailer = $this->crearMailer();
+            $mailer->addAddress($emailDestino, $datos['rep_nombre'] ?? '');
+
+            $empresa = $datos['empresa_nombre'] ?? 'Escuela de Fútbol';
+            $numero  = $datos['numero']         ?? '';
+            $mailer->Subject = "Comprobante de pago {$numero} — {$empresa}";
+            $mailer->isHTML(true);
+            $mailer->Body    = $this->renderComprobanteTemplate($datos);
+            $mailer->AltBody = $this->textoPlanoComprobante($datos);
+
+            $mailer->send();
+            error_log('[MailService] Comprobante ' . $numero . ' enviado a ' . $emailDestino);
+            return ['exito' => true, 'mensaje' => 'Comprobante enviado a ' . $emailDestino];
+
+        } catch (MailerException $e) {
+            error_log('[MailService] Error comprobante PHPMailer: ' . $e->getMessage());
+            return ['exito' => false, 'mensaje' => $e->getMessage()];
+        } catch (\Exception $e) {
+            error_log('[MailService] Error inesperado comprobante: ' . $e->getMessage());
+            return ['exito' => false, 'mensaje' => $e->getMessage()];
+        }
+    }
+
+    // ──────────────────────────────────────────────────────────────────────────
     // Helpers privados
     // ──────────────────────────────────────────────────────────────────────────
 
@@ -126,6 +164,99 @@ class MailService {
         extract($datos, EXTR_SKIP);
         require $templateFile;
         return ob_get_clean();
+    }
+
+    /**
+     * Template HTML para comprobante de pago
+     */
+    private function renderComprobanteTemplate(array $d): string {
+        $rep      = htmlspecialchars($d['rep_nombre']     ?? '');
+        $alumno   = htmlspecialchars($d['alumno_nombre']  ?? '');
+        $numero   = htmlspecialchars($d['numero']         ?? '');
+        $tipo     = htmlspecialchars($d['tipo']           ?? 'RECIBO');
+        $concepto = htmlspecialchars($d['concepto']       ?? '');
+        $fecha    = !empty($d['fecha']) ? date('d/m/Y', strtotime($d['fecha'])) : '—';
+        $total    = '$' . number_format((float)($d['total'] ?? 0), 2);
+        $metodo   = htmlspecialchars($d['pago_metodo']    ?? '');
+        $empresa  = htmlspecialchars($d['empresa_nombre'] ?? 'Escuela de Fútbol');
+        $color    = '#22C55E';
+
+        $sedeRow = '';
+        if (!empty($d['sede_nombre'])) {
+            $sede    = htmlspecialchars($d['sede_nombre']);
+            $sedeRow = "<tr><td style='padding:10px 16px;color:#6c757d;font-size:13px;'>Sede</td>"
+                     . "<td style='padding:10px 16px;font-size:13px;'>{$sede}</td></tr>";
+        }
+
+        $c2 = $color . '22';
+        return '<!DOCTYPE html><html lang="es">'
+            . '<head><meta charset="UTF-8"></head>'
+            . '<body style="margin:0;padding:0;background:#f4f6f8;font-family:Arial,Helvetica,sans-serif;">'
+            . '<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f8;padding:30px 0;">'
+            . '<tr><td align="center">'
+            . '<table width="580" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08);">'
+            . "<tr><td style=\"background:{$color};padding:26px 32px;\">"
+            . "<h2 style=\"color:#fff;margin:0;font-size:20px;\">&#9917;&nbsp;{$empresa}</h2>"
+            . '<p style="color:rgba(255,255,255,.85);margin:4px 0 0;font-size:13px;">Comprobante de Pago</p>'
+            . '</td></tr>'
+            . '<tr><td style="padding:28px 32px;">'
+            . "<p style=\"margin:0 0 6px;font-size:15px;\">Estimado/a <strong>{$rep}</strong>,</p>"
+            . '<p style="margin:0 0 22px;color:#555;font-size:14px;">Le confirmamos la recepción del siguiente pago:</p>'
+            . '<table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;margin-bottom:22px;">'
+            . '<tr style="background:#f8f9fa;">'
+            . '<td colspan="2" style="padding:13px 18px;border-bottom:1px solid #e5e7eb;">'
+            . "<strong style=\"font-size:17px;color:#111;\">N&deg; {$numero}</strong>"
+            . "<span style=\"font-size:12px;color:#888;margin-left:10px;\">{$fecha}</span>"
+            . "<span style=\"float:right;font-size:11px;font-weight:bold;color:#fff;background:{$color};padding:2px 8px;border-radius:3px;\">{$tipo}</span>"
+            . '</td></tr>'
+            . '<tr>'
+            . '<td style="padding:10px 18px;color:#6c757d;font-size:13px;width:38%;">Alumno</td>'
+            . "<td style=\"padding:10px 18px;font-size:13px;font-weight:bold;\">{$alumno}</td>"
+            . '</tr>'
+            . '<tr style="background:#f8f9fa;">'
+            . '<td style="padding:10px 18px;color:#6c757d;font-size:13px;">Concepto</td>'
+            . "<td style=\"padding:10px 18px;font-size:13px;\">{$concepto}</td>"
+            . '</tr>'
+            . '<tr>'
+            . '<td style="padding:10px 18px;color:#6c757d;font-size:13px;">M&eacute;todo de pago</td>'
+            . "<td style=\"padding:10px 18px;font-size:13px;\">{$metodo}</td>"
+            . '</tr>'
+            . $sedeRow
+            . "<tr style=\"background:{$c2};\">"
+            . '<td style="padding:14px 18px;font-weight:bold;font-size:14px;color:#111;">TOTAL PAGADO</td>'
+            . "<td style=\"padding:14px 18px;font-weight:bold;font-size:20px;color:{$color};\">{$total}</td>"
+            . '</tr>'
+            . '</table>'
+            . '<p style="font-size:11px;color:#aaa;margin:0;">Comprobante generado autom&aacute;ticamente &middot; Sistema DigiSports</p>'
+            . '</td></tr>'
+            . '<tr><td style="background:#f8f9fa;padding:14px 32px;border-top:1px solid #e5e7eb;text-align:center;">'
+            . "<p style=\"margin:0;font-size:12px;color:#999;\">{$empresa} &middot; DigiSports</p>"
+            . '</td></tr>'
+            . '</table>'
+            . '</td></tr></table>'
+            . '</body></html>';
+    }
+
+    /**
+     * Versión texto plano del comprobante de pago
+     */
+    private function textoPlanoComprobante(array $d): string {
+        $fecha = !empty($d['fecha']) ? date('d/m/Y', strtotime($d['fecha'])) : '—';
+        return implode("\n", [
+            'Estimado/a ' . ($d['rep_nombre'] ?? 'representante') . ',',
+            '',
+            'Le confirmamos la recepción del siguiente pago:',
+            '',
+            'Comprobante N° : ' . ($d['numero']       ?? '—'),
+            'Alumno         : ' . ($d['alumno_nombre'] ?? '—'),
+            'Concepto       : ' . ($d['concepto']      ?? '—'),
+            'Fecha          : ' . $fecha,
+            'Método de pago : ' . ($d['pago_metodo']   ?? '—'),
+            'TOTAL PAGADO   : $' . number_format((float)($d['total'] ?? 0), 2),
+            '',
+            'Atentamente,',
+            $d['empresa_nombre'] ?? 'Escuela de Fútbol',
+        ]);
     }
 
     /**

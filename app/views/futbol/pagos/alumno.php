@@ -10,11 +10,11 @@
  * @var array  $modulo_actual
  */
 $moduloColor    = $modulo_actual['color'] ?? '#22C55E';
-$alumno         = $alumno ?? [];
-$historial      = $historial ?? [];
+$alumno         ??= [];
+$historial      ??= [];
 $totalPagado    = $total_pagado    ?? 0;
 $totalPendiente = $total_pendiente ?? 0;
-$grupos         = $grupos ?? [];
+$grupos         ??= [];
 
 $nombreCompleto = trim(($alumno['alu_nombres'] ?? '') . ' ' . ($alumno['alu_apellidos'] ?? ''));
 $grupoActualId  = $alumno['fgr_grupo_id'] ?? '';
@@ -331,28 +331,28 @@ $estadoClass = [
                             <table class="table table-sm table-hover mb-0" id="tablaHistorial">
                                 <thead class="thead-light">
                                     <tr>
-                                        <th>Fecha</th>
-                                        <th>Concepto</th>
-                                        <th>Mes</th>
-                                        <th class="text-right">Total</th>
-                                        <th class="text-center">Estado</th>
-                                        <th class="text-center" width="90">Acciones</th>
+                                        <th class="align-middle">Fecha</th>
+                                        <th class="align-middle">Concepto</th>
+                                        <th class="align-middle">Mes</th>
+                                        <th class="text-right align-middle">Total</th>
+                                        <th class="text-center align-middle">Estado</th>
+                                        <th class="text-center align-middle" width="190">Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <?php foreach ($historial as $p): ?>
                                     <tr id="fila-pago-<?= $p['fpg_pago_id'] ?>">
-                                        <td class="small">
+                                        <td class="small align-middle">
                                             <?= !empty($p['fpg_fecha']) ? date('d/m/Y', strtotime($p['fpg_fecha'])) : '—' ?>
                                         </td>
-                                        <td class="small">
+                                        <td class="small align-middle">
                                             <?= htmlspecialchars($p['fpg_concepto'] ?? $p['fpg_tipo'] ?? '') ?>
                                             <?php if (!empty($p['grupo_nombre'])): ?>
                                             <br><span class="text-muted"><?= htmlspecialchars($p['grupo_nombre']) ?></span>
                                             <?php endif; ?>
                                         </td>
-                                        <td class="small"><?= $p['fpg_mes_correspondiente'] ?? '—' ?></td>
-                                        <td class="text-right small">
+                                        <td class="small align-middle"><?= $p['fpg_mes_correspondiente'] ?? '—' ?></td>
+                                        <td class="text-right small align-middle">
                                             <strong>$<?= number_format($p['fpg_total'] ?? 0, 2) ?></strong>
                                             <?php if (($p['fpg_beca_descuento'] ?? 0) > 0 || ($p['fpg_descuento'] ?? 0) > 0): ?>
                                             <br><small class="text-info">
@@ -361,14 +361,16 @@ $estadoClass = [
                                             </small>
                                             <?php endif; ?>
                                         </td>
-                                        <td class="text-center">
+                                        <td class="text-center align-middle">
                                             <?php $est = $p['fpg_estado'] ?? 'PENDIENTE'; ?>
                                             <span class="badge badge-<?= $estadoClass[$est] ?? 'secondary' ?> badge-estado"
                                                   id="estado-<?= $p['fpg_pago_id'] ?>">
                                                 <?= $est ?>
                                             </span>
                                         </td>
-                                        <td class="text-center">
+                                        <?php $tieneFact = !empty($p['fpg_factura_id']); ?>
+                                        <?php $tieneComp = !empty($p['fcm_comprobante_id']); ?>
+                                        <td class="text-center align-middle" style="white-space:nowrap;">
                                             <div class="btn-group btn-group-sm">
                                                 <?php if (in_array($est, ['PENDIENTE','VENCIDO'])): ?>
                                                 <button type="button" class="btn btn-success js-cobrar"
@@ -378,13 +380,65 @@ $estadoClass = [
                                                 </button>
                                                 <?php endif; ?>
                                                 <?php if ($est !== 'ANULADO'): ?>
-                                                <button type="button" class="btn btn-warning js-anular"
+                                                <button type="button"
+                                                        class="btn <?= $tieneFact ? 'btn-outline-secondary' : 'btn-info' ?> js-editar-pago"
                                                         data-id="<?= $p['fpg_pago_id'] ?>"
-                                                        title="Anular pago">
+                                                        data-pago="<?= htmlspecialchars(json_encode([
+                                                            'fpg_pago_id'            => $p['fpg_pago_id'],
+                                                            'fpg_tipo'               => $p['fpg_tipo'] ?? '',
+                                                            'fpg_concepto'           => $p['fpg_concepto'] ?? '',
+                                                            'fpg_mes_correspondiente'=> $p['fpg_mes_correspondiente'] ?? '',
+                                                            'fpg_monto'              => $p['fpg_monto'] ?? 0,
+                                                            'fpg_descuento'          => $p['fpg_descuento'] ?? 0,
+                                                            'fpg_beca_descuento'     => $p['fpg_beca_descuento'] ?? 0,
+                                                            'fpg_recargo_mora'       => $p['fpg_recargo_mora'] ?? 0,
+                                                            'fpg_metodo_pago'        => $p['fpg_metodo_pago'] ?? 'EFECTIVO',
+                                                            'fpg_referencia'         => $p['fpg_referencia'] ?? '',
+                                                            'fpg_estado'             => $p['fpg_estado'] ?? '',
+                                                            'fpg_notas'              => $p['fpg_notas'] ?? '',
+                                                        ], JSON_HEX_QUOT|JSON_HEX_TAG|JSON_HEX_AMP), ENT_QUOTES) ?>"
+                                                        title="<?= $tieneFact ? 'Pago facturado — no se puede modificar' : 'Editar pago' ?>"
+                                                        <?= $tieneFact ? 'disabled' : '' ?>>
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button type="button"
+                                                        class="btn <?= $tieneFact ? 'btn-outline-secondary' : 'btn-warning' ?> js-anular"
+                                                        data-id="<?= $p['fpg_pago_id'] ?>"
+                                                        title="<?= $tieneFact ? 'Pago facturado — no se puede anular' : 'Anular pago' ?>"
+                                                        <?= $tieneFact ? 'disabled' : '' ?>>
                                                     <i class="fas fa-ban"></i>
                                                 </button>
                                                 <?php endif; ?>
+                                                <?php if ($est === 'PAGADO'): ?>
+                                                <?php if ($tieneComp): ?>
+                                                <a href="<?= url('futbol', 'comprobante', 'imprimir') ?>&id=<?= (int)$p['fcm_comprobante_id'] ?>"
+                                                   target="_blank"
+                                                   class="btn btn-outline-secondary"
+                                                   title="Ver comprobante <?= htmlspecialchars($p['comprobante_numero'] ?? '') ?>">
+                                                    <i class="fas fa-file-alt"></i>
+                                                </a>
+                                                <button type="button"
+                                                        class="btn btn-outline-primary js-enviar-comp"
+                                                        data-id="<?= (int)$p['fcm_comprobante_id'] ?>"
+                                                        data-numero="<?= htmlspecialchars($p['comprobante_numero'] ?? '') ?>"
+                                                        title="Enviar comprobante por email<?= $p['fcm_enviado_email'] ? ' (ya enviado)' : '' ?>">
+                                                    <i class="fas fa-envelope<?= $p['fcm_enviado_email'] ? '-open' : '' ?>"></i>
+                                                </button>
+                                                <?php else: ?>
+                                                <button type="button"
+                                                        class="btn btn-outline-secondary js-generar-comp"
+                                                        data-id="<?= $p['fpg_pago_id'] ?>"
+                                                        title="Generar comprobante de pago">
+                                                    <i class="fas fa-receipt"></i>
+                                                </button>
+                                                <?php endif; ?>
+                                                <?php endif; ?>
                                             </div>
+                                            <?php if ($tieneFact): ?>
+                                            <small class="text-muted d-block" style="font-size:10px;margin-top:3px;">
+                                                <i class="fas fa-file-invoice mr-1"></i>Facturado
+                                            </small>
+                                            <?php endif; ?>
                                         </td>
                                     </tr>
                                     <?php endforeach; ?>
@@ -407,13 +461,138 @@ $estadoClass = [
     </div>
 </section>
 
+<!-- Modal Editar Pago -->
+<div class="modal fade" id="modalEditarPago" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form id="formEditarPago">
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token ?? '') ?>">
+                <input type="hidden" name="id" id="ep_id">
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title"><i class="fas fa-edit mr-2"></i>Editar Pago</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="small font-weight-bold">Concepto</label>
+                                <input type="text" id="ep_concepto_display" class="form-control form-control-sm" readonly
+                                       style="background:#f8f9fa;">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="small font-weight-bold">Mes Correspondiente</label>
+                                <input type="text" name="mes_correspondiente" id="ep_mes"
+                                       class="form-control form-control-sm" placeholder="Ej: 2026-03">
+                            </div>
+                        </div>
+                    </div>
+                    <hr class="my-2">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label class="small font-weight-bold">Monto Base <span class="text-danger">*</span></label>
+                                <div class="input-group input-group-sm">
+                                    <div class="input-group-prepend"><span class="input-group-text">$</span></div>
+                                    <input type="number" name="monto" id="ep_monto"
+                                           class="form-control ep-calc" min="0" step="0.01" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label class="small font-weight-bold">Descuento</label>
+                                <div class="input-group input-group-sm">
+                                    <div class="input-group-prepend"><span class="input-group-text">$</span></div>
+                                    <input type="number" name="descuento" id="ep_descuento"
+                                           class="form-control ep-calc" min="0" step="0.01" value="0">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label class="small font-weight-bold">Desc. Beca</label>
+                                <div class="input-group input-group-sm">
+                                    <div class="input-group-prepend"><span class="input-group-text">$</span></div>
+                                    <input type="number" name="beca_descuento" id="ep_beca_descuento"
+                                           class="form-control ep-calc" min="0" step="0.01" value="0">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label class="small font-weight-bold">Recargo Mora</label>
+                                <div class="input-group input-group-sm">
+                                    <div class="input-group-prepend"><span class="input-group-text">$</span></div>
+                                    <input type="number" name="recargo_mora" id="ep_recargo_mora"
+                                           class="form-control ep-calc" min="0" step="0.01" value="0">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="alert alert-light py-2 mb-2 d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-calculator mr-1 text-muted"></i>Total calculado:</span>
+                        <strong class="text-success" id="ep_total_display">$0.00</strong>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="small font-weight-bold">Método de Pago</label>
+                                <select name="metodo_pago" id="ep_metodo_pago" class="form-control form-control-sm">
+                                    <option value="EFECTIVO">Efectivo</option>
+                                    <option value="TRANSFERENCIA">Transferencia</option>
+                                    <option value="TARJETA">Tarjeta</option>
+                                    <option value="DEPOSITO">Depósito</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="small font-weight-bold">Referencia</label>
+                                <input type="text" name="referencia" id="ep_referencia"
+                                       class="form-control form-control-sm" placeholder="Nro. transacción...">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="small font-weight-bold">Estado</label>
+                                <select name="estado" id="ep_estado" class="form-control form-control-sm">
+                                    <option value="PAGADO">Pagado</option>
+                                    <option value="PENDIENTE">Pendiente</option>
+                                    <option value="VENCIDO">Vencido</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group mb-0">
+                        <label class="small font-weight-bold">Notas</label>
+                        <textarea name="notas" id="ep_notas" class="form-control form-control-sm" rows="2"
+                                  placeholder="Observaciones opcionales..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-info" id="btnGuardarEdicion">
+                        <i class="fas fa-save mr-1"></i>Guardar Cambios
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <?php ob_start(); ?>
 <script nonce="<?= cspNonce() ?>">
 (function () {
     var CSRF         = '<?= htmlspecialchars($csrf_token, ENT_QUOTES) ?>';
-    var URL_CREAR    = '<?= url('futbol', 'pago', 'crear') ?>';
-    var URL_COBRAR   = '<?= url('futbol', 'pago', 'cobrar') ?>';
-    var URL_ANULAR   = '<?= url('futbol', 'pago', 'anular') ?>';
+    var URL_CREAR        = '<?= url('futbol', 'pago', 'crear') ?>';
+    var URL_COBRAR       = '<?= url('futbol', 'pago', 'cobrar') ?>';
+    var URL_ANULAR       = '<?= url('futbol', 'pago', 'anular') ?>';
+    var URL_EDITAR       = '<?= url('futbol', 'pago', 'editar') ?>';
+    var URL_COMP_CREAR   = '<?= url('futbol', 'comprobante', 'crear') ?>';
+    var URL_COMP_ENVIAR  = '<?= url('futbol', 'comprobante', 'enviar') ?>';
 
     // --- Selector de rubro / tipo de pago ---
     var btns = document.querySelectorAll('.js-tipo-pago');
@@ -548,6 +727,163 @@ $estadoClass = [
                 } else {
                     if (typeof Swal !== 'undefined') Swal.fire('Error', res.message, 'error');
                 }
+            });
+    }
+
+    // --- Editar pago: abrir modal ---
+    document.addEventListener('click', function (e) {
+        var btn = e.target.closest('.js-editar-pago');
+        if (!btn || btn.disabled) return;
+        var p = JSON.parse(btn.dataset.pago);
+        document.getElementById('ep_id').value              = p.fpg_pago_id;
+        document.getElementById('ep_concepto_display').value= p.fpg_concepto || p.fpg_tipo || '';
+        document.getElementById('ep_mes').value             = p.fpg_mes_correspondiente || '';
+        document.getElementById('ep_monto').value           = parseFloat(p.fpg_monto        || 0).toFixed(2);
+        document.getElementById('ep_descuento').value       = parseFloat(p.fpg_descuento    || 0).toFixed(2);
+        document.getElementById('ep_beca_descuento').value  = parseFloat(p.fpg_beca_descuento || 0).toFixed(2);
+        document.getElementById('ep_recargo_mora').value    = parseFloat(p.fpg_recargo_mora || 0).toFixed(2);
+        document.getElementById('ep_metodo_pago').value     = p.fpg_metodo_pago || 'EFECTIVO';
+        document.getElementById('ep_referencia').value      = p.fpg_referencia  || '';
+        document.getElementById('ep_estado').value          = p.fpg_estado      || 'PAGADO';
+        document.getElementById('ep_notas').value           = p.fpg_notas       || '';
+        actualizarTotalEditar();
+        $('#modalEditarPago').modal('show');
+    });
+
+    // Recalcular total al cambiar campos numéricos
+    document.addEventListener('input', function (e) {
+        if (e.target.classList.contains('ep-calc')) actualizarTotalEditar();
+    });
+
+    function actualizarTotalEditar() {
+        var monto  = parseFloat(document.getElementById('ep_monto').value)          || 0;
+        var desc   = parseFloat(document.getElementById('ep_descuento').value)      || 0;
+        var beca   = parseFloat(document.getElementById('ep_beca_descuento').value) || 0;
+        var mora   = parseFloat(document.getElementById('ep_recargo_mora').value)   || 0;
+        var total  = monto - desc - beca + mora;
+        var el = document.getElementById('ep_total_display');
+        el.textContent = '$' + total.toFixed(2);
+        el.className   = 'font-weight-bold ' + (total >= 0 ? 'text-success' : 'text-danger');
+    }
+
+    // --- Editar pago: guardar ---
+    document.getElementById('formEditarPago').addEventListener('submit', function (e) {
+        e.preventDefault();
+        var btn = document.getElementById('btnGuardarEdicion');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Guardando...';
+        var fd = new FormData(this);
+        fetch(URL_EDITAR, { method: 'POST', body: fd })
+            .then(function (r) { return r.json(); })
+            .then(function (res) {
+                if (res.success) {
+                    $('#modalEditarPago').modal('hide');
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({ icon: 'success', title: 'Pago actualizado', timer: 1400, showConfirmButton: false })
+                            .then(function () { location.reload(); });
+                    } else { location.reload(); }
+                } else {
+                    if (typeof Swal !== 'undefined') Swal.fire('Error', res.message, 'error');
+                    else alert('Error: ' + res.message);
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-save mr-1"></i>Guardar Cambios';
+                }
+            })
+            .catch(function () {
+                if (typeof Swal !== 'undefined') Swal.fire('Error', 'Error de conexión.', 'error');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-save mr-1"></i>Guardar Cambios';
+            });
+    });
+
+    // --- Generar comprobante ---
+    document.addEventListener('click', function (e) {
+        var btn = e.target.closest('.js-generar-comp');
+        if (!btn) return;
+        var pagoId = btn.dataset.id;
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                title: 'Generar comprobante',
+                text: '¿Generar recibo de pago para este registro?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#6c757d',
+                confirmButtonText: 'Sí, generar',
+                cancelButtonText: 'Cancelar'
+            }).then(function (r) { if (r.isConfirmed) generarComprobante(pagoId, btn); });
+        } else {
+            if (confirm('¿Generar comprobante?')) generarComprobante(pagoId, btn);
+        }
+    });
+
+    function generarComprobante(pagoId, btn) {
+        btn.disabled = true;
+        var fd = new FormData();
+        fd.append('csrf_token', CSRF);
+        fd.append('pago_id', pagoId);
+        fd.append('tipo', 'RECIBO');
+        fetch(URL_COMP_CREAR, { method: 'POST', body: fd })
+            .then(function (r) { return r.json(); })
+            .then(function (res) {
+                if (res.success) {
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({ icon: 'success', title: res.message, timer: 1500, showConfirmButton: false })
+                            .then(function () { location.reload(); });
+                    } else { location.reload(); }
+                } else {
+                    if (typeof Swal !== 'undefined') Swal.fire('Error', res.message, 'error');
+                    btn.disabled = false;
+                }
+            })
+            .catch(function () {
+                if (typeof Swal !== 'undefined') Swal.fire('Error', 'Error de conexión.', 'error');
+                btn.disabled = false;
+            });
+    }
+
+    // --- Enviar comprobante por email ---
+    document.addEventListener('click', function (e) {
+        var btn = e.target.closest('.js-enviar-comp');
+        if (!btn) return;
+        var compId  = btn.dataset.id;
+        var numero  = btn.dataset.numero || '';
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                title: 'Enviar comprobante',
+                html: 'Se enviará el comprobante <strong>' + numero + '</strong> por email al representante.',
+                icon: 'info',
+                showCancelButton: true,
+                confirmButtonColor: '#0d6efd',
+                confirmButtonText: '<i class="fas fa-envelope mr-1"></i> Enviar',
+                cancelButtonText: 'Cancelar'
+            }).then(function (r) { if (r.isConfirmed) enviarComprobante(compId, btn); });
+        } else {
+            if (confirm('¿Enviar comprobante por email?')) enviarComprobante(compId, btn);
+        }
+    });
+
+    function enviarComprobante(compId, btn) {
+        btn.disabled = true;
+        var fd = new FormData();
+        fd.append('csrf_token', CSRF);
+        fd.append('id', compId);
+        fetch(URL_COMP_ENVIAR, { method: 'POST', body: fd })
+            .then(function (r) { return r.json(); })
+            .then(function (res) {
+                if (res.success) {
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({ icon: 'success', title: '¡Enviado!', text: res.message, timer: 2000, showConfirmButton: false })
+                            .then(function () { location.reload(); });
+                    } else { location.reload(); }
+                } else {
+                    if (typeof Swal !== 'undefined') Swal.fire('Error', res.message, 'error');
+                    else alert('Error: ' + res.message);
+                    btn.disabled = false;
+                }
+            })
+            .catch(function () {
+                if (typeof Swal !== 'undefined') Swal.fire('Error', 'Error de conexión.', 'error');
+                btn.disabled = false;
             });
     }
 

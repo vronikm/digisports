@@ -48,6 +48,7 @@ class PagoController extends \App\Controllers\ModuleController {
                        fct.fct_nombre AS categoria_nombre, fct.fct_color AS categoria_color,
                        fg.fgr_nombre AS grupo_nombre, fg.fgr_color AS grupo_color,
                        fin.fin_inscripcion_id,
+                       arc.arc_id AS foto_arc_id,
                        COALESCE(mora.tiene_mora, 0) AS tiene_mora,
                        COALESCE(beca.tiene_descuento, 0) AS tiene_descuento
                 FROM alumnos a
@@ -59,6 +60,10 @@ class PagoController extends \App\Controllers\ModuleController {
                       AND fin.fin_tenant_id = a.alu_tenant_id AND fin.fin_estado = 'ACTIVA'
                 LEFT JOIN futbol_grupos fg
                        ON fin.fin_grupo_id = fg.fgr_grupo_id AND fg.fgr_tenant_id = a.alu_tenant_id
+                LEFT JOIN core_archivos arc
+                       ON arc.arc_entidad = 'alumnos' AND arc.arc_entidad_id = a.alu_alumno_id
+                      AND arc.arc_tenant_id = a.alu_tenant_id AND arc.arc_categoria = 'fotos'
+                      AND arc.arc_es_principal = 1 AND arc.arc_estado = 'activo'
                 LEFT JOIN (
                     SELECT fpg_alumno_id, 1 AS tiene_mora
                     FROM futbol_pagos
@@ -170,9 +175,15 @@ class PagoController extends \App\Controllers\ModuleController {
 
             // Historial de pagos del alumno
             $stmH = $this->db->prepare("
-                SELECT p.*, g.fgr_nombre AS grupo_nombre
+                SELECT p.*, g.fgr_nombre AS grupo_nombre,
+                       fcm.fcm_comprobante_id, fcm.fcm_numero AS comprobante_numero,
+                       fcm.fcm_enviado_email
                 FROM futbol_pagos p
                 LEFT JOIN futbol_grupos g ON p.fpg_grupo_id = g.fgr_grupo_id
+                LEFT JOIN futbol_comprobantes fcm
+                       ON fcm.fcm_pago_id = p.fpg_pago_id
+                      AND fcm.fcm_tenant_id = p.fpg_tenant_id
+                      AND fcm.fcm_estado = 'EMITIDO'
                 WHERE p.fpg_alumno_id = ? AND p.fpg_tenant_id = ?
                 ORDER BY p.fpg_fecha DESC
                 LIMIT 60
@@ -324,6 +335,13 @@ class PagoController extends \App\Controllers\ModuleController {
             $id = (int)($this->post('id') ?? 0);
             if (!$id) return $this->jsonResponse(['success' => false, 'message' => 'ID requerido']);
 
+            // No permitir editar si ya tiene factura generada
+            $stmChk = $this->db->prepare("SELECT fpg_factura_id FROM futbol_pagos WHERE fpg_pago_id = ? AND fpg_tenant_id = ?");
+            $stmChk->execute([$id, $this->tenantId]);
+            $chk = $stmChk->fetch(\PDO::FETCH_ASSOC);
+            if (!$chk) return $this->jsonResponse(['success' => false, 'message' => 'Pago no encontrado']);
+            if (!empty($chk['fpg_factura_id'])) return $this->jsonResponse(['success' => false, 'message' => 'No se puede editar un pago que tiene factura generada']);
+
             $monto       = (float)($this->post('monto')        ?? 0);
             $descuento   = (float)($this->post('descuento')    ?? 0);
             $becaDesc    = (float)($this->post('beca_descuento') ?? 0);
@@ -386,6 +404,13 @@ class PagoController extends \App\Controllers\ModuleController {
         try {
             $id = (int)($this->get('id') ?? $this->post('id') ?? 0);
             if (!$id) return $this->jsonResponse(['success' => false, 'message' => 'ID requerido']);
+
+            // No permitir anular si ya tiene factura generada
+            $stmChk = $this->db->prepare("SELECT fpg_factura_id FROM futbol_pagos WHERE fpg_pago_id = ? AND fpg_tenant_id = ?");
+            $stmChk->execute([$id, $this->tenantId]);
+            $chk = $stmChk->fetch(\PDO::FETCH_ASSOC);
+            if (!$chk) return $this->jsonResponse(['success' => false, 'message' => 'Pago no encontrado']);
+            if (!empty($chk['fpg_factura_id'])) return $this->jsonResponse(['success' => false, 'message' => 'No se puede anular un pago que tiene factura generada']);
 
             $this->db->prepare("UPDATE futbol_pagos SET fpg_estado = 'ANULADO' WHERE fpg_pago_id = ? AND fpg_tenant_id = ?")->execute([$id, $this->tenantId]);
             return $this->jsonResponse(['success' => true, 'message' => 'Pago anulado']);

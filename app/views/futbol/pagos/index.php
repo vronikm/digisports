@@ -13,8 +13,8 @@
  * @var array  $modulo_actual
  */
 $moduloColor = $modulo_actual['color'] ?? '#22C55E';
-$totales     = $totales ?? [];
-$alumnos     = $alumnos ?? [];
+$totales     ??= [];
+$alumnos     ??= [];
 
 $totalCobrado   = $totales['PAGADO']    ?? 0;
 $totalPendiente = ($totales['PENDIENTE'] ?? 0) + ($totales['VENCIDO'] ?? 0);
@@ -148,64 +148,96 @@ $totalMora      = $totales['VENCIDO']   ?? 0;
                 </div>
                 <?php else: ?>
                 <div class="table-responsive">
-                    <table class="table table-hover mb-0" id="tablaAlumnosPagos">
+                    <table class="table table-sm table-hover mb-0" id="tablaAlumnosPagos">
                         <thead class="thead-light">
                             <tr>
-                                <th width="110">Cédula</th>
-                                <th>Nombres y Apellidos</th>
-                                <th>Categoría / Grupo</th>
-                                <th class="text-center" width="110">Estado Pago</th>
-                                <th class="text-center" width="90">Beca/Desc.</th>
-                                <th class="text-center" width="140">Acciones</th>
+                                <th class="text-center align-middle" style="width:50px;"></th>
+                                <th class="align-middle" style="width:120px;">Cédula</th>
+                                <th class="align-middle">Alumno</th>
+                                <th class="align-middle" style="width:160px;">Categoría / Grupo</th>
+                                <th class="text-center align-middle" style="width:95px;">Estado</th>
+                                <th class="text-center align-middle" style="width:65px;">Beca</th>
+                                <th class="text-center align-middle" style="width:110px;">Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php foreach ($alumnos as $a): ?>
+                            <?php $esActivo = ($a['alu_estado'] ?? 'ACTIVO') === 'ACTIVO'; ?>
                             <tr>
-                                <td>
-                                    <?php if (!empty($a['alu_identificacion'])): ?>
-                                    <code class="small"><?= htmlspecialchars($a['alu_identificacion']) ?></code>
+                                <!-- Foto -->
+                                <td class="text-center align-middle p-1">
+                                    <?php if (!empty($a['foto_arc_id'])): ?>
+                                    <img src="<?= \Config::baseUrl('archivo.php?id=' . (int)$a['foto_arc_id']) ?>"
+                                         alt="Foto" class="rounded-circle"
+                                         style="width:36px;height:36px;object-fit:cover;border:2px solid #dee2e6;display:block;margin:0 auto;">
                                     <?php else: ?>
-                                    <span class="text-muted small">Sin cédula</span>
+                                    <span class="rounded-circle d-flex align-items-center justify-content-center mx-auto"
+                                          style="width:36px;height:36px;background:#e9ecef;border:2px solid #c8cdd2;flex-shrink:0;">
+                                        <i class="fas fa-user-circle" style="font-size:22px;color:#adb5bd;"></i>
+                                    </span>
                                     <?php endif; ?>
                                 </td>
-                                <td>
-                                    <strong><?= htmlspecialchars($a['alu_nombres'] . ' ' . $a['alu_apellidos']) ?></strong>
-                                    <?php if (($a['alu_estado'] ?? '') !== 'ACTIVO'): ?>
-                                    <br><span class="badge badge-secondary badge-sm"><?= $a['alu_estado'] ?></span>
+                                <!-- Cédula -->
+                                <td class="align-middle" style="white-space:nowrap;">
+                                    <span class="text-dark font-weight-bold" style="font-size:.84rem;letter-spacing:.3px;">
+                                        <?= !empty($a['alu_identificacion']) ? htmlspecialchars($a['alu_identificacion']) : '<span class="text-muted">—</span>' ?>
+                                    </span>
+                                </td>
+                                <!-- Nombre + estado -->
+                                <td class="align-middle">
+                                    <span class="font-weight-bold" style="font-size:.9rem;color:#212529;">
+                                        <?= htmlspecialchars($a['alu_apellidos'] . ', ' . $a['alu_nombres']) ?>
+                                    </span>
+                                    <?php if (!$esActivo): ?>
+                                    <span class="badge badge-secondary ml-1" style="font-size:.68rem;vertical-align:middle;">
+                                        <?= htmlspecialchars($a['alu_estado']) ?>
+                                    </span>
                                     <?php endif; ?>
                                 </td>
-                                <td>
+                                <!-- Categoría / Grupo -->
+                                <td class="align-middle">
                                     <?php if (!empty($a['categoria_nombre'])): ?>
-                                    <span class="badge badge-sm" style="background:<?= htmlspecialchars($a['categoria_color'] ?? '#6c757d') ?>;color:white;">
+                                    <span class="badge" style="background:<?= htmlspecialchars($a['categoria_color'] ?? '#6c757d') ?>;color:#fff;font-size:.72rem;">
                                         <?= htmlspecialchars($a['categoria_nombre']) ?>
                                     </span>
                                     <?php endif; ?>
                                     <?php if (!empty($a['grupo_nombre'])): ?>
-                                    <br><small class="text-muted"><?= htmlspecialchars($a['grupo_nombre']) ?></small>
+                                    <div class="text-muted mt-1" style="font-size:.76rem;line-height:1.2;">
+                                        <i class="fas fa-users mr-1" style="font-size:.65rem;"></i><?= htmlspecialchars($a['grupo_nombre']) ?>
+                                    </div>
+                                    <?php endif; ?>
+                                    <?php if (empty($a['categoria_nombre']) && empty($a['grupo_nombre'])): ?>
+                                    <span class="text-muted">—</span>
                                     <?php endif; ?>
                                 </td>
-                                <td class="text-center">
+                                <!-- Estado pago -->
+                                <td class="text-center align-middle">
                                     <?php if ($a['tiene_mora']): ?>
-                                    <span class="badge badge-danger"><i class="fas fa-exclamation-circle mr-1"></i>En Mora</span>
-                                    <?php else: ?>
-                                    <span class="badge badge-success"><i class="fas fa-check-circle mr-1"></i>Al Día</span>
-                                    <?php endif; ?>
-                                </td>
-                                <td class="text-center">
-                                    <?php if ($a['tiene_descuento']): ?>
-                                    <span class="badge badge-info" title="Tiene beca o descuento registrado">
-                                        <i class="fas fa-tag mr-1"></i>Sí
+                                    <span class="badge badge-danger" style="font-size:.74rem;padding:.3em .55em;">
+                                        <i class="fas fa-exclamation-circle mr-1"></i>Mora
                                     </span>
                                     <?php else: ?>
-                                    <span class="text-muted small">—</span>
+                                    <span class="badge badge-success" style="font-size:.74rem;padding:.3em .55em;">
+                                        <i class="fas fa-check-circle mr-1"></i>Al Día
+                                    </span>
                                     <?php endif; ?>
                                 </td>
-                                <td class="text-center">
+                                <!-- Beca -->
+                                <td class="text-center align-middle">
+                                    <?php if ($a['tiene_descuento']): ?>
+                                    <span class="badge badge-info" style="font-size:.74rem;padding:.3em .55em;" title="Tiene beca o descuento">
+                                        <i class="fas fa-tag"></i>
+                                    </span>
+                                    <?php else: ?>
+                                    <span class="text-muted">—</span>
+                                    <?php endif; ?>
+                                </td>
+                                <!-- Acciones -->
+                                <td class="text-center align-middle">
                                     <a href="<?= url('futbol', 'pago', 'alumno') ?>&id=<?= $a['alu_alumno_id'] ?>"
-                                       class="btn btn-sm btn-success"
-                                       title="Registrar / Ver pagos">
-                                        <i class="fas fa-dollar-sign mr-1"></i>Registrar Pago
+                                       class="btn btn-success btn-sm" style="font-size:.78rem;white-space:nowrap;"
+                                       title="Ver / registrar pagos">
+                                        <i class="fas fa-dollar-sign mr-1"></i>Pagos
                                     </a>
                                 </td>
                             </tr>
@@ -248,9 +280,10 @@ $(function () {
         $('#tablaAlumnosPagos').DataTable({
             language: { url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json' },
             pageLength: 25,
-            order: [[1, 'asc']],
+            order: [[2, 'asc']],
             responsive: true,
-            columnDefs: [{ orderable: false, targets: [4, 5] }]
+            autoWidth: false,
+            columnDefs: [{ orderable: false, targets: [0, 5, 6] }]
         });
     }
 });

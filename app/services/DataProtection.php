@@ -57,6 +57,7 @@ class DataProtection {
             'cli_email'          => ['hash' => true],
             'cli_telefono'       => ['hash' => false],
             'cli_celular'        => ['hash' => false],
+            'cli_direccion'      => ['hash' => false],
         ],
         'alumnos' => [
             'alu_identificacion' => ['hash' => true],
