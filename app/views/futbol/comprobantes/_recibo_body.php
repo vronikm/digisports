@@ -109,7 +109,7 @@ $moduloNombre = $modulo_actual['nombre'] ?? 'DigiSports Fútbol';
                 <div style="font-size:9px;margin-bottom:2px;"><strong>N°:</strong> <?= htmlspecialchars($numero) ?></div>
                 <div style="font-size:9px;margin-bottom:2px;"><strong>Fecha:</strong> <?= $fecha ?></div>
                 <div style="text-align:center;margin-top:5px;">
-                    <div id="qrcode-print" style="display:inline-block;"></div>
+                    <div id="qrcode-print" style="display:inline-block;" data-qr="<?= htmlspecialchars($d['qr_url'] ?? ('Recibo:' . $numero . ' Total:$' . number_format($total, 2))) ?>"></div>
                     <img class="qr-img-fallback" src="<?= $qrUrl ?>" alt="QR" style="width:80px;height:80px;">
                 </div>
             </td>

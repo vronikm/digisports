@@ -1657,6 +1657,17 @@ $estadoClass = [
                 wrap.innerHTML = html;
                 document.body.appendChild(wrap);
 
+                // Renderizar QR con QRCode.js antes de capturar
+                var qrDiv = wrap.querySelector('#qrcode-print');
+                if (qrDiv && typeof QRCode !== 'undefined') {
+                    var qrText = qrDiv.getAttribute('data-qr');
+                    if (qrText) {
+                        new QRCode(qrDiv, { text: qrText, width: 80, height: 80, correctLevel: QRCode.CorrectLevel.M });
+                        var fallbackImg = qrDiv.parentNode.querySelector('.qr-img-fallback');
+                        if (fallbackImg) fallbackImg.style.display = 'none';
+                    }
+                }
+
                 var target = wrap.querySelector('#recibo-print') || wrap;
                 var opt = {
                     margin: [5, 5, 5, 5],
@@ -1948,5 +1959,6 @@ $estadoClass = [
     }
 }());
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" nonce="<?= cspNonce() ?>"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.2/html2pdf.bundle.min.js" nonce="<?= cspNonce() ?>"></script>
 <?php $scripts = ob_get_clean(); ?>
