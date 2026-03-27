@@ -105,9 +105,9 @@ $enLetras = _letras($entero) . ' DÓLARES' . ($centavos > 0 ? ' CON ' . str_pad(
                 <button id="btnImprimir" class="btn btn-sm btn-secondary">
                     <i class="fas fa-print mr-1"></i>Imprimir
                 </button>
-                <a href="<?= htmlspecialchars($url_pdf ?? '#') ?>" id="btnPdf" class="btn btn-sm btn-danger ml-1" title="Descargar PDF">
+                <button id="btnPdf" class="btn btn-sm btn-danger ml-1" title="Descargar PDF">
                     <i class="fas fa-file-pdf mr-1"></i>PDF
-                </a>
+                </button>
                 <?php if (!$anulado): ?>
                 <button class="btn btn-sm btn-primary ml-1 js-enviar-email"
                         data-id="<?= (int)$c['fcm_comprobante_id'] ?>"
@@ -116,9 +116,9 @@ $enLetras = _letras($entero) . ' DÓLARES' . ($centavos > 0 ? ' CON ' . str_pad(
                     <i class="fas fa-envelope mr-1"></i><?= $enviado ? 'Reenviar' : 'Enviar email' ?>
                 </button>
                 <?php endif; ?>
-                <button id="btnVolver" class="btn btn-sm btn-outline-secondary ml-1">
+                <a href="<?= htmlspecialchars($url_volver ?? '#') ?>" id="btnVolver" class="btn btn-sm btn-outline-secondary ml-1">
                     <i class="fas fa-arrow-left mr-1"></i>Volver
-                </button>
+                </a>
             </div>
         </div>
     </div>
@@ -144,12 +144,12 @@ $enLetras = _letras($entero) . ' DÓLARES' . ($centavos > 0 ? ' CON ' . str_pad(
                 <?php if ($logoHtml): ?>
                     <?= $logoHtml ?>
                 <?php else: ?>
-                    <div style="font-size:13px;font-weight:bold;color:#333;text-transform:uppercase;"><?= htmlspecialchars($empresa) ?></div>
+                    <div style="font-size:13px;font-weight:bold;color:#333;text-transform:uppercase;"><?= htmlspecialchars($sede ?: $empresa) ?></div>
                 <?php endif; ?>
             </td>
             <!-- Datos empresa -->
             <td width="44%" style="padding:8px 10px;text-align:center;vertical-align:middle;border-right:1px solid #ccc;">
-                <div style="font-size:13px;font-weight:bold;text-transform:uppercase;margin-bottom:4px;"><?= htmlspecialchars($empresa) ?></div>
+                <div style="font-size:13px;font-weight:bold;text-transform:uppercase;margin-bottom:4px;"><?= htmlspecialchars($sede ?: $empresa) ?></div>
                 <div style="font-size:9px;line-height:1.7;color:#555;">
                     <?php if ($ruc): ?><span>RUC: <?= htmlspecialchars($ruc) ?></span><br><?php endif; ?>
                     <?php if ($dir): ?><?= htmlspecialchars($dir) ?><br><?php endif; ?>
@@ -270,7 +270,7 @@ $enLetras = _letras($entero) . ' DÓLARES' . ($centavos > 0 ? ' CON ' . str_pad(
 
     <!-- ══ PIE ══ -->
     <div style="background:#f5f5f5;padding:4px 14px;text-align:center;font-size:8px;color:#888;">
-        <?= htmlspecialchars($empresa) ?><?= $sede ? ' — Sede: ' . htmlspecialchars($sede) : '' ?> &nbsp;·&nbsp; Recibo generado el <?= date('d/m/Y H:i') ?>
+        <?= htmlspecialchars($modulo_actual['nombre'] ?? 'DigiSports Fútbol') ?> &nbsp;·&nbsp; Recibo generado el <?= date('d/m/Y H:i') ?>
     </div>
 
 </div><!-- /#recibo-print -->
@@ -307,12 +307,38 @@ $enLetras = _letras($entero) . ' DÓLARES' . ($centavos > 0 ? ' CON ' . str_pad(
 </style>
 <script nonce="<?= cspNonce() ?>">
 $(function () {
-    // Imprimir y Volver (handlers movidos aquí por CSP — sin unsafe-inline)
+    // Imprimir
     document.getElementById('btnImprimir').addEventListener('click', function () {
         window.print();
     });
-    document.getElementById('btnVolver').addEventListener('click', function () {
-        history.back();
+
+    // Descargar PDF (html2pdf.js — captura #recibo-print y descarga)
+    document.getElementById('btnPdf').addEventListener('click', function () {
+        var btn = this;
+        var el  = document.getElementById('recibo-print');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Generando...';
+
+        var opt = {
+            margin:       [5, 5, 5, 5],
+            filename:     'Recibo_<?= preg_replace('/[^A-Za-z0-9_\-]/', '_', $numero) ?>.pdf',
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2, useCORS: true, logging: false },
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+
+        html2pdf().set(opt).from(el).save().then(function () {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-file-pdf mr-1"></i>PDF';
+        }).catch(function () {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-file-pdf mr-1"></i>PDF';
+            if (typeof Swal !== 'undefined') {
+                Swal.fire('Error', 'No se pudo generar el PDF.', 'error');
+            } else {
+                alert('Error al generar el PDF.');
+            }
+        });
     });
 
     // Render QR en pantalla (solo visible en pantalla, no en impresión)
@@ -342,30 +368,43 @@ $(function () {
 
         var doEnviar = function() {
             btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Enviando...';
-            var fd = new FormData();
-            fd.append('csrf_token', '<?= $csrf_token ?? '' ?>');
-            fd.append('id', compId);
-            fetch('<?= $url_enviar ?? '' ?>', { method: 'POST', body: fd })
-                .then(function(r) { return r.json(); })
-                .then(function(res) {
-                    if (res.success) {
-                        if (typeof Swal !== 'undefined') {
-                            Swal.fire({ icon: 'success', title: '¡Enviado!', text: res.message, timer: 2500, showConfirmButton: false });
-                        } else { alert(res.message); }
-                        btn.innerHTML = '<i class="fas fa-check mr-1"></i>Enviado';
-                    } else {
-                        if (typeof Swal !== 'undefined') Swal.fire('Error', res.message, 'error');
-                        else alert('Error: ' + res.message);
-                        btn.disabled = false;
-                        btn.innerHTML = '<i class="fas fa-envelope mr-1"></i>Enviar email';
-                    }
-                })
-                .catch(function() {
-                    if (typeof Swal !== 'undefined') Swal.fire('Error', 'Error de conexión.', 'error');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Generando PDF...';
+
+            var el  = document.getElementById('recibo-print');
+            var opt = {
+                margin:       [5, 5, 5, 5],
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true, logging: false },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opt).from(el).outputPdf('blob').then(function(pdfBlob) {
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Enviando...';
+                var fd = new FormData();
+                fd.append('csrf_token', '<?= $csrf_token ?? '' ?>');
+                fd.append('id', compId);
+                fd.append('pdf_file', pdfBlob, 'Recibo_' + numero + '.pdf');
+                return fetch('<?= $url_enviar ?? '' ?>', { method: 'POST', body: fd });
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(res) {
+                if (res.success) {
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({ icon: 'success', title: '¡Enviado!', text: res.message, timer: 2500, showConfirmButton: false });
+                    } else { alert(res.message); }
+                    btn.innerHTML = '<i class="fas fa-check mr-1"></i>Enviado';
+                } else {
+                    if (typeof Swal !== 'undefined') Swal.fire('Error', res.message, 'error');
+                    else alert('Error: ' + res.message);
                     btn.disabled = false;
                     btn.innerHTML = '<i class="fas fa-envelope mr-1"></i>Enviar email';
-                });
+                }
+            })
+            .catch(function() {
+                if (typeof Swal !== 'undefined') Swal.fire('Error', 'Error de conexión.', 'error');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-envelope mr-1"></i>Enviar email';
+            });
         };
 
         if (typeof Swal !== 'undefined') {
@@ -385,4 +424,6 @@ $(function () {
 </script>
 <!-- QRCode.js para pantalla -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" nonce="<?= cspNonce() ?>"></script>
+<!-- html2pdf.js para descarga de PDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.2/html2pdf.bundle.min.js" nonce="<?= cspNonce() ?>"></script>
 <?php $scripts = ob_get_clean(); ?>

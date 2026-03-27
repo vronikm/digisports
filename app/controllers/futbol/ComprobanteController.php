@@ -113,7 +113,7 @@ class ComprobanteController extends \App\Controllers\ModuleController {
                 LEFT JOIN clientes c ON a.alu_representante_id = c.cli_cliente_id AND c.cli_tenant_id = a.alu_tenant_id
                 LEFT JOIN futbol_grupos g ON p.fpg_grupo_id = g.fgr_grupo_id
                 LEFT JOIN futbol_categorias cat ON g.fgr_categoria_id = cat.fct_categoria_id
-                LEFT JOIN instalaciones_sedes s ON p.fpg_sede_id = s.sed_sede_id
+                LEFT JOIN instalaciones_sedes s ON s.sed_sede_id = COALESCE(p.fpg_sede_id, a.alu_sede_id, g.fgr_sede_id)
                 LEFT JOIN core_archivos arc_logo
                        ON arc_logo.arc_entidad      = 'instalaciones_sedes'
                       AND arc_logo.arc_entidad_id   = s.sed_sede_id
@@ -392,6 +392,31 @@ class ComprobanteController extends \App\Controllers\ModuleController {
         }
     }
 
+
+
+    /**
+     * Devuelve el HTML standalone del recibo (para generación de PDF client-side)
+     */
+    public function reciboHtml() {
+        try {
+            $this->setupModule();
+            $id = (int)($this->get('id') ?? 0);
+            if (!$id) { http_response_code(400); echo 'ID requerido'; return; }
+
+            $datos = $this->obtenerDatosParaRecibo($id);
+            if (!$datos) { http_response_code(404); echo 'No encontrado'; return; }
+
+            require_once BASE_PATH . '/app/services/ReciboService.php';
+            $svc = new \App\Services\ReciboService();
+            header('Content-Type: text/html; charset=UTF-8');
+            echo $svc->generarHtml($datos);
+            exit;
+        } catch (\Exception $e) {
+            http_response_code(500);
+            echo 'Error';
+        }
+    }
+
     /**
      * Imprimir comprobante (renderiza vista de impresión)
      */
@@ -410,10 +435,14 @@ class ComprobanteController extends \App\Controllers\ModuleController {
             $comprobante = $stm->fetch(\PDO::FETCH_ASSOC);
             $comprobante['datos_extra'] = json_decode($comprobante['fcm_datos_json'] ?? '{}', true) ?: [];
 
+            $alumnoId = $datos['alumno_id'] ?? null;
+
             $this->viewData['comprobante']   = $comprobante;
             $this->viewData['recibo_datos']  = $datos;
-            $this->viewData['url_pdf']       = url('futbol', 'comprobante', 'descargarPdf') . '&id=' . $id;
             $this->viewData['url_enviar']    = url('futbol', 'comprobante', 'enviar');
+            $this->viewData['url_volver']    = $alumnoId
+                ? url('futbol', 'pago', 'alumno', ['id' => $alumnoId])
+                : url('futbol', 'comprobante', 'index');
             $this->viewData['csrf_token']    = \Security::generateCsrfToken();
             $this->viewData['title']         = 'Recibo ' . $comprobante['fcm_numero'];
             $this->renderModule('futbol/comprobantes/imprimir', $this->viewData);
@@ -429,6 +458,7 @@ class ComprobanteController extends \App\Controllers\ModuleController {
      */
     public function enviar() {
         try {
+            $this->setupModule();
             if ($_SERVER['REQUEST_METHOD'] !== 'POST') return $this->jsonResponse(['success' => false, 'message' => 'POST requerido']);
             if (!\Security::validateCsrfToken($this->post('csrf_token'))) return $this->jsonResponse(['success' => false, 'message' => 'Token inválido']);
 
@@ -449,7 +479,8 @@ class ComprobanteController extends \App\Controllers\ModuleController {
                 LEFT JOIN futbol_pagos p ON fcm.fcm_pago_id = p.fpg_pago_id
                 LEFT JOIN alumnos a ON p.fpg_alumno_id = a.alu_alumno_id
                 LEFT JOIN clientes c ON a.alu_representante_id = c.cli_cliente_id AND c.cli_tenant_id = a.alu_tenant_id
-                LEFT JOIN instalaciones_sedes s ON p.fpg_sede_id = s.sed_sede_id
+                LEFT JOIN futbol_grupos g ON p.fpg_grupo_id = g.fgr_grupo_id
+                LEFT JOIN instalaciones_sedes s ON s.sed_sede_id = COALESCE(p.fpg_sede_id, a.alu_sede_id, g.fgr_sede_id)
                 WHERE fcm.fcm_comprobante_id = ? AND fcm.fcm_tenant_id = ?
             ");
             $stm->execute([$id, $this->tenantId]);
@@ -464,13 +495,19 @@ class ComprobanteController extends \App\Controllers\ModuleController {
 
             if (empty($c['rep_email'])) return $this->jsonResponse(['success' => false, 'message' => 'El representante no tiene email registrado']);
 
-            // Generar PDF para adjuntar
+            // PDF: recibir del cliente (html2pdf.js) o generar con wkhtmltopdf como fallback
             $pdfPath = null;
-            $datosPdf = $this->obtenerDatosParaRecibo($id);
-            if ($datosPdf) {
-                require_once BASE_PATH . '/app/services/ReciboService.php';
-                $svc     = new \App\Services\ReciboService();
-                $pdfPath = $svc->generarPdf($datosPdf);
+            if (!empty($_FILES['pdf_file']['tmp_name']) && $_FILES['pdf_file']['error'] === UPLOAD_ERR_OK) {
+                $tmpPdf = sys_get_temp_dir() . '/recibo_email_' . uniqid() . '.pdf';
+                move_uploaded_file($_FILES['pdf_file']['tmp_name'], $tmpPdf);
+                $pdfPath = $tmpPdf;
+            } else {
+                $datosPdf = $this->obtenerDatosParaRecibo($id);
+                if ($datosPdf) {
+                    require_once BASE_PATH . '/app/services/ReciboService.php';
+                    $svc     = new \App\Services\ReciboService();
+                    $pdfPath = $svc->generarPdf($datosPdf);
+                }
             }
 
             $datos = $this->obtenerDatosParaRecibo($id) ?? [];
@@ -487,6 +524,8 @@ class ComprobanteController extends \App\Controllers\ModuleController {
                 'pago_metodo'    => $datos['metodo_pago'] ?? $c['pago_metodo'],
                 'sede_nombre'    => $datos['sede_nombre'] ?? ($c['sede_nombre'] ?? ''),
                 'empresa_nombre' => $datos['empresa_nombre'] ?? ($_SESSION['tenant_nombre'] ?? 'Escuela de Fútbol'),
+                'modulo_nombre'  => $this->moduloNombre,
+                'mes_referencia' => $datos['mes_referencia'] ?? '',
             ], $pdfPath, $c['fcm_numero']);
 
             // Eliminar PDF temporal
@@ -521,7 +560,7 @@ class ComprobanteController extends \App\Controllers\ModuleController {
                    p.fpg_mes_correspondiente AS pago_mes,
                    ab.fab_monto AS abono_monto, ab.fab_metodo_pago AS abono_metodo,
                    ab.fab_referencia AS abono_referencia,
-                   a.alu_nombres, a.alu_apellidos, a.alu_identificacion,
+                   a.alu_alumno_id, a.alu_nombres, a.alu_apellidos, a.alu_identificacion,
                    c.cli_nombres AS rep_nombres, c.cli_apellidos AS rep_apellidos,
                    c.cli_identificacion AS rep_ci, c.cli_telefono AS rep_telefono,
                    c.cli_email AS rep_email, c.cli_direccion AS rep_direccion,
@@ -540,7 +579,7 @@ class ComprobanteController extends \App\Controllers\ModuleController {
             LEFT JOIN clientes c        ON a.alu_representante_id = c.cli_cliente_id AND c.cli_tenant_id = a.alu_tenant_id
             LEFT JOIN futbol_grupos g   ON p.fpg_grupo_id   = g.fgr_grupo_id
             LEFT JOIN futbol_categorias cat ON g.fgr_categoria_id = cat.fct_categoria_id
-            LEFT JOIN instalaciones_sedes s ON p.fpg_sede_id = s.sed_sede_id
+            LEFT JOIN instalaciones_sedes s ON s.sed_sede_id = COALESCE(p.fpg_sede_id, a.alu_sede_id, g.fgr_sede_id)
             LEFT JOIN core_archivos arc_logo
                    ON arc_logo.arc_entidad      = 'instalaciones_sedes'
                   AND arc_logo.arc_entidad_id   = s.sed_sede_id
@@ -603,6 +642,7 @@ class ComprobanteController extends \App\Controllers\ModuleController {
         $firmaPath = $this->rutaRelativaAAbsoluta($firmaRuta) ?? ($extra['firma_path'] ?? null);
 
         return [
+            'alumno_id'         => $r['alu_alumno_id'] ?? null,
             'numero'            => $r['fcm_numero'],
             'tipo'              => $r['fcm_tipo']  ?? 'RECIBO',
             'fecha'             => $r['fcm_fecha_emision'] ?? date('Y-m-d H:i:s'),

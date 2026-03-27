@@ -110,8 +110,9 @@ class MailService {
             $mailer->addAddress($emailDestino, $datos['rep_nombre'] ?? '');
 
             $empresa = $datos['empresa_nombre'] ?? 'Escuela de Fútbol';
+            $sede    = $datos['sede_nombre']    ?? $empresa;
             $numero  = $numeroRecibo ?? ($datos['numero'] ?? '');
-            $mailer->Subject = "Comprobante de pago {$numero} — {$empresa}";
+            $mailer->Subject = "Comprobante de pago {$numero} — {$sede}";
             $mailer->isHTML(true);
             $mailer->Body    = $this->renderComprobanteTemplate($datos);
             $mailer->AltBody = $this->textoPlanoComprobante($datos);
@@ -179,10 +180,12 @@ class MailService {
         $numero   = htmlspecialchars($d['numero']         ?? '');
         $tipo     = htmlspecialchars($d['tipo']           ?? 'RECIBO');
         $concepto = htmlspecialchars($d['concepto']       ?? '');
+        $mesRef   = htmlspecialchars($d['mes_referencia'] ?? '');
+        if ($mesRef) $concepto .= ' — ' . $mesRef;
         $fecha    = !empty($d['fecha']) ? date('d/m/Y', strtotime($d['fecha'])) : '—';
         $total    = '$' . number_format((float)($d['total'] ?? 0), 2);
         $metodo   = htmlspecialchars($d['pago_metodo']    ?? '');
-        $empresa  = htmlspecialchars($d['empresa_nombre'] ?? 'Escuela de Fútbol');
+        $modulo   = htmlspecialchars($d['modulo_nombre']  ?? 'DigiSports Fútbol');
         $color    = '#22C55E';
 
         $sedeRow = '';
@@ -200,7 +203,7 @@ class MailService {
             . '<tr><td align="center">'
             . '<table width="580" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08);">'
             . "<tr><td style=\"background:{$color};padding:26px 32px;\">"
-            . "<h2 style=\"color:#fff;margin:0;font-size:20px;\">&#9917;&nbsp;{$empresa}</h2>"
+            . "<h2 style=\"color:#fff;margin:0;font-size:20px;\">&#9917;&nbsp;{$modulo}</h2>"
             . '<p style="color:rgba(255,255,255,.85);margin:4px 0 0;font-size:13px;">Comprobante de Pago</p>'
             . '</td></tr>'
             . '<tr><td style="padding:28px 32px;">'
@@ -234,7 +237,7 @@ class MailService {
             . '<p style="font-size:11px;color:#aaa;margin:0;">Comprobante generado autom&aacute;ticamente &middot; Sistema DigiSports</p>'
             . '</td></tr>'
             . '<tr><td style="background:#f8f9fa;padding:14px 32px;border-top:1px solid #e5e7eb;text-align:center;">'
-            . "<p style=\"margin:0;font-size:12px;color:#999;\">{$empresa} &middot; DigiSports</p>"
+            . "<p style=\"margin:0;font-size:12px;color:#999;\">{$modulo} &middot; DigiSports</p>"
             . '</td></tr>'
             . '</table>'
             . '</td></tr></table>'
@@ -246,6 +249,9 @@ class MailService {
      */
     private function textoPlanoComprobante(array $d): string {
         $fecha = !empty($d['fecha']) ? date('d/m/Y', strtotime($d['fecha'])) : '—';
+        $concepto = $d['concepto'] ?? '—';
+        $mesRef   = $d['mes_referencia'] ?? '';
+        if ($mesRef) $concepto .= ' — ' . $mesRef;
         return implode("\n", [
             'Estimado/a ' . ($d['rep_nombre'] ?? 'representante') . ',',
             '',
@@ -253,13 +259,13 @@ class MailService {
             '',
             'Comprobante N° : ' . ($d['numero']       ?? '—'),
             'Alumno         : ' . ($d['alumno_nombre'] ?? '—'),
-            'Concepto       : ' . ($d['concepto']      ?? '—'),
+            'Concepto       : ' . $concepto,
             'Fecha          : ' . $fecha,
             'Método de pago : ' . ($d['pago_metodo']   ?? '—'),
             'TOTAL PAGADO   : $' . number_format((float)($d['total'] ?? 0), 2),
             '',
             'Atentamente,',
-            $d['empresa_nombre'] ?? 'Escuela de Fútbol',
+            $d['modulo_nombre'] ?? 'DigiSports Fútbol',
         ]);
     }
 

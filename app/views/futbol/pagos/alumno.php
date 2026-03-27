@@ -617,7 +617,6 @@ $estadoClass = [
                                                 <?php if ($est === 'PAGADO'): ?>
                                                 <?php if ($tieneComp): ?>
                                                 <a href="<?= url('futbol', 'comprobante', 'imprimir') ?>&id=<?= (int)$p['fcm_comprobante_id'] ?>"
-                                                   target="_blank"
                                                    class="btn btn-outline-secondary"
                                                    title="Ver comprobante <?= htmlspecialchars($p['comprobante_numero'] ?? '') ?>">
                                                     <i class="fas fa-file-alt"></i>
@@ -1101,6 +1100,7 @@ $estadoClass = [
     var URL_COMP_CREAR   = '<?= url('futbol', 'comprobante', 'crear') ?>';
     var URL_COMP_ENVIAR  = '<?= url('futbol', 'comprobante', 'enviar') ?>';
     var URL_COMP_VER     = '<?= url('futbol', 'comprobante', 'imprimir') ?>';
+    var URL_COMP_HTML    = '<?= url('futbol', 'comprobante', 'reciboHtml') ?>';
 
     // --- Datos de beca del alumno ---
     var becaAlumno = (function() {
@@ -1642,10 +1642,42 @@ $estadoClass = [
 
     function enviarComprobante(compId, btn) {
         btn.disabled = true;
-        var fd = new FormData();
-        fd.append('csrf_token', CSRF);
-        fd.append('id', compId);
-        fetch(URL_COMP_ENVIAR, { method: 'POST', body: fd })
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+        // 1) Obtener HTML del recibo desde el servidor
+        fetch(URL_COMP_HTML + '&id=' + compId)
+            .then(function (r) {
+                if (!r.ok) throw new Error('No se pudo obtener el recibo');
+                return r.text();
+            })
+            .then(function (html) {
+                // 2) Renderizar en contenedor oculto para html2pdf
+                var wrap = document.createElement('div');
+                wrap.style.cssText = 'position:fixed;left:-9999px;top:0;width:680px;';
+                wrap.innerHTML = html;
+                document.body.appendChild(wrap);
+
+                var opt = {
+                    margin: [5, 5, 5, 5],
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { scale: 2, useCORS: true, logging: false },
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                };
+
+                // 3) Generar PDF blob
+                return html2pdf().set(opt).from(wrap).outputPdf('blob').then(function (pdfBlob) {
+                    document.body.removeChild(wrap);
+                    return pdfBlob;
+                });
+            })
+            .then(function (pdfBlob) {
+                // 4) Enviar email con PDF adjunto
+                var fd = new FormData();
+                fd.append('csrf_token', CSRF);
+                fd.append('id', compId);
+                fd.append('pdf_file', pdfBlob, 'Recibo_' + compId + '.pdf');
+                return fetch(URL_COMP_ENVIAR, { method: 'POST', body: fd });
+            })
             .then(function (r) { return r.json(); })
             .then(function (res) {
                 if (res.success) {
@@ -1657,11 +1689,13 @@ $estadoClass = [
                     if (typeof Swal !== 'undefined') Swal.fire('Error', res.message, 'error');
                     else alert('Error: ' + res.message);
                     btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-envelope"></i>';
                 }
             })
             .catch(function () {
                 if (typeof Swal !== 'undefined') Swal.fire('Error', 'Error de conexión.', 'error');
                 btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-envelope"></i>';
             });
     }
 
@@ -1913,4 +1947,5 @@ $estadoClass = [
     }
 }());
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.2/html2pdf.bundle.min.js" nonce="<?= cspNonce() ?>"></script>
 <?php $scripts = ob_get_clean(); ?>
