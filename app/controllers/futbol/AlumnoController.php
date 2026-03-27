@@ -301,6 +301,11 @@ class AlumnoController extends \App\Controllers\ModuleController {
             $parentesco = $this->post('parentesco') ?: null;
             if (!$representanteId) return $this->jsonResponse(['success' => false, 'message' => 'Debe seleccionar un representante']);
 
+            // Leer estado actual antes de modificar (para cascade si pasa a INACTIVO)
+            $stmEstAnt = $this->db->prepare("SELECT alu_estado FROM alumnos WHERE alu_alumno_id = ? AND alu_tenant_id = ?");
+            $stmEstAnt->execute([$alumnoId, $this->tenantId]);
+            $estadoAnterior = (string)$stmEstAnt->fetchColumn();
+
             $this->db->beginTransaction();
 
             // Registrar consentimiento si se marcó
@@ -406,6 +411,12 @@ class AlumnoController extends \App\Controllers\ModuleController {
                 ]);
             }
 
+            // Cascade: si el alumno pasó a INACTIVO o SUSPENDIDO, cancelar inscripciones ACTIVAS
+            $nuevoEstado = $this->post('estado') ?: 'ACTIVO';
+            if (in_array($nuevoEstado, ['INACTIVO', 'SUSPENDIDO']) && $estadoAnterior === 'ACTIVO') {
+                $this->cancelarInscripcionesActivas($alumnoId);
+            }
+
             $this->db->commit();
 
             return $this->jsonResponse(['success' => true, 'message' => 'Alumno actualizado']);
@@ -432,6 +443,9 @@ class AlumnoController extends \App\Controllers\ModuleController {
 
             $this->db->prepare("UPDATE futbol_ficha_alumno SET ffa_activo = 0 WHERE ffa_alumno_id = ? AND ffa_tenant_id = ?")
                 ->execute([$id, $this->tenantId]);
+
+            // Cascade: cancelar inscripciones ACTIVAS y liberar cupos
+            $this->cancelarInscripcionesActivas($id);
 
             $this->db->commit();
 
@@ -1047,5 +1061,39 @@ class AlumnoController extends \App\Controllers\ModuleController {
         $stm = $this->db->prepare("SELECT sed_sede_id, sed_nombre FROM instalaciones_sedes WHERE sed_tenant_id = ? AND sed_estado = 'A' ORDER BY sed_nombre");
         $stm->execute([$this->tenantId]);
         return $stm->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Cancela todas las inscripciones ACTIVAS del alumno y libera cupos en los grupos.
+     * Debe llamarse dentro de una transacción activa.
+     */
+    private function cancelarInscripcionesActivas(int $alumnoId): void {
+        // Obtener inscripciones ACTIVAS con su grupo para actualizar cupos
+        $stm = $this->db->prepare("
+            SELECT fin_inscripcion_id, fin_grupo_id
+            FROM futbol_inscripciones
+            WHERE fin_alumno_id = ? AND fin_tenant_id = ? AND fin_estado = 'ACTIVA'
+        ");
+        $stm->execute([$alumnoId, $this->tenantId]);
+        $inscActivas = $stm->fetchAll(\PDO::FETCH_ASSOC);
+
+        if (empty($inscActivas)) return;
+
+        // Cancelar todas las inscripciones ACTIVAS en una sola sentencia
+        $this->db->prepare("
+            UPDATE futbol_inscripciones
+            SET fin_estado = 'CANCELADA', fin_updated_at = NOW()
+            WHERE fin_alumno_id = ? AND fin_tenant_id = ? AND fin_estado = 'ACTIVA'
+        ")->execute([$alumnoId, $this->tenantId]);
+
+        // Liberar cupo en cada grupo afectado
+        $stmCupo = $this->db->prepare("
+            UPDATE futbol_grupos
+            SET fgr_cupo_actual = GREATEST(0, fgr_cupo_actual - 1)
+            WHERE fgr_grupo_id = ? AND fgr_tenant_id = ?
+        ");
+        foreach ($inscActivas as $insc) {
+            $stmCupo->execute([(int)$insc['fin_grupo_id'], $this->tenantId]);
+        }
     }
 }

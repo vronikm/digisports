@@ -101,7 +101,7 @@ class MailService {
      *                              fecha, total, pago_metodo, sede_nombre, empresa_nombre
      * @return array{exito: bool, mensaje: string}
      */
-    public function enviarComprobantePago(string $emailDestino, array $datos): array {
+    public function enviarComprobantePago(string $emailDestino, array $datos, ?string $rutaPdf = null, ?string $numeroRecibo = null): array {
         if (empty($emailDestino) || !filter_var($emailDestino, FILTER_VALIDATE_EMAIL)) {
             return ['exito' => false, 'mensaje' => 'Email del representante no válido o no disponible'];
         }
@@ -110,11 +110,15 @@ class MailService {
             $mailer->addAddress($emailDestino, $datos['rep_nombre'] ?? '');
 
             $empresa = $datos['empresa_nombre'] ?? 'Escuela de Fútbol';
-            $numero  = $datos['numero']         ?? '';
+            $numero  = $numeroRecibo ?? ($datos['numero'] ?? '');
             $mailer->Subject = "Comprobante de pago {$numero} — {$empresa}";
             $mailer->isHTML(true);
             $mailer->Body    = $this->renderComprobanteTemplate($datos);
             $mailer->AltBody = $this->textoPlanoComprobante($datos);
+
+            if ($rutaPdf && file_exists($rutaPdf)) {
+                $mailer->addAttachment($rutaPdf, 'Recibo_' . preg_replace('/[^A-Za-z0-9_\-]/', '_', $numero) . '.pdf');
+            }
 
             $mailer->send();
             error_log('[MailService] Comprobante ' . $numero . ' enviado a ' . $emailDestino);

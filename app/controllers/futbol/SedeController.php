@@ -31,7 +31,8 @@ class SedeController extends \App\Controllers\ModuleController {
             // Obtener sedes con stats de fútbol y logo
             $stm = $this->db->prepare("
                 SELECT s.*,
-                    arc.arc_id AS logo_arc_id,
+                    arc.arc_id   AS logo_arc_id,
+                    arc_f.arc_id AS firma_arc_id,
                     (SELECT COUNT(*) FROM alumnos a
                      JOIN futbol_ficha_alumno ffa ON ffa.ffa_alumno_id = a.alu_alumno_id AND ffa.ffa_tenant_id = a.alu_tenant_id
                      WHERE a.alu_sede_id = s.sed_sede_id AND a.alu_estado = 'ACTIVO' AND ffa.ffa_activo = 1) AS total_alumnos,
@@ -52,6 +53,13 @@ class SedeController extends \App\Controllers\ModuleController {
                       AND arc.arc_categoria  = 'logos'
                       AND arc.arc_es_principal = 1
                       AND arc.arc_estado = 'activo'
+                LEFT JOIN core_archivos arc_f
+                       ON arc_f.arc_entidad = 'instalaciones_sedes'
+                      AND arc_f.arc_entidad_id = s.sed_sede_id
+                      AND arc_f.arc_tenant_id  = s.sed_tenant_id
+                      AND arc_f.arc_categoria  = 'firmas'
+                      AND arc_f.arc_es_principal = 1
+                      AND arc_f.arc_estado = 'activo'
                 WHERE s.sed_tenant_id = ? AND s.sed_estado = 'A'
                 ORDER BY s.sed_es_principal DESC, s.sed_nombre
             ");
@@ -130,10 +138,22 @@ class SedeController extends \App\Controllers\ModuleController {
                 $this->db->prepare("UPDATE instalaciones_sedes SET sed_es_principal = 'N' WHERE sed_tenant_id = ? AND sed_sede_id != ?")->execute([$this->tenantId, $newId]);
             }
 
+            $fm = new \FileManager($this->db, $this->tenantId, (int)($_SESSION['user_id'] ?? 0));
+
             // Subir logo si viene en el request
             if (!empty($_FILES['logo_sede']['name'])) {
-                $fm = new \FileManager($this->db, $this->tenantId, (int)($_SESSION['user_id'] ?? 0));
-                $fm->uploadImage($_FILES['logo_sede'], 'instalaciones_sedes', $newId, 'logos', true);
+                $logoRes = $fm->uploadImage($_FILES['logo_sede'], 'instalaciones_sedes', $newId, 'logos', true);
+                if ($logoRes['success'] && !empty($logoRes['arc_id'])) {
+                    $this->db->prepare("UPDATE instalaciones_sedes SET sed_logo_id = ? WHERE sed_sede_id = ?")->execute([$logoRes['arc_id'], $newId]);
+                }
+            }
+
+            // Subir firma si viene en el request
+            if (!empty($_FILES['firma_sede']['name'])) {
+                $firmaRes = $fm->uploadImage($_FILES['firma_sede'], 'instalaciones_sedes', $newId, 'firmas', true);
+                if ($firmaRes['success'] && !empty($firmaRes['arc_id'])) {
+                    $this->db->prepare("UPDATE instalaciones_sedes SET sed_firma_id = ? WHERE sed_sede_id = ?")->execute([$firmaRes['arc_id'], $newId]);
+                }
             }
 
             return $this->jsonResponse(['success' => true, 'message' => 'Sede creada exitosamente']);
@@ -196,6 +216,8 @@ class SedeController extends \App\Controllers\ModuleController {
                 $this->db->prepare("UPDATE instalaciones_sedes SET sed_es_principal = 'N' WHERE sed_tenant_id = ? AND sed_sede_id != ?")->execute([$this->tenantId, $id]);
             }
 
+            $fm = new \FileManager($this->db, $this->tenantId, $this->userId);
+
             // Quitar logo si se solicitó
             if ($this->post('quitar_logo') === '1') {
                 $stm = $this->db->prepare("
@@ -207,14 +229,41 @@ class SedeController extends \App\Controllers\ModuleController {
                 $stm->execute([$id, $this->tenantId]);
                 $arcId = $stm->fetchColumn();
                 if ($arcId) {
-                    (new \FileManager($this->db, $this->tenantId, $this->userId))->deleteFile((int)$arcId);
+                    $fm->deleteFile((int)$arcId);
                 }
+                $this->db->prepare("UPDATE instalaciones_sedes SET sed_logo_id = NULL WHERE sed_sede_id = ? AND sed_tenant_id = ?")->execute([$id, $this->tenantId]);
             }
 
             // Subir logo si viene en el request
             if (!empty($_FILES['logo_sede']['name'])) {
-                $fm = new \FileManager($this->db, $this->tenantId, $this->userId);
-                $fm->uploadImage($_FILES['logo_sede'], 'instalaciones_sedes', $id, 'logos');
+                $logoRes = $fm->uploadImage($_FILES['logo_sede'], 'instalaciones_sedes', $id, 'logos', true);
+                if ($logoRes['success'] && !empty($logoRes['arc_id'])) {
+                    $this->db->prepare("UPDATE instalaciones_sedes SET sed_logo_id = ? WHERE sed_sede_id = ? AND sed_tenant_id = ?")->execute([$logoRes['arc_id'], $id, $this->tenantId]);
+                }
+            }
+
+            // Quitar firma si se solicitó
+            if ($this->post('quitar_firma') === '1') {
+                $stm = $this->db->prepare("
+                    SELECT arc_id FROM core_archivos
+                     WHERE arc_entidad = 'instalaciones_sedes' AND arc_entidad_id = ?
+                       AND arc_categoria = 'firmas' AND arc_tenant_id = ? AND arc_estado = 'activo'
+                     LIMIT 1
+                ");
+                $stm->execute([$id, $this->tenantId]);
+                $arcId = $stm->fetchColumn();
+                if ($arcId) {
+                    $fm->deleteFile((int)$arcId);
+                }
+                $this->db->prepare("UPDATE instalaciones_sedes SET sed_firma_id = NULL WHERE sed_sede_id = ? AND sed_tenant_id = ?")->execute([$id, $this->tenantId]);
+            }
+
+            // Subir firma si viene en el request
+            if (!empty($_FILES['firma_sede']['name'])) {
+                $firmaRes = $fm->uploadImage($_FILES['firma_sede'], 'instalaciones_sedes', $id, 'firmas', true);
+                if ($firmaRes['success'] && !empty($firmaRes['arc_id'])) {
+                    $this->db->prepare("UPDATE instalaciones_sedes SET sed_firma_id = ? WHERE sed_sede_id = ? AND sed_tenant_id = ?")->execute([$firmaRes['arc_id'], $id, $this->tenantId]);
+                }
             }
 
             return $this->jsonResponse(['success' => true, 'message' => 'Sede actualizada']);

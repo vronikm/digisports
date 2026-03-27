@@ -115,8 +115,9 @@ $totalMora      = $totales['VENCIDO']   ?? 0;
                         <label class="small">Estado de Pago</label>
                         <select id="filtroEstadoPago" class="form-control form-control-sm">
                             <option value="">— Todos —</option>
-                            <option value="AL_DIA" <?= ($estado_pago ?? '') === 'AL_DIA' ? 'selected' : '' ?>>Al día</option>
-                            <option value="MORA"   <?= ($estado_pago ?? '') === 'MORA'   ? 'selected' : '' ?>>En mora</option>
+                            <option value="AL_DIA"   <?= ($estado_pago ?? '') === 'AL_DIA'   ? 'selected' : '' ?>>Al día</option>
+                            <option value="MORA"     <?= ($estado_pago ?? '') === 'MORA'     ? 'selected' : '' ?>>En mora</option>
+                            <option value="LICENCIA" <?= ($estado_pago ?? '') === 'LICENCIA' ? 'selected' : '' ?>>En licencia / inactivo</option>
                         </select>
                     </div>
                     <div class="col-md-3 text-right">
@@ -212,7 +213,11 @@ $totalMora      = $totales['VENCIDO']   ?? 0;
                                 </td>
                                 <!-- Estado pago -->
                                 <td class="text-center align-middle">
-                                    <?php if ($a['tiene_mora']): ?>
+                                    <?php if ($a['en_licencia']): ?>
+                                    <span class="badge badge-secondary" style="font-size:.74rem;padding:.3em .55em;" title="Alumno en licencia / inactividad temporal">
+                                        <i class="fas fa-pause-circle mr-1"></i>Licencia
+                                    </span>
+                                    <?php elseif ($a['tiene_mora']): ?>
                                     <span class="badge badge-danger" style="font-size:.74rem;padding:.3em .55em;">
                                         <i class="fas fa-exclamation-circle mr-1"></i>Mora
                                     </span>

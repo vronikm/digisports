@@ -49,6 +49,10 @@ class FileManager
             'image/png'  => 'png',
             'image/svg+xml' => 'svg',
         ],
+        'firmas' => [
+            'image/jpeg' => 'jpg',
+            'image/png'  => 'png',
+        ],
         'documentos' => [
             'application/pdf' => 'pdf',
         ],

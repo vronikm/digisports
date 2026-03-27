@@ -278,6 +278,43 @@ $sedeActiva  = $sede_activa ?? null;
                             </button>
                         </div>
                     </div>
+
+                    <hr>
+                    <!-- Firma digital -->
+                    <h6 class="text-muted mb-2"><i class="fas fa-pen-nib mr-1"></i>Firma Digital <small class="text-muted">(se imprime en los recibos)</small></h6>
+                    <input type="hidden" name="quitar_firma" id="inp_quitar_firma" value="0">
+                    <div class="d-flex align-items-center">
+                        <div id="firmaUploadZone" title="Clic para seleccionar firma"
+                             style="width:180px;height:80px;border:2px dashed #dee2e6;border-radius:8px;
+                                    cursor:pointer;position:relative;overflow:hidden;flex-shrink:0;
+                                    background:#f8f9fa;transition:border-color .2s;">
+                            <img id="firmaPreview" src="" alt="Firma"
+                                 style="width:100%;height:100%;object-fit:contain;padding:4px;display:none;">
+                            <div id="firmaPlaceholder"
+                                 style="width:100%;height:100%;display:flex;flex-direction:column;
+                                        align-items:center;justify-content:center;color:#adb5bd;text-align:center;padding:8px;">
+                                <i class="fas fa-pen-nib fa-2x mb-1"></i>
+                                <small style="font-size:10px;line-height:1.3;">Subir<br>firma</small>
+                            </div>
+                            <div id="firmaOverlay"
+                                 style="display:none;position:absolute;inset:0;background:rgba(0,0,0,.45);
+                                        flex-direction:column;align-items:center;justify-content:center;
+                                        color:#fff;text-align:center;cursor:pointer;">
+                                <i class="fas fa-camera fa-lg mb-1"></i>
+                                <small style="font-size:10px;">Cambiar</small>
+                            </div>
+                        </div>
+                        <div class="ml-3">
+                            <label class="btn btn-sm btn-outline-secondary d-block mb-1" for="sed_firma" style="cursor:pointer;white-space:nowrap;">
+                                <i class="fas fa-folder-open mr-1"></i>Seleccionar archivo
+                            </label>
+                            <input type="file" name="firma_sede" id="sed_firma" class="d-none" accept="image/jpeg,image/png">
+                            <small class="text-muted d-block">JPG, PNG — fondo transparente recomendado</small>
+                            <button type="button" id="btnQuitarFirma" class="btn btn-sm btn-outline-danger mt-2 d-none">
+                                <i class="fas fa-times mr-1"></i>Quitar firma
+                            </button>
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
@@ -334,6 +371,43 @@ $(function() {
         $('#logoUploadZone').css({'border-color': '#dee2e6', 'border-style': 'dashed'});
     });
 
+    // ── Preview firma ──
+    $('#sed_firma').on('change', function() {
+        var file = this.files[0];
+        if (!file) return;
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            $('#firmaPreview').attr('src', e.target.result).show();
+            $('#firmaPlaceholder').hide();
+            $('#firmaOverlay').hide();
+            $('#btnQuitarFirma').removeClass('d-none');
+            $('#inp_quitar_firma').val('0');
+            $('#firmaUploadZone').css({'border-color': '#adb5bd', 'border-style': 'solid'});
+        };
+        reader.readAsDataURL(file);
+    });
+
+    // ── Clic en zona de upload firma ──
+    $('#firmaUploadZone').on('click', function() { $('#sed_firma').trigger('click'); });
+
+    // ── Hover overlay firma ──
+    $('#firmaUploadZone').on('mouseenter', function() {
+        if ($('#firmaPreview').is(':visible')) $('#firmaOverlay').css('display', 'flex');
+    }).on('mouseleave', function() {
+        $('#firmaOverlay').hide();
+    });
+
+    // ── Quitar firma ──
+    $('#btnQuitarFirma').on('click', function() {
+        $('#firmaPreview').hide().attr('src', '');
+        $('#firmaPlaceholder').show();
+        $('#firmaOverlay').hide();
+        $('#sed_firma').val('');
+        $('#btnQuitarFirma').addClass('d-none');
+        $('#inp_quitar_firma').val('1');
+        $('#firmaUploadZone').css({'border-color': '#dee2e6', 'border-style': 'dashed'});
+    });
+
     // ── Abrir modal nuevo ──
     function abrirModalNueva() {
         $('#formSede')[0].reset();
@@ -347,6 +421,12 @@ $(function() {
         $('#btnQuitarLogo').addClass('d-none');
         $('#inp_quitar_logo').val('0');
         $('#logoUploadZone').css({'border-color': '#dee2e6', 'border-style': 'dashed'});
+        $('#firmaPreview').hide().attr('src', '');
+        $('#firmaPlaceholder').show();
+        $('#firmaOverlay').hide();
+        $('#btnQuitarFirma').addClass('d-none');
+        $('#inp_quitar_firma').val('0');
+        $('#firmaUploadZone').css({'border-color': '#dee2e6', 'border-style': 'dashed'});
         $('#modalTitulo').html('<i class="fas fa-building mr-2"></i>Nueva Sede');
         $('#formSede').data('mode', 'crear');
         $('#modalSede').modal('show');
@@ -370,10 +450,10 @@ $(function() {
         $('#sed_monto_matricula').val(parseFloat(s.sed_monto_matricula || 0).toFixed(2));
         $('#sed_comprobante_inicio').val(parseInt(s.sed_comprobante_inicio || 1));
         // Logo preview
+        var baseUrl = '<?= \Config::baseUrl('archivo.php?id=') ?>';
         $('#logoOverlay').hide();
         $('#inp_quitar_logo').val('0');
         if (s.logo_arc_id) {
-            var baseUrl = '<?= \Config::baseUrl('archivo.php?id=') ?>';
             $('#logoPreview').attr('src', baseUrl + s.logo_arc_id).show();
             $('#logoPlaceholder').hide();
             $('#btnQuitarLogo').removeClass('d-none');
@@ -383,6 +463,20 @@ $(function() {
             $('#logoPlaceholder').show();
             $('#btnQuitarLogo').addClass('d-none');
             $('#logoUploadZone').css({'border-color': '#dee2e6', 'border-style': 'dashed'});
+        }
+        // Firma preview
+        $('#firmaOverlay').hide();
+        $('#inp_quitar_firma').val('0');
+        if (s.firma_arc_id) {
+            $('#firmaPreview').attr('src', baseUrl + s.firma_arc_id).show();
+            $('#firmaPlaceholder').hide();
+            $('#btnQuitarFirma').removeClass('d-none');
+            $('#firmaUploadZone').css({'border-color': '#adb5bd', 'border-style': 'solid'});
+        } else {
+            $('#firmaPreview').hide().attr('src', '');
+            $('#firmaPlaceholder').show();
+            $('#btnQuitarFirma').addClass('d-none');
+            $('#firmaUploadZone').css({'border-color': '#dee2e6', 'border-style': 'dashed'});
         }
         $('#modalTitulo').html('<i class="fas fa-edit mr-2"></i>Editar Sede');
         $('#formSede').data('mode', 'editar');

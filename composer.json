@@ -3,7 +3,8 @@
     "description": "DigiSports - Multi-tenant Sports Management SaaS",
     "type": "project",
     "require": {
-        "phpmailer/phpmailer": "^7.0"
+        "phpmailer/phpmailer": "^7.0",
+        "chillerlan/php-qrcode": "^6.0"
     },
     "require-dev": {
         "phpunit/phpunit": "^11.0"

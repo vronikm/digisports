@@ -78,8 +78,8 @@ $moduloColor = $modulo_actual['color'] ?? '#22C55E';
                         <select id="filtroEstado" class="form-control form-control-sm">
                             <option value="">— Todos —</option>
                             <option value="ACTIVO" <?= ($estado ?? '') === 'ACTIVO' ? 'selected' : '' ?>>Activo</option>
-                            <option value="INACTIVO" <?= ($estado ?? '') === 'INACTIVO' ? 'selected' : '' ?>>Inactivo</option>
-                            <option value="RETIRADO" <?= ($estado ?? '') === 'RETIRADO' ? 'selected' : '' ?>>Retirado</option>
+                            <option value="INACTIVO"  <?= ($estado ?? '') === 'INACTIVO'  ? 'selected' : '' ?>>Inactivo / Retirado</option>
+                            <option value="SUSPENDIDO" <?= ($estado ?? '') === 'SUSPENDIDO' ? 'selected' : '' ?>>Suspendido</option>
                         </select>
                     </div>
                     <div class="col-md-2 text-right">
@@ -178,7 +178,7 @@ $moduloColor = $modulo_actual['color'] ?? '#22C55E';
                                 <td class="text-center">
                                     <?php
                                         $estadoInsc = $a['estado_inscripcion'] ?? $a['alu_estado'] ?? 'ACTIVO';
-                                        $estadoBadge = ['ACTIVO'=>'success','ACTIVA'=>'success','INACTIVO'=>'secondary','RETIRADO'=>'danger','SUSPENDIDO'=>'warning','CANCELADA'=>'danger'][$estadoInsc] ?? 'light';
+                                        $estadoBadge = ['ACTIVO'=>'success','ACTIVA'=>'success','INACTIVO'=>'secondary','SUSPENDIDO'=>'warning','CANCELADA'=>'danger','COMPLETADA'=>'info'][$estadoInsc] ?? 'light';
                                     ?>
                                     <span class="badge badge-<?= $estadoBadge ?>"><?= $estadoInsc ?></span>
                                 </td>
