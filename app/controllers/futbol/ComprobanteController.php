@@ -403,13 +403,23 @@ class ComprobanteController extends \App\Controllers\ModuleController {
             $id = (int)($this->get('id') ?? 0);
             if (!$id) { http_response_code(400); echo 'ID requerido'; return; }
 
-            $datos = $this->obtenerDatosParaRecibo($id);
-            if (!$datos) { http_response_code(404); echo 'No encontrado'; return; }
+            $recibo_datos = $this->obtenerDatosParaRecibo($id);
+            if (!$recibo_datos) { http_response_code(404); echo 'No encontrado'; return; }
 
-            require_once BASE_PATH . '/app/services/ReciboService.php';
-            $svc = new \App\Services\ReciboService();
+            $stm = $this->db->prepare("SELECT * FROM futbol_comprobantes WHERE fcm_comprobante_id = ? AND fcm_tenant_id = ?");
+            $stm->execute([$id, $this->tenantId]);
+            $comprobante = $stm->fetch(\PDO::FETCH_ASSOC);
+            if (!$comprobante) { http_response_code(404); echo 'No encontrado'; return; }
+            $comprobante['datos_extra'] = json_decode($comprobante['fcm_datos_json'] ?? '{}', true) ?: [];
+
+            $modulo_actual = $this->viewData['modulo_actual'] ?? ['nombre' => $this->moduloNombre ?: 'DigiSports Fútbol'];
+
+            ob_start();
+            include BASE_PATH . '/app/views/futbol/comprobantes/_recibo_body.php';
+            $bodyHtml = ob_get_clean();
+
             header('Content-Type: text/html; charset=UTF-8');
-            echo $svc->generarHtml($datos);
+            echo '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><style>body{margin:0;padding:0;}</style></head><body>' . $bodyHtml . '</body></html>';
             exit;
         } catch (\Exception $e) {
             http_response_code(500);

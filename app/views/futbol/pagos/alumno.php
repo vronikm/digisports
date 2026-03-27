@@ -1653,19 +1653,20 @@ $estadoClass = [
             .then(function (html) {
                 // 2) Renderizar en contenedor oculto para html2pdf
                 var wrap = document.createElement('div');
-                wrap.style.cssText = 'position:fixed;left:-9999px;top:0;width:680px;';
+                wrap.style.cssText = 'position:fixed;left:0;top:0;width:680px;z-index:-9999;pointer-events:none;';
                 wrap.innerHTML = html;
                 document.body.appendChild(wrap);
 
+                var target = wrap.querySelector('#recibo-print') || wrap;
                 var opt = {
                     margin: [5, 5, 5, 5],
                     image: { type: 'jpeg', quality: 0.98 },
-                    html2canvas: { scale: 2, useCORS: true, logging: false },
+                    html2canvas: { scale: 2, useCORS: true, logging: false, scrollX: 0, scrollY: 0 },
                     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
                 };
 
                 // 3) Generar PDF blob
-                return html2pdf().set(opt).from(wrap).outputPdf('blob').then(function (pdfBlob) {
+                return html2pdf().set(opt).from(target).outputPdf('blob').then(function (pdfBlob) {
                     document.body.removeChild(wrap);
                     return pdfBlob;
                 });
